@@ -15,6 +15,7 @@ install:
   - pip install scipy
   - pip install numpy
   - pip install scikit-learn
+  - pip install hyperactive
   - pip install packaging
   - pip install pytest
   - pip install pytest-cov
