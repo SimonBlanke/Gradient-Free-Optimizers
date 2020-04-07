@@ -72,8 +72,7 @@ class SBOM(BaseOptimizer):
         self._all_possible_pos(_cand_)
 
         if self._opt_args_.warm_start_smbo:
-            self.X_sample = _cand_.mem._get_para()
-            self.Y_sample = _cand_.mem._get_score()
+            self.X_sample, self.Y_sample = _cand_.mem._get_para()
         else:
             self.X_sample = _cand_.pos_best.reshape(1, -1)
             self.Y_sample = np.array(_cand_.score_best).reshape(1, -1)
