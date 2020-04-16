@@ -22,8 +22,8 @@ def find_version(*filepath):
 
 
 setup(
-    name="derivative-free-optimizers",
-    version=find_version("derivative_free_optimizers/__init__.py"),
+    name="gradient-free-optimizers",
+    version=find_version("gradient_free_optimizers/__init__.py"),
     author="Simon Blanke",
     author_email="simon.blanke@yahoo.com",
     license="MIT",
@@ -31,7 +31,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     keywords=["optimization"],
-    url="https://github.com/SimonBlanke/derivative-free-optimizers",
+    url="https://github.com/SimonBlanke/Gradient-Free-Optimizers",
     packages=find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",

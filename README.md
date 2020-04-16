@@ -1,1 +1,1 @@
-# derivative-free-optimizers
+# gradient-free-optimizers
