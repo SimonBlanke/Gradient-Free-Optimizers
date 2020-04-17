@@ -113,7 +113,7 @@ class Arguments:
 
         self.kwargs_opt = merge_dicts(kwargs_opt, kwargs)
 
-    def set_opt_args(self, n_iter):
+    def set_opt_args(self):
         self.epsilon = self.kwargs_opt["epsilon"]
         self.distribution = distribution[self.kwargs_opt["distribution"]]
         self.n_neighbours = self.kwargs_opt["n_neighbours"]
@@ -123,7 +123,7 @@ class Arguments:
         self.tabu_memory = self.kwargs_opt["tabu_memory"]
 
         self.n_restarts = self.kwargs_opt["n_restarts"]
-        self.n_iter_restart = int(n_iter / self.n_restarts)
+        # self.n_iter_restart = int(n_iter / self.n_restarts)
 
         self.annealing_rate = self.kwargs_opt["annealing_rate"]
         self.start_temp = self.kwargs_opt["start_temp"]
@@ -132,7 +132,7 @@ class Arguments:
 
         self.system_temperatures = self.kwargs_opt["system_temperatures"]
         self.n_swaps = self.kwargs_opt["n_swaps"]
-        self.n_iter_swap = int(n_iter / self.n_swaps)
+        # self.n_iter_swap = int(n_iter / self.n_swaps)
 
         self.n_particles = self.kwargs_opt["n_particles"]
         self.inertia = self.kwargs_opt["inertia"]
