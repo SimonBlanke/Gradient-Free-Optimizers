@@ -42,7 +42,7 @@ class BasePositioner:
         self._score_new = value
 
     def move_climb(self, pos, epsilon_mod=1):
-        sigma = 3 + self.space_dim * self.epsilon * epsilon_mod
+        sigma = self.space_dim * self.epsilon * epsilon_mod
         pos_normal = self.distribution(pos, sigma, pos.shape)
         pos_new_int = np.rint(pos_normal)
 
@@ -52,7 +52,7 @@ class BasePositioner:
         self.pos_new = pos.astype(int)
         return self.pos_new
 
-    def move_random(self, _cand_):
+    def move_random(self):
         pos_new = np.random.uniform(
             np.zeros(self.space_dim.shape), self.space_dim, self.space_dim.shape
         )
