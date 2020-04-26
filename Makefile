@@ -14,3 +14,7 @@ reinstall:
 	rm -fr build dist gradient_free_optimizers.egg-info
 	python setup.py bdist_wheel
 	pip install dist/*
+
+test:
+	cd tests/; \
+		pytest test_optimizers.py -p no:warnings
