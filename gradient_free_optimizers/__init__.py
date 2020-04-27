@@ -5,8 +5,6 @@
 __version__ = "0.1.1"
 __license__ = "MIT"
 
-from .base_optimizer import BaseOptimizer
-
 from .local import (
     HillClimbingOptimizer,
     StochasticHillClimbingOptimizer,
@@ -35,7 +33,6 @@ from .sequence_model import (
 )
 
 __all__ = [
-    "BaseOptimizer",
     "HillClimbingOptimizer",
     "StochasticHillClimbingOptimizer",
     "TabuOptimizer",
