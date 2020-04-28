@@ -27,6 +27,9 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# Dev
+*___.*
+
 # plots
 /docs/plots/temp/
 
