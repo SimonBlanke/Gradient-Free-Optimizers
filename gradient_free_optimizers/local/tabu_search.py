@@ -19,34 +19,29 @@ def gaussian(distance, sig, sigma_factor=1):
 
 
 class TabuOptimizer(HillClimbingOptimizer):
-    def __init__(self, n_iter, opt_para):
-        super().__init__(n_iter, opt_para)
+    def __init__(self, init_positions, space_dim, opt_para):
+        super().__init__(init_positions, space_dim, opt_para)
 
     def _tabu_pos(self, pos, _p_):
-        _p_.add_tabu(pos)
+        _p_
 
-        return _p_
+    def init_pos(self, nth_init):
+        pos_new = self._base_init_pos(
+            nth_init, TabuPositioner(self.space_dim, self._opt_args_)
+        )
 
-    def _iterate(self, i, _cand_):
-        self._hill_climb_iter(i, _cand_)
+        return pos_new
 
-        if self.p_list[0].score_new < _cand_.score_best:
-            self.p_list[0] = self._tabu_pos(self.p_list[0].pos_new, self.p_list[0])
+    def evaluate(self, score_new):
+        super().evaluate(score_new)
 
-        return _cand_
-
-    def _init_iteration(self, _cand_):
-        p = super()._init_base_positioner(_cand_, positioner=TabuPositioner)
-
-        self._optimizer_eval(_cand_, p)
-        self._update_pos(_cand_, p)
-
-        return p
+        if score_new < self.p_current.score_best:
+            self.p_current.add_tabu(self.p_current.pos_new)
 
 
 class TabuPositioner(HillClimbingPositioner):
-    def __init__(self, _opt_args_):
-        super().__init__(_opt_args_)
+    def __init__(self, space_dim, _opt_args_):
+        super().__init__(space_dim, _opt_args_)
         self.tabus = []
         self.tabu_memory = _opt_args_.tabu_memory
 
@@ -56,8 +51,8 @@ class TabuPositioner(HillClimbingPositioner):
         if len(self.tabus) > self.tabu_memory:
             self.tabus.pop(0)
 
-    def move_climb(self, _cand_, pos, epsilon_mod=1):
-        sigma = 1 + _cand_._space_.dim * self.epsilon * epsilon_mod
+    def move_climb(self, pos, epsilon_mod=1):
+        sigma = 1 + self.space_dim * self.epsilon * epsilon_mod
         pos_normal = np.random.normal(pos, sigma, pos.shape)
         pos_new_int = np.rint(pos_normal)
 
@@ -83,7 +78,9 @@ class TabuPositioner(HillClimbingPositioner):
 
             sigma_mod = sigma_mod * 1.01
 
-        n_zeros = [0] * len(_cand_._space_.dim)
-        pos = np.clip(pos_new_int, n_zeros, _cand_._space_.dim)
+        n_zeros = [0] * len(self.space_dim)
+        pos = np.clip(pos_new_int, n_zeros, self.space_dim)
 
-        return pos.astype(int)
+        self.pos_new = pos.astype(int)
+
+        return self.pos_new
