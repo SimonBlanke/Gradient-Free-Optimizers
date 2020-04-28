@@ -7,70 +7,63 @@ import random
 
 import numpy as np
 
-from ..base_optimizer import BaseOptimizer
+from ..local import HillClimbingOptimizer
 from ..base_positioner import BasePositioner
 
 
-class ParticleSwarmOptimizer(BaseOptimizer):
-    def __init__(self, n_iter, opt_para):
-        super().__init__(n_iter, opt_para)
+class ParticleSwarmOptimizer(HillClimbingOptimizer):
+    def __init__(self, init_positions, space_dim, opt_para):
+        super().__init__(init_positions, space_dim, opt_para)
         self.n_positioners = self._opt_args_.n_particles
 
-    def _init_particle(self, _cand_):
-        _p_ = Particle()
-        _p_.pos_new = _cand_._space_.get_random_pos()
-        _p_.velo = np.zeros(len(_cand_._space_.search_space))
-
-        self._optimizer_eval(_cand_, _p_)
-        self._update_pos(_cand_, _p_)
-
-        return _p_
-
-    def _move_positioner(self, _cand_, _p_):
+    def _move_positioner(self):
         r1, r2 = random.random(), random.random()
 
-        A = self._opt_args_.inertia * _p_.velo
+        A = self._opt_args_.inertia * self.p_current.velo
         B = (
             self._opt_args_.cognitive_weight
             * r1
-            * np.subtract(_p_.pos_best, _p_.pos_new)
+            * np.subtract(self.p_current.pos_best, self.p_current.pos_new)
         )
         C = (
             self._opt_args_.social_weight
             * r2
-            * np.subtract(_cand_.pos_best, _p_.pos_new)
+            * np.subtract(self.global_pos_best, self.p_current.pos_new)
         )
 
         new_velocity = A + B + C
 
-        _p_.velo = new_velocity
-        _p_.move_part(_cand_, _p_.pos_new)
+        self.p_current.velo = new_velocity
+        return self.p_current.move_part(self.p_current.pos_current)
 
-    def _iterate(self, i, _cand_):
-        _p_current = self.p_list[i % self.n_positioners]
-        self._move_positioner(_cand_, _p_current)
+    def init_pos(self, nth_init):
+        pos_new = self._base_init_pos(
+            nth_init, Particle(self.space_dim, self._opt_args_)
+        )
 
-        self._optimizer_eval(_cand_, _p_current)
-        self._update_pos(_cand_, _p_current)
+        self.p_current.velo = np.zeros(len(self.space_dim))
 
-        return _cand_
+        return pos_new
 
-    def _init_iteration(self, _cand_):
-        p = self._init_particle(_cand_)
+    def iterate(self, nth_iter):
+        self._base_iterate(nth_iter)
+        self._sort_best()
+        self._choose_next_pos()
+        self.global_pos_best = self.p_sorted[0].pos_best
+        pos = self._move_positioner()
 
-        self._optimizer_eval(_cand_, p)
-        self._update_pos(_cand_, p)
-
-        return p
+        return pos
 
 
 class Particle(BasePositioner):
-    def __init__(self):
-        super().__init__(self)
+    def __init__(self, space_dim, _opt_args_):
+        super().__init__(space_dim, _opt_args_)
         self.velo = None
 
-    def move_part(self, _cand_, pos):
+    def move_part(self, pos):
         pos_new = (pos + self.velo).astype(int)
         # limit movement
-        n_zeros = [0] * len(_cand_._space_.dim)
-        self.pos_new = np.clip(pos_new, n_zeros, _cand_._space_.dim)
+        n_zeros = [0] * len(self.space_dim)
+        self.pos_new = np.clip(pos_new, n_zeros, self.space_dim)
+
+        return self.pos_new

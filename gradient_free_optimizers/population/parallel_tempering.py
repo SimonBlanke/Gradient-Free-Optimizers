@@ -11,20 +11,19 @@ from ..local import HillClimbingPositioner, SimulatedAnnealingOptimizer
 
 
 class ParallelTemperingOptimizer(SimulatedAnnealingOptimizer):
-    def __init__(self, n_iter, opt_para):
-        super().__init__(n_iter, opt_para)
-        self.n_iter_swap = self._opt_args_.n_iter_swap
+    def __init__(self, init_positions, space_dim, opt_para):
+        super().__init__(init_positions, space_dim, opt_para)
         self.n_positioners = len(self._opt_args_.system_temperatures)
 
-    def _init_annealer(self, _cand_):
-        temp = self._opt_args_.system_temperatures[self.i]
-        _p_ = System(self._opt_args_, temp=temp)
+    def init_pos(self, nth_init):
+        temp = self._opt_args_.system_temperatures[nth_init]
+        pos_new = self._base_init_pos(
+            nth_init, System(self.space_dim, self._opt_args_, temp)
+        )
 
-        _p_.pos_new = _cand_._space_.get_random_pos()
+        return pos_new
 
-        return _p_
-
-    def _swap_pos(self, _cand_):
+    def _swap_pos(self):
         _p_list_temp = self.p_list[:]
 
         for _p1_ in self.p_list:
@@ -50,33 +49,17 @@ class ParallelTemperingOptimizer(SimulatedAnnealingOptimizer):
             temp = (1 / _p1_.temp) - (1 / _p2_.temp)
             return np.exp(score_diff_norm * temp)
 
-    def _anneal_system(self, _cand_, _p_):
-        self._p_ = _p_
-        super()._iterate(0, _cand_)
+    def evaluate(self, score_new):
+        super().evaluate(score_new)
 
-    def _iterate(self, i, _cand_):
-        _p_current = self.p_list[i % len(self.p_list)]
+        notZero = self._opt_args_.n_iter_swap != 0
+        modZero = self.nth_iter % self._opt_args_.n_iter_swap == 0
 
-        self._anneal_system(_cand_, _p_current)
-
-        if self.n_iter_swap != 0 and i % self.n_iter_swap == 0:
-            self._swap_pos(_cand_)
-
-        return _cand_
-
-    def _init_iteration(self, _cand_):
-        p = self._init_annealer(_cand_)
-
-        self._optimizer_eval(_cand_, p)
-        self._update_pos(_cand_, p)
-
-        return p
-
-    def _finish_search(self):
-        self._pbar_.close_p_bar()
+        if notZero and modZero:
+            self._swap_pos()
 
 
 class System(HillClimbingPositioner):
-    def __init__(self, _opt_args_, temp):
-        super().__init__(_opt_args_)
+    def __init__(self, space_dim, _opt_args_, temp):
+        super().__init__(space_dim, _opt_args_)
         self.temp = temp

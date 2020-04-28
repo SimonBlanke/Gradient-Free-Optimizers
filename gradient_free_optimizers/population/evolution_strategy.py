@@ -4,103 +4,68 @@
 
 from math import floor, ceil
 import numpy as np
-import random
 
-from ..base_optimizer import BaseOptimizer
+from . import ParticleSwarmOptimizer
 from ..local import HillClimbingPositioner
 
 
-class EvolutionStrategyOptimizer(BaseOptimizer):
-    def __init__(self, n_iter, opt_para):
-        super().__init__(n_iter, opt_para)
+class EvolutionStrategyOptimizer(ParticleSwarmOptimizer):
+    def __init__(self, init_positions, space_dim, opt_para):
+        super().__init__(init_positions, space_dim, opt_para)
         self.n_positioners = self._opt_args_.individuals
 
         self.n_mutations = floor(self.n_positioners * self._opt_args_.mutation_rate)
         self.n_crossovers = ceil(self.n_positioners * self._opt_args_.crossover_rate)
 
-    def _init_individual(self, _cand_):
-        _p_ = Individual(self._opt_args_)
-        _p_.move_random(_cand_)
+        self.n_iter_rank_indiv = 3
 
-        return _p_
+    def _mutate(self):
+        return self.p_current.move_climb(self.p_current.pos_current)
 
-    def _mutate_individuals(self, _cand_, mutate_idx):
-        p_list_mutate = [self.p_list[i] for i in mutate_idx]
-        for _p_ in p_list_mutate:
-            _p_.move_climb(_cand_, _p_.pos_new)
+    def _random_cross(self, array_list):
+        n_arrays = len(array_list)
+        size = array_list[0].size
+        shape = array_list[0].shape
 
-    def _crossover(self, _cand_, cross_idx, replace_idx):
-        p_list_replace = [self.p_list[i] for i in replace_idx]
-        for i, _p_ in enumerate(p_list_replace):
-            j = i + 1
-            if j == len(cross_idx):
-                j = 0
+        choice = np.random.randint(n_arrays, size=size).reshape(shape).astype(bool)
+        return np.choose(choice, array_list)
 
-            pos_new = self._cross_two_ind(
-                [
-                    [self.p_list[i] for i in cross_idx][i],
-                    [self.p_list[i] for i in cross_idx][j],
-                ]
-            )
+    def _cross(self):
+        p_rest = [self.p_rest[i].pos_current for i in range(len(self.p_rest))]
+        pos_current_list = [self.p_current.pos_current] + p_rest
+        pos = self._random_cross(pos_current_list)
+        self.p_current.pos_new = pos
 
-            _p_.pos_new = pos_new
+        return pos
 
-    def _cross_two_ind(self, p_list):
-        pos_new = []
+    def _choose_evo(self):
+        total_rate = self._opt_args_.mutation_rate + self._opt_args_.crossover_rate
+        rand = np.random.uniform(low=0, high=total_rate)
 
-        for pos1, pos2 in zip(p_list[0].pos_new, p_list[1].pos_new):
-            rand = random.randint(0, 1)
-            if rand == 0:
-                pos_new.append(pos1)
-            else:
-                pos_new.append(pos2)
+        if len(self.init_positions) == 1 or rand <= self._opt_args_.mutation_rate:
+            self._sort_()
+            self._choose_next_pos()
 
-        return np.array(pos_new)
+            return self._mutate()
+        else:
+            self._sort_best()
+            self._choose_next_pos()
 
-    def _move_positioners(self, _cand_):
-        idx_sorted_ind = self._rank_individuals()
-        mutate_idx, cross_idx, replace_idx = self._select_individuals(idx_sorted_ind)
+            return self._cross()
 
-        self._crossover(_cand_, cross_idx, replace_idx)
-        self._mutate_individuals(_cand_, mutate_idx)
+    def iterate(self, nth_iter):
+        self._base_iterate(nth_iter)
+        pos = self._choose_evo()
 
-    def _rank_individuals(self):
-        scores_list = []
-        for _p_ in self.p_list:
-            scores_list.append(_p_.score_current)
+        return pos
 
-        scores_np = np.array(scores_list)
-        idx_sorted_ind = list(scores_np.argsort()[::-1])
+    def evaluate(self, score_new):
+        self.p_current.score_new = score_new
 
-        return idx_sorted_ind
-
-    def _select_individuals(self, index_best):
-        mutate_idx = index_best[: self.n_mutations]
-        cross_idx = index_best[: self.n_crossovers]
-
-        n = self.n_crossovers
-        replace_idx = index_best[-n:]
-
-        return mutate_idx, cross_idx, replace_idx
-
-    def _iterate(self, i, _cand_):
-        _p_current = self.p_list[i % self.n_positioners]
-
-        self._move_positioners(_cand_)
-        self._optimizer_eval(_cand_, _p_current)
-        self._update_pos(_cand_, _p_current)
-
-        return _cand_
-
-    def _init_iteration(self, _cand_):
-        p = self._init_individual(_cand_)
-
-        self._optimizer_eval(_cand_, p)
-        self._update_pos(_cand_, p)
-
-        return p
+        self._evaluate_new2current(score_new)
+        self._evaluate_current2best()
 
 
 class Individual(HillClimbingPositioner):
-    def __init__(self, _opt_args_):
-        super().__init__(_opt_args_)
+    def __init__(self, space_dim, _opt_args_):
+        super().__init__(space_dim, _opt_args_)
