@@ -70,7 +70,7 @@ class Arguments:
     def __init__(self, *args, **kwargs):
         kwargs_opt = {
             # HillClimbingOptimizer
-            "epsilon": 0.01,
+            "epsilon": 0.05,
             "distribution": "normal",
             "n_neighbours": 1,
             # StochasticHillClimbingOptimizer
@@ -78,7 +78,7 @@ class Arguments:
             # TabuOptimizer
             "tabu_memory": 3,
             # RandomRestartHillClimbingOptimizer
-            "n_restarts": 10,
+            "n_iter_restart": 10,
             # RandomAnnealingOptimizer
             "annealing_rate": 0.99,
             # SimulatedAnnealingOptimizer
@@ -89,7 +89,7 @@ class Arguments:
             "warm_start_population": False,
             # ParallelTemperingOptimizer
             "system_temperatures": [0.1, 1, 10, 100],
-            "n_swaps": 10,
+            "n_iter_swap": 10,
             # ParticleSwarmOptimizer
             "n_particles": 10,
             "inertia": 0.5,
@@ -122,8 +122,7 @@ class Arguments:
 
         self.tabu_memory = self.kwargs_opt["tabu_memory"]
 
-        self.n_restarts = self.kwargs_opt["n_restarts"]
-        # self.n_iter_restart = int(n_iter / self.n_restarts)
+        self.n_iter_restart = self.kwargs_opt["n_iter_restart"]
 
         self.annealing_rate = self.kwargs_opt["annealing_rate"]
         self.start_temp = self.kwargs_opt["start_temp"]
@@ -131,8 +130,7 @@ class Arguments:
         self.gamma = self.kwargs_opt["gamma"]
 
         self.system_temperatures = self.kwargs_opt["system_temperatures"]
-        self.n_swaps = self.kwargs_opt["n_swaps"]
-        # self.n_iter_swap = int(n_iter / self.n_swaps)
+        self.n_iter_swap = self.kwargs_opt["n_iter_swap"]
 
         self.n_particles = self.kwargs_opt["n_particles"]
         self.inertia = self.kwargs_opt["inertia"]

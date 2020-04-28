@@ -19,21 +19,24 @@ class HillClimbingOptimizer(BaseOptimizer):
 
     def iterate(self, nth_iter):
         self._base_iterate(nth_iter)
+        self._sort_()
+        self._choose_next_pos()
         pos = self.p_current.move_climb(self.p_current.pos_current)
 
         return pos
 
     def evaluate(self, score_new):
-        self._evaluate_new2best(score_new)
+        self.p_current.score_new = score_new
 
+        self._evaluate_new2current(score_new)
+        self._evaluate_current2best()
+
+        """
         if self.nth_iter % self._opt_args_.n_neighbours == 0:
-            self.p_current.score_current = self.p_current.score_best
-            self.p_current.pos_current = self.p_current.pos_best
+            self._best2current()
+        """
 
 
 class HillClimbingPositioner(BasePositioner):
     def __init__(self, space_dim, _opt_args_):
         super().__init__(space_dim, _opt_args_)
-
-        self.epsilon = _opt_args_.epsilon
-        self.distribution = _opt_args_.distribution
