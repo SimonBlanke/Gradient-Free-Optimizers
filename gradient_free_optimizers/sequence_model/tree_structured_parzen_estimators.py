@@ -11,22 +11,22 @@ from .sbom import SBOM
 
 
 class TreeStructuredParzenEstimators(SBOM):
-    def __init__(self, n_iter, opt_para):
-        super().__init__(n_iter, opt_para)
+    def __init__(self, init_positions, space_dim, opt_para):
+        super().__init__(init_positions, space_dim, opt_para)
         self.n_positioners = 1
         self.kd_best = KernelDensity()
         self.kd_worst = KernelDensity()
 
     def _get_samples(self):
-        n_samples = self.X_sample.shape[0]
+        n_samples = len(self.X_sample)
 
         n_best = int(n_samples * self._opt_args_.gamma_tpe)
 
-        Y_sample = self.Y_sample[:, 0]
+        Y_sample = self.Y_sample[0]
         index_best = Y_sample.argsort()[-n_best:][::-1]
 
-        best_samples = self.X_sample[index_best]
-        worst_samples = self.X_sample[~index_best]
+        best_samples = [self.X_sample[i] for i in index_best]
+        worst_samples = [self.X_sample[i] for i in ~index_best]
 
         return best_samples, worst_samples
 
@@ -41,7 +41,7 @@ class TreeStructuredParzenEstimators(SBOM):
             prob_best, prob_worst, out=np.zeros_like(prob_worst), where=prob_worst != 0
         )
 
-    def propose_location(self, cand):
+    def propose_location(self):
         best_samples, worst_samples = self._get_samples()
 
         self.kd_best.fit(best_samples)
@@ -55,21 +55,31 @@ class TreeStructuredParzenEstimators(SBOM):
 
         return pos_best
 
-    def _iterate(self, i, _cand_):
-        if i < self._opt_args_.start_up_evals:
-            self.p_list[0].move_random(_cand_)
-            self._optimizer_eval(_cand_, self.p_list[0])
-            self._update_pos(_cand_, self.p_list[0])
+    def iterate(self, nth_iter):
+        self._base_iterate(nth_iter)
+        self._sort_()
+        self._choose_next_pos()
 
+        if nth_iter < self._opt_args_.start_up_evals:
+            pos = self.p_current.move_random()
         else:
+            pos = self.propose_location()
+            self.p_current.pos_new = pos
 
-            self.p_list[0].pos_new = self.propose_location(_cand_)
-            self.p_list[0].score_new = _cand_.eval_pos(self.p_list[0].pos_new)
+        self.X_sample.append(pos)
 
-            self._optimizer_eval(_cand_, self.p_list[0])
-            self._update_pos(_cand_, self.p_list[0])
+        return pos
 
-        self.X_sample = np.vstack((self.X_sample, self.p_list[0].pos_new))
-        self.Y_sample = np.vstack((self.Y_sample, self.p_list[0].score_new))
+    def evaluate(self, score_new):
+        self.p_current.score_new = score_new
 
-        return _cand_
+        self._evaluate_new2current(score_new)
+        self._evaluate_current2best()
+
+        if self.nth_iter % self._opt_args_.n_neighbours == 0:
+            self.p_current.score_current = self.p_current.score_best
+            self.p_current.pos_current = self.p_current.pos_best
+
+        self.Y_sample.append(score_new)
+
+        self.nth_iter += 1

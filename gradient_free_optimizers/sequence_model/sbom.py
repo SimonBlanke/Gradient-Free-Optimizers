@@ -34,9 +34,12 @@ def _split_into_subcubes(data, split_per_dim=2):
 
 
 class SBOM(BaseOptimizer):
-    def __init__(self, n_iter, opt_para):
-        super().__init__(n_iter, opt_para)
+    def __init__(self, init_positions, space_dim, opt_para):
+        super().__init__(init_positions, space_dim, opt_para)
         self.n_positioners = 1
+
+        self.X_sample = []
+        self.Y_sample = []
 
     def get_random_sample(self):
         sample_size = self._sample_size()
@@ -52,9 +55,9 @@ class SBOM(BaseOptimizer):
         n = self._opt_args_.max_sample_size
         return int(n * np.tanh(self.all_pos_comb.size / n))
 
-    def _all_possible_pos(self, cand):
+    def _all_possible_pos(self):
         pos_space = []
-        for dim_ in cand._space_.dim:
+        for dim_ in self.space_dim:
             pos_space.append(np.arange(dim_ + 1))
 
         self.n_dim = len(pos_space)
@@ -62,24 +65,27 @@ class SBOM(BaseOptimizer):
 
         # _split_into_subcubes(self.all_pos_comb)
 
-    def _init_iteration(self, _cand_):
-        p = SbomPositioner(self._opt_args_)
-        p.move_random(_cand_)
+    def init_pos(self, nth_init):
+        pos_new = self._base_init_pos(
+            nth_init, SbomPositioner(self.space_dim, self._opt_args_)
+        )
 
-        self._optimizer_eval(_cand_, p)
-        self._update_pos(_cand_, p)
+        self._all_possible_pos()
 
-        self._all_possible_pos(_cand_)
+        """ TODO
 
         if self._opt_args_.warm_start_smbo:
             self.X_sample, self.Y_sample = _cand_.mem._get_para()
         else:
-            self.X_sample = _cand_.pos_best.reshape(1, -1)
-            self.Y_sample = np.array(_cand_.score_best).reshape(1, -1)
 
-        return p
+
+        """
+
+        self.X_sample.append(pos_new)
+
+        return pos_new
 
 
 class SbomPositioner(BasePositioner):
-    def __init__(self, _opt_args_):
-        super().__init__(_opt_args_)
+    def __init__(self, space_dim, opt_para):
+        super().__init__(space_dim, opt_para)
