@@ -7,14 +7,20 @@ from ..local import HillClimbingOptimizer
 
 
 class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer):
-    def __init__(self, n_iter, opt_para):
-        super().__init__(n_iter, opt_para)
-        self.n_iter_restart = self._opt_args_.n_iter_restart
+    def __init__(self, init_positions, space_dim, opt_para):
+        super().__init__(init_positions, space_dim, opt_para)
 
-    def _iterate(self, i, _cand_):
-        self._hill_climb_iter(i, _cand_)
+    def iterate(self, nth_iter):
+        self._base_iterate(nth_iter)
+        self._sort_()
+        self._choose_next_pos()
 
-        if self.n_iter_restart != 0 and i % self.n_iter_restart == 0:
-            self.p_list[0].move_random(_cand_)
+        notZero = self._opt_args_.n_iter_restart != 0
+        modZero = nth_iter % self._opt_args_.n_iter_restart == 0
 
-        return _cand_
+        if notZero and modZero:
+            pos = self.p_current.move_random()
+        else:
+            pos = self.p_current.move_climb(self.p_current.pos_current)
+
+        return pos
