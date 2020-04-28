@@ -9,8 +9,8 @@ from . import HillClimbingOptimizer
 
 
 class StochasticHillClimbingOptimizer(HillClimbingOptimizer):
-    def __init__(self, n_iter, opt_para):
-        super().__init__(n_iter, opt_para)
+    def __init__(self, init_positions, space_dim, opt_para):
+        super().__init__(init_positions, space_dim, opt_para)
         self.norm_factor = self._opt_args_.norm_factor
 
         if self.norm_factor == "adaptive":
@@ -19,12 +19,11 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer):
         else:
             self._accept = self._accept_default
 
-    def _consider(self, _p_, p_accept):
+    def _consider(self, p_accept):
         rand = random.uniform(0, self._opt_args_.p_down)
 
         if p_accept > rand:
-            _p_.score_current = _p_.score_new
-            _p_.pos_current = _p_.pos_new
+            self._new2current()
 
     def _score_norm_default(self, _p_):
         denom = _p_.score_current + _p_.score_new
@@ -56,16 +55,14 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer):
     def _accept_adapt(self, _p_):
         return self._score_norm_adapt(_p_)
 
-    def _stochastic_hill_climb_iter(self, i, _cand_):
-        self._hill_climb_iter(i, _cand_)
-        self._transition(_cand_)
+    def _transition(self, score_new):
+        if score_new < self.p_current.score_current:
+            p_accept = self._accept(self.p_current)
+            self._consider(p_accept)
 
-    def _transition(self, _cand_):
-        if self.p_list[0].score_new <= _cand_.score_best:
-            p_accept = self._accept(self.p_list[0])
-            self._consider(self.p_list[0], p_accept)
+    def evaluate(self, score_new):
+        self.p_current.score_new = score_new
 
-    def _iterate(self, i, _cand_):
-        self._stochastic_hill_climb_iter(i, _cand_)
-
-        return _cand_
+        self._evaluate_new2current(score_new)
+        self._transition(score_new)
+        self._evaluate_current2best()
