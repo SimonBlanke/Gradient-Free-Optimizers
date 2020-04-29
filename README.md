@@ -31,9 +31,6 @@
         <a href="https://scrutinizer-ci.com/g/SimonBlanke/Gradient-Free-Optimizers/">
         <img src="https://img.shields.io/scrutinizer/quality/g/SimonBlanke/Gradient-Free-Optimizers?style=flat-square&logo=scrutinizer-ci" alt="img not loaded: try F5 :)">
         </a>
-        <a href="https://www.codefactor.io/repository/github/simonblanke/Gradient-Free-Optimizers">
-        <img src="https://img.shields.io/codefactor/grade/github/SimonBlanke/Gradient-Free-Optimizers?label=code%20factor&style=flat-square&logo=codefactor" alt="img not loaded: try F5 :)">
-        </a>
       </td>
     </tr>
     <tr/>    <tr align="left" valign="center">
@@ -41,9 +38,6 @@
         <strong>Latest versions:</strong>
       </td>
       <td>
-        <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers/releases">
-          <img src="https://img.shields.io/github/v/release/SimonBlanke/Gradient-Free-Optimizers?style=flat-square&logo=github" alt="img not loaded: try F5 :)">
-        </a>
         <a href="https://pypi.org/project/gradient_free_optimizers/">
           <img src="https://img.shields.io/pypi/v/Gradient-Free-Optimizers?style=flat-square&logo=PyPi&logoColor=white" alt="img not loaded: try F5 :)">
         </a>
