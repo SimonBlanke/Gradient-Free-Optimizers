@@ -73,6 +73,7 @@ class Arguments:
             "epsilon": 0.05,
             "distribution": "normal",
             "n_neighbours": 1,
+            "n_positions": 10,
             # StochasticHillClimbingOptimizer
             "p_down": 0.3,
             # TabuOptimizer
@@ -117,6 +118,7 @@ class Arguments:
         self.epsilon = self.kwargs_opt["epsilon"]
         self.distribution = distribution[self.kwargs_opt["distribution"]]
         self.n_neighbours = self.kwargs_opt["n_neighbours"]
+        self.n_positions = self.kwargs_opt["n_positions"]
 
         self.p_down = self.kwargs_opt["p_down"]
 
