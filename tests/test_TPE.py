@@ -6,7 +6,7 @@ import numpy as np
 
 from gradient_free_optimizers import TreeStructuredParzenEstimators
 
-n_iter = 100
+n_iter = 33
 
 
 def get_score(pos_new):
