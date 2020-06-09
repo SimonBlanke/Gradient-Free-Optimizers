@@ -4,6 +4,10 @@
 
 <br>
 
+Gradient-Free-Optimizers provides a collection of optimization techniques, that do not require the gradient of a given point in the search space to calculate the next one. This makes gradient-free optimization methods capable of performing hyperparameter-optimization of machine learning methods. The optimizers in this package only requires the score of the point to decide which point to evaluate next.
+
+<br>
+
 <table>
   <tbody>
     <tr align="left" valign="center">
