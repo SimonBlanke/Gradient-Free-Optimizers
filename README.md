@@ -60,3 +60,35 @@ However the separation of Gradient-Free-Optimizers from Hyperactive enables mult
   - Separate and more thorough testing
   - Better isolation from the complex information flow in Hyperactive. GFOs only uses positions and scores in a N-dimensional search-space. It returns only the new position after each iteration.
 
+## Usage
+
+```python
+import numpy as np
+from gradient_free_optimizers import HillClimbingOptimizer
+
+n_iter = 10
+
+# objective function must be provided by user
+def get_score(pos_new):
+    x1 = pos_new[0]
+
+    return -x1 * x1
+
+# GFOs must know the dimension of the search space and the initial positions 
+space_dim = np.array([100])
+init_positions = [np.array([10])]
+
+opt = HillClimbingOptimizer(init_positions, space_dim, opt_para={})
+
+# Initialize the starting positions in this loop
+for nth_init in range(len(init_positions)):
+    pos_new = opt.init_pos(nth_init)
+    score_new = get_score(pos_new) # score must be provided by objective-function
+    opt.evaluate(score_new)
+
+# Optimization iteration
+for nth_iter in range(len(init_positions), n_iter):
+    pos_new = opt.iterate(nth_iter)
+    score_new = get_score(pos_new) # score must be provided by objective-function
+    opt.evaluate(score_new)
+```
