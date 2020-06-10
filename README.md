@@ -1,10 +1,6 @@
 <h1> Gradient-Free-Optimizers </h1>
 
-<h2 align="center">A collection of gradient free optimizers for Hyperactive.</h2>
-
-<br>
-
-Gradient-Free-Optimizers provides a collection of optimization techniques, that do not require the gradient of a given point in the search space to calculate the next one. This makes gradient-free optimization methods capable of performing hyperparameter-optimization of machine learning methods. The optimizers in this package only requires the score of the point to decide which point to evaluate next.
+<h2 align="center">A collection of gradient free optimizers.</h2>
 
 <br>
 
@@ -49,3 +45,18 @@ Gradient-Free-Optimizers provides a collection of optimization techniques, that 
     </tr>
   </tbody>
 </table>
+
+<br>
+
+## Introduction
+
+Gradient-Free-Optimizers provides a collection of optimization techniques, that do not require the gradient of a given point in the search space to calculate the next one. This makes gradient-free optimization methods capable of performing hyperparameter-optimization of machine learning methods. The optimizers in this package only requires the score of the point to decide which point to evaluate next.
+
+## GFOs-design
+
+This package was created as the optimization backend of the Hyperactive package. Therefore the API of Gradient-Free-Optimizers is not designed for easy usage. Hyperactive provides a much simpler user experience.
+However the separation of Gradient-Free-Optimizers from Hyperactive enables multiple advantages:
+  - Other developers can easily use GFOs as an optimizaton backend if desired
+  - Separate and more thorough testing
+  - Better isolation from the complex information flow in Hyperactive. GFOs only uses positions and scores in a N-dimensional search-space. It returns only the new position after each iteration.
+
