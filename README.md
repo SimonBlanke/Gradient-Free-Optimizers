@@ -56,11 +56,48 @@ Gradient-Free-Optimizers provides a collection of optimization techniques, that 
 
 ## GFOs-design
 
-This package was created as the optimization backend of the Hyperactive package. Therefore the API of Gradient-Free-Optimizers is not designed for easy usage. Hyperactive provides a much simpler user experience.
+This package was created as the optimization backend of the Hyperactive package. Therefore the API of Gradient-Free-Optimizers is not designed for easy usage. Hyperactive provides a much simpler user experience. 
 However the separation of Gradient-Free-Optimizers from Hyperactive enables multiple advantages:
   - Other developers can easily use GFOs as an optimizaton backend if desired
   - Separate and more thorough testing
   - Better isolation from the complex information flow in Hyperactive. GFOs only uses positions and scores in a N-dimensional search-space. It returns only the new position after each iteration.
+  - a smaller and cleaner code base, if you want to explore my implementation of these optimization techniques.
+
+<br>
+
+## API
+
+GFOs provides a collection of local, global, population-based and sequential optimization techniques:
+
+    - HillClimbingOptimizer
+    - StochasticHillClimbingOptimizer
+    - TabuOptimizer
+    - RandomSearchOptimizer
+    - RandomRestartHillClimbingOptimizer
+    - RandomAnnealingOptimizer
+    - SimulatedAnnealingOptimizer
+    - StochasticTunnelingOptimizer
+    - ParallelTemperingOptimizer
+    - ParticleSwarmOptimizer
+    - EvolutionStrategyOptimizer
+    - BayesianOptimizer
+    - TreeStructuredParzenEstimators
+    - DecisionTreeOptimizer
+    
+Class arguments:
+
+    - init_positions (List of numpy arrays. Each array is one start point.)
+    - space_dim (N-dim numpy array. Determines the size of each dimension.)
+    - opt_para (Dictionary of optimization parameter)
+
+I wanted to design GFOs so that it only takes the **most basic information** in each iteration step. Every gradient free optimization technique should work by only receiving the score of a position in the search space. The score enables the optimizer to decide where to search next. Additionally, my optimizers also need the iteration number of the current iteration. This is an important design choice to make the usage of single- and population-based optimization techniques the same. The iteration number tells e.g. the EvolutionStrategyOptimizer when to start a new population.
+
+Methods:
+
+    - init_pos(nth_init)
+    - iterate(nth_iter)
+    - evaluate(score_new)
+
 
 <br>
 
@@ -79,8 +116,8 @@ def get_score(pos_new):
     return -x1 * x1
 
 # GFOs must know the dimension of the search space and the initial positions 
-space_dim = np.array([100])
-init_positions = [np.array([10])]
+space_dim = np.array([100]) # This is a 1D search-space with 100 positions to explore
+init_positions = [np.array([10])] # GFOs will start at a single position: 10
 
 opt = HillClimbingOptimizer(init_positions, space_dim, opt_para={})
 
