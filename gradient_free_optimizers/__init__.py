@@ -2,7 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 __license__ = "MIT"
 
 from .local import (
