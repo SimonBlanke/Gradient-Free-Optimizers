@@ -36,8 +36,6 @@ def _split_into_subcubes(data, split_per_dim=2):
 class SBOM(BaseOptimizer):
     def __init__(self, init_positions, space_dim, opt_para):
         super().__init__(init_positions, space_dim, opt_para)
-        self.n_positioners = 1
-
         self.X_sample = []
         self.Y_sample = []
 
@@ -72,14 +70,8 @@ class SBOM(BaseOptimizer):
 
         self._all_possible_pos()
 
-        """ TODO
-
-        if self._opt_args_.warm_start_smbo:
-            self.X_sample, self.Y_sample = _cand_.mem._get_para()
-        else:
-
-
-        """
+        if self._opt_args_.warm_start_smbo is not None:
+            (self.X_sample, self.Y_sample) = self._opt_args_.warm_start_smbo
 
         self.X_sample.append(pos_new)
 

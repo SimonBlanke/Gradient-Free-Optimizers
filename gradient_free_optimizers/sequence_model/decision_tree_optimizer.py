@@ -11,5 +11,4 @@ class DecisionTreeOptimizer(BayesianOptimizer):
 
     def __init__(self, init_positions, space_dim, opt_para):
         super().__init__(init_positions, space_dim, opt_para)
-        self.n_positioners = 1
         self.regr = self._opt_args_.tree_regressor

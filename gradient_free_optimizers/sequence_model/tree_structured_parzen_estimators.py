@@ -13,7 +13,6 @@ from .sbom import SBOM
 class TreeStructuredParzenEstimators(SBOM):
     def __init__(self, init_positions, space_dim, opt_para):
         super().__init__(init_positions, space_dim, opt_para)
-        self.n_positioners = 1
         self.kd_best = KernelDensity()
         self.kd_worst = KernelDensity()
 

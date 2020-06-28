@@ -29,9 +29,7 @@ def _base_test(opt, init_positions):
         opt.evaluate(score_new)
 
 
-def _test_TreeStructuredParzenEstimators(
-    init_positions=init_positions, space_dim=space_dim, opt_para={}
-):
+def _test_TreeStructuredParzenEstimators(opt_para):
     opt = TreeStructuredParzenEstimators(init_positions, space_dim, opt_para)
     _base_test(opt, init_positions)
 
@@ -43,6 +41,16 @@ def test_start_up_evals():
 
 
 def test_warm_start_smbo():
-    for warm_start_smbo in [True, False]:
+    gpr_X, gpr_y = [], []
+    for _ in range(10):
+        pos = np.random.randint(0, high=9)
+        pos = np.array([pos])
+        gpr_X.append(pos)
+        gpr_y.append(get_score(pos))
+
+    for warm_start_smbo in [None, (gpr_X, gpr_y)]:
         opt_para = {"warm_start_smbo": warm_start_smbo}
-        _test_TreeStructuredParzenEstimators(opt_para=opt_para)
+        _test_TreeStructuredParzenEstimators(opt_para)
+
+
+test_warm_start_smbo()

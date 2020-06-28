@@ -41,9 +41,19 @@ def test_start_up_evals():
 
 
 def test_warm_start_smbo():
-    for warm_start_smbo in [True, False]:
+    gpr_X, gpr_y = [], []
+    for _ in range(10):
+        pos = np.random.randint(0, high=9)
+        pos = np.array([pos])
+        gpr_X.append(pos)
+        gpr_y.append(get_score(pos))
+
+    for warm_start_smbo in [None, (gpr_X, gpr_y)]:
         opt_para = {"warm_start_smbo": warm_start_smbo}
         _test_DecisionTreeOptimizer(opt_para)
+
+
+test_warm_start_smbo()
 
 
 def test_max_sample_size():
