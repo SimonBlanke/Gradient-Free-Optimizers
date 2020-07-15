@@ -105,7 +105,7 @@ class Arguments:
             "warm_start_smbo": None,
             "xi": 0.01,
             "gpr": "gp_nonlinear",
-            "skip_retrain": "some",
+            "skip_retrain": "never",
             # TreeStructuredParzenEstimators
             "start_up_evals": 10,
             "gamma_tpe": 0.3,
