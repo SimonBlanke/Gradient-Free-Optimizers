@@ -52,5 +52,3 @@ def test_warm_start_smbo():
         opt_para = {"warm_start_smbo": warm_start_smbo}
         _test_TreeStructuredParzenEstimators(opt_para)
 
-
-test_warm_start_smbo()
