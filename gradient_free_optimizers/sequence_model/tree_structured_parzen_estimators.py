@@ -21,7 +21,7 @@ class TreeStructuredParzenEstimators(SBOM):
 
         n_best = int(n_samples * self._opt_args_.gamma_tpe)
 
-        Y_sample = self.Y_sample[0]
+        Y_sample = np.array(self.Y_sample)
         index_best = Y_sample.argsort()[-n_best:][::-1]
 
         best_samples = [self.X_sample[i] for i in index_best]
