@@ -5,24 +5,23 @@
 import numpy as np
 from .opt_args import Arguments
 
+from .search_tracker import SearchTracker
 
-class BaseOptimizer:
-    def __init__(self, init_positions, space_dim, opt_para):
-        self._opt_args_ = Arguments(**opt_para)
-        self._opt_args_.set_opt_args()
 
-        self.init_positions = init_positions
+class BaseOptimizer(SearchTracker):
+    def __init__(self, space_dim):
         self.space_dim = space_dim
-        self.opt_para = opt_para
 
-        self.nth_iter = 0
-        self.p_list = []
+        self.init_positions = []
 
+    """
     def _base_init_pos(self, nth_init, positioner):
         init_position = self.init_positions[nth_init]
 
         self.p_current = positioner
         self.p_current.pos_new = init_position
+
+        # print("init_position", init_position)
 
         self.p_list.append(self.p_current)
 
@@ -41,27 +40,34 @@ class BaseOptimizer:
 
         self.p_sorted = [self.p_list[i] for i in idx_sorted_ind]
 
-    def _base_iterate(self, nth_iter):
-        self.nth_iter = nth_iter
-
     def _choose_next_pos(self):
         self.p_current = self.p_list[self.nth_iter % len(self.p_list)]
         self.p_rest = [p for p in self.p_list if p is not self.p_current]
+    """
+
+    def _base_iterate(self, nth_iter):
+        self.nth_iter = nth_iter
 
     def _evaluate_new2current(self, score_new):
-        if score_new >= self.p_current.score_current:
-            self.p_current.score_current = score_new
-            self.p_current.pos_current = self.p_current.pos_new
+        if score_new >= self.score_current:
+            self.score_current = score_new
+            self.pos_current = self.pos_new
 
     def _evaluate_current2best(self):
-        if self.p_current.score_current >= self.p_current.score_best:
-            self.p_current.score_best = self.p_current.score_current
-            self.p_current.pos_best = self.p_current.pos_current
+        if self.score_current >= self.score_best:
+            self.score_best = self.score_current
+            self.pos_best = self.pos_current
 
     def _current2best(self):
-        self.p_current.score_best = self.p_current.score_current
-        self.p_current.pos_best = self.p_current.pos_current
+        self.score_best = self.score_current
+        self.pos_best = self.pos_current
 
     def _new2current(self):
-        self.p_current.score_current = self.p_current.score_new
-        self.p_current.pos_current = self.p_current.pos_new
+        self.score_current = self.score_new
+        self.pos_current = self.pos_new
+
+    def move_random(self):
+        pos_new = np.random.uniform(
+            np.zeros(self.space_dim.shape), self.space_dim, self.space_dim.shape
+        )
+        return np.rint(pos_new).astype(int)
