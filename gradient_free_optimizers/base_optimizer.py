@@ -11,39 +11,6 @@ class BaseOptimizer(SearchTracker):
         super().__init__()
         self.space_dim = space_dim
 
-        self.init_positions = []
-
-    """
-    def _base_init_pos(self, nth_init, positioner):
-        init_position = self.init_positions[nth_init]
-
-        self.p_current = positioner
-        self.p_current.pos_new = init_position
-
-        # print("init_position", init_position)
-
-        self.p_list.append(self.p_current)
-
-        return init_position
-
-    def _sort_(self):
-        self.p_sorted = self.p_list
-
-    def _sort_best(self):
-        scores_list = []
-        for _p_ in self.p_list:
-            scores_list.append(_p_.score_current)
-
-        scores_np = np.array(scores_list)
-        idx_sorted_ind = list(scores_np.argsort()[::-1])
-
-        self.p_sorted = [self.p_list[i] for i in idx_sorted_ind]
-
-    def _choose_next_pos(self):
-        self.p_current = self.p_list[self.nth_iter % len(self.p_list)]
-        self.p_rest = [p for p in self.p_list if p is not self.p_current]
-    """
-
     def _base_iterate(self, nth_iter):
         self.nth_iter = nth_iter
 
