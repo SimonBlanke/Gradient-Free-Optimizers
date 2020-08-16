@@ -5,24 +5,18 @@
 from math import floor, ceil
 import numpy as np
 
+from .base_population_optimizer import BasePopulationOptimizer
 from ..local import HillClimbingOptimizer
 
 
-class EvolutionStrategyOptimizer:
+class EvolutionStrategyOptimizer(BasePopulationOptimizer):
     def __init__(self, space_dim, mutation_rate=0.5, crossover_rate=0.5):
-        self.space_dim = space_dim
+        super().__init__(space_dim)
 
         self.mutation_rate = mutation_rate
         self.crossover_rate = crossover_rate
 
         self.individuals = []
-
-    def _iterations(self, positioners):
-        nth_iter = 0
-        for p in positioners:
-            nth_iter = nth_iter + len(p.pos_new_list)
-
-        return nth_iter
 
     def _mutate(self):
         nth_iter = self._iterations(self.individuals)

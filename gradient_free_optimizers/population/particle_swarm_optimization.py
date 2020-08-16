@@ -7,26 +7,22 @@ import random
 
 import numpy as np
 
+from .base_population_optimizer import BasePopulationOptimizer
 from ..base_optimizer import BaseOptimizer
 
 
-class ParticleSwarmOptimizer:
+class ParticleSwarmOptimizer(BasePopulationOptimizer):
     def __init__(
         self, space_dim, inertia=0.5, cognitive_weight=0.5, social_weight=0.5,
     ):
+        super().__init__(space_dim)
+
         self.space_dim = space_dim
         self.inertia = inertia
         self.cognitive_weight = cognitive_weight
         self.social_weight = social_weight
 
         self.particles = []
-
-    def _iterations(self, positioners):
-        nth_iter = 0
-        for p in positioners:
-            nth_iter = nth_iter + len(p.pos_new_list)
-
-        return nth_iter
 
     def _move_part(self, pos, velo):
         pos_new = (pos + velo).astype(int)

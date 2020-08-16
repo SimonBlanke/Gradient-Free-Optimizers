@@ -7,24 +7,17 @@ import random
 
 import numpy as np
 
+from .base_population_optimizer import BasePopulationOptimizer
 from ..local import SimulatedAnnealingOptimizer
 
 
-class ParallelTemperingOptimizer:
+class ParallelTemperingOptimizer(BasePopulationOptimizer):
     def __init__(self, space_dim, n_iter_swap=10):
-        self.space_dim = space_dim
+        super().__init__(space_dim)
 
         self.n_iter_swap = n_iter_swap
 
         self.systems = []
-
-    def _iterations(self, positioners):
-        n_iter = 0
-        for p in positioners:
-            n_iter = n_iter + len(p.pos_new_list)
-            # print("len(p.pos_new)", len(p.pos_new))
-
-        return n_iter
 
     def _swap_pos(self):
         _systems_temp = self.systems[:]
