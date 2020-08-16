@@ -18,6 +18,6 @@ tree_regressor_dict = {
 class DecisionTreeOptimizer(BayesianOptimizer):
     """Based on the forest-optimizer in the scikit-optimize package"""
 
-    def __init__(self, space_dim, tree_regressor="random_forest"):
-        super().__init__(space_dim)
+    def __init__(self, space_dim, tree_regressor="random_forest", **kwargs):
+        super().__init__(space_dim, **kwargs)
         self.regr = tree_regressor_dict[tree_regressor]

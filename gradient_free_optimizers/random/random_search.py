@@ -10,6 +10,6 @@ class RandomSearchOptimizer(BaseOptimizer):
     def __init__(self, space_dim):
         super().__init__(space_dim)
 
-    def iterate(self, nth_iter):
+    def iterate(self):
         return self.move_random()
 

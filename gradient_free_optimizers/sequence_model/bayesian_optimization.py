@@ -18,8 +18,10 @@ gaussian_process = {"gp_nonlinear": GPR(), "gp_linear": GPR_linear()}
 
 
 class BayesianOptimizer(SBOM):
-    def __init__(self, space_dim, xi=0.01, gpr=gaussian_process["gp_nonlinear"]):
-        super().__init__(space_dim)
+    def __init__(
+        self, space_dim, xi=0.01, gpr=gaussian_process["gp_nonlinear"], **kwargs,
+    ):
+        super().__init__(space_dim, **kwargs)
         self.xi = xi
         self.regr = gpr
         self.new_positions = []
@@ -68,8 +70,8 @@ class BayesianOptimizer(SBOM):
 
         return pos_best
 
-    def iterate(self, nth_iter):
-        if nth_iter < self.start_up_evals:
+    def iterate(self):
+        if len(self.pos_new) < self.start_up_evals:
             pos = self.move_random()
         else:
             if len(self.new_positions) == 0:

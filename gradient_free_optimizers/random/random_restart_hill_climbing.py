@@ -7,13 +7,13 @@ from ..local import HillClimbingOptimizer
 
 
 class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer):
-    def __init__(self, space_dim, n_iter_restart=10):
-        super().__init__(space_dim)
+    def __init__(self, space_dim, n_iter_restart=10, **kwargs):
+        super().__init__(space_dim, **kwargs)
         self.n_iter_restart = n_iter_restart
 
-    def iterate(self, nth_iter):
+    def iterate(self):
         notZero = self.n_iter_restart != 0
-        modZero = nth_iter % self.n_iter_restart == 0
+        modZero = len(self.pos_new) % self.n_iter_restart == 0
 
         if notZero and modZero:
             pos = self.move_random()

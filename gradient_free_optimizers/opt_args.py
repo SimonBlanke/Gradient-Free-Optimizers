@@ -75,7 +75,7 @@ class Arguments:
             "n_neighbours": 1,
             "n_positions": 10,
             # StochasticHillClimbingOptimizer
-            "p_down": 0.3,
+            "p_down": 0.03,
             # TabuOptimizer
             "tabu_memory": 3,
             # RandomRestartHillClimbingOptimizer
@@ -84,7 +84,7 @@ class Arguments:
             "annealing_rate": 0.99,
             # SimulatedAnnealingOptimizer
             "start_temp": 100,
-            "norm_factor": "adaptive",
+            "norm_factor": 1,
             # StochasticTunnelingOptimizer
             "gamma": 0.5,
             "warm_start_population": None,

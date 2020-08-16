@@ -36,10 +36,6 @@ class HillClimbingOptimizer(BaseOptimizer):
         self.pos_new = pos.astype(int)
         return self.pos_new
 
-    def iterate(self, nth_iter):
+    def iterate(self):
         return self._move_climb(self.pos_current)
 
-
-class HillClimbingPositioner:
-    def __init__(self):
-        pass

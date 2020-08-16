@@ -7,28 +7,31 @@ import random
 
 import numpy as np
 
-from ..local import HillClimbingPositioner, SimulatedAnnealingOptimizer
+from ..local import SimulatedAnnealingOptimizer
 
 
-class ParallelTemperingOptimizer(SimulatedAnnealingOptimizer):
-    def __init__(self, init_positions, space_dim, opt_para):
-        super().__init__(init_positions, space_dim, opt_para)
-        self.n_positioners = len(self._opt_args_.system_temperatures)
+class ParallelTemperingOptimizer:
+    def __init__(self, space_dim, n_iter_swap=10):
+        self.space_dim = space_dim
 
-    def init_pos(self, nth_init):
-        temp = self._opt_args_.system_temperatures[nth_init]
-        pos_new = self._base_init_pos(
-            nth_init, System(self.space_dim, self._opt_args_, temp)
-        )
+        self.n_iter_swap = n_iter_swap
 
-        return pos_new
+        self.systems = []
+
+    def _iterations(self, positioners):
+        n_iter = 0
+        for p in positioners:
+            n_iter = n_iter + len(p.pos_new_list)
+            # print("len(p.pos_new)", len(p.pos_new))
+
+        return n_iter
 
     def _swap_pos(self):
-        _p_list_temp = self.p_list[:]
+        _systems_temp = self.systems[:]
 
-        for _p1_ in self.p_list:
+        for _p1_ in self.systems:
             rand = random.uniform(0, 1)
-            _p2_ = np.random.choice(_p_list_temp)
+            _p2_ = np.random.choice(_systems_temp)
 
             p_accept = self._accept_swap(_p1_, _p2_)
             if p_accept > rand:
@@ -49,17 +52,36 @@ class ParallelTemperingOptimizer(SimulatedAnnealingOptimizer):
             temp = (1 / _p1_.temp) - (1 / _p2_.temp)
             return np.exp(score_diff_norm * temp)
 
-    def evaluate(self, score_new):
-        super().evaluate(score_new)
+    def init_pos(self, pos):
+        system = SimulatedAnnealingOptimizer(self.space_dim)
+        self.systems.append(system)
+        system.init_pos(pos)
 
-        notZero = self._opt_args_.n_iter_swap != 0
-        modZero = self.nth_iter % self._opt_args_.n_iter_swap == 0
+        self.p_current = system
+
+    def iterate(self):
+        nth_iter = self._iterations(self.systems)
+        print("nth_iter", nth_iter)
+        self.p_current = self.systems[nth_iter % len(self.systems)]
+
+        return self.p_current.iterate()
+
+    def evaluate(self, score_new):
+        nth_iter = self._iterations(self.systems)
+
+        notZero = self.n_iter_swap != 0
+        modZero = nth_iter % self.n_iter_swap == 0
 
         if notZero and modZero:
             self._swap_pos()
 
+        self.p_current.score_new = score_new
 
-class System(HillClimbingPositioner):
+        self.p_current._evaluate_new2current(score_new)
+        self.p_current._evaluate_current2best()
+
+
+class System:
     def __init__(self, space_dim, _opt_args_, temp):
         super().__init__(space_dim, _opt_args_)
         self.temp = temp

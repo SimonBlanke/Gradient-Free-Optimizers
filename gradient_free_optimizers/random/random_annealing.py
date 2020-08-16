@@ -12,7 +12,7 @@ class RandomAnnealingOptimizer(HillClimbingOptimizer):
         self.annealing_rate = annealing_rate
         self.temp = start_temp
 
-    def iterate(self, nth_iter):
+    def iterate(self):
         pos = self._move_climb(self.pos_current, epsilon_mod=self.temp / 10)
         self.temp = self.temp * self.annealing_rate
 

@@ -104,14 +104,14 @@ class SBOM(BaseOptimizer):
 
         # _split_into_subcubes(self.all_pos_comb)
 
-    def init_pos(self, init_position):
-        super().init_pos(init_position)
+    def init_pos(self, pos):
+        super().init_pos(pos)
         self._all_possible_pos()
 
         if self.warm_start_smbo is not None:
             (self.X_sample, self.Y_sample) = self.warm_start_smbo
 
-        self.X_sample.append(init_position)
+        self.X_sample.append(pos)
 
-        return init_position
+        return pos
 

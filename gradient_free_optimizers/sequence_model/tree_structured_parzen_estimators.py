@@ -11,8 +11,8 @@ from .sbom import SBOM
 
 
 class TreeStructuredParzenEstimators(SBOM):
-    def __init__(self, space_dim, gamma_tpe=0.3):
-        super().__init__(space_dim)
+    def __init__(self, space_dim, gamma_tpe=0.3, **kwargs):
+        super().__init__(space_dim, **kwargs)
         self.gamma_tpe = gamma_tpe
 
         self.kd_best = KernelDensity()
@@ -56,9 +56,9 @@ class TreeStructuredParzenEstimators(SBOM):
 
         return pos_best
 
-    def iterate(self, nth_iter):
+    def iterate(self):
 
-        if nth_iter < self.start_up_evals:
+        if len(self.pos_new) < self.start_up_evals:
             pos = self.move_random()
         else:
             pos = self.propose_location()

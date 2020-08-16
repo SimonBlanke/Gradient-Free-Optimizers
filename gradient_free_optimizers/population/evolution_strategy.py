@@ -5,22 +5,30 @@
 from math import floor, ceil
 import numpy as np
 
-from . import ParticleSwarmOptimizer
-from ..local import HillClimbingPositioner
+from ..local import HillClimbingOptimizer
 
 
-class EvolutionStrategyOptimizer(ParticleSwarmOptimizer):
-    def __init__(self, init_positions, space_dim, opt_para):
-        super().__init__(init_positions, space_dim, opt_para)
-        self.n_positioners = self._opt_args_.individuals
+class EvolutionStrategyOptimizer:
+    def __init__(self, space_dim, mutation_rate=0.5, crossover_rate=0.5):
+        self.space_dim = space_dim
 
-        self.n_mutations = floor(self.n_positioners * self._opt_args_.mutation_rate)
-        self.n_crossovers = ceil(self.n_positioners * self._opt_args_.crossover_rate)
+        self.mutation_rate = mutation_rate
+        self.crossover_rate = crossover_rate
 
-        self.n_iter_rank_indiv = 3
+        self.individuals = []
+
+    def _iterations(self, positioners):
+        nth_iter = 0
+        for p in positioners:
+            nth_iter = nth_iter + len(p.pos_new_list)
+
+        return nth_iter
 
     def _mutate(self):
-        return self.p_current.move_climb(self.p_current.pos_current)
+        nth_iter = self._iterations(self.individuals)
+        p_current = self.individuals[nth_iter % len(self.individuals)]
+
+        return p_current._move_climb(self.p_current.pos_current)
 
     def _random_cross(self, array_list):
         n_arrays = len(array_list)
@@ -30,42 +38,54 @@ class EvolutionStrategyOptimizer(ParticleSwarmOptimizer):
         choice = np.random.randint(n_arrays, size=size).reshape(shape).astype(bool)
         return np.choose(choice, array_list)
 
+    def _sort_best(self):
+        scores_list = []
+        for ind in self.individuals:
+            scores_list.append(ind.score_current)
+
+        scores_np = np.array(scores_list)
+        idx_sorted_ind = list(scores_np.argsort()[::-1])
+
+        return [self.individuals[idx] for idx in idx_sorted_ind]
+
     def _cross(self):
-        p_rest = [self.p_rest[i].pos_current for i in range(len(self.p_rest))]
-        pos_current_list = [self.p_current.pos_current] + p_rest
-        pos = self._random_cross(pos_current_list)
-        self.p_current.pos_new = pos
+        ind_sorted = self._sort_best()
 
-        return pos
+        p_best = ind_sorted[0]
+        p_sec_best = ind_sorted[1]
 
-    def _choose_evo(self):
-        total_rate = self._opt_args_.mutation_rate + self._opt_args_.crossover_rate
+        two_best_pos = [p_best.pos_current, p_sec_best.pos_current]
+        pos_new = self._random_cross(two_best_pos)
+
+        p_worst = ind_sorted[-1]
+        p_worst.pos_new = pos_new
+
+        self.p_current = p_worst
+
+        return pos_new
+
+    def _evo_iterate(self):
+        total_rate = self.mutation_rate + self.crossover_rate
         rand = np.random.uniform(low=0, high=total_rate)
 
-        if len(self.init_positions) == 1 or rand <= self._opt_args_.mutation_rate:
-            self._sort_()
-            self._choose_next_pos()
-
+        if len(self.individuals) == 1 or rand <= self.mutation_rate:
             return self._mutate()
         else:
-            self._sort_best()
-            self._choose_next_pos()
-
             return self._cross()
 
-    def iterate(self, nth_iter):
-        self._base_iterate(nth_iter)
-        pos = self._choose_evo()
+    def init_pos(self, pos):
+        individual = HillClimbingOptimizer(self.space_dim)
+        self.individuals.append(individual)
+        individual.init_pos(pos)
 
-        return pos
+        self.p_current = individual
+
+    def iterate(self):
+        return self._evo_iterate()
 
     def evaluate(self, score_new):
         self.p_current.score_new = score_new
 
-        self._evaluate_new2current(score_new)
-        self._evaluate_current2best()
+        self.p_current._evaluate_new2current(score_new)
+        self.p_current._evaluate_current2best()
 
-
-class Individual(HillClimbingPositioner):
-    def __init__(self, space_dim, _opt_args_):
-        super().__init__(space_dim, _opt_args_)

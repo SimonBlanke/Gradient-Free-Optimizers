@@ -6,7 +6,7 @@ import random
 import numpy as np
 
 
-from . import HillClimbingOptimizer, HillClimbingPositioner
+from . import HillClimbingOptimizer
 from scipy.spatial.distance import euclidean
 
 

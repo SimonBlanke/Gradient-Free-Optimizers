@@ -9,8 +9,8 @@ from .simulated_annealing import SimulatedAnnealingOptimizer
 
 
 class StochasticTunnelingOptimizer(SimulatedAnnealingOptimizer):
-    def __init__(self, space_dim, gamma=0.5):
-        super().__init__(space_dim)
+    def __init__(self, space_dim, gamma=0.5, **kwargs):
+        super().__init__(space_dim, **kwargs)
 
     def _accept(self):
         f_stun = 1 - np.exp(-self._opt_args_.gamma * self._score_norm())

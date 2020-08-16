@@ -72,8 +72,8 @@ class BaseOptimizer(SearchTracker):
         self.pos_new = np.rint(pos_new).astype(int)
         return self.pos_new
 
-    def init_pos(self, init_position):
-        self.pos_new = init_position
+    def init_pos(self, pos):
+        self.pos_new = pos
         return self.pos_new
 
     def evaluate(self, score_new):
