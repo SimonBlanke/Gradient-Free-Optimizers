@@ -3,13 +3,12 @@
 # License: MIT License
 
 import numpy as np
-from .opt_args import Arguments
-
 from .search_tracker import SearchTracker
 
 
 class BaseOptimizer(SearchTracker):
     def __init__(self, space_dim):
+        super().__init__()
         self.space_dim = space_dim
 
         self.init_positions = []
@@ -70,4 +69,15 @@ class BaseOptimizer(SearchTracker):
         pos_new = np.random.uniform(
             np.zeros(self.space_dim.shape), self.space_dim, self.space_dim.shape
         )
-        return np.rint(pos_new).astype(int)
+        self.pos_new = np.rint(pos_new).astype(int)
+        return self.pos_new
+
+    def init_pos(self, init_position):
+        self.pos_new = init_position
+        return self.pos_new
+
+    def evaluate(self, score_new):
+        self.score_new = score_new
+
+        self._evaluate_new2current(score_new)
+        self._evaluate_current2best()

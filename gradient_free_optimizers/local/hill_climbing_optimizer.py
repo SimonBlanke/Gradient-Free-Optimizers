@@ -2,41 +2,44 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+import numpy as np
+
 from ..base_optimizer import BaseOptimizer
-from ..base_positioner import BasePositioner
+
+from numpy.random import normal, laplace, logistic, gumbel
+
+dist_dict = {
+    "normal": normal,
+    "laplace": laplace,
+    "logistic": logistic,
+    "gumbel": gumbel,
+}
 
 
 class HillClimbingOptimizer(BaseOptimizer):
-    def __init__(self, init_positions, space_dim, opt_para):
-        super().__init__(init_positions, space_dim, opt_para)
+    def __init__(
+        self, space_dim, epsilon=0.05, distribution="normal", n_neighbours=1,
+    ):
+        super().__init__(space_dim)
+        self.epsilon = epsilon
+        self.distribution = dist_dict[distribution]
+        self.n_neighbours = n_neighbours
 
-    def init_pos(self, nth_init):
-        pos_new = self._base_init_pos(
-            nth_init, HillClimbingPositioner(self.space_dim, self._opt_args_)
-        )
+    def _move_climb(self, pos, epsilon_mod=1):
+        sigma = self.space_dim * self.epsilon * epsilon_mod
+        pos_normal = self.distribution(pos, sigma, pos.shape)
+        pos_new_int = np.rint(pos_normal)
 
-        return pos_new
+        n_zeros = [0] * len(self.space_dim)
+        pos = np.clip(pos_new_int, n_zeros, self.space_dim)
+
+        self.pos_new = pos.astype(int)
+        return self.pos_new
 
     def iterate(self, nth_iter):
-        self._base_iterate(nth_iter)
-        self._sort_()
-        self._choose_next_pos()
-        pos = self.p_current.move_climb(self.p_current.pos_current)
-
-        return pos
-
-    def evaluate(self, score_new):
-        self.p_current.score_new = score_new
-
-        self._evaluate_new2current(score_new)
-        self._evaluate_current2best()
-
-        """
-        if self.nth_iter % self._opt_args_.n_neighbours == 0:
-            self._best2current()
-        """
+        return self._move_climb(self.pos_current)
 
 
-class HillClimbingPositioner(BasePositioner):
-    def __init__(self, space_dim, _opt_args_):
-        super().__init__(space_dim, _opt_args_)
+class HillClimbingPositioner:
+    def __init__(self):
+        pass

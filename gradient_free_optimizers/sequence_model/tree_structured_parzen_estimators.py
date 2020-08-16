@@ -11,15 +11,17 @@ from .sbom import SBOM
 
 
 class TreeStructuredParzenEstimators(SBOM):
-    def __init__(self, init_positions, space_dim, opt_para):
-        super().__init__(init_positions, space_dim, opt_para)
+    def __init__(self, space_dim, gamma_tpe=0.3):
+        super().__init__(space_dim)
+        self.gamma_tpe = gamma_tpe
+
         self.kd_best = KernelDensity()
         self.kd_worst = KernelDensity()
 
     def _get_samples(self):
         n_samples = len(self.X_sample)
 
-        n_best = int(n_samples * self._opt_args_.gamma_tpe)
+        n_best = int(n_samples * self.gamma_tpe)
 
         Y_sample = np.array(self.Y_sample)
         index_best = Y_sample.argsort()[-n_best:][::-1]
@@ -55,30 +57,22 @@ class TreeStructuredParzenEstimators(SBOM):
         return pos_best
 
     def iterate(self, nth_iter):
-        self._base_iterate(nth_iter)
-        self._sort_()
-        self._choose_next_pos()
 
-        if nth_iter < self._opt_args_.start_up_evals:
-            pos = self.p_current.move_random()
+        if nth_iter < self.start_up_evals:
+            pos = self.move_random()
         else:
             pos = self.propose_location()
-            self.p_current.pos_new = pos
+            self.pos_new = pos
 
         self.X_sample.append(pos)
 
         return pos
 
     def evaluate(self, score_new):
-        self.p_current.score_new = score_new
+        self.score_new = score_new
 
         self._evaluate_new2current(score_new)
         self._evaluate_current2best()
 
-        if self.nth_iter % self._opt_args_.n_neighbours == 0:
-            self.p_current.score_current = self.p_current.score_best
-            self.p_current.pos_current = self.p_current.pos_best
-
         self.Y_sample.append(score_new)
 
-        self.nth_iter += 1

@@ -7,7 +7,6 @@ import numpy as np
 
 
 from ..base_optimizer import BaseOptimizer
-from ..base_positioner import BasePositioner
 
 
 def _split_into_subcubes(data, split_per_dim=2):
@@ -33,9 +32,51 @@ def _split_into_subcubes(data, split_per_dim=2):
     return subcubes
 
 
+def skip_refit_75(i):
+    if i <= 33:
+        return 1
+    return int((i - 33) ** 0.75)
+
+
+def skip_refit_50(i):
+    if i <= 33:
+        return 1
+    return int((i - 33) ** 0.5)
+
+
+def skip_refit_25(i):
+    if i <= 33:
+        return 1
+    return int((i - 33) ** 0.25)
+
+
+def never_skip_refit(i):
+    return 1
+
+
+skip_retrain_ = {
+    "many": skip_refit_75,
+    "some": skip_refit_50,
+    "few": skip_refit_25,
+    "never": never_skip_refit,
+}
+
+
 class SBOM(BaseOptimizer):
-    def __init__(self, init_positions, space_dim, opt_para):
-        super().__init__(init_positions, space_dim, opt_para)
+    def __init__(
+        self,
+        space_dim,
+        start_up_evals=10,
+        max_sample_size=1000000,
+        warm_start_smbo=None,
+        skip_retrain="never",
+    ):
+        super().__init__(space_dim)
+        self.start_up_evals = start_up_evals
+        self.max_sample_size = max_sample_size
+        self.warm_start_smbo = warm_start_smbo
+        self.skip_retrain = skip_retrain_[skip_retrain]
+
         self.X_sample = []
         self.Y_sample = []
 
@@ -50,7 +91,7 @@ class SBOM(BaseOptimizer):
         return self.all_pos_comb[row_sample]
 
     def _sample_size(self):
-        n = self._opt_args_.max_sample_size
+        n = self.max_sample_size
         return int(n * np.tanh(self.all_pos_comb.size / n))
 
     def _all_possible_pos(self):
@@ -63,21 +104,14 @@ class SBOM(BaseOptimizer):
 
         # _split_into_subcubes(self.all_pos_comb)
 
-    def init_pos(self, nth_init):
-        pos_new = self._base_init_pos(
-            nth_init, SbomPositioner(self.space_dim, self._opt_args_)
-        )
-
+    def init_pos(self, init_position):
+        super().init_pos(init_position)
         self._all_possible_pos()
 
-        if self._opt_args_.warm_start_smbo is not None:
-            (self.X_sample, self.Y_sample) = self._opt_args_.warm_start_smbo
+        if self.warm_start_smbo is not None:
+            (self.X_sample, self.Y_sample) = self.warm_start_smbo
 
-        self.X_sample.append(pos_new)
+        self.X_sample.append(init_position)
 
-        return pos_new
+        return init_position
 
-
-class SbomPositioner(BasePositioner):
-    def __init__(self, space_dim, opt_para):
-        super().__init__(space_dim, opt_para)

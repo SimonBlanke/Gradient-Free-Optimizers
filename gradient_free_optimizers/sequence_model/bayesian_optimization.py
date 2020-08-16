@@ -7,14 +7,21 @@ import numpy as np
 from scipy.stats import norm
 from scipy.spatial.distance import cdist
 
-
 from .sbom import SBOM
+
+from .surrogate_models import (
+    GPR_linear,
+    GPR,
+)
+
+gaussian_process = {"gp_nonlinear": GPR(), "gp_linear": GPR_linear()}
 
 
 class BayesianOptimizer(SBOM):
-    def __init__(self, init_positions, space_dim, opt_para):
-        super().__init__(init_positions, space_dim, opt_para)
-        self.regr = self._opt_args_.gpr
+    def __init__(self, space_dim, xi=0.01, gpr=gaussian_process["gp_nonlinear"]):
+        super().__init__(space_dim)
+        self.xi = xi
+        self.regr = gpr
         self.new_positions = []
 
     def _expected_improvement(self):
@@ -28,7 +35,7 @@ class BayesianOptimizer(SBOM):
         mu_sample = mu_sample.reshape(-1, 1)
 
         mu_sample_opt = np.max(mu_sample)
-        imp = mu - mu_sample_opt - self._opt_args_.xi
+        imp = mu - mu_sample_opt - self.xi
 
         Z = np.divide(imp, sigma, out=np.zeros_like(sigma), where=sigma != 0)
         exp_imp = imp * norm.cdf(Z) + sigma * norm.pdf(Z)
@@ -36,7 +43,7 @@ class BayesianOptimizer(SBOM):
 
         return exp_imp
 
-    def _propose_location(self, nth_iter):
+    def _propose_location(self):
         self.regr.fit(self.X_sample, self.Y_sample)
 
         exp_imp = self._expected_improvement()
@@ -47,7 +54,7 @@ class BayesianOptimizer(SBOM):
 
         pos_best = [all_pos_comb_sorted[0]]
 
-        while len(pos_best) < self._opt_args_.skip_retrain(nth_iter):
+        while len(pos_best) < self.skip_retrain(len(self.pos_new)):
             if all_pos_comb_sorted.shape[0] == 0:
                 break
 
@@ -62,35 +69,27 @@ class BayesianOptimizer(SBOM):
         return pos_best
 
     def iterate(self, nth_iter):
-        self._base_iterate(nth_iter)
-        self._sort_()
-        self._choose_next_pos()
-
-        if nth_iter < self._opt_args_.start_up_evals:
-            pos = self.p_current.move_random()
+        if nth_iter < self.start_up_evals:
+            pos = self.move_random()
         else:
             if len(self.new_positions) == 0:
-                self.new_positions = self._propose_location(nth_iter)
+                self.new_positions = self._propose_location()
 
             pos = self.new_positions[0]
-            self.p_current.pos_new = pos
+            self.pos_new = pos
 
             self.new_positions.pop(0)
 
         self.X_sample.append(pos)
 
+        self.pos = pos
+
         return pos
 
     def evaluate(self, score_new):
-        self.p_current.score_new = score_new
+        self.score_new = score_new
 
         self._evaluate_new2current(score_new)
         self._evaluate_current2best()
 
-        if self.nth_iter % self._opt_args_.n_neighbours == 0:
-            self.p_current.score_current = self.p_current.score_best
-            self.p_current.pos_current = self.p_current.pos_best
-
         self.Y_sample.append(score_new)
-
-        self.nth_iter += 1

@@ -8,7 +8,6 @@ import random
 import numpy as np
 
 from ..local import HillClimbingOptimizer
-from ..base_positioner import BasePositioner
 
 
 class ParticleSwarmOptimizer(HillClimbingOptimizer):
@@ -55,7 +54,7 @@ class ParticleSwarmOptimizer(HillClimbingOptimizer):
         return pos
 
 
-class Particle(BasePositioner):
+class Particle:
     def __init__(self, space_dim, _opt_args_):
         super().__init__(space_dim, _opt_args_)
         self.velo = None
