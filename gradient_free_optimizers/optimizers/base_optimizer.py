@@ -41,7 +41,6 @@ class BaseOptimizer(SearchTracker):
 
     def init_pos(self, pos):
         self.pos_new = pos
-        return self.pos_new
 
     def evaluate(self, score_new):
         self.score_new = score_new
