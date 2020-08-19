@@ -3,8 +3,10 @@
 # License: MIT License
 
 import time
-from tqdm import tqdm
+import random
+
 import numpy as np
+from tqdm import tqdm
 
 from .init_positions import init_grid_search, init_random_search
 from .progress_bar import ProgressBarLVL0, ProgressBarLVL1
@@ -17,9 +19,18 @@ p_bar_dict = {
 }
 
 
-def _time_exceeded(start_time, max_time):
+def time_exceeded(start_time, max_time):
     run_time = time.time() - start_time
     return max_time and run_time > max_time
+
+
+def set_random_seed(nth_process, random_state):
+    """Sets the random seed separately for each thread (to avoid getting the same results in each thread)"""
+    if random_state is None:
+        random_state = np.random.randint(0, high=2 ** 32 - 2)
+
+    random.seed(random_state + nth_process)
+    np.random.seed(random_state + nth_process)
 
 
 class Search:
@@ -70,6 +81,7 @@ class Search:
         random_state=None,
         nth_process=0,
     ):
+        set_random_seed(nth_process, random_state)
         start_time = time.time()
 
         self.p_bar = p_bar_dict[verbosity]()
@@ -103,7 +115,7 @@ class Search:
             self.evaluate(score_new)
             self.iter_times.append(time.time() - start_time_iter)
 
-            if _time_exceeded(start_time, max_time):
+            if time_exceeded(start_time, max_time):
                 break
 
         self.p_bar.close()
