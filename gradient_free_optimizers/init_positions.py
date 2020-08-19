@@ -24,7 +24,9 @@ def init_grid_search(space_dim, n_pos):
     if diff_pos > 0:
         pos_rnd = init_random_search(space_dim, n_pos=diff_pos)
 
-    return positions + pos_rnd
+        return positions + pos_rnd
+
+    return positions
 
 
 def init_random_search(space_dim, n_pos):
