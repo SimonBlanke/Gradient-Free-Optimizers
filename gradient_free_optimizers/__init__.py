@@ -5,32 +5,23 @@
 __version__ = "0.1.5"
 __license__ = "MIT"
 
-from .local import (
+from .optimizers import (
     HillClimbingOptimizer,
     StochasticHillClimbingOptimizer,
     TabuOptimizer,
     SimulatedAnnealingOptimizer,
     StochasticTunnelingOptimizer,
-)
-
-from .random import (
     RandomSearchOptimizer,
     RandomRestartHillClimbingOptimizer,
     RandomAnnealingOptimizer,
-)
-
-
-from .population import (
     ParallelTemperingOptimizer,
     ParticleSwarmOptimizer,
     EvolutionStrategyOptimizer,
-)
-
-from .sequence_model import (
     BayesianOptimizer,
     TreeStructuredParzenEstimators,
     DecisionTreeOptimizer,
 )
+
 
 __all__ = [
     "HillClimbingOptimizer",
@@ -48,3 +39,4 @@ __all__ = [
     "TreeStructuredParzenEstimators",
     "DecisionTreeOptimizer",
 ]
+

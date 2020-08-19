@@ -4,15 +4,15 @@
 
 import numpy as np
 from .search_tracker import SearchTracker
+from ..search import Search
 
 
-class BaseOptimizer(SearchTracker):
-    def __init__(self, space_dim):
+class BaseOptimizer(SearchTracker, Search):
+    def __init__(self, search_space):
         super().__init__()
-        self.space_dim = space_dim
-
-    def _base_iterate(self, nth_iter):
-        self.nth_iter = nth_iter
+        self.search_space = search_space
+        self.space_dim = np.array([array.size - 1 for array in search_space])
+        print("self.space_dim", self.space_dim, len(self.space_dim))
 
     def _evaluate_new2current(self, score_new):
         if score_new >= self.score_current:
