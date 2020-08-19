@@ -4,15 +4,16 @@
 
 import numpy as np
 from .search_tracker import SearchTracker
-from ..search import Search
 
 
-class BaseOptimizer(SearchTracker, Search):
+class BaseOptimizer(SearchTracker):
     def __init__(self, search_space):
         super().__init__()
         self.search_space = search_space
         self.space_dim = np.array([array.size - 1 for array in search_space])
-        print("self.space_dim", self.space_dim, len(self.space_dim))
+
+        self.eval_times = []
+        self.iter_times = []
 
     def _evaluate_new2current(self, score_new):
         if score_new >= self.score_current:
@@ -33,10 +34,7 @@ class BaseOptimizer(SearchTracker, Search):
         self.pos_current = self.pos_new
 
     def move_random(self):
-        pos_new = np.random.uniform(
-            np.zeros(self.space_dim.shape), self.space_dim, self.space_dim.shape
-        )
-        self.pos_new = np.rint(pos_new).astype(int)
+        self.pos_new = np.random.randint(self.space_dim, size=self.space_dim.shape)
         return self.pos_new
 
     def init_pos(self, pos):
