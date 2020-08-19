@@ -6,8 +6,15 @@ import time
 from tqdm import tqdm
 import numpy as np
 
+from .init_positions import init_grid_search, init_random_search
 from .progress_bar import ProgressBarLVL0, ProgressBarLVL1
 from .io_search_processor import init_search
+
+
+p_bar_dict = {
+    0: ProgressBarLVL0,
+    1: ProgressBarLVL1,
+}
 
 
 def _time_exceeded(start_time, max_time):
@@ -38,19 +45,26 @@ class Search:
 
         return list(np.array(pos_converted).T)
 
-    def _init_random_search(self, n_pos=1):
-        positions = []
-        for nth_pos in range(n_pos):
-            pos = self.move_random()
-            positions.append(pos)
+    def _init_positions(self, init_values):
+        init_positions_list = []
 
-        return positions
+        if "random" in init_values:
+            positions = init_random_search(self.space_dim, init_values["random"])
+            init_positions_list.append(positions)
+        if "grid" in init_values:
+            positions = init_grid_search(self.space_dim, init_values["grid"])
+            init_positions_list.append(positions)
+        if "warm_start" in init_values:
+            positions = self._values2positions(init_values["warm_start"])
+            init_positions_list.append(positions)
+
+        return [item for sublist in init_positions_list for item in sublist]
 
     def search(
         self,
         objective_function,
         n_iter,
-        init_values=None,
+        init_values={"grid": 7, "random": 3,},
         max_time=None,
         verbosity=1,
         random_state=None,
@@ -58,22 +72,10 @@ class Search:
     ):
         start_time = time.time()
 
-        if verbosity == 0:
-            self.p_bar = ProgressBarLVL0()
-        else:
-            self.p_bar = ProgressBarLVL1()
-
+        self.p_bar = p_bar_dict[verbosity]()
         self.p_bar.init(nth_process, n_iter, objective_function)
 
-        eval_times = []
-        iter_times = []
-
-        if init_values == None:
-            init_positions = self._init_random_search()
-        else:
-            init_positions = self._values2positions(init_values)
-
-        print("init_positions", init_positions)
+        init_positions = self._init_positions(init_values)
 
         # loop to initialize N positions
         for init_position in init_positions:
@@ -83,10 +85,10 @@ class Search:
             start_time_eval = time.time()
             score_new = objective_function(init_position)
             self.p_bar.update(1, score_new)
-            eval_times.append(time.time() - start_time_eval)
+            self.eval_times.append(time.time() - start_time_eval)
 
             self.evaluate(score_new)
-            iter_times.append(time.time() - start_time_iter)
+            self.iter_times.append(time.time() - start_time_iter)
 
         # loop to do the iterations
         for nth_iter in range(len(init_positions), n_iter):
@@ -96,15 +98,13 @@ class Search:
             start_time_eval = time.time()
             score_new = objective_function(pos_new)
             self.p_bar.update(1, score_new)
-            eval_times.append(time.time() - start_time_eval)
+            self.eval_times.append(time.time() - start_time_eval)
 
             self.evaluate(score_new)
-            iter_times.append(time.time() - start_time_iter)
+            self.iter_times.append(time.time() - start_time_iter)
 
             if _time_exceeded(start_time, max_time):
                 break
 
         self.p_bar.close()
 
-        self.eval_times = eval_times
-        self.iter_times = iter_times
