@@ -4,11 +4,12 @@
 
 
 from ..local import HillClimbingOptimizer
+from ...search import Search
 
 
-class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer):
-    def __init__(self, space_dim, n_iter_restart=10, **kwargs):
-        super().__init__(space_dim, **kwargs)
+class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer, Search):
+    def __init__(self, search_space, n_iter_restart=10, **kwargs):
+        super().__init__(search_space, **kwargs)
         self.n_iter_restart = n_iter_restart
 
     def iterate(self):

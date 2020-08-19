@@ -7,6 +7,7 @@ import numpy as np
 
 
 from ..base_optimizer import BaseOptimizer
+from ...search import Search
 
 
 def _split_into_subcubes(data, split_per_dim=2):
@@ -62,16 +63,17 @@ skip_retrain_ = {
 }
 
 
-class SBOM(BaseOptimizer):
+class SBOM(BaseOptimizer, Search):
     def __init__(
         self,
-        space_dim,
+        search_space,
         start_up_evals=10,
         max_sample_size=1000000,
         warm_start_smbo=None,
         skip_retrain="never",
     ):
-        super().__init__(space_dim)
+        super().__init__(search_space)
+
         self.start_up_evals = start_up_evals
         self.max_sample_size = max_sample_size
         self.warm_start_smbo = warm_start_smbo

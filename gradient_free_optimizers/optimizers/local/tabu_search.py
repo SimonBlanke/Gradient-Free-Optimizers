@@ -7,6 +7,7 @@ import numpy as np
 
 
 from . import HillClimbingOptimizer
+from ...search import Search
 from scipy.spatial.distance import euclidean
 
 
@@ -18,9 +19,9 @@ def gaussian(distance, sig, sigma_factor=1):
     )
 
 
-class TabuOptimizer(HillClimbingOptimizer):
-    def __init__(self, space_dim, tabu_memory=3):
-        super().__init__(space_dim)
+class TabuOptimizer(HillClimbingOptimizer, Search):
+    def __init__(self, search_space, tabu_memory=3):
+        super().__init__(search_space)
 
         self.tabus = []
         self.tabu_memory = tabu_memory

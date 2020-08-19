@@ -8,16 +8,16 @@ import random
 import numpy as np
 
 from .base_population_optimizer import BasePopulationOptimizer
+from ...search import Search
 from ..base_optimizer import BaseOptimizer
 
 
-class ParticleSwarmOptimizer(BasePopulationOptimizer):
+class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
     def __init__(
-        self, space_dim, inertia=0.5, cognitive_weight=0.5, social_weight=0.5,
+        self, search_space, inertia=0.5, cognitive_weight=0.5, social_weight=0.5,
     ):
-        super().__init__(space_dim)
+        super().__init__(search_space)
 
-        self.space_dim = space_dim
         self.inertia = inertia
         self.cognitive_weight = cognitive_weight
         self.social_weight = social_weight

@@ -6,11 +6,12 @@ import random
 import numpy as np
 
 from . import HillClimbingOptimizer
+from ...search import Search
 
 
-class StochasticHillClimbingOptimizer(HillClimbingOptimizer):
-    def __init__(self, space_dim, p_down=0.1, norm_factor=1):
-        super().__init__(space_dim)
+class StochasticHillClimbingOptimizer(HillClimbingOptimizer, Search):
+    def __init__(self, search_space, p_down=0.1, norm_factor=1):
+        super().__init__(search_space)
         self.p_down = p_down
         self.norm_factor = norm_factor
 

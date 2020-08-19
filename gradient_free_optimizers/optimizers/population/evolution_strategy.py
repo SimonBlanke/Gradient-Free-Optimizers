@@ -2,16 +2,17 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-from math import floor, ceil
 import numpy as np
 
+from math import floor, ceil
 from .base_population_optimizer import BasePopulationOptimizer
+from ...search import Search
 from ..local import HillClimbingOptimizer
 
 
-class EvolutionStrategyOptimizer(BasePopulationOptimizer):
-    def __init__(self, space_dim, mutation_rate=0.5, crossover_rate=0.5):
-        super().__init__(space_dim)
+class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
+    def __init__(self, search_space, mutation_rate=0.5, crossover_rate=0.5):
+        super().__init__(search_space)
 
         self.mutation_rate = mutation_rate
         self.crossover_rate = crossover_rate

@@ -6,11 +6,12 @@
 import numpy as np
 
 from ..local import StochasticHillClimbingOptimizer
+from ...search import Search
 
 
-class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer):
-    def __init__(self, space_dim, annealing_rate=0.99, start_temp=100):
-        super().__init__(space_dim)
+class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer, Search):
+    def __init__(self, search_space, annealing_rate=0.99, start_temp=100):
+        super().__init__(search_space)
         self.annealing_rate = annealing_rate
         self.temp = start_temp
 

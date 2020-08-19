@@ -8,12 +8,13 @@ import random
 import numpy as np
 
 from .base_population_optimizer import BasePopulationOptimizer
+from ...search import Search
 from ..local import SimulatedAnnealingOptimizer
 
 
-class ParallelTemperingOptimizer(BasePopulationOptimizer):
-    def __init__(self, space_dim, n_iter_swap=10):
-        super().__init__(space_dim)
+class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
+    def __init__(self, search_space, n_iter_swap=10):
+        super().__init__(search_space)
 
         self.n_iter_swap = n_iter_swap
 

@@ -5,6 +5,7 @@
 import numpy as np
 
 from ..base_optimizer import BaseOptimizer
+from ...search import Search
 
 from numpy.random import normal, laplace, logistic, gumbel
 
@@ -16,11 +17,11 @@ dist_dict = {
 }
 
 
-class HillClimbingOptimizer(BaseOptimizer):
+class HillClimbingOptimizer(BaseOptimizer, Search):
     def __init__(
-        self, space_dim, epsilon=0.05, distribution="normal", n_neighbours=1,
+        self, search_space, epsilon=0.05, distribution="normal", n_neighbours=1,
     ):
-        super().__init__(space_dim)
+        super().__init__(search_space)
         self.epsilon = epsilon
         self.distribution = dist_dict[distribution]
         self.n_neighbours = n_neighbours
