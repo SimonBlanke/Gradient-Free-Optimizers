@@ -19,7 +19,7 @@ gaussian_process = {"gp_nonlinear": GPR(), "gp_linear": GPR_linear()}
 
 class BayesianOptimizer(SBOM):
     def __init__(
-        self, search_space, xi=0.01, gpr=gaussian_process["gp_nonlinear"], **kwargs,
+        self, search_space, xi=0.01, gpr=gaussian_process["gp_nonlinear"], **kwargs
     ):
         super().__init__(search_space, **kwargs)
         self.xi = xi
