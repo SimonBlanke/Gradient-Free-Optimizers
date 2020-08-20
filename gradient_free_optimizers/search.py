@@ -10,7 +10,6 @@ from tqdm import tqdm
 
 from .init_positions import init_grid_search, init_random_search
 from .progress_bar import ProgressBarLVL0, ProgressBarLVL1
-from .io_search_processor import init_search
 
 
 p_bar_dict = {
@@ -71,16 +70,31 @@ class Search:
 
         return [item for sublist in init_positions_list for item in sublist]
 
+    def _score(self, pos):
+        pos_tuple = tuple(pos)
+
+        if self.memory and pos_tuple in self.memory_dict:
+            return self.memory_dict[pos_tuple]
+        else:
+            score = self.objective_function(pos)
+            self.memory_dict[pos_tuple] = score
+            return score
+
     def search(
         self,
         objective_function,
         n_iter,
         init_values={"grid": 7, "random": 3,},
         max_time=None,
+        memory=True,
         verbosity=1,
         random_state=None,
         nth_process=0,
     ):
+        self.objective_function = objective_function
+        self.memory = memory
+        self.memory_dict = {}
+
         set_random_seed(nth_process, random_state)
         start_time = time.time()
 
@@ -95,7 +109,7 @@ class Search:
             self.init_pos(init_position)
 
             start_time_eval = time.time()
-            score_new = objective_function(init_position)
+            score_new = self._score(init_position)
             self.p_bar.update(1, score_new)
             self.eval_times.append(time.time() - start_time_eval)
 
@@ -108,7 +122,7 @@ class Search:
             pos_new = self.iterate()
 
             start_time_eval = time.time()
-            score_new = objective_function(pos_new)
+            score_new = self._score(pos_new)
             self.p_bar.update(1, score_new)
             self.eval_times.append(time.time() - start_time_eval)
 
