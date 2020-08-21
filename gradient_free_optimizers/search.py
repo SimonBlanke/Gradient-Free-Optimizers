@@ -78,15 +78,30 @@ class Search:
 
         return value
 
-    def _score(self, pos):
+    def _score_mem(self, pos):
         pos_tuple = tuple(pos)
 
-        if self.memory and pos_tuple in self.memory_dict:
+        if pos_tuple in self.memory_dict:
             return self.memory_dict[pos_tuple]
         else:
             score = self.objective_function(pos)
             self.memory_dict[pos_tuple] = score
             return score
+
+    def _init_memory(self, memory):
+        if memory == False:
+            self._score = self.objective_function
+        elif memory == True:
+            self._score = self._score_mem
+            self.memory_dict = {}
+        elif isinstance(memory, dict):
+            self._score = self._score_mem
+
+            values_list = memory["values"]
+            scores = memory["scores"]
+
+            value_tuple_list = list(map(tuple, values_list))
+            self.memory_dict = dict(zip(value_tuple_list, scores))
 
     def search(
         self,
@@ -100,8 +115,7 @@ class Search:
         nth_process=0,
     ):
         self.objective_function = objective_function
-        self.memory_dict = {}
-        self.memory = memory
+        self._init_memory(memory)
 
         set_random_seed(nth_process, random_state)
         start_time = time.time()
