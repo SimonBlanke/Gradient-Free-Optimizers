@@ -125,12 +125,12 @@ class Search:
         init_values = self._init_values(initialize)
 
         # loop to initialize N positions
-        for init_position in init_values:
+        for init_value in init_values:
             start_time_iter = time.time()
-            self.init_pos(init_position)
+            self.init_pos(init_value)
 
             start_time_eval = time.time()
-            score_new = self._score(init_position)
+            score_new = self._score(init_value)
             self.p_bar.update(1, score_new)
             self.eval_times.append(time.time() - start_time_eval)
 

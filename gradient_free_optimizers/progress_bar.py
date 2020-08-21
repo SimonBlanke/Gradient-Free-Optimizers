@@ -7,7 +7,7 @@ from tqdm.auto import tqdm
 
 
 class ProgressBarLVL0:
-    def __init__(self):
+    def __init__(self, nth_process, n_iter, obj_func):
         pass
 
     def update(self, iter, score_new):
@@ -35,7 +35,7 @@ class ProgressBarLVL1:
             self.score_best = score_new
             self.best_since_iter = self._tqdm.n
             self._tqdm.set_postfix(
-                best_score=str(score_new), best_since_iter=self.best_since_iter
+                best_score=str(score_new), best_iter=str(self.best_since_iter)
             )
 
     def close(self):
