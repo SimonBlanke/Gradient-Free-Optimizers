@@ -70,6 +70,14 @@ class Search:
 
         return [item for sublist in init_positions_list for item in sublist]
 
+    def _position2value(self, position):
+        value = []
+
+        for n, space_dim in enumerate(self.search_space):
+            value.append(space_dim[position[n]])
+
+        return value
+
     def _score(self, pos):
         pos_tuple = tuple(pos)
 
@@ -120,6 +128,8 @@ class Search:
         for nth_iter in range(len(init_positions), n_iter):
             start_time_iter = time.time()
             pos_new = self.iterate()
+
+            value_new = self._position2value(pos_new)
 
             start_time_eval = time.time()
             score_new = self._score(pos_new)
