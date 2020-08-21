@@ -13,8 +13,8 @@ from .progress_bar import ProgressBarLVL0, ProgressBarLVL1
 
 
 p_bar_dict = {
-    0: ProgressBarLVL0,
-    1: ProgressBarLVL1,
+    False: ProgressBarLVL0,
+    True: ProgressBarLVL1,
 }
 
 
@@ -110,9 +110,10 @@ class Search:
         initialize={"grid": 7, "random": 3,},
         max_time=None,
         memory=True,
-        verbosity=1,
+        progress_bar=True,
+        print_results=True,
         random_state=None,
-        nth_process=0,
+        nth_process=False,
     ):
         self.objective_function = objective_function
         self._init_memory(memory)
@@ -120,7 +121,7 @@ class Search:
         set_random_seed(nth_process, random_state)
         start_time = time.time()
 
-        self.p_bar = p_bar_dict[verbosity](nth_process, n_iter, objective_function)
+        self.p_bar = p_bar_dict[progress_bar](nth_process, n_iter, objective_function)
 
         init_values = self._init_values(initialize)
 
@@ -131,7 +132,7 @@ class Search:
 
             start_time_eval = time.time()
             score_new = self._score(init_value)
-            self.p_bar.update(1, score_new)
+            self.p_bar.update(1, score_new, init_value)
             self.eval_times.append(time.time() - start_time_eval)
 
             self.evaluate(score_new)
@@ -146,7 +147,7 @@ class Search:
 
             start_time_eval = time.time()
             score_new = self._score(value_new)
-            self.p_bar.update(1, score_new)
+            self.p_bar.update(1, score_new, value_new)
             self.eval_times.append(time.time() - start_time_eval)
 
             self.evaluate(score_new)
@@ -159,4 +160,9 @@ class Search:
         self.scores = np.array(list(self.memory_dict.values())).reshape(-1, 1)
 
         self.p_bar.close()
+
+        if print_results:
+            print("\nResults: '{}'".format(objective_function.__name__), " ")
+            print("  Best values", np.array(self.p_bar.values_best), " ")
+            print("  Best score", self.p_bar.score_best, " ")
 
