@@ -10,9 +10,6 @@ class ProgressBarLVL0:
     def __init__(self):
         pass
 
-    def init(self, nth_process, n_iter, obj_func):
-        pass
-
     def update(self, iter, score_new):
         pass
 
@@ -24,12 +21,11 @@ class ProgressBarLVL0:
 
 
 class ProgressBarLVL1:
-    def __init__(self):
+    def __init__(self, nth_process, n_iter, obj_func):
         self.best_since_iter = 0
         self.score_best = -np.inf
         # tqdm.set_lock(tqdm.get_lock())
 
-    def init(self, nth_process, n_iter, obj_func):
         self._tqdm = tqdm(**self._tqdm_dict(nth_process, n_iter, obj_func))
 
     def update(self, iter, score_new):
