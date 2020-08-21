@@ -155,5 +155,8 @@ class Search:
             if time_exceeded(start_time, max_time):
                 break
 
+        self.values = np.array(list(self.memory_dict.keys()))
+        self.scores = np.array(list(self.memory_dict.values())).reshape(-1, 1)
+
         self.p_bar.close()
 
