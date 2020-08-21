@@ -46,7 +46,7 @@ class ProgressBarLVL1:
     def _tqdm_dict(self, nth_process, n_iter, obj_func):
         """Generates the parameter dict for tqdm in the iteration-loop of each optimizer"""
 
-        if not nth_process:
+        if nth_process is None:
             process_str = ""
         else:
             process_str = "Process " + str(nth_process) + " -> "
