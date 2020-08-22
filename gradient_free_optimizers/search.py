@@ -106,6 +106,34 @@ class Search:
             value_tuple_list = list(map(tuple, values_list))
             self.memory_dict = dict(zip(value_tuple_list, scores))
 
+    def _initialization(self, init_value):
+        start_time_iter = time.time()
+        self.init_pos(init_value)
+
+        value_new = self._position2value(init_value)
+
+        start_time_eval = time.time()
+        score_new = self._score(value_new)
+        self.p_bar.update(1, score_new, value_new)
+        self.eval_times.append(time.time() - start_time_eval)
+
+        self.evaluate(score_new)
+        self.iter_times.append(time.time() - start_time_iter)
+
+    def _iteration(self):
+        start_time_iter = time.time()
+        pos_new = self.iterate()
+
+        value_new = self._position2value(pos_new)
+
+        start_time_eval = time.time()
+        score_new = self._score(value_new)
+        self.p_bar.update(1, score_new, value_new)
+        self.eval_times.append(time.time() - start_time_eval)
+
+        self.evaluate(score_new)
+        self.iter_times.append(time.time() - start_time_iter)
+
     def search(
         self,
         objective_function,
@@ -130,31 +158,11 @@ class Search:
 
         # loop to initialize N positions
         for init_value in init_values:
-            start_time_iter = time.time()
-            self.init_pos(init_value)
-
-            start_time_eval = time.time()
-            score_new = self._score(init_value)
-            self.p_bar.update(1, score_new, init_value)
-            self.eval_times.append(time.time() - start_time_eval)
-
-            self.evaluate(score_new)
-            self.iter_times.append(time.time() - start_time_iter)
+            self._initialization(init_value)
 
         # loop to do the iterations
         for nth_iter in range(len(init_values), n_iter):
-            start_time_iter = time.time()
-            pos_new = self.iterate()
-
-            value_new = self._position2value(pos_new)
-
-            start_time_eval = time.time()
-            score_new = self._score(value_new)
-            self.p_bar.update(1, score_new, value_new)
-            self.eval_times.append(time.time() - start_time_eval)
-
-            self.evaluate(score_new)
-            self.iter_times.append(time.time() - start_time_iter)
+            self._iteration()
 
             if time_exceeded(start_time, max_time):
                 break
