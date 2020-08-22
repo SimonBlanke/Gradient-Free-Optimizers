@@ -117,15 +117,15 @@ class Search:
         print_results=True,
         random_state=None,
         nth_process=None,
+        lock=None,
     ):
-        self.objective_function = objective_function
-        self._init_memory(memory)
-
-        set_random_seed(nth_process, random_state)
         start_time = time.time()
 
+        self.objective_function = objective_function
+        self._init_memory(memory)
         self.p_bar = p_bar_dict[progress_bar](nth_process, n_iter, objective_function)
 
+        set_random_seed(nth_process, random_state)
         init_values = self._init_values(initialize)
 
         # loop to initialize N positions
@@ -162,10 +162,5 @@ class Search:
         self.values = np.array(list(self.memory_dict.keys()))
         self.scores = np.array(list(self.memory_dict.values())).reshape(-1, 1)
 
-        self.p_bar.close()
-
-        if print_results:
-            print("\nResults: '{}'".format(objective_function.__name__), " ")
-            print("  Best values", np.array(self.p_bar.values_best), " ")
-            print("  Best score", self.p_bar.score_best, " ")
+        self.p_bar.close(print_results)
 

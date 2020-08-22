@@ -3,31 +3,30 @@
 # License: MIT License
 
 import numpy as np
-from tqdm.auto import tqdm
+from tqdm import tqdm
 
 
 class ProgressBarLVL0:
-    def __init__(self, nth_process, n_iter, obj_func):
+    def __init__(self, nth_process, n_iter, objective_function):
         pass
 
     def update(self, iter, score_new):
         pass
 
-    def close(self):
+    def close(self, print_results):
         pass
 
-    def _tqdm_dict(self, nth_process, n_iter, obj_func):
+    def _tqdm_dict(self, nth_process, n_iter, objective_function):
         pass
 
 
 class ProgressBarLVL1:
-    def __init__(self, nth_process, n_iter, obj_func):
+    def __init__(self, nth_process, n_iter, objective_function):
         self.best_since_iter = 0
         self.score_best = -np.inf
         self.values_best = None
-        # tqdm.set_lock(tqdm.get_lock())
 
-        self._tqdm = tqdm(**self._tqdm_dict(nth_process, n_iter, obj_func))
+        self._tqdm = tqdm(**self._tqdm_dict(nth_process, n_iter, objective_function))
 
     def update(self, iter, score_new, values_new):
         self._tqdm.update(iter)
@@ -40,11 +39,18 @@ class ProgressBarLVL1:
                 best_score=str(score_new), best_iter=str(self.best_since_iter)
             )
 
-    def close(self):
+    def close(self, print_results):
         self._tqdm.close()
 
-    def _tqdm_dict(self, nth_process, n_iter, obj_func):
+        if print_results:
+            print("\nResults: '{}'".format(self.objective_function.__name__), " ")
+            print("  Best values", np.array(self.values_best), " ")
+            print("  Best score", self.score_best, " ")
+
+    def _tqdm_dict(self, nth_process, n_iter, objective_function):
         """Generates the parameter dict for tqdm in the iteration-loop of each optimizer"""
+
+        self.objective_function = objective_function
 
         if nth_process is None:
             process_str = ""
@@ -53,7 +59,7 @@ class ProgressBarLVL1:
 
         return {
             "total": n_iter,
-            "desc": process_str + obj_func.__name__,
+            "desc": process_str + objective_function.__name__,
             "position": nth_process,
             "leave": True,
         }
