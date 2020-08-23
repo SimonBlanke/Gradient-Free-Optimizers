@@ -8,8 +8,9 @@ import random
 import numpy as np
 from tqdm import tqdm
 
-from .init_positions import init_grid_search, init_random_search
+from .init_positions import Initializer
 from .progress_bar import ProgressBarLVL0, ProgressBarLVL1
+from .conv import values2positions, positions2values, position2value
 
 
 p_bar_dict = {
@@ -36,51 +37,6 @@ def set_random_seed(nth_process, random_state):
 
 
 class Search:
-    def _values2positions(self, values):
-        init_pos_conv_list = []
-        values_np = np.array(values)
-
-        for n, space_dim in enumerate(self.search_space):
-            pos_1d = values_np[:, n]
-            init_pos_conv = np.where(space_dim == pos_1d)[0]
-            init_pos_conv_list.append(init_pos_conv)
-
-        return init_pos_conv_list
-
-    def _positions2values(self, positions):
-        pos_converted = []
-        positions_np = np.array(positions)
-
-        for n, space_dim in enumerate(self.search_space):
-            pos_1d = positions_np[:, n]
-            pos_conv = np.take(space_dim, pos_1d, axis=0)
-            pos_converted.append(pos_conv)
-
-        return list(np.array(pos_converted).T)
-
-    def _init_values(self, init_values):
-        init_positions_list = []
-
-        if "random" in init_values:
-            positions = init_random_search(self.space_dim, init_values["random"])
-            init_positions_list.append(positions)
-        if "grid" in init_values:
-            positions = init_grid_search(self.space_dim, init_values["grid"])
-            init_positions_list.append(positions)
-        if "warm_start" in init_values:
-            positions = self._values2positions(init_values["warm_start"])
-            init_positions_list.append(positions)
-
-        return [item for sublist in init_positions_list for item in sublist]
-
-    def _position2value(self, position):
-        value = []
-
-        for n, space_dim in enumerate(self.search_space):
-            value.append(space_dim[position[n]])
-
-        return value
-
     def _score_mem(self, pos):
         pos_tuple = tuple(pos)
 
@@ -106,11 +62,11 @@ class Search:
             value_tuple_list = list(map(tuple, values_list))
             self.memory_dict = dict(zip(value_tuple_list, scores))
 
-    def _initialization(self, init_value):
+    def _initialization(self, init_pos):
         start_time_iter = time.time()
-        self.init_pos(init_value)
+        self.init_pos(init_pos)
 
-        value_new = self._position2value(init_value)
+        value_new = position2value(self.search_space, init_pos)
 
         start_time_eval = time.time()
         score_new = self._score(value_new)
@@ -124,7 +80,7 @@ class Search:
         start_time_iter = time.time()
         pos_new = self.iterate()
 
-        value_new = self._position2value(pos_new)
+        value_new = position2value(self.search_space, pos_new)
 
         start_time_eval = time.time()
         score_new = self._score(value_new)
@@ -138,14 +94,13 @@ class Search:
         self,
         objective_function,
         n_iter,
-        initialize={"grid": 7, "random": 3,},
+        initialize={"grid": 0, "random": 0, "vertices": 5},
         max_time=None,
         memory=True,
         progress_bar=True,
         print_results=True,
         random_state=None,
         nth_process=None,
-        lock=None,
     ):
         start_time = time.time()
 
@@ -154,18 +109,24 @@ class Search:
         self.p_bar = p_bar_dict[progress_bar](nth_process, n_iter, objective_function)
 
         set_random_seed(nth_process, random_state)
-        init_values = self._init_values(initialize)
+
+        # get init positions
+        init = Initializer(self.search_space)
+        init_positions = init.set_pos(initialize)
 
         # loop to initialize N positions
-        for init_value in init_values:
-            self._initialization(init_value)
-
-        # loop to do the iterations
-        for nth_iter in range(len(init_values), n_iter):
-            self._iteration()
-
+        for init_pos in init_positions:
             if time_exceeded(start_time, max_time):
                 break
+
+            self._initialization(init_pos)
+
+        # loop to do the iterations
+        for nth_iter in range(len(init_positions), n_iter):
+            if time_exceeded(start_time, max_time):
+                break
+
+            self._iteration()
 
         self.values = np.array(list(self.memory_dict.keys()))
         self.scores = np.array(list(self.memory_dict.values())).reshape(-1, 1)
