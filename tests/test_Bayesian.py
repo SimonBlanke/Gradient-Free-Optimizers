@@ -17,12 +17,6 @@ def test_skip_retrain():
         _base_test(opt, n_iter, opt_para=opt_para)
 
 
-def test_start_up_evals():
-    for start_up_evals in [0, 1, 100]:
-        opt_para = {"start_up_evals": start_up_evals}
-        _base_test(opt, n_iter, opt_para=opt_para)
-
-
 """
 def test_warm_start_smbo():
     gpr_X, gpr_y = [], []

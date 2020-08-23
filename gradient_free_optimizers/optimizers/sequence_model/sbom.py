@@ -67,20 +67,23 @@ class SBOM(BaseOptimizer, Search):
     def __init__(
         self,
         search_space,
-        start_up_evals=10,
         max_sample_size=1000000,
         warm_start_smbo=None,
         skip_retrain="never",
     ):
         super().__init__(search_space)
 
-        self.start_up_evals = start_up_evals
         self.max_sample_size = max_sample_size
         self.warm_start_smbo = warm_start_smbo
         self.skip_retrain = skip_retrain_[skip_retrain]
 
         self.X_sample = []
         self.Y_sample = []
+
+        self._all_possible_pos()
+
+        if self.warm_start_smbo is not None:
+            (self.X_sample, self.Y_sample) = self.warm_start_smbo
 
     def get_random_sample(self):
         sample_size = self._sample_size()
@@ -108,11 +111,6 @@ class SBOM(BaseOptimizer, Search):
 
     def init_pos(self, pos):
         super().init_pos(pos)
-        self._all_possible_pos()
-
-        if self.warm_start_smbo is not None:
-            (self.X_sample, self.Y_sample) = self.warm_start_smbo
-
         self.X_sample.append(pos)
 
         return pos

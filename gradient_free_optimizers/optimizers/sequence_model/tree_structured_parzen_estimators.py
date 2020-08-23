@@ -57,12 +57,8 @@ class TreeStructuredParzenEstimators(SBOM):
         return pos_best
 
     def iterate(self):
-
-        if len(self.pos_new) < self.start_up_evals:
-            pos = self.move_random()
-        else:
-            pos = self.propose_location()
-            self.pos_new = pos
+        pos = self.propose_location()
+        self.pos_new = pos
 
         self.X_sample.append(pos)
 

@@ -71,19 +71,14 @@ class BayesianOptimizer(SBOM):
         return pos_best
 
     def iterate(self):
-        if len(self.pos_new) < self.start_up_evals:
-            pos = self.move_random()
-        else:
-            if len(self.new_positions) == 0:
-                self.new_positions = self._propose_location()
+        if len(self.new_positions) == 0:
+            self.new_positions = self._propose_location()
 
-            pos = self.new_positions[0]
-            self.pos_new = pos
+        pos = self.new_positions[0]
+        self.pos_new = pos
 
-            self.new_positions.pop(0)
-
+        self.new_positions.pop(0)
         self.X_sample.append(pos)
-
         self.pos = pos
 
         return pos
