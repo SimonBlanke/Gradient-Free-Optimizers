@@ -28,13 +28,14 @@ class ProgressBarLVL1:
 
         self._tqdm = tqdm(**self._tqdm_dict(nth_process, n_iter, objective_function))
 
-    def update(self, iter, score_new, values_new):
-        self._tqdm.update(iter)
+    def update(self, score_new, values_new):
+        self._tqdm.update()
+        self._tqdm.refresh()
 
         if score_new > self.score_best:
             self.score_best = score_new
             self.values_best = values_new
-            self.best_since_iter = self._tqdm.n
+            self.best_since_iter = self._tqdm.n - 1
             self._tqdm.set_postfix(
                 best_score=str(score_new), best_iter=str(self.best_since_iter)
             )
@@ -62,5 +63,6 @@ class ProgressBarLVL1:
             "desc": process_str + objective_function.__name__,
             "position": nth_process,
             "leave": True,
+            "smoothing": 1.0,
         }
 

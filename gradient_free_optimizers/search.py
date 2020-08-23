@@ -37,10 +37,10 @@ def set_random_seed(nth_process, random_state):
 
 
 class Search:
-    def _score_mem(self, pos):
+    def _score(self, pos):
         pos_tuple = tuple(pos)
 
-        if pos_tuple in self.memory_dict:
+        if self.memory is True and pos_tuple in self.memory_dict:
             return self.memory_dict[pos_tuple]
         else:
             score = self.objective_function(pos)
@@ -48,14 +48,9 @@ class Search:
             return score
 
     def _init_memory(self, memory):
-        if memory == False:
-            self._score = self.objective_function
-        elif memory == True:
-            self._score = self._score_mem
-            self.memory_dict = {}
-        elif isinstance(memory, dict):
-            self._score = self._score_mem
+        self.memory_dict = {}
 
+        if isinstance(memory, dict):
             values_list = memory["values"]
             scores = memory["scores"]
 
@@ -70,7 +65,7 @@ class Search:
 
         start_time_eval = time.time()
         score_new = self._score(value_new)
-        self.p_bar.update(1, score_new, value_new)
+        self.p_bar.update(score_new, value_new)
         self.eval_times.append(time.time() - start_time_eval)
 
         self.evaluate(score_new)
@@ -84,7 +79,7 @@ class Search:
 
         start_time_eval = time.time()
         score_new = self._score(value_new)
-        self.p_bar.update(1, score_new, value_new)
+        self.p_bar.update(score_new, value_new)
         self.eval_times.append(time.time() - start_time_eval)
 
         self.evaluate(score_new)
@@ -94,7 +89,7 @@ class Search:
         self,
         objective_function,
         n_iter,
-        initialize={"grid": 0, "random": 0, "vertices": 5},
+        initialize={"grid": 8, "random": 4, "vertices": 8},
         max_time=None,
         memory=True,
         progress_bar=True,
@@ -105,6 +100,8 @@ class Search:
         start_time = time.time()
 
         self.objective_function = objective_function
+        self.memory = memory
+
         self._init_memory(memory)
         self.p_bar = p_bar_dict[progress_bar](nth_process, n_iter, objective_function)
 
