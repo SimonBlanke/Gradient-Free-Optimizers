@@ -10,8 +10,8 @@ from .surrogate_models import (
 )
 
 tree_regressor_dict = {
-    "random_forest": RandomForestRegressor(),
-    "extra_tree": ExtraTreesRegressor(),
+    "random_forest": RandomForestRegressor(n_estimators=10),
+    "extra_tree": ExtraTreesRegressor(n_estimators=10),
 }
 
 

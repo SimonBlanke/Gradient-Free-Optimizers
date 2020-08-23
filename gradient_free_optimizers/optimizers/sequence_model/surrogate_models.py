@@ -9,7 +9,7 @@ from sklearn.linear_model import BayesianRidge
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern, WhiteKernel
 from sklearn.ensemble import ExtraTreesRegressor as _ExtraTreesRegressor_
-from sklearn.ensemble import ExtraTreesRegressor as _RandomForestRegressor_
+from sklearn.ensemble import RandomForestRegressor as _RandomForestRegressor_
 
 
 def _return_std(X, trees, predictions, min_variance):
