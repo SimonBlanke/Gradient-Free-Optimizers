@@ -6,21 +6,38 @@ import numpy as np
 from tqdm import tqdm
 
 
-class ProgressBarLVL0:
+class ProgressBarBase:
     def __init__(self, nth_process, n_iter, objective_function):
-        pass
+        self.best_since_iter = 0
+        self.score_best = -np.inf
+        self.values_best = None
 
-    def update(self, iter, score_new):
-        pass
+        self.objective_function = objective_function
+
+    def _new2best(self, score_new, values_new):
+        if score_new > self.score_best:
+            self.score_best = score_new
+            self.values_best = values_new
+
+    def _print_results(self, print_results):
+        if print_results:
+            print("\nResults: '{}'".format(self.objective_function.__name__), " ")
+            print("  Best values", np.array(self.values_best), " ")
+            print("  Best score", self.score_best, " ")
+
+
+class ProgressBarLVL0(ProgressBarBase):
+    def __init__(self, nth_process, n_iter, objective_function):
+        super().__init__(nth_process, n_iter, objective_function)
+
+    def update(self, score_new, values_new):
+        self._new2best(score_new, values_new)
 
     def close(self, print_results):
-        pass
-
-    def _tqdm_dict(self, nth_process, n_iter, objective_function):
-        pass
+        self._print_results(print_results)
 
 
-class ProgressBarLVL1:
+class ProgressBarLVL1(ProgressBarBase):
     def __init__(self, nth_process, n_iter, objective_function):
         self.best_since_iter = 0
         self.score_best = -np.inf
@@ -30,23 +47,19 @@ class ProgressBarLVL1:
 
     def update(self, score_new, values_new):
         self._tqdm.update()
-        self._tqdm.refresh()
+        self._new2best(score_new, values_new)
 
         if score_new > self.score_best:
-            self.score_best = score_new
-            self.values_best = values_new
             self.best_since_iter = self._tqdm.n - 1
-            self._tqdm.set_postfix(
-                best_score=str(score_new), best_iter=str(self.best_since_iter)
-            )
+
+        self._tqdm.set_postfix(
+            best_score=str(score_new), best_iter=str(self.best_since_iter)
+        )
+        self._tqdm.refresh()
 
     def close(self, print_results):
         self._tqdm.close()
-
-        if print_results:
-            print("\nResults: '{}'".format(self.objective_function.__name__), " ")
-            print("  Best values", np.array(self.values_best), " ")
-            print("  Best score", self.score_best, " ")
+        self._print_results(print_results)
 
     def _tqdm_dict(self, nth_process, n_iter, objective_function):
         """Generates the parameter dict for tqdm in the iteration-loop of each optimizer"""
