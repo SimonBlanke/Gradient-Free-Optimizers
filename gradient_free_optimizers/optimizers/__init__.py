@@ -7,7 +7,6 @@ from .local import (
     StochasticHillClimbingOptimizer,
     TabuOptimizer,
     SimulatedAnnealingOptimizer,
-    StochasticTunnelingOptimizer,
 )
 
 from .random import (
@@ -37,7 +36,6 @@ __all__ = [
     "RandomRestartHillClimbingOptimizer",
     "RandomAnnealingOptimizer",
     "SimulatedAnnealingOptimizer",
-    "StochasticTunnelingOptimizer",
     "ParallelTemperingOptimizer",
     "ParticleSwarmOptimizer",
     "EvolutionStrategyOptimizer",
