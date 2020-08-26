@@ -22,7 +22,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
         self.cognitive_weight = cognitive_weight
         self.social_weight = social_weight
 
-        self.particles = []
+        self.particles = self.optimizers
 
     def _move_part(self, pos, velo):
         pos_new = (pos + velo).astype(int)
@@ -62,7 +62,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
         self.p_sorted = [self.particles[i] for i in idx_sorted_ind]
 
     def init_pos(self, pos):
-        particle = BaseOptimizer(self.space_dim)
+        particle = BaseOptimizer(self.search_space)
         self.particles.append(particle)
         particle.init_pos(pos)
 

@@ -15,6 +15,8 @@ class BaseOptimizer(SearchTracker):
         self.eval_times = []
         self.iter_times = []
 
+        self.optimizers = [self]
+
     def _evaluate_new2current(self, score_new):
         if score_new >= self.score_current:
             self.score_current = score_new

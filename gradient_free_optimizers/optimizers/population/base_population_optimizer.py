@@ -7,6 +7,8 @@ import numpy as np
 
 class BasePopulationOptimizer:
     def __init__(self, search_space):
+        super().__init__()
+
         self.search_space = search_space
         self.space_dim = np.array([array.size - 1 for array in search_space])
 

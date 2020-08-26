@@ -7,6 +7,8 @@ import numpy as np
 
 class SearchTracker:
     def __init__(self):
+        super().__init__()
+
         self._pos_new = None
         self._score_new = -np.inf
 

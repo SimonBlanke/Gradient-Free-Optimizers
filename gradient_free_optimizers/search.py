@@ -37,6 +37,9 @@ def set_random_seed(nth_process, random_state):
 
 
 class Search:
+    def __init__(self):
+        self.optimizers = []
+
     def _score(self, pos):
         pos_tuple = tuple(pos)
 
@@ -89,7 +92,7 @@ class Search:
         self,
         objective_function,
         n_iter,
-        initialize={"grid": 8, "random": 4, "vertices": 8},
+        initialize={"grid": 0, "random": 4, "vertices": 0},
         max_time=None,
         memory=True,
         progress_bar=True,
@@ -111,6 +114,7 @@ class Search:
         init = Initializer(self.search_space)
         init_positions = init.set_pos(initialize)
 
+        print("init_positions", init_positions)
         # loop to initialize N positions
         for init_pos in init_positions:
             if time_exceeded(start_time, max_time):

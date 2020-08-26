@@ -18,7 +18,7 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
 
         self.n_iter_swap = n_iter_swap
 
-        self.systems = []
+        self.systems = self.optimizers
 
     def _swap_pos(self):
         _systems_temp = self.systems[:]
@@ -47,7 +47,7 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
             return np.exp(score_diff_norm * temp)
 
     def init_pos(self, pos):
-        system = SimulatedAnnealingOptimizer(self.space_dim)
+        system = SimulatedAnnealingOptimizer(self.search_space)
         self.systems.append(system)
         system.init_pos(pos)
 
@@ -74,8 +74,3 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
         self.p_current._evaluate_new2current(score_new)
         self.p_current._evaluate_current2best()
 
-
-class System:
-    def __init__(self, space_dim, _opt_args_, temp):
-        super().__init__(space_dim, _opt_args_)
-        self.temp = temp

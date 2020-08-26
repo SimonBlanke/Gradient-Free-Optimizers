@@ -17,13 +17,14 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
         self.mutation_rate = mutation_rate
         self.crossover_rate = crossover_rate
 
-        self.individuals = []
+        self.individuals = self.optimizers
 
     def _mutate(self):
         nth_iter = self._iterations(self.individuals)
-        p_current = self.individuals[nth_iter % len(self.individuals)]
+        self.p_current = self.individuals[nth_iter % len(self.individuals)]
+        pos_new = self.p_current._move_climb(self.p_current.pos_current)
 
-        return p_current._move_climb(self.p_current.pos_current)
+        return pos_new
 
     def _random_cross(self, array_list):
         n_arrays = len(array_list)
@@ -53,9 +54,9 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
         pos_new = self._random_cross(two_best_pos)
 
         p_worst = ind_sorted[-1]
-        p_worst.pos_new = pos_new
-
         self.p_current = p_worst
+
+        p_worst.pos_new = pos_new
 
         return pos_new
 
@@ -69,7 +70,7 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
             return self._cross()
 
     def init_pos(self, pos):
-        individual = HillClimbingOptimizer(self.space_dim)
+        individual = HillClimbingOptimizer(self.search_space)
         self.individuals.append(individual)
         individual.init_pos(pos)
 
