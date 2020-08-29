@@ -27,7 +27,27 @@ class SearchTracker:
         self.pos_best_list = []
         self.score_best_list = []
 
-    ### new ###
+    ##################### evaluate #####################
+
+    def _evaluate_new2current(self, score_new):
+        if score_new >= self.score_current:
+            self.score_current = score_new
+            self.pos_current = self.pos_new
+
+    def _evaluate_current2best(self):
+        if self.score_current >= self.score_best:
+            self.score_best = self.score_current
+            self.pos_best = self.pos_current
+
+    def _current2best(self):
+        self.score_best = self.score_current
+        self.pos_best = self.pos_current
+
+    def _new2current(self):
+        self.score_current = self.score_new
+        self.pos_current = self.pos_new
+
+    ##################### new #####################
 
     @property
     def pos_new(self):
@@ -47,7 +67,7 @@ class SearchTracker:
         self.score_new_list.append(score)
         self._score_new = score
 
-    ### current ###
+    ##################### current #####################
 
     @property
     def pos_current(self):
@@ -67,7 +87,7 @@ class SearchTracker:
         self.score_current_list.append(score)
         self._score_current = score
 
-    ### best ###
+    ##################### best #####################
 
     @property
     def pos_best(self):
