@@ -48,7 +48,6 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
         )
 
         new_velocity = A + B + C
-
         return self._move_part(self.p_current.pos_current, new_velocity)
 
     def _sort_best(self):

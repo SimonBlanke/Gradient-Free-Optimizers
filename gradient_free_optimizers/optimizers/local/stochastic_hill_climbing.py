@@ -10,9 +10,9 @@ from ...search import Search
 
 
 class StochasticHillClimbingOptimizer(HillClimbingOptimizer, Search):
-    def __init__(self, search_space, p_down=0.1, norm_factor=1):
+    def __init__(self, search_space, p_accept=0.1, norm_factor="adaptive"):
         super().__init__(search_space)
-        self.p_down = p_down
+        self.p_accept = p_accept
         self.norm_factor = norm_factor
 
         if self.norm_factor == "adaptive":
@@ -22,12 +22,12 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer, Search):
             self._accept = self._accept_default
 
     def _consider(self, p_accept):
-        rand = random.uniform(0, self.p_down)
+        rand = random.uniform(0, self.p_accept)
 
-        # print("\np_accept", p_accept)
+        # print("p_accept", p_accept)
         # print("rand", rand)
 
-        if p_accept > 1 - rand:
+        if rand > p_accept:
             self._new2current()
 
     def _score_norm_default(self):

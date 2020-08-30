@@ -2,6 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+import random
 import numpy as np
 
 from math import floor, ceil
