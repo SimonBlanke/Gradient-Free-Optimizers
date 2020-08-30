@@ -11,7 +11,7 @@ from tqdm import tqdm
 from .init_positions import Initializer
 from .progress_bar import ProgressBarLVL0, ProgressBarLVL1
 from .conv import values2positions, positions2values, position2value
-
+from .times_tracker import TimesTracker
 
 p_bar_dict = {
     False: ProgressBarLVL0,
@@ -36,10 +36,13 @@ def set_random_seed(nth_process, random_state):
     np.random.seed(random_state + nth_process)
 
 
-class Search:
+class Search(TimesTracker):
     def __init__(self):
+        super().__init__()
+
         self.optimizers = []
 
+    @TimesTracker.eval_time_dec
     def _score(self, pos):
         pos_tuple = tuple(pos)
 
@@ -60,33 +63,25 @@ class Search:
             value_tuple_list = list(map(tuple, values_list))
             self.memory_dict = dict(zip(value_tuple_list, scores))
 
+    @TimesTracker.iter_time_dec
     def _initialization(self, init_pos):
-        start_time_iter = time.time()
         self.init_pos(init_pos)
 
         value_new = position2value(self.search_space, init_pos)
-
-        start_time_eval = time.time()
         score_new = self._score(value_new)
-        self.p_bar.update(score_new, value_new)
-        self.eval_times.append(time.time() - start_time_eval)
 
         self.evaluate(score_new)
-        self.iter_times.append(time.time() - start_time_iter)
+        self.p_bar.update(score_new, value_new)
 
+    @TimesTracker.iter_time_dec
     def _iteration(self):
-        start_time_iter = time.time()
         pos_new = self.iterate()
 
         value_new = position2value(self.search_space, pos_new)
-
-        start_time_eval = time.time()
         score_new = self._score(value_new)
-        self.p_bar.update(score_new, value_new)
-        self.eval_times.append(time.time() - start_time_eval)
 
         self.evaluate(score_new)
-        self.iter_times.append(time.time() - start_time_iter)
+        self.p_bar.update(score_new, value_new)
 
     def search(
         self,
@@ -114,7 +109,6 @@ class Search:
         init = Initializer(self.search_space)
         init_positions = init.set_pos(initialize)
 
-        print("init_positions", init_positions)
         # loop to initialize N positions
         for init_pos in init_positions:
             if time_exceeded(start_time, max_time):
