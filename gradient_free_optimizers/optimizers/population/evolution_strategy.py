@@ -48,15 +48,14 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
         ind_sorted = self._sort_best()
 
         p_best = ind_sorted[0]
-        p_sec_best = ind_sorted[1]
+        rnd_int = random.randint(1, len(ind_sorted) - 1)
+        p_sec_best = ind_sorted[rnd_int]
 
         two_best_pos = [p_best.pos_current, p_sec_best.pos_current]
         pos_new = self._random_cross(two_best_pos)
 
-        p_worst = ind_sorted[-1]
-        self.p_current = p_worst
-
-        p_worst.pos_new = pos_new
+        self.p_current = p_sec_best
+        p_sec_best.pos_new = pos_new
 
         return pos_new
 
