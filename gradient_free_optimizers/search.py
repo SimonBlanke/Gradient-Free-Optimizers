@@ -69,8 +69,8 @@ class Search(TimesTracker):
 
         value_new = position2value(self.search_space, init_pos)
         score_new = self._score(value_new)
-
         self.evaluate(score_new)
+
         self.p_bar.update(score_new, value_new)
 
     @TimesTracker.iter_time_dec
@@ -79,15 +79,15 @@ class Search(TimesTracker):
 
         value_new = position2value(self.search_space, pos_new)
         score_new = self._score(value_new)
-
         self.evaluate(score_new)
+
         self.p_bar.update(score_new, value_new)
 
     def search(
         self,
         objective_function,
         n_iter,
-        initialize={"grid": 0, "random": 4, "vertices": 0},
+        initialize={"grid": 4, "random": 2, "vertices": 4},
         max_time=None,
         memory=True,
         progress_bar=True,
@@ -113,18 +113,19 @@ class Search(TimesTracker):
         for init_pos in init_positions:
             if time_exceeded(start_time, max_time):
                 break
-
             self._initialization(init_pos)
 
         # loop to do the iterations
         for nth_iter in range(len(init_positions), n_iter):
             if time_exceeded(start_time, max_time):
                 break
-
             self._iteration()
 
         self.values = np.array(list(self.memory_dict.keys()))
         self.scores = np.array(list(self.memory_dict.values())).reshape(-1, 1)
 
         self.p_bar.close(print_results)
+
+        self.best_score = self.p_bar.score_best
+        self.best_values = self.p_bar.values_best
 
