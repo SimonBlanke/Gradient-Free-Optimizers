@@ -29,13 +29,23 @@ class SearchTracker:
 
     ##################### evaluate #####################
 
+    def _eval2current(self, pos, score):
+        if score > self.score_current:
+            self.score_current = score
+            self.pos_current = pos
+
+    def _eval2best(self, pos, score):
+        if score > self.score_best:
+            self.score_best = score
+            self.pos_best = pos
+
     def _evaluate_new2current(self, score_new):
-        if score_new >= self.score_current:
+        if score_new > self.score_current:
             self.score_current = score_new
             self.pos_current = self.pos_new
 
     def _evaluate_current2best(self):
-        if self.score_current >= self.score_best:
+        if self.score_current > self.score_best:
             self.score_best = self.score_current
             self.pos_best = self.pos_current
 
