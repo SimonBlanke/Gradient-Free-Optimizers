@@ -12,15 +12,20 @@ class BaseOptimizer(SearchTracker):
         self.search_space = search_space
         self.space_dim = np.array([array.size - 1 for array in search_space])
 
-        self.eval_times = []
-        self.iter_times = []
-
         self.optimizers = [self]
 
     def move_random(self):
         self.pos_new = np.random.randint(self.space_dim, size=self.space_dim.shape)
         return self.pos_new
 
+    def iter_dec(func):
+        def wrapper(self, *args, **kwargs):
+            self.nth_iter = len(self.score_new_list)
+            return func(self, *args, **kwargs)
+
+        return wrapper
+
+    @iter_dec
     def init_pos(self, pos):
         self.pos_new = pos
 

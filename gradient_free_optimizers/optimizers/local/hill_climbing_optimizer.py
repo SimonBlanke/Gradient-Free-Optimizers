@@ -17,9 +17,15 @@ dist_dict = {
 }
 
 
+def max_list_idx(list_):
+    max_item = max(list_)
+    max_item_idx = [i for i, j in enumerate(list_) if j == max_item]
+    return max_item_idx[-1:][0]
+
+
 class HillClimbingOptimizer(BaseOptimizer, Search):
     def __init__(
-        self, search_space, epsilon=0.05, distribution="normal", n_neighbours=1,
+        self, search_space, epsilon=0.05, distribution="normal", n_neighbours=4,
     ):
         super().__init__(search_space)
         self.epsilon = epsilon
@@ -37,6 +43,20 @@ class HillClimbingOptimizer(BaseOptimizer, Search):
         self.pos_new = pos.astype(int)
         return self.pos_new
 
+    @BaseOptimizer.iter_dec
     def iterate(self):
         return self._move_climb(self.pos_current)
+
+    def evaluate(self, score_new):
+        self.score_new = score_new
+
+        modZero = self.nth_iter % self.n_neighbours == 0
+        if modZero:
+            idx = max_list_idx(self.score_new_list)
+
+            score = self.score_new_list[idx]
+            pos = self.pos_new_list[idx]
+
+            self._eval2current(pos, score)
+            self._eval2best(pos, score)
 
