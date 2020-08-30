@@ -9,7 +9,6 @@ from gradient_free_optimizers import (
     RandomRestartHillClimbingOptimizer,
     RandomAnnealingOptimizer,
     SimulatedAnnealingOptimizer,
-    StochasticTunnelingOptimizer,
     ParallelTemperingOptimizer,
     ParticleSwarmOptimizer,
     EvolutionStrategyOptimizer,
@@ -27,7 +26,6 @@ optimizer_dict = {
     "RandomRestartHillClimbing": RandomRestartHillClimbingOptimizer,
     "RandomAnnealing": RandomAnnealingOptimizer,
     "SimulatedAnnealing": SimulatedAnnealingOptimizer,
-    "StochasticTunneling": StochasticTunnelingOptimizer,
     "ParallelTempering": ParallelTemperingOptimizer,
     "ParticleSwarm": ParticleSwarmOptimizer,
     "EvolutionStrategy": EvolutionStrategyOptimizer,
@@ -43,7 +41,7 @@ def objective_function(pos_new):
 
 
 search_space = [np.arange(-100, 100, 1)]
-warm_start_ = [[np.array(-100)]]
+initialize = {"grid": 4, "random": 2, "vertices": 4}
 
 n_opts = 100
 n_iter = 50
@@ -61,10 +59,10 @@ def test_HillClimbingOptimizer_convergence():
             memory=False,
             print_results=False,
             progress_bar=False,
-            initialize={"warm_start": warm_start_},
+            initialize=initialize,
         )
 
-        scores.append(opt.score_best)
+        scores.append(opt.best_score)
 
     score_mean = np.array(scores).mean()
     assert min_score_accept < score_mean
@@ -81,10 +79,10 @@ def test_StochasticHillClimbingOptimizer_convergence():
             memory=False,
             print_results=False,
             progress_bar=False,
-            initialize={"warm_start": warm_start_},
+            initialize=initialize,
         )
 
-        scores.append(opt.score_best)
+        scores.append(opt.best_score)
 
     score_mean = np.array(scores).mean()
     assert min_score_accept < score_mean
@@ -101,10 +99,10 @@ def test_TabuOptimizer_convergence():
             memory=False,
             print_results=False,
             progress_bar=False,
-            initialize={"warm_start": warm_start_},
+            initialize=initialize,
         )
 
-        scores.append(opt.score_best)
+        scores.append(opt.best_score)
 
     score_mean = np.array(scores).mean()
     assert min_score_accept < score_mean
@@ -121,10 +119,10 @@ def test_RandomSearchOptimizer_convergence():
             memory=False,
             print_results=False,
             progress_bar=False,
-            initialize={"warm_start": warm_start_},
+            initialize=initialize,
         )
 
-        scores.append(opt.score_best)
+        scores.append(opt.best_score)
 
     score_mean = np.array(scores).mean()
     assert min_score_accept < score_mean
@@ -141,10 +139,10 @@ def test_RandomRestartHillClimbingOptimizer_convergence():
             memory=False,
             print_results=False,
             progress_bar=False,
-            initialize={"warm_start": warm_start_},
+            initialize=initialize,
         )
 
-        scores.append(opt.score_best)
+        scores.append(opt.best_score)
 
     score_mean = np.array(scores).mean()
     assert min_score_accept < score_mean
@@ -161,10 +159,10 @@ def test_RandomAnnealingOptimizer_convergence():
             memory=False,
             print_results=False,
             progress_bar=False,
-            initialize={"warm_start": warm_start_},
+            initialize=initialize,
         )
 
-        scores.append(opt.score_best)
+        scores.append(opt.best_score)
 
     score_mean = np.array(scores).mean()
     assert min_score_accept < score_mean
@@ -181,30 +179,10 @@ def test_SimulatedAnnealingOptimizer_convergence():
             memory=False,
             print_results=False,
             progress_bar=False,
-            initialize={"warm_start": warm_start_},
+            initialize=initialize,
         )
 
-        scores.append(opt.score_best)
-
-    score_mean = np.array(scores).mean()
-    assert min_score_accept < score_mean
-
-
-def test_StochasticTunnelingOptimizer_convergence():
-    scores = []
-    for rnd_st in tqdm(range(n_opts)):
-        opt = StochasticTunnelingOptimizer(search_space)
-        opt.search(
-            objective_function,
-            n_iter=n_iter,
-            random_state=rnd_st,
-            memory=False,
-            print_results=False,
-            progress_bar=False,
-            initialize={"warm_start": warm_start_},
-        )
-
-        scores.append(opt.score_best)
+        scores.append(opt.best_score)
 
     score_mean = np.array(scores).mean()
     assert min_score_accept < score_mean
@@ -221,10 +199,10 @@ def test_ParallelTemperingOptimizer_convergence():
             memory=False,
             print_results=False,
             progress_bar=False,
-            initialize={"warm_start": warm_start_},
+            initialize=initialize,
         )
 
-        scores.append(opt.score_best)
+        scores.append(opt.best_score)
 
     score_mean = np.array(scores).mean()
     assert min_score_accept < score_mean
@@ -241,10 +219,10 @@ def test_ParticleSwarmOptimizer_convergence():
             memory=False,
             print_results=False,
             progress_bar=False,
-            initialize={"warm_start": warm_start_},
+            initialize=initialize,
         )
 
-        scores.append(opt.score_best)
+        scores.append(opt.best_score)
 
     score_mean = np.array(scores).mean()
     assert min_score_accept < score_mean
@@ -261,10 +239,10 @@ def test_EvolutionStrategyOptimizer_convergence():
             memory=False,
             print_results=False,
             progress_bar=False,
-            initialize={"warm_start": warm_start_},
+            initialize=initialize,
         )
 
-        scores.append(opt.score_best)
+        scores.append(opt.best_score)
 
     score_mean = np.array(scores).mean()
     assert min_score_accept < score_mean
@@ -281,10 +259,10 @@ def test_BayesianOptimizer_convergence():
             memory=False,
             print_results=False,
             progress_bar=False,
-            initialize={"warm_start": warm_start_},
+            initialize=initialize,
         )
 
-        scores.append(opt.score_best)
+        scores.append(opt.best_score)
 
     score_mean = np.array(scores).mean()
     assert min_score_accept < score_mean
@@ -301,10 +279,10 @@ def test_TreeStructuredParzenEstimators_convergence():
             memory=False,
             print_results=False,
             progress_bar=False,
-            initialize={"warm_start": warm_start_},
+            initialize=initialize,
         )
 
-        scores.append(opt.score_best)
+        scores.append(opt.best_score)
 
     score_mean = np.array(scores).mean()
     assert min_score_accept < score_mean
@@ -321,11 +299,13 @@ def test_DecisionTreeOptimizer_convergence():
             memory=False,
             print_results=False,
             progress_bar=False,
-            initialize={"warm_start": warm_start_},
+            initialize=initialize,
         )
 
-        scores.append(opt.score_best)
+        scores.append(opt.best_score)
 
     score_mean = np.array(scores).mean()
     assert min_score_accept < score_mean
 
+
+test_DecisionTreeOptimizer_convergence()
