@@ -20,55 +20,20 @@ def gaussian(distance, sig, sigma_factor=1):
 
 
 class TabuOptimizer(HillClimbingOptimizer, Search):
-    def __init__(self, search_space, tabu_memory=3):
+    def __init__(self, search_space, tabu_factor=3):
         super().__init__(search_space)
 
         self.tabus = []
-        self.tabu_memory = tabu_memory
+        self.tabu_factor = tabu_factor
+        self.epsilon_mod = 1
 
-    def add_tabu(self, tabu):
-        self.tabus.append(tabu)
-
-        if len(self.tabus) > self.tabu_memory:
-            self.tabus.pop(0)
-
-    def _move_climb(self, pos, epsilon_mod=1):
-        sigma = 1 + self.space_dim * self.epsilon * epsilon_mod
-        pos_normal = np.random.normal(pos, sigma, pos.shape)
-        pos_new_int = np.rint(pos_normal)
-
-        sigma_mod = 1
-        run = True
-        while run:
-            pos_normal = np.random.normal(pos, sigma * sigma_mod, pos.shape)
-            pos_new_int = np.rint(pos_normal)
-
-            p_discard_sum = []
-            for tabu in self.tabus:
-                distance = euclidean(pos_new_int, tabu)
-                sigma_mean = sigma.mean()
-                p_discard = gaussian(distance, sigma_mean)
-
-                p_discard_sum.append(p_discard)
-
-            p_discard = np.array(p_discard_sum).sum()
-            rand = random.uniform(0, 1)
-
-            if p_discard < rand:
-                run = False
-
-            sigma_mod = sigma_mod * 1.01
-
-        n_zeros = [0] * len(self.space_dim)
-        pos = np.clip(pos_new_int, n_zeros, self.space_dim)
-
-        self.pos_new = pos.astype(int)
-
-        return self.pos_new
+    def iterate(self):
+        return self._move_climb(self.pos_current)
 
     def evaluate(self, score_new):
         super().evaluate(score_new)
 
-        if score_new < self.score_best:
-            self.add_tabu(self.pos_new)
-
+        if score_new <= self.score_current:
+            self.epsilon_mod = self.tabu_factor
+        else:
+            self.epsilon_mod = 1
