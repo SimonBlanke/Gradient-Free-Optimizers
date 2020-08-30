@@ -11,7 +11,7 @@ n_iter = 33
 opt = TabuOptimizer
 
 
-def test_tabu_memory():
-    for tabu_memory in [1, 100]:
-        opt_para = {"tabu_memory": tabu_memory}
+def test_tabu_factor():
+    for tabu_factor in [1, 3, 20, 50, 100]:
+        opt_para = {"tabu_factor": tabu_factor}
         _base_test(opt, n_iter, opt_para=opt_para)
