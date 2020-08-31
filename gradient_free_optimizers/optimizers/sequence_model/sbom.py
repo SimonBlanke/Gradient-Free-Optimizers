@@ -5,6 +5,7 @@
 
 import numpy as np
 
+np.seterr(divide="ignore", invalid="ignore")
 
 from ..base_optimizer import BaseOptimizer
 from ...search import Search
