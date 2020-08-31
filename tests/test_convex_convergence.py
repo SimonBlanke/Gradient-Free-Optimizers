@@ -41,10 +41,10 @@ def objective_function(pos_new):
 
 
 search_space = [np.arange(-100, 100, 1)]
-initialize = {"grid": 4, "random": 2, "vertices": 4}
+initialize = {"vertices": 2}
 
 n_opts = 100
-n_iter = 50
+n_iter = 60
 min_score_accept = -100
 
 
