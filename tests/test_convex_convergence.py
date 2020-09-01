@@ -15,24 +15,8 @@ from gradient_free_optimizers import (
     BayesianOptimizer,
     TreeStructuredParzenEstimators,
     DecisionTreeOptimizer,
+    EnsembleOptimizer,
 )
-
-
-optimizer_dict = {
-    "HillClimbing": HillClimbingOptimizer,
-    "StochasticHillClimbing": StochasticHillClimbingOptimizer,
-    "TabuSearch": TabuOptimizer,
-    "RandomSearch": RandomSearchOptimizer,
-    "RandomRestartHillClimbing": RandomRestartHillClimbingOptimizer,
-    "RandomAnnealing": RandomAnnealingOptimizer,
-    "SimulatedAnnealing": SimulatedAnnealingOptimizer,
-    "ParallelTempering": ParallelTemperingOptimizer,
-    "ParticleSwarm": ParticleSwarmOptimizer,
-    "EvolutionStrategy": EvolutionStrategyOptimizer,
-    "Bayesian": BayesianOptimizer,
-    "TreeStructured": TreeStructuredParzenEstimators,
-    "DecisionTree": DecisionTreeOptimizer,
-}
 
 
 def objective_function(pos_new):
@@ -43,7 +27,7 @@ def objective_function(pos_new):
 search_space = [np.arange(-100, 100, 1)]
 initialize = {"vertices": 2}
 
-n_opts = 100
+n_opts = 33
 n_iter = 50
 min_score_accept = -500
 
@@ -307,3 +291,22 @@ def test_DecisionTreeOptimizer_convergence():
     score_mean = np.array(scores).mean()
     assert min_score_accept < score_mean
 
+
+def test_EnsembleOptimizer_convergence():
+    scores = []
+    for rnd_st in tqdm(range(n_opts)):
+        opt = EnsembleOptimizer(search_space)
+        opt.search(
+            objective_function,
+            n_iter=int(n_iter / 2),
+            random_state=rnd_st,
+            memory=False,
+            print_results=False,
+            progress_bar=False,
+            initialize=initialize,
+        )
+
+        scores.append(opt.best_score)
+
+    score_mean = np.array(scores).mean()
+    assert min_score_accept < score_mean

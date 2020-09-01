@@ -12,6 +12,29 @@ from sklearn.ensemble import ExtraTreesRegressor as _ExtraTreesRegressor_
 from sklearn.ensemble import RandomForestRegressor as _RandomForestRegressor_
 
 
+class EnsembleRegressor:
+    def __init__(self, estimators):
+        self.estimators = estimators
+
+    def fit(self, X, y):
+        for estimator in self.estimators:
+            estimator.fit(X, y)
+
+    def predict(self, X, return_std=False):
+        predictions = []
+        for estimator in self.estimators:
+            predictions.append(estimator.predict(X))
+
+        predictions = np.array(predictions).T
+        mean = predictions.mean(axis=1)
+        std = predictions.std(axis=1)
+
+        if return_std:
+
+            return mean, std
+        return mean
+
+
 def _return_std(X, trees, predictions, min_variance):
     std = np.zeros(len(X))
 
@@ -40,11 +63,8 @@ class TreeEnsembleBase:
         mean = super().predict(X)
 
         if return_std:
-            if self.criterion != "mse":
-                raise ValueError(
-                    "Expected impurity to be 'mse', got %s instead" % self.criterion
-                )
             std = _return_std(X, self.estimators_, mean, self.min_variance)
+
             return mean, std
         return mean
 

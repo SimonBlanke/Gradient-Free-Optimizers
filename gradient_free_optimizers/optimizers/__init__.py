@@ -26,6 +26,7 @@ from .sequence_model import (
     BayesianOptimizer,
     TreeStructuredParzenEstimators,
     DecisionTreeOptimizer,
+    EnsembleOptimizer,
 )
 
 __all__ = [
@@ -42,4 +43,5 @@ __all__ = [
     "BayesianOptimizer",
     "TreeStructuredParzenEstimators",
     "DecisionTreeOptimizer",
+    "EnsembleOptimizer",
 ]
