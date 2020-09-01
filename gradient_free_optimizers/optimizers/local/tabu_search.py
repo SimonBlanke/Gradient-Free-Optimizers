@@ -11,14 +11,6 @@ from ...search import Search
 from scipy.spatial.distance import euclidean
 
 
-def gaussian(distance, sig, sigma_factor=1):
-    return (
-        sigma_factor
-        * sig
-        * np.exp(-np.power(distance, 2.0) / (sigma_factor * np.power(sig, 2.0)))
-    )
-
-
 class TabuOptimizer(HillClimbingOptimizer, Search):
     def __init__(self, search_space, tabu_factor=3):
         super().__init__(search_space)
@@ -27,6 +19,7 @@ class TabuOptimizer(HillClimbingOptimizer, Search):
         self.tabu_factor = tabu_factor
         self.epsilon_mod = 1
 
+    @HillClimbingOptimizer.iter_dec
     def iterate(self):
         return self._move_climb(self.pos_current)
 
@@ -37,3 +30,4 @@ class TabuOptimizer(HillClimbingOptimizer, Search):
             self.epsilon_mod = self.tabu_factor
         else:
             self.epsilon_mod = 1
+

@@ -55,7 +55,6 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
 
     def iterate(self):
         nth_iter = self._iterations(self.systems)
-        print("nth_iter", nth_iter)
         self.p_current = self.systems[nth_iter % len(self.systems)]
 
         return self.p_current.iterate()
