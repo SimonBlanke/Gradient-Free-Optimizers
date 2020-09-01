@@ -44,8 +44,8 @@ search_space = [np.arange(-100, 100, 1)]
 initialize = {"vertices": 2}
 
 n_opts = 100
-n_iter = 60
-min_score_accept = -100
+n_iter = 50
+min_score_accept = -500
 
 
 def test_HillClimbingOptimizer_convergence():
@@ -254,7 +254,7 @@ def test_BayesianOptimizer_convergence():
         opt = BayesianOptimizer(search_space)
         opt.search(
             objective_function,
-            n_iter=n_iter,
+            n_iter=int(n_iter / 2),
             random_state=rnd_st,
             memory=False,
             print_results=False,
@@ -274,7 +274,7 @@ def test_TreeStructuredParzenEstimators_convergence():
         opt = TreeStructuredParzenEstimators(search_space)
         opt.search(
             objective_function,
-            n_iter=n_iter,
+            n_iter=int(n_iter / 2),
             random_state=rnd_st,
             memory=False,
             print_results=False,
@@ -294,7 +294,7 @@ def test_DecisionTreeOptimizer_convergence():
         opt = DecisionTreeOptimizer(search_space)
         opt.search(
             objective_function,
-            n_iter=n_iter,
+            n_iter=int(n_iter / 2),
             random_state=rnd_st,
             memory=False,
             print_results=False,
@@ -307,5 +307,3 @@ def test_DecisionTreeOptimizer_convergence():
     score_mean = np.array(scores).mean()
     assert min_score_accept < score_mean
 
-
-test_DecisionTreeOptimizer_convergence()

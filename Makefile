@@ -16,4 +16,4 @@ reinstall:
 	pip install dist/*
 
 test:
-	pytest -p no:warnings -rfEX tests/ \
+	python -m pytest -p no:warnings -rfEX tests/ \
