@@ -11,29 +11,6 @@ from ..base_optimizer import BaseOptimizer
 from ...search import Search
 
 
-def _split_into_subcubes(data, split_per_dim=2):
-    n_dim = data.shape[1]
-    subcubes = []
-
-    data_list = [data]
-
-    for dim in range(n_dim):
-        subdata_list = []
-
-        if dim == 0:
-            data_list = [data]
-
-        for data in data_list:
-            data_sorted = data[data[:, dim].argsort()]
-
-            subdata = np.array_split(data_sorted, 2, axis=0)
-            subdata_list = subdata_list + subdata
-
-        data_list = subdata_list
-
-    return subcubes
-
-
 def skip_refit_75(i):
     if i <= 33:
         return 1
