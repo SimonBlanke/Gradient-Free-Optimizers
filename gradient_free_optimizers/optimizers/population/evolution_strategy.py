@@ -12,7 +12,7 @@ from ..local import HillClimbingOptimizer
 
 
 class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
-    def __init__(self, search_space, mutation_rate=0.5, crossover_rate=0.5):
+    def __init__(self, search_space, mutation_rate=0.8, crossover_rate=0.2):
         super().__init__(search_space)
 
         self.mutation_rate = mutation_rate

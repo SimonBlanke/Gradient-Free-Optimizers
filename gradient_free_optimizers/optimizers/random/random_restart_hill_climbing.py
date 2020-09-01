@@ -12,9 +12,10 @@ class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer, Search):
         super().__init__(search_space)
         self.n_iter_restart = n_iter_restart
 
+    @HillClimbingOptimizer.iter_dec
     def iterate(self):
-        notZero = self.n_iter_restart != 0
-        modZero = len(self.pos_new_list) % self.n_iter_restart == 0
+        notZero = self.nth_iter != 0
+        modZero = self.nth_iter % self.n_iter_restart == 0
 
         if notZero and modZero:
             pos = self.move_random()
