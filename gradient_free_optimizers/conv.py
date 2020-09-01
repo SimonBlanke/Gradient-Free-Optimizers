@@ -26,6 +26,7 @@ def values2positions(search_space, values):
     return init_pos_conv_list
 
 
+"""
 def positions2values(search_space, positions):
     pos_converted = []
     positions_np = np.array(positions)
@@ -36,3 +37,6 @@ def positions2values(search_space, positions):
         pos_converted.append(pos_conv)
 
     return list(np.array(pos_converted).T)
+
+"""
+
