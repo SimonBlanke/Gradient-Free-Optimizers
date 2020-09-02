@@ -11,6 +11,10 @@ n_iter = 33
 opt = TreeStructuredParzenEstimators
 
 
+def test_opt():
+    _base_test(opt, n_iter)
+
+
 """
 def test_warm_start_smbo():
     gpr_X, gpr_y = [], []
