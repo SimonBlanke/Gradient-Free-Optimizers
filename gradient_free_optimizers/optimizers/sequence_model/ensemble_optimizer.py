@@ -3,7 +3,7 @@
 # License: MIT License
 
 
-from .bayesian_optimization import BayesianOptimizer
+from .exp_imp_based_opt import ExpectedImprovementBasedOptimization
 from .surrogate_models import EnsembleRegressor
 
 
@@ -15,7 +15,7 @@ from sklearn.svm import SVR
 from sklearn.gaussian_process import GaussianProcessRegressor
 
 
-class EnsembleOptimizer(BayesianOptimizer):
+class EnsembleOptimizer(ExpectedImprovementBasedOptimization):
     def __init__(
         self,
         search_space,

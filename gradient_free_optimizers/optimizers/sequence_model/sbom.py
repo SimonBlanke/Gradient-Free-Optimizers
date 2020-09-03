@@ -85,8 +85,6 @@ class SBOM(BaseOptimizer, Search):
         self.n_dim = len(pos_space)
         self.all_pos_comb = np.array(np.meshgrid(*pos_space)).T.reshape(-1, self.n_dim)
 
-        # _split_into_subcubes(self.all_pos_comb)
-
     def init_pos(self, pos):
         super().init_pos(pos)
         self.X_sample.append(pos)

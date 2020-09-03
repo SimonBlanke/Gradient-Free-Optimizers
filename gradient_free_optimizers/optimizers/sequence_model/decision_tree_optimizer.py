@@ -3,7 +3,7 @@
 # License: MIT License
 
 
-from .bayesian_optimization import BayesianOptimizer
+from .exp_imp_based_opt import ExpectedImprovementBasedOptimization
 from .surrogate_models import (
     RandomForestRegressor,
     ExtraTreesRegressor,
@@ -15,7 +15,7 @@ tree_regressor_dict = {
 }
 
 
-class DecisionTreeOptimizer(BayesianOptimizer):
+class DecisionTreeOptimizer(ExpectedImprovementBasedOptimization):
     """Based on the forest-optimizer in the scikit-optimize package"""
 
     def __init__(self, search_space, tree_regressor="random_forest", **kwargs):
