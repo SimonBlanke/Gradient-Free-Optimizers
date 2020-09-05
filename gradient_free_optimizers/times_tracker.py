@@ -12,7 +12,7 @@ class TimesTracker:
         self.eval_times = []
         self.iter_times = []
 
-    def eval_time_dec(func):
+    def eval_time(func):
         def wrapper(self, *args, **kwargs):
             t = time.time()
             res = func(self, *args, **kwargs)
@@ -21,7 +21,7 @@ class TimesTracker:
 
         return wrapper
 
-    def iter_time_dec(func):
+    def iter_time(func):
         def wrapper(self, *args, **kwargs):
             t = time.time()
             res = func(self, *args, **kwargs)

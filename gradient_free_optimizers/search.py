@@ -42,7 +42,7 @@ class Search(TimesTracker):
 
         self.optimizers = []
 
-    @TimesTracker.eval_time_dec
+    @TimesTracker.eval_time
     def _score(self, pos):
         pos_tuple = tuple(pos)
 
@@ -64,7 +64,7 @@ class Search(TimesTracker):
             self.memory_dict = dict(zip(value_tuple_list, scores))
             self.memory = True
 
-    @TimesTracker.iter_time_dec
+    @TimesTracker.iter_time
     def _initialization(self, init_pos):
         self.init_pos(init_pos)
 
@@ -74,7 +74,7 @@ class Search(TimesTracker):
 
         self.p_bar.update(score_new, value_new)
 
-    @TimesTracker.iter_time_dec
+    @TimesTracker.iter_time
     def _iteration(self):
         pos_new = self.iterate()
 
