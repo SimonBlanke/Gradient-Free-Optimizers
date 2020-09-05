@@ -62,6 +62,7 @@ class Search(TimesTracker):
 
             value_tuple_list = list(map(tuple, values_list))
             self.memory_dict = dict(zip(value_tuple_list, scores))
+            self.memory = True
 
     @TimesTracker.iter_time_dec
     def _initialization(self, init_pos):
@@ -83,11 +84,24 @@ class Search(TimesTracker):
 
         self.p_bar.update(score_new, value_new)
 
+    def _init_search(self):
+        self._init_memory(self.memory)
+        self.p_bar = p_bar_dict[self.progress_bar](
+            self.nth_process, self.n_iter, self.objective_function
+        )
+        set_random_seed(self.nth_process, self.random_state)
+
+        # get init positions
+        init = Initializer(self.search_space)
+        init_positions = init.set_pos(self.initialize)
+
+        return init_positions
+
     def search(
         self,
         objective_function,
         n_iter,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
+        initialize={"grid": 8, "random": 4, "vertices": 8},
         max_time=None,
         memory=True,
         progress_bar=True,
@@ -98,16 +112,14 @@ class Search(TimesTracker):
         start_time = time.time()
 
         self.objective_function = objective_function
+        self.n_iter = n_iter
+        self.initialize = initialize
         self.memory = memory
+        self.progress_bar = progress_bar
+        self.random_state = random_state
+        self.nth_process = nth_process
 
-        self._init_memory(memory)
-        self.p_bar = p_bar_dict[progress_bar](nth_process, n_iter, objective_function)
-
-        set_random_seed(nth_process, random_state)
-
-        # get init positions
-        init = Initializer(self.search_space)
-        init_positions = init.set_pos(initialize)
+        init_positions = self._init_search()
 
         # loop to initialize N positions
         for init_pos in init_positions:
