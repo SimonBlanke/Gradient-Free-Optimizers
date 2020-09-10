@@ -41,8 +41,7 @@ def test_HillClimbingOptimizer_convergence():
             n_iter=n_iter,
             random_state=rnd_st,
             memory=False,
-            print_results=False,
-            progress_bar=False,
+            verbosity={"print_results": False, "progress_bar": False,},
             initialize=initialize,
         )
 
@@ -61,8 +60,7 @@ def test_StochasticHillClimbingOptimizer_convergence():
             n_iter=n_iter,
             random_state=rnd_st,
             memory=False,
-            print_results=False,
-            progress_bar=False,
+            verbosity={"print_results": False, "progress_bar": False,},
             initialize=initialize,
         )
 
@@ -81,8 +79,7 @@ def test_TabuOptimizer_convergence():
             n_iter=n_iter,
             random_state=rnd_st,
             memory=False,
-            print_results=False,
-            progress_bar=False,
+            verbosity={"print_results": False, "progress_bar": False,},
             initialize=initialize,
         )
 
@@ -101,8 +98,7 @@ def test_RandomSearchOptimizer_convergence():
             n_iter=n_iter,
             random_state=rnd_st,
             memory=False,
-            print_results=False,
-            progress_bar=False,
+            verbosity={"print_results": False, "progress_bar": False,},
             initialize=initialize,
         )
 
@@ -121,8 +117,7 @@ def test_RandomRestartHillClimbingOptimizer_convergence():
             n_iter=n_iter,
             random_state=rnd_st,
             memory=False,
-            print_results=False,
-            progress_bar=False,
+            verbosity={"print_results": False, "progress_bar": False,},
             initialize=initialize,
         )
 
@@ -141,8 +136,7 @@ def test_RandomAnnealingOptimizer_convergence():
             n_iter=n_iter,
             random_state=rnd_st,
             memory=False,
-            print_results=False,
-            progress_bar=False,
+            verbosity={"print_results": False, "progress_bar": False,},
             initialize=initialize,
         )
 
@@ -161,8 +155,7 @@ def test_SimulatedAnnealingOptimizer_convergence():
             n_iter=n_iter,
             random_state=rnd_st,
             memory=False,
-            print_results=False,
-            progress_bar=False,
+            verbosity={"print_results": False, "progress_bar": False,},
             initialize=initialize,
         )
 
@@ -181,8 +174,7 @@ def test_ParallelTemperingOptimizer_convergence():
             n_iter=n_iter,
             random_state=rnd_st,
             memory=False,
-            print_results=False,
-            progress_bar=False,
+            verbosity={"print_results": False, "progress_bar": False,},
             initialize=initialize,
         )
 
@@ -201,8 +193,7 @@ def test_ParticleSwarmOptimizer_convergence():
             n_iter=n_iter,
             random_state=rnd_st,
             memory=False,
-            print_results=False,
-            progress_bar=False,
+            verbosity={"print_results": False, "progress_bar": False,},
             initialize=initialize,
         )
 
@@ -221,8 +212,7 @@ def test_EvolutionStrategyOptimizer_convergence():
             n_iter=n_iter,
             random_state=rnd_st,
             memory=False,
-            print_results=False,
-            progress_bar=False,
+            verbosity={"print_results": False, "progress_bar": False,},
             initialize=initialize,
         )
 
@@ -241,8 +231,7 @@ def test_BayesianOptimizer_convergence():
             n_iter=int(n_iter / 2),
             random_state=rnd_st,
             memory=False,
-            print_results=False,
-            progress_bar=False,
+            verbosity={"print_results": False, "progress_bar": False,},
             initialize=initialize,
         )
 
@@ -261,8 +250,7 @@ def test_TreeStructuredParzenEstimators_convergence():
             n_iter=int(n_iter / 2),
             random_state=rnd_st,
             memory=False,
-            print_results=False,
-            progress_bar=False,
+            verbosity={"print_results": False, "progress_bar": False,},
             initialize=initialize,
         )
 
@@ -281,8 +269,7 @@ def test_DecisionTreeOptimizer_convergence():
             n_iter=int(n_iter / 2),
             random_state=rnd_st,
             memory=False,
-            print_results=False,
-            progress_bar=False,
+            verbosity={"print_results": False, "progress_bar": False,},
             initialize=initialize,
         )
 
@@ -301,8 +288,7 @@ def test_EnsembleOptimizer_convergence():
             n_iter=int(n_iter / 2),
             random_state=rnd_st,
             memory=False,
-            print_results=False,
-            progress_bar=False,
+            verbosity={"print_results": False, "progress_bar": False,},
             initialize=initialize,
         )
 
@@ -310,3 +296,4 @@ def test_EnsembleOptimizer_convergence():
 
     score_mean = np.array(scores).mean()
     assert min_score_accept < score_mean
+

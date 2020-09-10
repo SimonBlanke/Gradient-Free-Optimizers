@@ -26,6 +26,6 @@ search_space = {
 
 def test_hyperactive():
     hyper = Hyperactive(X, y)
-    hyper.add_search(model, search_space)
+    hyper.add_search(model, search_space, n_iter=50)
     hyper.run()
 
