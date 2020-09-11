@@ -11,13 +11,15 @@ class ProgressBarBase:
         self.best_since_iter = 0
         self.score_best = -np.inf
         self.values_best = None
+        self.pos_new = None
 
         self.objective_function = objective_function
 
-    def _new2best(self, score_new, values_new):
+    def _new2best(self, score_new, values_new, pos_new):
         if score_new > self.score_best:
             self.score_best = score_new
             self.values_best = values_new
+            self.pos_new = pos_new
 
     def _print_results(self, print_results):
         if print_results:
@@ -30,8 +32,8 @@ class ProgressBarLVL0(ProgressBarBase):
     def __init__(self, nth_process, n_iter, objective_function):
         super().__init__(nth_process, n_iter, objective_function)
 
-    def update(self, score_new, values_new):
-        self._new2best(score_new, values_new)
+    def update(self, score_new, values_new, pos_new):
+        self._new2best(score_new, values_new, pos_new)
 
     def close(self, print_results):
         self._print_results(print_results)
@@ -45,14 +47,16 @@ class ProgressBarLVL1(ProgressBarBase):
 
         self._tqdm = tqdm(**self._tqdm_dict(nth_process, n_iter, objective_function))
 
-    def update(self, score_new, values_new):
+    def update(self, score_new, values_new, pos_new):
         if score_new > self.score_best:
             self.best_since_iter = self._tqdm.n - 1
             self._tqdm.set_postfix(
-                best_score=str(score_new), best_iter=str(self.best_since_iter)
+                best_score=str(score_new),
+                best_pos=str(pos_new),
+                best_iter=str(self.best_since_iter),
             )
 
-        self._new2best(score_new, values_new)
+        self._new2best(score_new, values_new, pos_new)
         self._tqdm.update()
         self._tqdm.refresh()
 
@@ -68,13 +72,13 @@ class ProgressBarLVL1(ProgressBarBase):
         if nth_process is None:
             process_str = ""
         else:
-            process_str = "Process " + str(nth_process) + " -> "
+            process_str = "Process " + str(nth_process)
 
         return {
             "total": n_iter,
-            "desc": process_str + objective_function.__name__,
+            "desc": process_str,
             "position": nth_process,
-            "leave": True,
-            "smoothing": 1.0,
+            "leave": False,
+            # "smoothing": 1.0,
         }
 
