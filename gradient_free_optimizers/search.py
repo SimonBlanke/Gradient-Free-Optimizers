@@ -51,10 +51,12 @@ class Search(TimesTracker):
         else:
             score = self.objective_function(pos)
             self.memory_dict[pos_tuple] = score
+            self.memory_dict_new[pos_tuple] = score
             return score
 
     def _init_memory(self, memory):
         self.memory_dict = {}
+        self.memory_dict_new = {}
 
         if isinstance(memory, dict):
             values_list = memory["values"]
@@ -72,7 +74,7 @@ class Search(TimesTracker):
         score_new = self._score(value_new)
         self.evaluate(score_new)
 
-        self.p_bar.update(score_new, value_new)
+        self.p_bar.update(score_new, value_new, init_pos)
 
     @TimesTracker.iter_time
     def _iteration(self):
@@ -82,7 +84,7 @@ class Search(TimesTracker):
         score_new = self._score(value_new)
         self.evaluate(score_new)
 
-        self.p_bar.update(score_new, value_new)
+        self.p_bar.update(score_new, value_new, pos_new)
 
     def _init_search(self):
         self._init_memory(self.memory)
@@ -101,11 +103,10 @@ class Search(TimesTracker):
         self,
         objective_function,
         n_iter,
-        initialize={"grid": 8, "random": 4, "vertices": 8},
+        initialize={"grid": 4, "random": 2, "vertices": 4},
         max_time=None,
         memory=True,
-        progress_bar=True,
-        print_results=True,
+        verbosity={"progress_bar": True, "print_results": True,},
         random_state=None,
         nth_process=None,
     ):
@@ -115,7 +116,7 @@ class Search(TimesTracker):
         self.n_iter = n_iter
         self.initialize = initialize
         self.memory = memory
-        self.progress_bar = progress_bar
+        self.progress_bar = verbosity["progress_bar"]
         self.random_state = random_state
         self.nth_process = nth_process
 
@@ -134,9 +135,9 @@ class Search(TimesTracker):
             self._iteration()
 
         self.values = np.array(list(self.memory_dict.keys()))
-        self.scores = np.array(list(self.memory_dict.values())).reshape(-1, 1)
+        self.scores = np.array(list(self.memory_dict.values())).reshape(-1,)
 
-        self.p_bar.close(print_results)
+        self.p_bar.close(verbosity["print_results"])
 
         self.best_score = self.p_bar.score_best
         self.best_values = self.p_bar.values_best
