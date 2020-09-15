@@ -10,7 +10,7 @@ from tqdm import tqdm
 
 from .init_positions import Initializer
 from .progress_bar import ProgressBarLVL0, ProgressBarLVL1
-from .conv import values2positions, position2value
+from .conv import position2value
 from .times_tracker import TimesTracker
 
 p_bar_dict = {

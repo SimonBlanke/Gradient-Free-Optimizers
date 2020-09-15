@@ -14,19 +14,34 @@ def position2value(search_space, position):
     return value
 
 
+def value2position(search_space, value):
+    position = []
+
+    for n, space_dim in enumerate(search_space):
+        pos = np.abs(value[n] - space_dim).argmin()
+        position.append(pos)
+
+    return position
+
+
+"""
 def values2positions(search_space, values):
     init_pos_conv_list = []
     values_np = np.array(values)
+
+    print("\n values_np \n", values_np)
+    print("\n search_space \n", search_space)
 
     for n, space_dim in enumerate(search_space):
         pos_1d = values_np[:, n]
         init_pos_conv = np.where(space_dim == pos_1d)[0]
         init_pos_conv_list.append(init_pos_conv)
 
+    print("\n init_pos_conv_list \n", init_pos_conv_list)
+
     return init_pos_conv_list
 
 
-"""
 def positions2values(search_space, positions):
     pos_converted = []
     positions_np = np.array(positions)

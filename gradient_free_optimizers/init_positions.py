@@ -5,7 +5,7 @@
 import random
 import numpy as np
 
-from .conv import values2positions
+from .conv import value2position
 
 
 class Initializer:
@@ -26,10 +26,19 @@ class Initializer:
             positions = self._init_vertices(initialize["vertices"])
             init_positions_list.append(positions)
         if "warm_start" in initialize:
-            positions = values2positions(self.search_space, initialize["warm_start"])
+            positions = self._init_warm_start(initialize["warm_start"])
             init_positions_list.append(positions)
 
         return [item for sublist in init_positions_list for item in sublist]
+
+    def _init_warm_start(self, value_list):
+        positions = []
+
+        for value_ in value_list:
+            pos = value2position(self.search_space, value_)
+            positions.append(pos)
+
+        return positions
 
     def _init_random_search(self, n_pos):
         positions = []
