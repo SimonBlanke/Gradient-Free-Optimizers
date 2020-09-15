@@ -21,6 +21,8 @@ def value2position(search_space, value):
         pos = np.abs(value[n] - space_dim).argmin()
         position.append(pos)
 
+    position = np.array(position)
+
     return position
 
 
