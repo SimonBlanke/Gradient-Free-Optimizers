@@ -1,0 +1,36 @@
+from gradient_free_optimizers import (
+    HillClimbingOptimizer,
+    StochasticHillClimbingOptimizer,
+    TabuOptimizer,
+    RandomSearchOptimizer,
+    RandomRestartHillClimbingOptimizer,
+    RandomAnnealingOptimizer,
+    SimulatedAnnealingOptimizer,
+    ParallelTemperingOptimizer,
+    ParticleSwarmOptimizer,
+    EvolutionStrategyOptimizer,
+    BayesianOptimizer,
+    TreeStructuredParzenEstimators,
+    DecisionTreeOptimizer,
+    EnsembleOptimizer,
+)
+
+pytest_parameter = (
+    "Optimizer",
+    [
+        (HillClimbingOptimizer),
+        (StochasticHillClimbingOptimizer),
+        (TabuOptimizer),
+        (RandomSearchOptimizer),
+        (RandomRestartHillClimbingOptimizer),
+        (RandomAnnealingOptimizer),
+        (SimulatedAnnealingOptimizer),
+        (ParallelTemperingOptimizer),
+        (ParticleSwarmOptimizer),
+        (EvolutionStrategyOptimizer),
+        (BayesianOptimizer),
+        (TreeStructuredParzenEstimators),
+        (DecisionTreeOptimizer),
+        (EnsembleOptimizer),
+    ],
+)
