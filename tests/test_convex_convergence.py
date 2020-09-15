@@ -1,3 +1,4 @@
+import pytest
 import numpy as np
 from tqdm import tqdm
 
@@ -32,10 +33,29 @@ n_iter = 50
 min_score_accept = -500
 
 
-def test_HillClimbingOptimizer_convergence():
+@pytest.mark.parametrize(
+    "test_input",
+    [
+        (HillClimbingOptimizer),
+        (StochasticHillClimbingOptimizer),
+        (TabuOptimizer),
+        (RandomSearchOptimizer),
+        (RandomRestartHillClimbingOptimizer),
+        (RandomAnnealingOptimizer),
+        (SimulatedAnnealingOptimizer),
+        (ParallelTemperingOptimizer),
+        (ParticleSwarmOptimizer),
+        (EvolutionStrategyOptimizer),
+        (BayesianOptimizer),
+        (TreeStructuredParzenEstimators),
+        (DecisionTreeOptimizer),
+        (EnsembleOptimizer),
+    ],
+)
+def test_optimizer(test_input):
     scores = []
     for rnd_st in tqdm(range(n_opts)):
-        opt = HillClimbingOptimizer(search_space)
+        opt = test_input(search_space)
         opt.search(
             objective_function,
             n_iter=n_iter,
@@ -46,254 +66,6 @@ def test_HillClimbingOptimizer_convergence():
         )
 
         scores.append(opt.best_score)
-
     score_mean = np.array(scores).mean()
+
     assert min_score_accept < score_mean
-
-
-def test_StochasticHillClimbingOptimizer_convergence():
-    scores = []
-    for rnd_st in tqdm(range(n_opts)):
-        opt = StochasticHillClimbingOptimizer(search_space)
-        opt.search(
-            objective_function,
-            n_iter=n_iter,
-            random_state=rnd_st,
-            memory=False,
-            verbosity={"print_results": False, "progress_bar": False,},
-            initialize=initialize,
-        )
-
-        scores.append(opt.best_score)
-
-    score_mean = np.array(scores).mean()
-    assert min_score_accept < score_mean
-
-
-def test_TabuOptimizer_convergence():
-    scores = []
-    for rnd_st in tqdm(range(n_opts)):
-        opt = TabuOptimizer(search_space)
-        opt.search(
-            objective_function,
-            n_iter=n_iter,
-            random_state=rnd_st,
-            memory=False,
-            verbosity={"print_results": False, "progress_bar": False,},
-            initialize=initialize,
-        )
-
-        scores.append(opt.best_score)
-
-    score_mean = np.array(scores).mean()
-    assert min_score_accept < score_mean
-
-
-def test_RandomSearchOptimizer_convergence():
-    scores = []
-    for rnd_st in tqdm(range(n_opts)):
-        opt = RandomSearchOptimizer(search_space)
-        opt.search(
-            objective_function,
-            n_iter=n_iter,
-            random_state=rnd_st,
-            memory=False,
-            verbosity={"print_results": False, "progress_bar": False,},
-            initialize=initialize,
-        )
-
-        scores.append(opt.best_score)
-
-    score_mean = np.array(scores).mean()
-    assert min_score_accept < score_mean
-
-
-def test_RandomRestartHillClimbingOptimizer_convergence():
-    scores = []
-    for rnd_st in tqdm(range(n_opts)):
-        opt = RandomRestartHillClimbingOptimizer(search_space)
-        opt.search(
-            objective_function,
-            n_iter=n_iter,
-            random_state=rnd_st,
-            memory=False,
-            verbosity={"print_results": False, "progress_bar": False,},
-            initialize=initialize,
-        )
-
-        scores.append(opt.best_score)
-
-    score_mean = np.array(scores).mean()
-    assert min_score_accept < score_mean
-
-
-def test_RandomAnnealingOptimizer_convergence():
-    scores = []
-    for rnd_st in tqdm(range(n_opts)):
-        opt = RandomAnnealingOptimizer(search_space)
-        opt.search(
-            objective_function,
-            n_iter=n_iter,
-            random_state=rnd_st,
-            memory=False,
-            verbosity={"print_results": False, "progress_bar": False,},
-            initialize=initialize,
-        )
-
-        scores.append(opt.best_score)
-
-    score_mean = np.array(scores).mean()
-    assert min_score_accept < score_mean
-
-
-def test_SimulatedAnnealingOptimizer_convergence():
-    scores = []
-    for rnd_st in tqdm(range(n_opts)):
-        opt = SimulatedAnnealingOptimizer(search_space)
-        opt.search(
-            objective_function,
-            n_iter=n_iter,
-            random_state=rnd_st,
-            memory=False,
-            verbosity={"print_results": False, "progress_bar": False,},
-            initialize=initialize,
-        )
-
-        scores.append(opt.best_score)
-
-    score_mean = np.array(scores).mean()
-    assert min_score_accept < score_mean
-
-
-def test_ParallelTemperingOptimizer_convergence():
-    scores = []
-    for rnd_st in tqdm(range(n_opts)):
-        opt = ParallelTemperingOptimizer(search_space)
-        opt.search(
-            objective_function,
-            n_iter=n_iter,
-            random_state=rnd_st,
-            memory=False,
-            verbosity={"print_results": False, "progress_bar": False,},
-            initialize=initialize,
-        )
-
-        scores.append(opt.best_score)
-
-    score_mean = np.array(scores).mean()
-    assert min_score_accept < score_mean
-
-
-def test_ParticleSwarmOptimizer_convergence():
-    scores = []
-    for rnd_st in tqdm(range(n_opts)):
-        opt = ParticleSwarmOptimizer(search_space)
-        opt.search(
-            objective_function,
-            n_iter=n_iter,
-            random_state=rnd_st,
-            memory=False,
-            verbosity={"print_results": False, "progress_bar": False,},
-            initialize=initialize,
-        )
-
-        scores.append(opt.best_score)
-
-    score_mean = np.array(scores).mean()
-    assert min_score_accept < score_mean
-
-
-def test_EvolutionStrategyOptimizer_convergence():
-    scores = []
-    for rnd_st in tqdm(range(n_opts)):
-        opt = EvolutionStrategyOptimizer(search_space)
-        opt.search(
-            objective_function,
-            n_iter=n_iter,
-            random_state=rnd_st,
-            memory=False,
-            verbosity={"print_results": False, "progress_bar": False,},
-            initialize=initialize,
-        )
-
-        scores.append(opt.best_score)
-
-    score_mean = np.array(scores).mean()
-    assert min_score_accept < score_mean
-
-
-def test_BayesianOptimizer_convergence():
-    scores = []
-    for rnd_st in tqdm(range(n_opts)):
-        opt = BayesianOptimizer(search_space)
-        opt.search(
-            objective_function,
-            n_iter=int(n_iter / 2),
-            random_state=rnd_st,
-            memory=False,
-            verbosity={"print_results": False, "progress_bar": False,},
-            initialize=initialize,
-        )
-
-        scores.append(opt.best_score)
-
-    score_mean = np.array(scores).mean()
-    assert min_score_accept < score_mean
-
-
-def test_TreeStructuredParzenEstimators_convergence():
-    scores = []
-    for rnd_st in tqdm(range(n_opts)):
-        opt = TreeStructuredParzenEstimators(search_space)
-        opt.search(
-            objective_function,
-            n_iter=int(n_iter / 2),
-            random_state=rnd_st,
-            memory=False,
-            verbosity={"print_results": False, "progress_bar": False,},
-            initialize=initialize,
-        )
-
-        scores.append(opt.best_score)
-
-    score_mean = np.array(scores).mean()
-    assert min_score_accept < score_mean
-
-
-def test_DecisionTreeOptimizer_convergence():
-    scores = []
-    for rnd_st in tqdm(range(n_opts)):
-        opt = DecisionTreeOptimizer(search_space)
-        opt.search(
-            objective_function,
-            n_iter=int(n_iter / 2),
-            random_state=rnd_st,
-            memory=False,
-            verbosity={"print_results": False, "progress_bar": False,},
-            initialize=initialize,
-        )
-
-        scores.append(opt.best_score)
-
-    score_mean = np.array(scores).mean()
-    assert min_score_accept < score_mean
-
-
-def test_EnsembleOptimizer_convergence():
-    scores = []
-    for rnd_st in tqdm(range(n_opts)):
-        opt = EnsembleOptimizer(search_space)
-        opt.search(
-            objective_function,
-            n_iter=int(n_iter / 2),
-            random_state=rnd_st,
-            memory=False,
-            verbosity={"print_results": False, "progress_bar": False,},
-            initialize=initialize,
-        )
-
-        scores.append(opt.best_score)
-
-    score_mean = np.array(scores).mean()
-    assert min_score_accept < score_mean
-
