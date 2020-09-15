@@ -10,8 +10,9 @@ def objective_function(pos_new):
 search_space = [np.arange(-100, 101, 1)]
 
 
-def test_initialize_warm_start():
-    initialize = {"warm_start": [np.array([0])]}
+def test_initialize_warm_start_0():
+    init = [0]
+    initialize = {"warm_start": [init]}
 
     opt = RandomSearchOptimizer(search_space)
     opt.search(
@@ -19,6 +20,19 @@ def test_initialize_warm_start():
     )
 
     assert abs(opt.best_score) < 0.001
+
+
+def test_initialize_warm_start_1():
+    search_space = [np.arange(-10, 10, 1)]
+    init = [-10]
+    initialize = {"warm_start": [init]}
+
+    opt = RandomSearchOptimizer(search_space)
+    opt.search(
+        objective_function, n_iter=0, initialize=initialize,
+    )
+
+    assert opt.best_value == init
 
 
 def test_initialize_vertices():
