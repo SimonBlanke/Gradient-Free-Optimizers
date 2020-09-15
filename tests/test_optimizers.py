@@ -33,7 +33,7 @@ n_iter = 50
 min_score_accept = -500
 
 
-@pytest.mark.parametrize(
+pytest_parameter = (
     "test_input",
     [
         (HillClimbingOptimizer),
@@ -52,7 +52,10 @@ min_score_accept = -500
         (EnsembleOptimizer),
     ],
 )
-def test_optimizer(test_input):
+
+
+@pytest.mark.parametrize(*pytest_parameter)
+def test_convex_convergence(test_input):
     scores = []
     for rnd_st in tqdm(range(n_opts)):
         opt = test_input(search_space)
@@ -69,3 +72,28 @@ def test_optimizer(test_input):
     score_mean = np.array(scores).mean()
 
     assert min_score_accept < score_mean
+
+
+@pytest.mark.parametrize(*pytest_parameter)
+def test_exploration(test_input):
+    def objective_function(pos_new):
+        score = -(pos_new[0] * pos_new[0] + pos_new[1] * pos_new[1])
+        return score
+
+    search_space = [np.arange(-20, 20, 1), np.arange(0, 3, 1)]
+    init1 = [-20, 1]
+
+    opt = RandomSearchOptimizer(search_space)
+    opt.search(
+        objective_function,
+        n_iter=50,
+        memory=False,
+        verbosity={"print_results": False, "progress_bar": False,},
+        initialize={"warm_start": [init1]},
+    )
+
+    uniques_2nd_dim = list(np.unique(opt.values[:, 1]))
+
+    assert 0 in uniques_2nd_dim
+    assert 2 in uniques_2nd_dim
+
