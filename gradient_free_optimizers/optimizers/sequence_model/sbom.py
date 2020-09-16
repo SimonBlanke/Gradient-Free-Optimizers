@@ -79,8 +79,8 @@ class SBOM(BaseOptimizer, Search):
 
     def _all_possible_pos(self):
         pos_space = []
-        for dim_ in self.space_dim:
-            pos_space.append(np.arange(dim_ + 1))
+        for dim_ in self.space_dim_size:
+            pos_space.append(np.arange(dim_))
 
         self.n_dim = len(pos_space)
         self.all_pos_comb = np.array(np.meshgrid(*pos_space)).T.reshape(-1, self.n_dim)

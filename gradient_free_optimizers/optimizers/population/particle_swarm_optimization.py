@@ -27,8 +27,8 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
     def _move_part(self, pos, velo):
         pos_new = (pos + velo).astype(int)
         # limit movement
-        n_zeros = [0] * len(self.space_dim)
-        self.p_current.pos_new = np.clip(pos_new, n_zeros, self.space_dim)
+        n_zeros = [0] * len(self.space_dim_size)
+        self.p_current.pos_new = np.clip(pos_new, n_zeros, self.space_dim_size)
 
         return self.p_current.pos_new
 
@@ -66,7 +66,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
         particle.init_pos(pos)
 
         self.p_current = particle
-        self.p_current.velo = np.zeros(len(self.space_dim))
+        self.p_current.velo = np.zeros(len(self.space_dim_size))
 
     def iterate(self):
         n_iter = self._iterations(self.particles)
