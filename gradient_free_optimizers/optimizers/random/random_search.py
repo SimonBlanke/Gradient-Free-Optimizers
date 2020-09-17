@@ -8,7 +8,7 @@ from ...search import Search
 
 
 class RandomSearchOptimizer(BaseOptimizer, Search):
-    def __init__(self, search_space):
+    def __init__(self, search_space, **kwargs):
         super().__init__(search_space)
 
     def iterate(self):

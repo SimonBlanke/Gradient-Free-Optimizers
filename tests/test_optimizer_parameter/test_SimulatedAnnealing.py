@@ -11,6 +11,24 @@ n_iter = 33
 opt = SimulatedAnnealingOptimizer
 
 
+def test_epsilon():
+    for epsilon in [0.00001, 100]:
+        opt_para = {"epsilon": epsilon}
+        _base_test(opt, n_iter, opt_para=opt_para)
+
+
+def test_n_neighbours():
+    for n_neighbours in [1, 100]:
+        opt_para = {"n_neighbours": n_neighbours}
+        _base_test(opt, n_iter, opt_para=opt_para)
+
+
+def test_p_accept():
+    for p_accept in [0.0001, 100]:
+        opt_para = {"p_accept": p_accept}
+        _base_test(opt, n_iter, opt_para=opt_para)
+
+
 def test_annealing_rate():
     for annealing_rate in [1, 0.001]:
         opt_para = {"annealing_rate": annealing_rate}

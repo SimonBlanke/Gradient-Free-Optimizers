@@ -8,7 +8,7 @@ from ...search import Search
 
 
 class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer, Search):
-    def __init__(self, search_space, n_iter_restart=10):
+    def __init__(self, search_space, n_iter_restart=10, **kwargs):
         super().__init__(search_space)
         self.n_iter_restart = n_iter_restart
 

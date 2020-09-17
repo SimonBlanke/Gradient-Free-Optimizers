@@ -12,7 +12,7 @@ from scipy.spatial.distance import euclidean
 
 
 class TabuOptimizer(HillClimbingOptimizer, Search):
-    def __init__(self, search_space, tabu_factor=3):
+    def __init__(self, search_space, tabu_factor=3, **kwargs):
         super().__init__(search_space)
 
         self.tabus = []

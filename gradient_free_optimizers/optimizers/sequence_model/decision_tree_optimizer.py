@@ -19,5 +19,5 @@ class DecisionTreeOptimizer(ExpectedImprovementBasedOptimization):
     """Based on the forest-optimizer in the scikit-optimize package"""
 
     def __init__(self, search_space, tree_regressor="random_forest", **kwargs):
-        super().__init__(search_space, **kwargs)
+        super().__init__(search_space)
         self.regr = tree_regressor_dict[tree_regressor]

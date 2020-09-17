@@ -13,7 +13,7 @@ from .sbom import SBOM
 
 class ExpectedImprovementBasedOptimization(SBOM):
     def __init__(self, search_space, xi=0.01, **kwargs):
-        super().__init__(search_space, **kwargs)
+        super().__init__(search_space)
         self.new_positions = []
         self.xi = xi
 

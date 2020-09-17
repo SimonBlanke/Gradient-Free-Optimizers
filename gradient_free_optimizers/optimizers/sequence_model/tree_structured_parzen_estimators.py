@@ -11,7 +11,7 @@ from .sbom import SBOM
 
 class TreeStructuredParzenEstimators(SBOM):
     def __init__(self, search_space, gamma_tpe=0.3, **kwargs):
-        super().__init__(search_space, **kwargs)
+        super().__init__(search_space)
         self.gamma_tpe = gamma_tpe
 
         self.kd_best = KernelDensity()

@@ -25,7 +25,7 @@ def max_list_idx(list_):
 
 class HillClimbingOptimizer(BaseOptimizer, Search):
     def __init__(
-        self, search_space, epsilon=0.5, distribution="normal", n_neighbours=5,
+        self, search_space, epsilon=0.5, distribution="normal", n_neighbours=5, **kwargs
     ):
         super().__init__(search_space)
         self.epsilon = epsilon
