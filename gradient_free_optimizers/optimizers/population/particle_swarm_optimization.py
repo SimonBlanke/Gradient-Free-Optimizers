@@ -4,23 +4,28 @@
 
 
 import random
-
 import numpy as np
 
 from .base_population_optimizer import BasePopulationOptimizer
 from ...search import Search
-from ..base_optimizer import BaseOptimizer
+from ..local import HillClimbingOptimizer
 
 
 class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
     def __init__(
-        self, search_space, inertia=0.5, cognitive_weight=0.5, social_weight=0.5,
+        self,
+        search_space,
+        inertia=0.5,
+        cognitive_weight=0.5,
+        social_weight=0.5,
+        temp_weight=0.2,
     ):
         super().__init__(search_space)
 
         self.inertia = inertia
         self.cognitive_weight = cognitive_weight
         self.social_weight = social_weight
+        self.temp_weight = temp_weight
 
         self.particles = self.optimizers
 
@@ -61,7 +66,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
         self.p_sorted = [self.particles[i] for i in idx_sorted_ind]
 
     def init_pos(self, pos):
-        particle = BaseOptimizer(self.search_space)
+        particle = HillClimbingOptimizer(self.search_space)
         self.particles.append(particle)
         particle.init_pos(pos)
 
@@ -74,7 +79,11 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
 
         self._sort_best()
         self.global_pos_best = self.p_sorted[0].pos_best
-        pos = self._move_positioner()
+
+        if self.temp_weight > random.uniform(0, 1):
+            pos = self.p_current._move_climb(self.p_current.pos_current)
+        else:
+            pos = self._move_positioner()
 
         return pos
 
