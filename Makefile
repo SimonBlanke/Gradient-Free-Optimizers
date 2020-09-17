@@ -15,5 +15,9 @@ reinstall:
 	python setup.py bdist_wheel
 	pip install dist/*
 
+test-examples:
+	cd tests; \
+		python test_examples.py
+
 test:
 	python -m pytest -p no:warnings -rfEX tests/ \
