@@ -24,6 +24,10 @@ def time_exceeded(start_time, max_time):
     return max_time and run_time > max_time
 
 
+def score_exceeded(score_best, max_score):
+    return max_score and score_best >= max_score
+
+
 def set_random_seed(nth_process, random_state):
     """Sets the random seed separately for each thread (to avoid getting the same results in each thread)"""
     if nth_process is None:
@@ -102,6 +106,14 @@ class Search(TimesTracker):
 
         return init_positions
 
+    def _early_stop(self):
+        if time_exceeded(self.start_time, self.max_time):
+            return True
+        elif score_exceeded(self.p_bar.score_best, self.max_score):
+            return True
+        else:
+            return False
+
     def search(
         self,
         objective_function,
@@ -109,17 +121,20 @@ class Search(TimesTracker):
         initialize={"grid": 8, "random": 4, "vertices": 8},
         warm_start=None,
         max_time=None,
+        max_score=None,
         memory=True,
         verbosity={"progress_bar": True, "print_results": True,},
         random_state=None,
         nth_process=None,
     ):
-        start_time = time.time()
+        self.start_time = time.time()
 
         self.objective_function = objective_function
         self.n_iter = n_iter
         self.initialize = initialize
         self.warm_start = warm_start
+        self.max_time = max_time
+        self.max_score = max_score
         self.memory = memory
         self.progress_bar = verbosity["progress_bar"]
         self.random_state = random_state
@@ -129,21 +144,20 @@ class Search(TimesTracker):
 
         # loop to initialize N positions
         for init_pos in init_positions:
-            if time_exceeded(start_time, max_time):
+            if self._early_stop():
                 break
             self._initialization(init_pos)
 
         # loop to do the iterations
         for nth_iter in range(len(init_positions), n_iter):
-            if time_exceeded(start_time, max_time):
+            if self._early_stop():
                 break
             self._iteration()
 
         self.values = np.array(list(self.memory_dict.keys()))
         self.scores = np.array(list(self.memory_dict.values())).reshape(-1,)
 
-        self.p_bar.close(verbosity["print_results"])
-
         self.best_score = self.p_bar.score_best
         self.best_value = self.p_bar.values_best
 
+        self.p_bar.close(verbosity["print_results"])
