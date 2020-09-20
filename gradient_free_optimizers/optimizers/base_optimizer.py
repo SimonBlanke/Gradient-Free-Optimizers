@@ -10,7 +10,7 @@ class BaseOptimizer(SearchTracker):
     def __init__(self, search_space):
         super().__init__()
         self.search_space = search_space
-        self.space_dim_size = np.array([array.size for array in search_space])
+        self.space_dim_size = np.array([len(array) for array in search_space.values()])
 
         self.optimizers = [self]
 

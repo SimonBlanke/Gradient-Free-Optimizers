@@ -7,11 +7,11 @@ from ._parametrize import pytest_parameter
 
 @pytest.mark.parametrize(*pytest_parameter)
 def test_convex_convergence(Optimizer):
-    def objective_function(pos_new):
-        score = -pos_new[0] * pos_new[0]
+    def objective_function(para):
+        score = -para["x1"] * para["x1"]
         return score
 
-    search_space = [np.arange(-100, 100, 1)]
+    search_space = {"x1": np.arange(-100, 100, 1)}
     initialize = {"vertices": 2}
 
     n_opts = 33

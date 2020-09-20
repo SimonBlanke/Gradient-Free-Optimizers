@@ -11,7 +11,7 @@ from .conv import value2position
 class Initializer:
     def __init__(self, search_space):
         self.search_space = search_space
-        self.dim_sizes = np.array([array.size - 1 for array in search_space])
+        self.dim_sizes = np.array([len(array) - 1 for array in search_space.values()])
 
     def set_pos(self, initialize):
         init_positions_list = []
@@ -35,7 +35,7 @@ class Initializer:
         positions = []
 
         for value_ in value_list:
-            pos = value2position(self.search_space, value_)
+            pos = value2position(self.search_space, list(value_.values()))
             positions.append(pos)
 
         return positions

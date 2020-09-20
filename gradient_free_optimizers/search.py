@@ -50,10 +50,14 @@ class Search(TimesTracker):
     def _score(self, pos):
         pos_tuple = tuple(pos)
 
+        para = {}
+        for key, p_ in zip(self.search_space.keys(), pos):
+            para[key] = p_
+
         if self.memory is True and pos_tuple in self.memory_dict:
             return self.memory_dict[pos_tuple]
         else:
-            score = self.objective_function(pos)
+            score = self.objective_function(para)
             self.memory_dict[pos_tuple] = score
             self.memory_dict_new[pos_tuple] = score
             return score

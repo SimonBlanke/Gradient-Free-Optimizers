@@ -1,11 +1,13 @@
 import numpy as np
 
 
-def get_score(pos_new):
-    return -(pos_new[0] * pos_new[0])
+def get_score(para):
+    return -(para["x1"] * para["x1"])
 
 
-search_space = [np.arange(-100, 100, 1)]
+search_space = {
+    "x1": np.arange(-100, 100, 1),
+}
 
 
 def _base_test(

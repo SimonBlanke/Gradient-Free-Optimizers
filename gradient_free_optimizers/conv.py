@@ -8,7 +8,7 @@ import numpy as np
 def position2value(search_space, position):
     value = []
 
-    for n, space_dim in enumerate(search_space):
+    for n, space_dim in enumerate(search_space.values()):
         value.append(space_dim[position[n]])
 
     return value
@@ -17,7 +17,7 @@ def position2value(search_space, position):
 def value2position(search_space, value):
     position = []
 
-    for n, space_dim in enumerate(search_space):
+    for n, space_dim in enumerate(search_space.values()):
         pos = np.abs(value[n] - space_dim).argmin()
         position.append(pos)
 
