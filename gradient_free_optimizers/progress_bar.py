@@ -57,8 +57,8 @@ class ProgressBarLVL1(ProgressBarBase):
             )
 
         self._new2best(score_new, values_new, pos_new)
-        self._tqdm.update()
-        self._tqdm.refresh()
+        self._tqdm.update(1)
+        # self._tqdm.refresh()
 
     def close(self, print_results):
         self._tqdm.close()
