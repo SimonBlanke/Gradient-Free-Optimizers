@@ -6,6 +6,7 @@ import time
 import random
 
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
 
 from .init_positions import Initializer
@@ -45,6 +46,7 @@ class Search(TimesTracker):
         super().__init__()
 
         self.optimizers = []
+        self.new_results_list = []
 
     @TimesTracker.eval_time
     def _score(self, pos):
@@ -57,7 +59,18 @@ class Search(TimesTracker):
         if self.memory is True and pos_tuple in self.memory_dict:
             return self.memory_dict[pos_tuple]
         else:
-            score = self.objective_function(para)
+            results = self.objective_function(para)
+
+            if isinstance(results, tuple):
+                score = results[0]
+                results_dict = results[1]
+            else:
+                score = results
+                results_dict = {}
+
+            results_dict["score"] = score
+            self.new_results_list.append({**results_dict, **para})
+
             self.memory_dict[pos_tuple] = score
             self.memory_dict_new[pos_tuple] = score
             return score
@@ -158,8 +171,7 @@ class Search(TimesTracker):
                 break
             self._iteration()
 
-        self.values = np.array(list(self.memory_dict.keys()))
-        self.scores = np.array(list(self.memory_dict.values())).reshape(-1,)
+        self.results = pd.DataFrame(self.new_results_list)
 
         self.best_score = self.p_bar.score_best
         self.best_value = self.p_bar.values_best
