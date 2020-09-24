@@ -35,10 +35,13 @@ def test_exploration_0(Optimizer):
         initialize={"warm_start": [init1, init2]},
     )
 
-    print("\n opt.values \n", opt.values, "\n")
+    uniques_2nd_dim = list(opt.results["x2"].values)
 
-    uniques_2nd_dim = list(np.unique(opt.values[:, 1]))
     print("\n uniques_2nd_dim \n", uniques_2nd_dim, "\n")
+    print("\n Results head \n", opt.results.head())
+    print("\n Results tail \n", opt.results.tail())
+
+    print("\nN iter:", len(opt.results))
 
     assert 0 in uniques_2nd_dim
 
@@ -72,10 +75,14 @@ def test_exploration_1(Optimizer):
         verbosity={"print_results": False, "progress_bar": False,},
         initialize={"warm_start": [init1]},
     )
-    print("\n opt.values \n", opt.values, "\n")
 
-    uniques_2nd_dim = list(np.unique(opt.values[:, 1]))
+    uniques_2nd_dim = list(opt.results["x2"].values)
+
     print("\n uniques_2nd_dim \n", uniques_2nd_dim, "\n")
+    print("\n Results head \n", opt.results.head())
+    print("\n Results tail \n", opt.results.tail())
+
+    print("\nN iter:", len(opt.results))
 
     assert 0 in uniques_2nd_dim
 

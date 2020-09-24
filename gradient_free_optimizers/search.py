@@ -187,6 +187,6 @@ class Search(TimesTracker):
         self.results = pd.DataFrame(self.new_results_list)
 
         self.best_score = self.p_bar.score_best
-        self.best_value = self.p_bar.values_best
+        self.best_para = self.p_bar.values_best
 
         self.p_bar.close(verbosity["print_results"])

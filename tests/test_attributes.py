@@ -52,8 +52,8 @@ def test_attributes_best_score_0():
     assert np.inf > opt.best_score > -np.inf
 
 
-def test_attributes_best_value_0():
+def test_attributes_best_para_0():
     opt = RandomSearchOptimizer(search_space)
     opt.search(objective_function, n_iter=100)
 
-    assert isinstance(opt.best_value, list)
+    assert isinstance(opt.best_para, list)

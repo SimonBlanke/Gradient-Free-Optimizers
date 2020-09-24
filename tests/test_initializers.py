@@ -42,7 +42,7 @@ def test_initialize_warm_start_1():
         objective_function, n_iter=0, initialize=initialize,
     )
 
-    assert opt.best_value == list(init.values())
+    assert opt.best_para == list(init.values())
 
 
 def test_initialize_vertices():
