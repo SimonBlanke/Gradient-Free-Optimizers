@@ -79,9 +79,9 @@ class Search(TimesTracker):
         self.memory_dict = {}
         self.memory_dict_new = {}
 
-        if isinstance(memory, dict):
-            values_list = memory["values"]
-            scores = memory["scores"]
+        if isinstance(memory, pd.DataFrame):
+            values_list = list(memory[list(self.search_space.keys())].values)
+            scores = memory["score"]
 
             value_tuple_list = list(map(tuple, values_list))
             self.memory_dict = dict(zip(value_tuple_list, scores))

@@ -64,18 +64,13 @@ def test_memory_warm_start():
     }
 
     c_time1 = time.time()
-    opt = RandomSearchOptimizer(search_space)
-    opt.search(objective_function, n_iter=300)
+    opt0 = RandomSearchOptimizer(search_space)
+    opt0.search(objective_function, n_iter=300)
     diff_time1 = time.time() - c_time1
 
-    memory = {
-        "values": opt.values,
-        "scores": opt.scores,
-    }
-
     c_time2 = time.time()
-    opt = RandomSearchOptimizer(search_space)
-    opt.search(objective_function, n_iter=300, memory=memory)
+    opt1 = RandomSearchOptimizer(search_space)
+    opt1.search(objective_function, n_iter=300, memory=opt0.results)
     diff_time2 = time.time() - c_time2
 
     assert diff_time2 < diff_time1 * 0.5
