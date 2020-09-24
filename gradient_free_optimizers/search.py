@@ -80,12 +80,25 @@ class Search(TimesTracker):
         self.memory_dict_new = {}
 
         if isinstance(memory, pd.DataFrame):
-            values_list = list(memory[list(self.search_space.keys())].values)
-            scores = memory["score"]
+            parameter = set(self.search_space.keys())
+            memory_para = set(memory.columns)
 
-            value_tuple_list = list(map(tuple, values_list))
-            self.memory_dict = dict(zip(value_tuple_list, scores))
-            self.memory = True
+            if parameter <= memory_para:
+                values_list = list(memory[list(self.search_space.keys())].values)
+                scores = memory["score"]
+
+                value_tuple_list = list(map(tuple, values_list))
+                self.memory_dict = dict(zip(value_tuple_list, scores))
+                self.memory = True
+            else:
+                missing = parameter - memory_para
+
+                print(
+                    "\nWarning:",
+                    '"{}"'.format(*missing),
+                    "is in search_space but not in memory dataframe",
+                )
+                print("Optimization run will continue without memory warm start\n")
 
     @TimesTracker.iter_time
     def _initialization(self, init_pos):
