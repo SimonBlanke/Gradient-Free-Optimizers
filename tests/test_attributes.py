@@ -57,3 +57,35 @@ def test_attributes_best_para_0():
     opt.search(objective_function, n_iter=100)
 
     assert isinstance(opt.best_para, list)
+
+
+def test_attributes_eval_times_0():
+    opt = RandomSearchOptimizer(search_space)
+    opt.search(objective_function, n_iter=100)
+
+    assert isinstance(opt.eval_times, list)
+
+
+def test_attributes_eval_times_1():
+    c_time = time.time()
+    opt = RandomSearchOptimizer(search_space)
+    opt.search(objective_function, n_iter=100)
+    diff_time = time.time() - c_time
+
+    assert np.array(opt.eval_times).sum() < diff_time
+
+
+def test_attributes_iter_times_0():
+    opt = RandomSearchOptimizer(search_space)
+    opt.search(objective_function, n_iter=100)
+
+    assert isinstance(opt.iter_times, list)
+
+
+def test_attributes_iter_times_1():
+    c_time = time.time()
+    opt = RandomSearchOptimizer(search_space)
+    opt.search(objective_function, n_iter=100)
+    diff_time = time.time() - c_time
+
+    assert np.array(opt.iter_times).sum() < diff_time
