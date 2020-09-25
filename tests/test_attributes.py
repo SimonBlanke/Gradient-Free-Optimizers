@@ -45,6 +45,58 @@ def test_attributes_results_3():
     assert "score" in list(opt.results.columns)
 
 
+def test_attributes_results_4():
+    opt = RandomSearchOptimizer(search_space)
+    opt.search(objective_function, n_iter=0, initialize={}, warm_start=[{"x1": 0}])
+
+    assert 0 in list(opt.results["x1"].values)
+
+
+def test_attributes_results_5():
+    opt = RandomSearchOptimizer(search_space)
+    opt.search(objective_function, n_iter=0, initialize={}, warm_start=[{"x1": 10}])
+
+    assert 10 in list(opt.results["x1"].values)
+
+
+def test_attributes_results_6():
+    def objective_function(para):
+        score = -para["x1"] * para["x1"]
+        return score
+
+    search_space = {
+        "x1": np.arange(0, 10, 1),
+    }
+
+    opt = RandomSearchOptimizer(search_space)
+    opt.search(objective_function, n_iter=20, initialize={"random": 1}, memory=False)
+
+    x1_results = list(opt.results["x1"].values)
+
+    print("\n x1_results \n", x1_results)
+
+    assert len(set(x1_results)) < len(x1_results)
+
+
+def test_attributes_results_7():
+    def objective_function(para):
+        score = -para["x1"] * para["x1"]
+        return score
+
+    search_space = {
+        "x1": np.arange(0, 10, 1),
+    }
+
+    opt = RandomSearchOptimizer(search_space)
+    opt.search(objective_function, n_iter=20, initialize={"random": 1}, memory=True)
+
+    x1_results = list(opt.results["x1"].values)
+
+    print("\n x1_results \n", x1_results)
+
+    assert len(set(x1_results)) == len(x1_results)
+
+
 def test_attributes_best_score_0():
     opt = RandomSearchOptimizer(search_space)
     opt.search(objective_function, n_iter=100)
