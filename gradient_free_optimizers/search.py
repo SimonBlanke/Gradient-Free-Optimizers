@@ -11,7 +11,6 @@ from tqdm import tqdm
 
 from .init_positions import Initializer
 from .progress_bar import ProgressBarLVL0, ProgressBarLVL1
-from .conv import position2value
 from .times_tracker import TimesTracker
 from .results_manager import ResultsManager
 from .memory import Memory
@@ -117,21 +116,19 @@ class Search(TimesTracker):
     def _initialization(self, init_pos):
         self.init_pos(init_pos)
 
-        value_new = position2value(self.search_space, init_pos)
-        score_new = self._score(value_new)
+        score_new = self._score(init_pos)
         self.evaluate(score_new)
 
-        self.p_bar.update(score_new, value_new, init_pos)
+        self.p_bar.update(score_new, init_pos, init_pos)
 
     @TimesTracker.iter_time
     def _iteration(self):
         pos_new = self.iterate()
 
-        value_new = position2value(self.search_space, pos_new)
-        score_new = self._score(value_new)
+        score_new = self._score(pos_new)
         self.evaluate(score_new)
 
-        self.p_bar.update(score_new, value_new, pos_new)
+        self.p_bar.update(score_new, pos_new, pos_new)
 
     def _init_search(self):
         self._init_memory(self.memory)
@@ -209,6 +206,6 @@ class Search(TimesTracker):
         self.results = pd.DataFrame(results.results_list)
 
         self.best_score = self.p_bar.score_best
-        self.best_para = self.p_bar.values_best
+        self.best_para = results.pos2para(self.p_bar.pos_best)
 
         self.p_bar.close(verbosity["print_results"])

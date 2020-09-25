@@ -108,7 +108,14 @@ def test_attributes_best_para_0():
     opt = RandomSearchOptimizer(search_space)
     opt.search(objective_function, n_iter=100)
 
-    assert isinstance(opt.best_para, list)
+    assert isinstance(opt.best_para, dict)
+
+
+def test_attributes_best_para_1():
+    opt = RandomSearchOptimizer(search_space)
+    opt.search(objective_function, n_iter=100)
+
+    assert list(opt.best_para.keys()) == list(search_space.keys())
 
 
 def test_attributes_eval_times_0():
