@@ -41,10 +41,7 @@ class ProgressBarLVL0(ProgressBarBase):
 
 class ProgressBarLVL1(ProgressBarBase):
     def __init__(self, nth_process, n_iter, objective_function):
-        self.best_since_iter = 0
-        self.score_best = -np.inf
-        self.para_best = None
-
+        super().__init__(nth_process, n_iter, objective_function)
         self._tqdm = tqdm(**self._tqdm_dict(nth_process, n_iter, objective_function))
 
     def update(self, score_new, para_new, pos_new):
