@@ -13,6 +13,8 @@ from .init_positions import Initializer
 from .progress_bar import ProgressBarLVL0, ProgressBarLVL1
 from .conv import position2value
 from .times_tracker import TimesTracker
+from .results_manager import ResultsManager
+from .memory import Memory
 
 p_bar_dict = {
     False: ProgressBarLVL0,
@@ -47,7 +49,13 @@ class Search(TimesTracker):
 
         self.optimizers = []
         self.new_results_list = []
+        self.all_results_list = []
 
+    @TimesTracker.eval_time
+    def _score(self, pos):
+        return self.score(pos)
+
+    """
     @TimesTracker.eval_time
     def _score(self, pos):
         pos_tuple = tuple(pos)
@@ -74,22 +82,27 @@ class Search(TimesTracker):
             self.memory_dict[pos_tuple] = score
             self.memory_dict_new[pos_tuple] = score
             return score
+    """
 
     def _init_memory(self, memory):
+        memory_warm_start = self.memory_warm_start
+        memory = self.memory
+
         self.memory_dict = {}
         self.memory_dict_new = {}
 
-        if isinstance(memory, pd.DataFrame):
+        if isinstance(memory_warm_start, pd.DataFrame):
             parameter = set(self.search_space.keys())
-            memory_para = set(memory.columns)
+            memory_para = set(memory_warm_start.columns)
 
             if parameter <= memory_para:
-                values_list = list(memory[list(self.search_space.keys())].values)
-                scores = memory["score"]
+                values_list = list(
+                    memory_warm_start[list(self.search_space.keys())].values
+                )
+                scores = memory_warm_start["score"]
 
                 value_tuple_list = list(map(tuple, values_list))
                 self.memory_dict = dict(zip(value_tuple_list, scores))
-                self.memory = True
             else:
                 missing = parameter - memory_para
 
@@ -153,6 +166,7 @@ class Search(TimesTracker):
         max_time=None,
         max_score=None,
         memory=True,
+        memory_warm_start=None,
         verbosity={"progress_bar": True, "print_results": True,},
         random_state=None,
         nth_process=None,
@@ -166,9 +180,17 @@ class Search(TimesTracker):
         self.max_time = max_time
         self.max_score = max_score
         self.memory = memory
+        self.memory_warm_start = memory_warm_start
         self.progress_bar = verbosity["progress_bar"]
         self.random_state = random_state
         self.nth_process = nth_process
+
+        results = ResultsManager(objective_function, self.search_space)
+        if memory is True:
+            mem = Memory(memory_warm_start, self.search_space)
+            self.score = mem.memory(results.score)
+        else:
+            self.score = results.score
 
         init_positions = self._init_search()
 
@@ -184,7 +206,7 @@ class Search(TimesTracker):
                 break
             self._iteration()
 
-        self.results = pd.DataFrame(self.new_results_list)
+        self.results = pd.DataFrame(results.results_list)
 
         self.best_score = self.p_bar.score_best
         self.best_para = self.p_bar.values_best
