@@ -5,13 +5,10 @@
 import random
 import numpy as np
 
-from .conv import value2position
-
 
 class Initializer:
-    def __init__(self, search_space):
-        self.search_space = search_space
-        self.dim_sizes = np.array([len(array) - 1 for array in search_space.values()])
+    def __init__(self, conv):
+        self.conv = conv
 
     def set_pos(self, initialize):
         init_positions_list = []
@@ -35,7 +32,7 @@ class Initializer:
         positions = []
 
         for value_ in value_list:
-            pos = value2position(self.search_space, list(value_.values()))
+            pos = self.conv.value2position(list(value_.values()))
             positions.append(pos)
 
         return positions
@@ -47,7 +44,7 @@ class Initializer:
             return positions
 
         for nth_pos in range(n_pos):
-            pos = np.random.randint(self.dim_sizes, size=self.dim_sizes.shape)
+            pos = np.random.randint(self.conv.dim_sizes, size=self.conv.dim_sizes.shape)
             positions.append(pos)
 
         return positions
@@ -67,10 +64,10 @@ class Initializer:
         if n_pos == 0:
             return positions
 
-        n_dim = len(self.dim_sizes)
+        n_dim = len(self.conv.dim_sizes)
         p_per_dim = int(np.power(n_pos, 1 / n_dim))
 
-        for dim in self.dim_sizes:
+        for dim in self.conv.dim_sizes:
             dim_dist = int(dim / (p_per_dim + 1))
             n_points = [n * dim_dist for n in range(1, p_per_dim + 1)]
 
@@ -89,14 +86,14 @@ class Initializer:
         if n_pos == 0:
             return positions
 
-        zero_array = np.zeros(self.dim_sizes.shape)
+        zero_array = np.zeros(self.conv.dim_sizes.shape)
         sub_arrays = []
 
-        for dim in self.dim_sizes:
+        for dim in self.conv.dim_sizes:
             sub_array = np.array([0, dim])
             sub_arrays.append(sub_array)
 
-        n_dims = len(self.dim_sizes)
+        n_dims = len(self.conv.dim_sizes)
         pos_comb_np = list(np.array(np.meshgrid(*sub_arrays)).T.reshape(-1, n_dims))
         k = min(len(pos_comb_np), n_pos)
 

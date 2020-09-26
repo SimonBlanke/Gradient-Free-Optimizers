@@ -14,6 +14,7 @@ from .progress_bar import ProgressBarLVL0, ProgressBarLVL1
 from .times_tracker import TimesTracker
 from .results_manager import ResultsManager
 from .memory import Memory
+from .converter import Converter
 
 p_bar_dict = {
     False: ProgressBarLVL0,
@@ -53,35 +54,6 @@ class Search(TimesTracker):
     @TimesTracker.eval_time
     def _score(self, pos):
         return self.score(pos)
-
-    """
-    @TimesTracker.eval_time
-    def _score(self, pos):
-        pos_tuple = tuple(pos)
-
-        para = {}
-        for key, p_ in zip(self.search_space.keys(), pos):
-            para[key] = p_
-
-        if self.memory is True and pos_tuple in self.memory_dict:
-            return self.memory_dict[pos_tuple]
-        else:
-            results = self.objective_function(para)
-
-            if isinstance(results, tuple):
-                score = results[0]
-                results_dict = results[1]
-            else:
-                score = results
-                results_dict = {}
-
-            results_dict["score"] = score
-            self.new_results_list.append({**results_dict, **para})
-
-            self.memory_dict[pos_tuple] = score
-            self.memory_dict_new[pos_tuple] = score
-            return score
-    """
 
     def _init_memory(self, memory):
         memory_warm_start = self.memory_warm_start
@@ -130,7 +102,7 @@ class Search(TimesTracker):
 
         self.p_bar.update(score_new, pos_new, pos_new)
 
-    def _init_search(self):
+    def _init_search(self, conv):
         self._init_memory(self.memory)
         self.p_bar = p_bar_dict[self.progress_bar](
             self.nth_process, self.n_iter, self.objective_function
@@ -141,7 +113,7 @@ class Search(TimesTracker):
             self.initialize["warm_start"] = self.warm_start
 
         # get init positions
-        init = Initializer(self.search_space)
+        init = Initializer(conv)
         init_positions = init.set_pos(self.initialize)
 
         return init_positions
@@ -182,17 +154,18 @@ class Search(TimesTracker):
         self.random_state = random_state
         self.nth_process = nth_process
 
-        results = ResultsManager(objective_function, self.search_space)
+        conv = Converter(self.search_space)
+        results = ResultsManager(objective_function, conv)
+        init_positions = self._init_search(conv)
+
         if memory is True:
-            mem = Memory(memory_warm_start, self.search_space)
+            mem = Memory(memory_warm_start, conv)
             self.score = mem.memory(results.score)
         else:
             self.score = results.score
 
-        init_positions = self._init_search()
-
         # loop to initialize N positions
-        for init_pos in init_positions:
+        for init_pos, nth_iter in zip(init_positions, range(n_iter)):
             if self._early_stop():
                 break
             self._initialization(init_pos)
@@ -206,6 +179,7 @@ class Search(TimesTracker):
         self.results = pd.DataFrame(results.results_list)
 
         self.best_score = self.p_bar.score_best
-        self.best_para = results.pos2para(self.p_bar.pos_best)
+        value = conv.position2value(self.p_bar.pos_best)
+        self.best_para = conv.value2para(value)
 
         self.p_bar.close(verbosity["print_results"])

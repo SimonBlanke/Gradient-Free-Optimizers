@@ -3,28 +3,13 @@
 # License: MIT License
 
 
-from .conv import position2value
-
-
 class ResultsManager:
-    def __init__(self, objective_function, search_space):
+    def __init__(self, objective_function, conv):
         super().__init__()
         self.objective_function = objective_function
-        self.search_space = search_space
+        self.conv = conv
 
         self.results_list = []
-
-    def _value2para(self, pos):
-        para = {}
-        for key, p_ in zip(self.search_space.keys(), pos):
-            para[key] = p_
-
-        return para
-
-    def pos2para(self, pos):
-        value = position2value(self.search_space, pos)
-        para = self._value2para(value)
-        return para
 
     def _obj_func_results(self, para):
         results = self.objective_function(para)
@@ -40,11 +25,12 @@ class ResultsManager:
 
         return results_dict
 
-    def score(self, pos_new):
-        para_new = self.pos2para(pos_new)
-        obj_func_results = self._obj_func_results(para_new)
+    def score(self, pos):
+        value = self.conv.position2value(pos)
+        para = self.conv.value2para(value)
+        results_dict = self._obj_func_results(para)
 
-        self.results_list.append({**obj_func_results, **para_new})
+        self.results_list.append({**results_dict, **para})
 
-        return obj_func_results["score"]
+        return results_dict["score"]
 
