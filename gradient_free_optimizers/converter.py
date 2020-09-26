@@ -8,6 +8,7 @@ import numpy as np
 class Converter:
     def __init__(self, search_space):
         self.search_space = search_space
+        self.para_names = list(search_space.keys())
         self.dim_sizes = np.array([len(array) - 1 for array in search_space.values()])
 
     def position2value(self, position):
@@ -27,7 +28,7 @@ class Converter:
 
     def value2para(self, value):
         para = {}
-        for key, p_ in zip(self.search_space.keys(), value):
+        for key, p_ in zip(self.para_names, value):
             para[key] = p_
 
         return para
@@ -75,3 +76,34 @@ class Converter:
 
         return positions, scores
 
+    def dataframe2memory_dict(self, dataframe):
+        parameter = set(self.search_space.keys())
+        memory_para = set(dataframe.columns)
+
+        if parameter <= memory_para:
+            values = list(dataframe[self.para_names].values)
+            positions = self.values2positions(values)
+            scores = dataframe["score"]
+
+            memory_dict = self.positions_scores2memory_dict(positions, scores)
+
+            return memory_dict
+        else:
+            missing = parameter - memory_para
+
+            print(
+                "\nWarning:",
+                '"{}"'.format(*missing),
+                "is in search_space but not in memory dataframe",
+            )
+            print("Optimization run will continue without memory warm start\n")
+
+            return {}
+
+    def memory_dict2dataframe(self, memory_dict):
+        positions, score = self.memory_dict2positions_scores(memory_dict)
+
+        dataframe = pd.DataFrame(positions, columns=self.para_names)
+        dataframe["score"] = score
+
+        return dataframe
