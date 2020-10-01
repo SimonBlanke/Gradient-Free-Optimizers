@@ -16,7 +16,7 @@ class Converter:
         for n, space_dim in enumerate(self.search_space.values()):
             value.append(space_dim[position[n]])
 
-        return value
+        return np.array(value)
 
     def value2position(self, value):
         position = []
@@ -24,7 +24,7 @@ class Converter:
             pos = np.abs(value[n] - space_dim).argmin()
             position.append(pos)
 
-        return np.array(position)
+        return np.array(position).astype(int)
 
     def value2para(self, value):
         para = {}
@@ -34,7 +34,7 @@ class Converter:
         return para
 
     def para2value(self, para):
-        value = list(para.values())
+        value = np.concatenate(list(para.values()))
         return value
 
     def values2positions(self, values):
@@ -48,18 +48,24 @@ class Converter:
 
             positions_temp.append(pos_list)
 
-        positions = list(np.array(positions_temp).T)
+        positions = list(np.array(positions_temp).T.astype(int))
 
         return positions
 
     def positions2values(self, positions):
         values_temp = []
         positions_np = np.array(positions)
+        print("\n\n")
 
         for n, space_dim in enumerate(self.search_space.values()):
             pos_1d = positions_np[:, n]
+            print("\nspace_dim", space_dim)
+            print("positions_np", positions_np)
+            print("pos_1d", pos_1d)
             value_ = np.take(space_dim, pos_1d, axis=0)
             values_temp.append(value_)
+
+        print("\n\n")
 
         values = list(np.array(values_temp).T)
         return values
@@ -71,7 +77,7 @@ class Converter:
         return memory_dict
 
     def memory_dict2positions_scores(self, memory_dict):
-        positions = [np.array(pos) for pos in list(memory_dict.keys())]
+        positions = [np.array(pos).astype(int) for pos in list(memory_dict.keys())]
         scores = list(memory_dict.values())
 
         return positions, scores
