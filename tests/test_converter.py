@@ -1,7 +1,5 @@
-import time
 import pytest
 import numpy as np
-import pandas as pd
 from gradient_free_optimizers.converter import Converter
 
 
@@ -237,8 +235,8 @@ def test_values2positions_0(test_input, expected):
 
 
 values_0 = [
-    np.array([-10, 11]),
-    np.array([10, 11]),
+    np.array([-10, 10]),
+    np.array([10, 10]),
     np.array([0, 0]),
 ]
 
@@ -250,14 +248,14 @@ positions_0 = [
 
 
 values_1 = [
-    np.array([-10, 11]),
-    np.array([10, 11]),
+    np.array([-10, 10]),
+    np.array([10, 10]),
     np.array([0, 0]),
-    np.array([-10, 11]),
-    np.array([10, 11]),
+    np.array([-10, 10]),
+    np.array([10, 10]),
     np.array([0, 0]),
-    np.array([-10, 11]),
-    np.array([10, 11]),
+    np.array([-10, 10]),
+    np.array([10, 10]),
     np.array([0, 0]),
 ]
 
@@ -293,7 +291,7 @@ def test_values2positions_1(test_input, expected):
     assert equal_arraysInList(positions, expected)
 
 
-######### test positions2values #########
+""" --- test positions2values --- """
 
 
 values_0 = [
@@ -339,7 +337,7 @@ positions2values_test_para_0 = [
     (positions_1, values_1),
 ]
 
-"""
+
 @pytest.mark.parametrize("test_input,expected", positions2values_test_para_0)
 def test_positions2values_0(test_input, expected):
     search_space = {
@@ -353,8 +351,8 @@ def test_positions2values_0(test_input, expected):
 
 
 values_0 = [
-    np.array([-10, 11]),
-    np.array([10, 11]),
+    np.array([-10, 10]),
+    np.array([10, 10]),
     np.array([0, 0]),
 ]
 
@@ -366,14 +364,14 @@ positions_0 = [
 
 
 values_1 = [
-    np.array([-10, 11]),
-    np.array([10, 11]),
+    np.array([-10, 10]),
+    np.array([10, 10]),
     np.array([0, 0]),
-    np.array([-10, 11]),
-    np.array([10, 11]),
+    np.array([-10, 10]),
+    np.array([10, 10]),
     np.array([0, 0]),
-    np.array([-10, 11]),
-    np.array([10, 11]),
+    np.array([-10, 10]),
+    np.array([10, 10]),
     np.array([0, 0]),
 ]
 
@@ -392,7 +390,7 @@ positions_1 = [
 
 positions2values_test_para_1 = [
     (positions_0, values_0),
-    # (positions_1, values_1),
+    (positions_1, values_1),
 ]
 
 
@@ -406,11 +404,83 @@ def test_positions2values_1(test_input, expected):
     conv = Converter(search_space)
     values = conv.positions2values(test_input)
 
-    print("test_input", test_input)
-    print("values", values)
-    print("expected", expected)
-    print("equal_arraysInList(values, expected)", equal_arraysInList(values, expected))
-
     assert equal_arraysInList(values, expected)
-"""
+
+
+""" --- test positions_scores2memory_dict --- """
+
+
+positions_0 = [
+    np.array([0, 10]),
+    np.array([20, 10]),
+    np.array([10, 0]),
+]
+
+scores_0 = [0.1, 0.2, 0.3]
+
+
+memory_dict_0 = {
+    (0, 10): 0.1,
+    (20, 10): 0.2,
+    (10, 0): 0.3,
+}
+
+positions_scores2memory_dict_test_para_0 = [
+    ((positions_0, scores_0), memory_dict_0),
+    # ((positions_1, scores_1), values_1),
+]
+
+
+@pytest.mark.parametrize(
+    "test_input,expected", positions_scores2memory_dict_test_para_0
+)
+def test_positions_scores2memory_dict_0(test_input, expected):
+    search_space = {
+        "x1": np.arange(-10, 11, 1),
+        "x2": np.arange(0, 11, 1),
+    }
+
+    conv = Converter(search_space)
+    memory_dict = conv.positions_scores2memory_dict(*test_input)
+
+    assert memory_dict == expected
+
+
+""" --- test memory_dict2positions_scores --- """
+
+
+positions_0 = [
+    np.array([0, 10]),
+    np.array([20, 10]),
+    np.array([10, 0]),
+]
+
+scores_0 = [0.1, 0.2, 0.3]
+
+
+memory_dict_0 = {
+    (0, 10): 0.1,
+    (20, 10): 0.2,
+    (10, 0): 0.3,
+}
+
+memory_dict2positions_scores_test_para_0 = [
+    (memory_dict_0, (positions_0, scores_0)),
+]
+
+
+@pytest.mark.parametrize(
+    "test_input,expected", memory_dict2positions_scores_test_para_0
+)
+def test_memory_dict2positions_scores_0(test_input, expected):
+    search_space = {
+        "x1": np.arange(-10, 11, 1),
+        "x2": np.arange(0, 11, 1),
+    }
+
+    conv = Converter(search_space)
+    positions, scores = conv.memory_dict2positions_scores(test_input)
+
+    assert equal_arraysInList(positions, expected[0])
+    assert scores == expected[1]
 
