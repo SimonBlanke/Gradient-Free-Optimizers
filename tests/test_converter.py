@@ -1,5 +1,6 @@
 import pytest
 import numpy as np
+import pandas as pd
 from gradient_free_optimizers.converter import Converter
 
 
@@ -483,4 +484,72 @@ def test_memory_dict2positions_scores_0(test_input, expected):
 
     assert equal_arraysInList(positions, expected[0])
     assert scores == expected[1]
+
+
+""" --- test dataframe2memory_dict --- """
+
+
+dataframe = pd.DataFrame(
+    [[-10, 10, 0.1], [10, 10, 0.2], [0, 0, 0.3]], columns=["x1", "x2", "score"]
+)
+
+
+memory_dict_0 = {
+    (0, 10): 0.1,
+    (20, 10): 0.2,
+    (10, 0): 0.3,
+}
+
+dataframe2memory_dict_test_para_0 = [
+    (dataframe, memory_dict_0),
+]
+
+
+@pytest.mark.parametrize(
+    "test_input,expected", dataframe2memory_dict_test_para_0
+)
+def test_dataframe2memory_dict_0(test_input, expected):
+    search_space = {
+        "x1": np.arange(-10, 11, 1),
+        "x2": np.arange(0, 11, 1),
+    }
+
+    conv = Converter(search_space)
+    memory_dict = conv.dataframe2memory_dict(test_input)
+
+    assert memory_dict == expected
+
+
+""" --- test memory_dict2dataframe --- """
+
+
+dataframe = pd.DataFrame(
+    [[-10, 10, 0.1], [10, 10, 0.2], [0, 0, 0.3]], columns=["x1", "x2", "score"]
+)
+
+
+memory_dict_0 = {
+    (0, 10): 0.1,
+    (20, 10): 0.2,
+    (10, 0): 0.3,
+}
+
+memory_dict2dataframe_test_para_0 = [
+    (memory_dict_0, dataframe),
+]
+
+
+@pytest.mark.parametrize(
+    "test_input,expected", memory_dict2dataframe_test_para_0
+)
+def test_memory_dict2dataframe_0(test_input, expected):
+    search_space = {
+        "x1": np.arange(-10, 11, 1),
+        "x2": np.arange(0, 11, 1),
+    }
+
+    conv = Converter(search_space)
+    dataframe = conv.memory_dict2dataframe(test_input)
+
+    assert dataframe.equals(expected)
 
