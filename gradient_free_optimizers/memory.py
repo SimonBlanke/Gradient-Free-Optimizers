@@ -11,6 +11,9 @@ class Memory:
         self.memory_dict = {}
         self.memory_dict_new = {}
 
+        if warm_start is None:
+            return
+
         if not isinstance(warm_start, pd.DataFrame):
             print("'memory_warm_start' must be of type pandas.DataFrame")
             return
