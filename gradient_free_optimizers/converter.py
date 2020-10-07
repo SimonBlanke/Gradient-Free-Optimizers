@@ -3,13 +3,16 @@
 # License: MIT License
 
 import numpy as np
+import pandas as pd
 
 
 class Converter:
     def __init__(self, search_space):
         self.search_space = search_space
         self.para_names = list(search_space.keys())
-        self.dim_sizes = np.array([len(array) - 1 for array in search_space.values()])
+        self.dim_sizes = np.array(
+            [len(array) - 1 for array in search_space.values()]
+        )
 
     def position2value(self, position):
         value = []
@@ -55,17 +58,11 @@ class Converter:
     def positions2values(self, positions):
         values_temp = []
         positions_np = np.array(positions)
-        print("\n\n")
 
         for n, space_dim in enumerate(self.search_space.values()):
             pos_1d = positions_np[:, n]
-            print("\nspace_dim", space_dim)
-            print("positions_np", positions_np)
-            print("pos_1d", pos_1d)
             value_ = np.take(space_dim, pos_1d, axis=0)
             values_temp.append(value_)
-
-        print("\n\n")
 
         values = list(np.array(values_temp).T)
         return values
@@ -77,7 +74,9 @@ class Converter:
         return memory_dict
 
     def memory_dict2positions_scores(self, memory_dict):
-        positions = [np.array(pos).astype(int) for pos in list(memory_dict.keys())]
+        positions = [
+            np.array(pos).astype(int) for pos in list(memory_dict.keys())
+        ]
         scores = list(memory_dict.values())
 
         return positions, scores
@@ -108,8 +107,9 @@ class Converter:
 
     def memory_dict2dataframe(self, memory_dict):
         positions, score = self.memory_dict2positions_scores(memory_dict)
+        values = self.positions2values(positions)
 
-        dataframe = pd.DataFrame(positions, columns=self.para_names)
+        dataframe = pd.DataFrame(values, columns=self.para_names)
         dataframe["score"] = score
 
         return dataframe
