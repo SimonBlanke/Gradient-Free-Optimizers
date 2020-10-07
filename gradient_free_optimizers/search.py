@@ -7,7 +7,6 @@ import random
 
 import numpy as np
 import pandas as pd
-from tqdm import tqdm
 
 from .init_positions import Initializer
 from .progress_bar import ProgressBarLVL0, ProgressBarLVL1
@@ -32,7 +31,10 @@ def score_exceeded(score_best, max_score):
 
 
 def set_random_seed(nth_process, random_state):
-    """Sets the random seed separately for each thread (to avoid getting the same results in each thread)"""
+    """
+    Sets the random seed separately for each thread
+    (to avoid getting the same results in each thread)
+    """
     if nth_process is None:
         nth_process = 0
 
@@ -57,7 +59,6 @@ class Search(TimesTracker):
 
     def _init_memory(self, memory):
         memory_warm_start = self.memory_warm_start
-        memory = self.memory
 
         self.memory_dict = {}
         self.memory_dict_new = {}
@@ -82,7 +83,10 @@ class Search(TimesTracker):
                     '"{}"'.format(*missing),
                     "is in search_space but not in memory dataframe",
                 )
-                print("Optimization run will continue without memory warm start\n")
+                print(
+                    "Optimization run will continue "
+                    "without memory warm start\n"
+                )
 
     @TimesTracker.iter_time
     def _initialization(self, init_pos):
@@ -136,7 +140,7 @@ class Search(TimesTracker):
         max_score=None,
         memory=True,
         memory_warm_start=None,
-        verbosity={"progress_bar": True, "print_results": True,},
+        verbosity={"progress_bar": True, "print_results": True},
         random_state=None,
         nth_process=None,
     ):

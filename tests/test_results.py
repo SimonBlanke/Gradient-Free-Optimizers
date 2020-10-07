@@ -1,9 +1,5 @@
-import time
 import numpy as np
 import pandas as pd
-from sklearn.datasets import load_breast_cancer
-from sklearn.model_selection import cross_val_score
-from sklearn.tree import DecisionTreeClassifier
 from gradient_free_optimizers import RandomSearchOptimizer
 
 
@@ -47,14 +43,18 @@ def test_attributes_results_3():
 
 def test_attributes_results_4():
     opt = RandomSearchOptimizer(search_space)
-    opt.search(objective_function, n_iter=1, initialize={}, warm_start=[{"x1": 0}])
+    opt.search(
+        objective_function, n_iter=1, initialize={}, warm_start=[{"x1": 0}]
+    )
 
     assert 0 in list(opt.results["x1"].values)
 
 
 def test_attributes_results_5():
     opt = RandomSearchOptimizer(search_space)
-    opt.search(objective_function, n_iter=1, initialize={}, warm_start=[{"x1": 10}])
+    opt.search(
+        objective_function, n_iter=1, initialize={}, warm_start=[{"x1": 10}]
+    )
 
     assert 10 in list(opt.results["x1"].values)
 
@@ -69,7 +69,9 @@ def test_attributes_results_6():
     }
 
     opt = RandomSearchOptimizer(search_space)
-    opt.search(objective_function, n_iter=20, initialize={"random": 1}, memory=False)
+    opt.search(
+        objective_function, n_iter=20, initialize={"random": 1}, memory=False
+    )
 
     x1_results = list(opt.results["x1"].values)
 
@@ -88,7 +90,9 @@ def test_attributes_results_7():
     }
 
     opt = RandomSearchOptimizer(search_space)
-    opt.search(objective_function, n_iter=20, initialize={"random": 1}, memory=True)
+    opt.search(
+        objective_function, n_iter=20, initialize={"random": 1}, memory=True
+    )
 
     x1_results = list(opt.results["x1"].values)
 

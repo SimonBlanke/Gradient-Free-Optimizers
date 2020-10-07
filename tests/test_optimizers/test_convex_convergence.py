@@ -24,7 +24,7 @@ def test_convex_convergence(Optimizer):
             n_iter=50,
             random_state=rnd_st,
             memory=False,
-            verbosity={"print_results": False, "progress_bar": False,},
+            verbosity={"print_results": False, "progress_bar": False},
             initialize=initialize,
         )
 
