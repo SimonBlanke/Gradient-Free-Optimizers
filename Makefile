@@ -15,6 +15,10 @@ reinstall:
 	python setup.py bdist_wheel
 	pip install dist/*
 
+test-visual:
+	cd tests/local; \
+		python _visualize_search_paths.py
+
 test-examples:
 	cd tests; \
 		python test_examples.py
