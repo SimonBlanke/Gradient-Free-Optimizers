@@ -3,7 +3,10 @@ import numpy as np
 from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import cross_val_score
 from sklearn.tree import DecisionTreeClassifier
-from gradient_free_optimizers import RandomSearchOptimizer, HillClimbingOptimizer
+from gradient_free_optimizers import (
+    RandomSearchOptimizer,
+    HillClimbingOptimizer,
+)
 
 
 def objective_function(para):
@@ -45,7 +48,7 @@ def test_max_score_0():
 
     max_score = -9999
 
-    opt = HillClimbingOptimizer(search_space, epsilon=0.01)
+    opt = HillClimbingOptimizer(search_space, epsilon=0.01, rand_rest_p=0)
     opt.search(
         objective_function,
         n_iter=100000,
@@ -73,7 +76,7 @@ def test_max_score_1():
 
     max_score = -999
 
-    opt = HillClimbingOptimizer(search_space, epsilon=0.01)
+    opt = HillClimbingOptimizer(search_space, epsilon=0.01, rand_rest_p=0)
     opt.search(
         objective_function,
         n_iter=100000,
