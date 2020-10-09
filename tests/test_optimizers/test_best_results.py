@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from ._parametrize import pytest_parameter
+from ._parametrize import optimizers
 
 
 def objective_function(para):
@@ -33,7 +33,7 @@ objective_para = (
 
 
 @pytest.mark.parametrize(*objective_para)
-@pytest.mark.parametrize(*pytest_parameter)
+@pytest.mark.parametrize(*optimizers)
 def test_best_results_0(Optimizer, objective):
     search_space = objective[1]
     objective_function = objective[0]
@@ -52,7 +52,7 @@ def test_best_results_0(Optimizer, objective):
     assert opt.best_score == objective_function(opt.best_para)
 
 
-@pytest.mark.parametrize(*pytest_parameter)
+@pytest.mark.parametrize(*optimizers)
 def test_best_results_1(Optimizer):
     search_space = {"x1": np.arange(-100, 101, 1)}
 

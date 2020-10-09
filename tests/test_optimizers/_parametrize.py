@@ -15,7 +15,33 @@ from gradient_free_optimizers import (
     EnsembleOptimizer,
 )
 
-pytest_parameter = (
+optimizers_noSBOM = (
+    "Optimizer",
+    [
+        (HillClimbingOptimizer),
+        (StochasticHillClimbingOptimizer),
+        (TabuOptimizer),
+        (RandomSearchOptimizer),
+        (RandomRestartHillClimbingOptimizer),
+        (RandomAnnealingOptimizer),
+        (SimulatedAnnealingOptimizer),
+        (ParallelTemperingOptimizer),
+        (ParticleSwarmOptimizer),
+        (EvolutionStrategyOptimizer),
+    ],
+)
+
+optimizers_SBOM = (
+    "Optimizer",
+    [
+        (BayesianOptimizer),
+        (TreeStructuredParzenEstimators),
+        (DecisionTreeOptimizer),
+        (EnsembleOptimizer),
+    ],
+)
+
+optimizers = (
     "Optimizer",
     [
         (HillClimbingOptimizer),

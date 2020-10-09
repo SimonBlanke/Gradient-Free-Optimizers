@@ -1,10 +1,10 @@
 import pytest
 import numpy as np
 
-from ._parametrize import pytest_parameter
+from ._parametrize import optimizers
 
 
-@pytest.mark.parametrize(*pytest_parameter)
+@pytest.mark.parametrize(*optimizers)
 def test_results_0(Optimizer):
     search_space = {"x1": np.arange(-10, 1, 1)}
 
@@ -29,7 +29,7 @@ def test_results_0(Optimizer):
     assert results_set.issubset(search_space_set)
 
 
-@pytest.mark.parametrize(*pytest_parameter)
+@pytest.mark.parametrize(*optimizers)
 def test_results_1(Optimizer):
     search_space = {"x1": np.arange(-10, 1, 1), "x2": np.arange(-10, 1, 1)}
 
