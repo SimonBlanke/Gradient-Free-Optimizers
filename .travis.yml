@@ -13,9 +13,9 @@ python:
 
 install:
   - pip install scipy
-  - pip install numpy
+  - pip install numpy>=1.18.1
   - pip install pandas
-  - pip install scikit-learn
+  - pip install scikit-learn>=0.22.1
   - pip install tqdm
   - pip install packaging
   - pip install pytest
