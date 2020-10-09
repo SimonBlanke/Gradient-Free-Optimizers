@@ -23,7 +23,7 @@ class EnsembleOptimizer(ExpectedImprovementBasedOptimization):
             DecisionTreeRegressor(),
             GaussianProcessRegressor(),
         ],
-        **kwargs,
+        **kwargs
     ):
         super().__init__(search_space)
         self.regr = EnsembleRegressor(estimators)
