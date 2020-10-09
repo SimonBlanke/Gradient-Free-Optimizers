@@ -14,6 +14,7 @@ python:
 install:
   - pip install scipy
   - pip install numpy
+  - pip install pandas
   - pip install scikit-learn
   - pip install tqdm
   - pip install packaging

@@ -7,7 +7,7 @@ from setuptools import find_packages
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-requires = ["scipy", "numpy", "sklearn", "tqdm"]
+requires = ["scipy", "numpy", "pandas", "sklearn", "tqdm"]
 
 
 def find_version(*filepath):
