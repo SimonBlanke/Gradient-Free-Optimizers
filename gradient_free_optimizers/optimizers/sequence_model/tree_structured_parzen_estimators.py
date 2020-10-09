@@ -38,7 +38,10 @@ class TreeStructuredParzenEstimators(SBOM):
         prob_worst = np.exp(logprob_worst)
 
         return np.divide(
-            prob_best, prob_worst, out=np.zeros_like(prob_worst), where=prob_worst != 0,
+            prob_best,
+            prob_worst,
+            out=np.zeros_like(prob_worst),
+            where=prob_worst != 0,
         )
 
     def propose_location(self):
@@ -55,11 +58,10 @@ class TreeStructuredParzenEstimators(SBOM):
 
         return pos_best
 
+    @SBOM.track_X_sample
     def iterate(self):
         pos = self.propose_location()
         self.pos_new = pos
-
-        self.X_sample.append(pos)
 
         return pos
 

@@ -51,7 +51,9 @@ class ExpectedImprovementBasedOptimization(SBOM):
             if all_pos_comb_sorted.shape[0] == 0:
                 break
 
-            dists = cdist(all_pos_comb_sorted, [pos_best[-1]], metric="cityblock")
+            dists = cdist(
+                all_pos_comb_sorted, [pos_best[-1]], metric="cityblock"
+            )
             dists_norm = dists / dists.max()
             bool = np.squeeze(dists_norm > 0.25)
             all_pos_comb_sorted = all_pos_comb_sorted[bool]
@@ -61,6 +63,7 @@ class ExpectedImprovementBasedOptimization(SBOM):
 
         return pos_best
 
+    @SBOM.track_X_sample
     def iterate(self):
         if len(self.new_positions) == 0:
             self.new_positions = self._propose_location()
@@ -69,7 +72,6 @@ class ExpectedImprovementBasedOptimization(SBOM):
         self.pos_new = pos
 
         self.new_positions.pop(0)
-        self.X_sample.append(pos)
         self.pos = pos
 
         return pos

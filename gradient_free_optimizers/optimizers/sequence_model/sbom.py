@@ -63,6 +63,14 @@ class SBOM(BaseOptimizer, Search):
         if self.warm_start_smbo is not None:
             (self.X_sample, self.Y_sample) = self.warm_start_smbo
 
+    def track_X_sample(func):
+        def wrapper(self, *args, **kwargs):
+            pos = func(self, *args, **kwargs)
+            self.X_sample.append(pos)
+            return pos
+
+        return wrapper
+
     def get_random_sample(self):
         sample_size = self._sample_size()
         if sample_size > self.all_pos_comb.shape[0]:
@@ -83,11 +91,12 @@ class SBOM(BaseOptimizer, Search):
             pos_space.append(np.arange(dim_))
 
         self.n_dim = len(pos_space)
-        self.all_pos_comb = np.array(np.meshgrid(*pos_space)).T.reshape(-1, self.n_dim)
+        self.all_pos_comb = np.array(np.meshgrid(*pos_space)).T.reshape(
+            -1, self.n_dim
+        )
 
+    @track_X_sample
     def init_pos(self, pos):
         super().init_pos(pos)
-        self.X_sample.append(pos)
-
         return pos
 
