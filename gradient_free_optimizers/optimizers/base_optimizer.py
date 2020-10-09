@@ -2,15 +2,19 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+import random
 import numpy as np
 from .search_tracker import SearchTracker
 
 
 class BaseOptimizer(SearchTracker):
-    def __init__(self, search_space):
+    def __init__(self, search_space, rand_rest_p=0):
         super().__init__()
         self.search_space = search_space
-        self.space_dim_size = np.array([len(array) for array in search_space.values()])
+        self.space_dim_size = np.array(
+            [len(array) for array in search_space.values()]
+        )
+        self.rand_rest_p = rand_rest_p
 
         self.optimizers = [self]
 
@@ -20,14 +24,23 @@ class BaseOptimizer(SearchTracker):
         )
         return self.pos_new
 
-    def iter_dec(func):
+    def track_nth_iter(func):
         def wrapper(self, *args, **kwargs):
             self.nth_iter = len(self.score_new_list)
             return func(self, *args, **kwargs)
 
         return wrapper
 
-    @iter_dec
+    def random_restart(func):
+        def wrapper(self, *args, **kwargs):
+            if self.rand_rest_p > random.uniform(0, 1):
+                return self.move_random()
+            else:
+                return func(self, *args, **kwargs)
+
+        return wrapper
+
+    @track_nth_iter
     def init_pos(self, pos):
         self.pos_new = pos
 

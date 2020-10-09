@@ -10,8 +10,10 @@ from ...search import Search
 
 
 class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer, Search):
-    def __init__(self, search_space, annealing_rate=0.975, start_temp=1, **kwargs):
-        super().__init__(search_space)
+    def __init__(
+        self, search_space, annealing_rate=0.975, start_temp=1, **kwargs
+    ):
+        super().__init__(search_space, rand_rest_p=0.03)
         self.annealing_rate = annealing_rate
         self.temp = start_temp
 

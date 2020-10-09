@@ -10,8 +10,10 @@ from ...search import Search
 
 
 class StochasticHillClimbingOptimizer(HillClimbingOptimizer, Search):
-    def __init__(self, search_space, p_accept=0.1, norm_factor="adaptive", **kwargs):
-        super().__init__(search_space)
+    def __init__(
+        self, search_space, p_accept=0.1, norm_factor="adaptive", **kwargs
+    ):
+        super().__init__(search_space, rand_rest_p=0.03)
         self.p_accept = p_accept
         self.norm_factor = norm_factor
 
@@ -24,9 +26,6 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer, Search):
     def _consider(self, p_accept):
         rand = random.uniform(0, self.p_accept)
 
-        # print("p_accept", p_accept)
-        # print("rand", rand)
-
         if rand > p_accept:
             self._new2current()
 
@@ -38,7 +37,11 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer, Search):
         elif abs(denom) == np.inf:
             return 0
         else:
-            return self.norm_factor * (self.score_current - self.score_new) / denom
+            return (
+                self.norm_factor
+                * (self.score_current - self.score_new)
+                / denom
+            )
 
     def _score_norm_adapt(self):
         diff = abs(self.score_current - self.score_new)

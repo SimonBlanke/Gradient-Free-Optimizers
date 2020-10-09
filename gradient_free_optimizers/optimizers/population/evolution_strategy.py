@@ -5,14 +5,15 @@
 import random
 import numpy as np
 
-from math import floor, ceil
 from .base_population_optimizer import BasePopulationOptimizer
 from ...search import Search
 from ..local import HillClimbingOptimizer
 
 
 class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
-    def __init__(self, search_space, mutation_rate=0.8, crossover_rate=0.2):
+    def __init__(
+        self, search_space, mutation_rate=0.7, crossover_rate=0.3, **kwargs,
+    ):
         super().__init__(search_space)
 
         self.mutation_rate = mutation_rate
@@ -32,7 +33,9 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
         size = array_list[0].size
         shape = array_list[0].shape
 
-        choice = np.random.randint(n_arrays, size=size).reshape(shape).astype(bool)
+        choice = (
+            np.random.randint(n_arrays, size=size).reshape(shape).astype(bool)
+        )
         return np.choose(choice, array_list)
 
     def _sort_best(self):
