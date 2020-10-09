@@ -30,7 +30,7 @@ class HillClimbingOptimizer(BaseOptimizer, Search):
         epsilon=0.05,
         distribution="normal",
         n_neighbours=5,
-        **kwargs,
+        **kwargs
     ):
         super().__init__(search_space, rand_rest_p=0.03)
         self.epsilon = epsilon

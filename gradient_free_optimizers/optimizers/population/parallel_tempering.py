@@ -13,9 +13,7 @@ from ..local import SimulatedAnnealingOptimizer
 
 
 class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
-    def __init__(
-        self, search_space, n_iter_swap=10, **kwargs,
-    ):
+    def __init__(self, search_space, n_iter_swap=10, **kwargs):
         super().__init__(search_space)
 
         self.n_iter_swap = n_iter_swap

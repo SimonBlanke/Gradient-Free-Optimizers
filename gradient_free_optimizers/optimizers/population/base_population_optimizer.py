@@ -10,7 +10,9 @@ class BasePopulationOptimizer:
         super().__init__()
 
         self.search_space = search_space
-        self.space_dim_size = np.array([len(array) for array in search_space.values()])
+        self.space_dim_size = np.array(
+            [len(array) for array in search_space.values()]
+        )
 
         self.eval_times = []
         self.iter_times = []
