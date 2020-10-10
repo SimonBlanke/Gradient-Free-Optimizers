@@ -12,10 +12,10 @@ python:
   - "3.7.6"
 
 install:
-  - pip install scipy
-  - pip install numpy>=1.18.1
+  - pip install scipy==1.4.1
+  - pip install numpy==1.18.1
   - pip install pandas
-  - pip install scikit-learn>=0.22.1
+  - pip install scikit-learn==0.22.1
   - pip install tqdm
   - pip install packaging
   - pip install pytest
