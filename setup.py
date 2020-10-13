@@ -7,7 +7,11 @@ from setuptools import find_packages
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-requires = ["scipy", "numpy", "pandas", "sklearn", "tqdm"]
+# Read the requirements
+with open("requirements.txt", encoding="utf8") as f:
+    requirements = f.readlines()
+
+print("\n\n\n     requirements", requirements, "\n")
 
 
 def find_version(*filepath):
@@ -47,5 +51,5 @@ setup(
         "Intended Audience :: Information Technology",
         "Intended Audience :: Science/Research",
     ],
-    install_requires=requires,
+    install_requires=requirements,
 )
