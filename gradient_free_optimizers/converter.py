@@ -11,19 +11,20 @@ class Converter:
         self.search_space = search_space
         self.para_names = list(search_space.keys())
         self.dim_sizes = np.array(
-            [len(array) - 1 for array in search_space.values()]
+            [len(array) for array in search_space.values()]
         )
+        self.search_space_values = list(search_space.values())
 
     def position2value(self, position):
         value = []
-        for n, space_dim in enumerate(self.search_space.values()):
+        for n, space_dim in enumerate(self.search_space_values):
             value.append(space_dim[position[n]])
 
         return np.array(value)
 
     def value2position(self, value):
         position = []
-        for n, space_dim in enumerate(self.search_space.values()):
+        for n, space_dim in enumerate(self.search_space_values):
             pos = np.abs(value[n] - space_dim).argmin()
             position.append(pos)
 
@@ -37,14 +38,17 @@ class Converter:
         return para
 
     def para2value(self, para):
-        value = np.concatenate(list(para.values()))
-        return value
+        value = []
+        for para_name in self.para_names:
+            value.append(*para[para_name])
+
+        return np.array(value)
 
     def values2positions(self, values):
         positions_temp = []
         values_np = np.array(values)
 
-        for n, space_dim in enumerate(self.search_space.values()):
+        for n, space_dim in enumerate(self.search_space_values):
             values_1d = values_np[:, n]
             m_conv = np.abs(values_1d - space_dim[:, np.newaxis])
             pos_list = m_conv.argmin(0)
@@ -59,7 +63,7 @@ class Converter:
         values_temp = []
         positions_np = np.array(positions)
 
-        for n, space_dim in enumerate(self.search_space.values()):
+        for n, space_dim in enumerate(self.search_space_values):
             pos_1d = positions_np[:, n]
             value_ = np.take(space_dim, pos_1d, axis=0)
             values_temp.append(value_)
@@ -107,7 +111,12 @@ class Converter:
 
     def memory_dict2dataframe(self, memory_dict):
         positions, score = self.memory_dict2positions_scores(memory_dict)
+        print("positions", positions)
+
         values = self.positions2values(positions)
+
+        print("values", values)
+        print("self.para_names", self.para_names)
 
         dataframe = pd.DataFrame(values, columns=self.para_names)
         dataframe["score"] = score

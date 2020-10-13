@@ -8,6 +8,39 @@ def equal_arraysInList(list1, list2):
     return all((e1 == e2).all() for e1, e2 in zip(list1, list2))
 
 
+def equal_dictKeysValues(dict1, dict2):
+    if len(dict1.keys()) != len(dict2.keys()):
+        return False
+    for key1 in dict1.keys:
+        if dict1[key1] != dict2[key1]:
+            return False
+
+    return True
+
+
+def get_idx_order(list1, list2):
+    return [idx for o in list1 for idx, name in enumerate(list2) if o == name]
+
+
+def reorder(list1, idx_list):
+    return [list1[i] for i in idx_list]
+
+
+def unordered_dict_workaround(conv, order):
+    # workaround for doing this test with unordered dicts
+
+    idx_order = get_idx_order(order, conv.para_names)
+    search_space_values_reordered = reorder(
+        conv.search_space_values, idx_order
+    )
+    para_names_reordered = reorder(conv.para_names, idx_order)
+
+    conv.search_space_values = search_space_values_reordered
+    conv.para_names = para_names_reordered
+
+    return conv
+
+
 ######### test position2value #########
 
 
@@ -45,6 +78,10 @@ def test_position2value_1(test_input, expected):
     }
 
     conv = Converter(search_space)
+
+    order = ["x1", "x2"]
+    conv = unordered_dict_workaround(conv, order)
+
     value = conv.position2value(test_input)
 
     assert (value == expected).all()
@@ -87,6 +124,8 @@ def test_value2position_1(test_input, expected):
     }
 
     conv = Converter(search_space)
+    order = ["x1", "x2"]
+    conv = unordered_dict_workaround(conv, order)
     position = conv.value2position(test_input)
 
     assert (position == expected).all()
@@ -129,6 +168,8 @@ def test_value2para_1(test_input, expected):
     }
 
     conv = Converter(search_space)
+    order = ["x1", "x2"]
+    conv = unordered_dict_workaround(conv, order)
     para = conv.value2para(test_input)
 
     assert para == expected
@@ -171,6 +212,8 @@ def test_para2value_1(test_input, expected):
     }
 
     conv = Converter(search_space)
+    order = ["x1", "x2"]
+    conv = unordered_dict_workaround(conv, order)
     value = conv.para2value(test_input)
 
     assert (value == expected).all()
@@ -287,13 +330,14 @@ def test_values2positions_1(test_input, expected):
     }
 
     conv = Converter(search_space)
+    order = ["x1", "x2"]
+    conv = unordered_dict_workaround(conv, order)
     positions = conv.values2positions(test_input)
 
     assert equal_arraysInList(positions, expected)
 
 
 """ --- test positions2values --- """
-
 
 values_0 = [
     np.array([-10]),
@@ -403,6 +447,8 @@ def test_positions2values_1(test_input, expected):
     }
 
     conv = Converter(search_space)
+    order = ["x1", "x2"]
+    conv = unordered_dict_workaround(conv, order)
     values = conv.positions2values(test_input)
 
     assert equal_arraysInList(values, expected)
@@ -442,6 +488,8 @@ def test_positions_scores2memory_dict_0(test_input, expected):
     }
 
     conv = Converter(search_space)
+    order = ["x1", "x2"]
+    conv = unordered_dict_workaround(conv, order)
     memory_dict = conv.positions_scores2memory_dict(*test_input)
 
     assert memory_dict == expected
@@ -480,10 +528,16 @@ def test_memory_dict2positions_scores_0(test_input, expected):
     }
 
     conv = Converter(search_space)
+    order = ["x1", "x2"]
+    conv = unordered_dict_workaround(conv, order)
     positions, scores = conv.memory_dict2positions_scores(test_input)
 
-    assert equal_arraysInList(positions, expected[0])
-    assert scores == expected[1]
+    idx_order = get_idx_order(scores, expected[1])
+    scores_reordered = reorder(scores, idx_order)
+    positions_reordered = reorder(positions, idx_order)
+
+    assert equal_arraysInList(positions_reordered, expected[0])
+    assert scores_reordered == expected[1]
 
 
 """ --- test dataframe2memory_dict --- """
@@ -515,6 +569,8 @@ def test_dataframe2memory_dict_0(test_input, expected):
     }
 
     conv = Converter(search_space)
+    order = ["x1", "x2"]
+    conv = unordered_dict_workaround(conv, order)
     memory_dict = conv.dataframe2memory_dict(test_input)
 
     assert memory_dict == expected
@@ -549,7 +605,16 @@ def test_memory_dict2dataframe_0(test_input, expected):
     }
 
     conv = Converter(search_space)
+    order = ["x1", "x2"]
+    conv = unordered_dict_workaround(conv, order)
     dataframe = conv.memory_dict2dataframe(test_input)
 
-    assert dataframe.equals(expected)
+    dataframe.sort_values("score", inplace=True)
+    expected.sort_values("score", inplace=True)
 
+    dataframe.reset_index(drop=True, inplace=True)
+    expected.reset_index(drop=True, inplace=True)
+
+    dataframe = dataframe[expected.columns]
+
+    assert dataframe.equals(expected)
