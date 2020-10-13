@@ -11,17 +11,19 @@ class BaseOptimizer(SearchTracker):
     def __init__(self, search_space, rand_rest_p=0):
         super().__init__()
         self.search_space = search_space
-        self.space_dim_size = np.array(
+        self.dim_sizes = np.array(
             [len(array) for array in search_space.values()]
         )
+        self.max_positions = self.dim_sizes - 1
         self.rand_rest_p = rand_rest_p
 
         self.optimizers = [self]
 
     def move_random(self):
         self.pos_new = np.random.randint(
-            self.space_dim_size, size=self.space_dim_size.shape
+            self.dim_sizes, size=self.dim_sizes.shape
         )
+
         return self.pos_new
 
     def track_nth_iter(func):

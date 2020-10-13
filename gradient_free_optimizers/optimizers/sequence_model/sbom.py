@@ -87,7 +87,7 @@ class SBOM(BaseOptimizer, Search):
 
     def _all_possible_pos(self):
         pos_space = []
-        for dim_ in self.space_dim_size:
+        for dim_ in self.max_positions:
             pos_space.append(np.arange(dim_))
 
         self.n_dim = len(pos_space)

@@ -13,10 +13,12 @@ class Converter:
         self.dim_sizes = np.array(
             [len(array) for array in search_space.values()]
         )
+        self.max_positions = self.dim_sizes - 1
         self.search_space_values = list(search_space.values())
 
     def position2value(self, position):
         value = []
+
         for n, space_dim in enumerate(self.search_space_values):
             value.append(space_dim[position[n]])
 
@@ -111,12 +113,7 @@ class Converter:
 
     def memory_dict2dataframe(self, memory_dict):
         positions, score = self.memory_dict2positions_scores(memory_dict)
-        print("positions", positions)
-
         values = self.positions2values(positions)
-
-        print("values", values)
-        print("self.para_names", self.para_names)
 
         dataframe = pd.DataFrame(values, columns=self.para_names)
         dataframe["score"] = score

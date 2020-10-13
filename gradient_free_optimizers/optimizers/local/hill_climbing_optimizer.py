@@ -38,12 +38,12 @@ class HillClimbingOptimizer(BaseOptimizer, Search):
         self.n_neighbours = n_neighbours
 
     def _move_climb(self, pos, epsilon_mod=1):
-        sigma = self.space_dim_size * self.epsilon * epsilon_mod
+        sigma = self.max_positions * self.epsilon * epsilon_mod
         pos_normal = self.distribution(pos, sigma, pos.shape)
         pos_new_int = np.rint(pos_normal)
 
-        n_zeros = [0] * len(self.space_dim_size)
-        pos = np.clip(pos_new_int, n_zeros, self.space_dim_size - 1)
+        n_zeros = [0] * len(self.max_positions)
+        pos = np.clip(pos_new_int, n_zeros, self.max_positions)
 
         self.pos_new = pos.astype(int)
         return self.pos_new
