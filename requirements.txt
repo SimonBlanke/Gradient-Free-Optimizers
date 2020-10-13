@@ -1,5 +1,5 @@
 scipy
-numpy
+numpy==1.18.1
 pandas
 scikit-learn>=0.21,!= 0.23.*
 tqdm
