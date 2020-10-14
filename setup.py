@@ -11,8 +11,6 @@ with open("README.md", "r") as fh:
 with open("requirements.txt", encoding="utf8") as f:
     requirements = f.readlines()
 
-print("\n\n\n     requirements", requirements, "\n")
-
 
 def find_version(*filepath):
     here = os.path.abspath(os.path.dirname(__file__))
