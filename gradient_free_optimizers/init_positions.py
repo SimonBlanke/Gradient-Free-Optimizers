@@ -37,6 +37,14 @@ class Initializer:
 
         return positions
 
+    def move_random(self):
+        position = []
+        for search_space_pos in self.conv.search_space_positions:
+            pos_ = random.choice(search_space_pos)
+            position.append(pos_)
+
+        return np.array(position)
+
     def _init_random_search(self, n_pos):
         positions = []
 
@@ -44,9 +52,7 @@ class Initializer:
             return positions
 
         for nth_pos in range(n_pos):
-            pos = np.random.randint(
-                self.conv.max_positions, size=self.conv.max_positions.shape
-            )
+            pos = self.move_random()
             positions.append(pos)
 
         return positions
