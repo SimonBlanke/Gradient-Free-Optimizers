@@ -14,6 +14,7 @@ from .times_tracker import TimesTracker
 from .results_manager import ResultsManager
 from .memory import Memory
 from .converter import Converter
+from .print_info import print_info
 
 p_bar_dict = {
     False: ProgressBarLVL0,
@@ -95,7 +96,7 @@ class Search(TimesTracker):
         score_new = self._score(init_pos)
         self.evaluate(score_new)
 
-        self.p_bar.update(score_new, init_pos, init_pos)
+        self.p_bar.update(score_new, init_pos)
 
     @TimesTracker.iter_time
     def _iteration(self):
@@ -104,9 +105,9 @@ class Search(TimesTracker):
         score_new = self._score(pos_new)
         self.evaluate(score_new)
 
-        self.p_bar.update(score_new, pos_new, pos_new)
+        self.p_bar.update(score_new, pos_new)
 
-    def _init_search(self, conv):
+    def _init_search(self):
         self._init_memory(self.memory)
         self.p_bar = p_bar_dict[self.progress_bar](
             self.nth_process, self.n_iter, self.objective_function
@@ -117,7 +118,7 @@ class Search(TimesTracker):
             self.initialize["warm_start"] = self.warm_start
 
         # get init positions
-        init = Initializer(conv)
+        init = Initializer(self.conv)
         init_positions = init.set_pos(self.initialize)
 
         return init_positions
@@ -140,7 +141,11 @@ class Search(TimesTracker):
         max_score=None,
         memory=True,
         memory_warm_start=None,
-        verbosity={"progress_bar": True, "print_results": True},
+        verbosity={
+            "progress_bar": True,
+            "print_results": True,
+            "print_times": True,
+        },
         random_state=None,
         nth_process=None,
     ):
@@ -159,8 +164,9 @@ class Search(TimesTracker):
         self.nth_process = nth_process
 
         conv = Converter(self.search_space)
+        self.conv = conv
         results = ResultsManager(objective_function, conv)
-        init_positions = self._init_search(conv)
+        init_positions = self._init_search()
 
         if memory is True:
             mem = Memory(memory_warm_start, conv)
@@ -183,7 +189,20 @@ class Search(TimesTracker):
         self.results = pd.DataFrame(results.results_list)
 
         self.best_score = self.p_bar.score_best
-        value = conv.position2value(self.p_bar.pos_best)
-        self.best_para = conv.value2para(value)
+        self.best_value = conv.position2value(self.p_bar.pos_best)
+        self.best_para = conv.value2para(self.best_value)
 
-        self.p_bar.close(verbosity["print_results"])
+        eval_time = np.array(self.eval_times).sum()
+        iter_time = np.array(self.iter_times).sum()
+
+        self.p_bar.close()
+
+        print_info(
+            self.objective_function,
+            self.best_score,
+            self.best_para,
+            eval_time,
+            iter_time,
+            self.n_iter,
+        )
+
