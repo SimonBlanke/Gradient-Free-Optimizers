@@ -151,6 +151,13 @@ class Search(TimesTracker):
     ):
         self.start_time = time.time()
 
+        if verbosity in [None, False]:
+            verbosity = {
+                "progress_bar": False,
+                "print_results": False,
+                "print_times": False,
+            }
+
         self.objective_function = objective_function
         self.n_iter = n_iter
         self.initialize = initialize
@@ -198,6 +205,7 @@ class Search(TimesTracker):
         self.p_bar.close()
 
         print_info(
+            verbosity,
             self.objective_function,
             self.best_score,
             self.best_para,
