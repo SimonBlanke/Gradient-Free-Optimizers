@@ -8,7 +8,7 @@ from .search_tracker import SearchTracker
 
 
 class BaseOptimizer(SearchTracker):
-    def __init__(self, search_space, rand_rest_p=0):
+    def __init__(self, search_space):
         super().__init__()
         self.search_space = search_space
         self.dim_sizes = np.array(
@@ -19,7 +19,6 @@ class BaseOptimizer(SearchTracker):
         )
         self.max_positions = self.dim_sizes - 1
         self.search_space_values = list(search_space.values())
-        self.rand_rest_p = rand_rest_p
 
         self.optimizers = [self]
 
@@ -29,13 +28,14 @@ class BaseOptimizer(SearchTracker):
             pos_ = random.choice(search_space_pos)
             position.append(pos_)
 
-        self.pos_new = np.array(position)
-        return self.pos_new
+        return np.array(position)
 
     def track_nth_iter(func):
         def wrapper(self, *args, **kwargs):
-            self.nth_iter = len(self.score_new_list)
-            return func(self, *args, **kwargs)
+            self.nth_iter = len(self.pos_new_list)
+            pos = func(self, *args, **kwargs)
+            self.pos_new = pos
+            return pos
 
         return wrapper
 
@@ -48,8 +48,8 @@ class BaseOptimizer(SearchTracker):
 
         return wrapper
 
-    @track_nth_iter
     def init_pos(self, pos):
+        self.nth_iter = len(self.pos_new_list)
         self.pos_new = pos
 
     def evaluate(self, score_new):

@@ -3,12 +3,11 @@
 # License: MIT License
 
 
-import random
 import numpy as np
 
 from .base_population_optimizer import BasePopulationOptimizer
 from ...search import Search
-from ..local import HillClimbingOptimizer
+from ._particle import Particle
 
 
 class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
@@ -19,7 +18,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
         cognitive_weight=0.5,
         social_weight=0.5,
         temp_weight=0.2,
-        **kwargs
+        rand_rest_p=0.03,
     ):
         super().__init__(search_space)
 
@@ -27,34 +26,9 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
         self.cognitive_weight = cognitive_weight
         self.social_weight = social_weight
         self.temp_weight = temp_weight
+        self.rand_rest_p = rand_rest_p
 
         self.particles = self.optimizers
-
-    def _move_part(self, pos, velo):
-        pos_new = (pos + velo).astype(int)
-        # limit movement
-        n_zeros = [0] * len(self.max_positions)
-        self.p_current.pos_new = np.clip(pos_new, n_zeros, self.max_positions)
-
-        return self.p_current.pos_new
-
-    def _move_positioner(self):
-        r1, r2 = random.random(), random.random()
-
-        A = self.inertia * self.p_current.velo
-        B = (
-            self.cognitive_weight
-            * r1
-            * np.subtract(self.p_current.pos_best, self.p_current.pos_current)
-        )
-        C = (
-            self.social_weight
-            * r2
-            * np.subtract(self.global_pos_best, self.p_current.pos_current)
-        )
-
-        new_velocity = A + B + C
-        return self._move_part(self.p_current.pos_current, new_velocity)
 
     def _sort_best(self):
         scores_list = []
@@ -67,7 +41,14 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
         self.p_sorted = [self.particles[i] for i in idx_sorted_ind]
 
     def init_pos(self, pos):
-        particle = HillClimbingOptimizer(self.search_space)
+        particle = Particle(
+            self.search_space,
+            inertia=self.inertia,
+            cognitive_weight=self.cognitive_weight,
+            social_weight=self.social_weight,
+            temp_weight=self.temp_weight,
+            rand_rest_p=self.rand_rest_p,
+        )
         self.particles.append(particle)
         particle.init_pos(pos)
 
@@ -79,18 +60,12 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
         self.p_current = self.particles[n_iter % len(self.particles)]
 
         self._sort_best()
-        self.global_pos_best = self.p_sorted[0].pos_best
+        self.p_current.global_pos_best = self.p_sorted[0].pos_best
 
-        if self.temp_weight > random.uniform(0, 1):
-            pos = self.p_current._move_climb(self.p_current.pos_current)
-        else:
-            pos = self._move_positioner()
+        pos = self.p_current.iterate()
 
         return pos
 
     def evaluate(self, score_new):
-        self.p_current.score_new = score_new
-
-        self.p_current._evaluate_new2current(score_new)
-        self.p_current._evaluate_current2best()
+        self.p_current.evaluate(score_new)
 

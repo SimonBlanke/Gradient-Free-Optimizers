@@ -86,8 +86,6 @@ class GPR:
         )
 
     def fit(self, X, y):
-        print("\n  X ", X)
-        print("  y ", y)
         self.gpr.fit(X, y)
 
     def predict(self, X, return_std=False):

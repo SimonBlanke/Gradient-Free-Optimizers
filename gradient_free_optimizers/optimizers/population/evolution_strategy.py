@@ -7,12 +7,16 @@ import numpy as np
 
 from .base_population_optimizer import BasePopulationOptimizer
 from ...search import Search
-from ..local import HillClimbingOptimizer
+from ._individual import Individual
 
 
 class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
     def __init__(
-        self, search_space, mutation_rate=0.7, crossover_rate=0.3, **kwargs
+        self,
+        search_space,
+        mutation_rate=0.7,
+        crossover_rate=0.3,
+        rand_rest_p=0.03,
     ):
         super().__init__(search_space)
 
@@ -22,7 +26,7 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
         self.individuals = self.optimizers
 
     def _mutate(self):
-        nth_iter = self._iterations(self.individuals)
+
         self.p_current = self.individuals[nth_iter % len(self.individuals)]
         pos_new = self.p_current._move_climb(self.p_current.pos_current)
 
@@ -68,18 +72,20 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
         rand = np.random.uniform(low=0, high=total_rate)
 
         if len(self.individuals) == 1 or rand <= self.mutation_rate:
-            return self._mutate()
+            return self.p_current.iterate()
         else:
             return self._cross()
 
     def init_pos(self, pos):
-        individual = HillClimbingOptimizer(self.search_space)
+        individual = Individual(self.search_space)
         self.individuals.append(individual)
         individual.init_pos(pos)
 
         self.p_current = individual
 
     def iterate(self):
+        nth_iter = self._iterations(self.individuals)
+        self.p_current = self.individuals[nth_iter % len(self.individuals)]
         return self._evo_iterate()
 
     def evaluate(self, score_new):
