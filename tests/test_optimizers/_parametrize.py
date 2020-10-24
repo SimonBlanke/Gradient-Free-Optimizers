@@ -15,6 +15,28 @@ from gradient_free_optimizers import (
     EnsembleOptimizer,
 )
 
+optimizers_singleOpt = (
+    "Optimizer",
+    [
+        (HillClimbingOptimizer),
+        (StochasticHillClimbingOptimizer),
+        (TabuOptimizer),
+        (RandomSearchOptimizer),
+        (RandomRestartHillClimbingOptimizer),
+        (RandomAnnealingOptimizer),
+        (SimulatedAnnealingOptimizer),
+    ],
+)
+
+optimizers_PopBased = (
+    "Optimizer",
+    [
+        (ParallelTemperingOptimizer),
+        (ParticleSwarmOptimizer),
+        (EvolutionStrategyOptimizer),
+    ],
+)
+
 optimizers_noSBOM = (
     "Optimizer",
     [
