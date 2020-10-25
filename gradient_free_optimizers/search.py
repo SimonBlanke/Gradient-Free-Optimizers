@@ -131,6 +131,26 @@ class Search(TimesTracker):
         else:
             return False
 
+    def _init_verb_dict(self, verb_dict):
+        if verb_dict in [None, False]:
+            return {
+                "progress_bar": False,
+                "print_results": False,
+                "print_times": False,
+            }
+
+        verb_default = {
+            "progress_bar": True,
+            "print_results": True,
+            "print_times": True,
+        }
+
+        for verb_key in verb_default.keys():
+            if verb_key not in verb_dict:
+                verb_dict[verb_key] = verb_default[verb_key]
+
+        return verb_dict
+
     def search(
         self,
         objective_function,
@@ -151,12 +171,7 @@ class Search(TimesTracker):
     ):
         self.start_time = time.time()
 
-        if verbosity in [None, False]:
-            verbosity = {
-                "progress_bar": False,
-                "print_results": False,
-                "print_times": False,
-            }
+        verbosity = self._init_verb_dict(verbosity)
 
         self.objective_function = objective_function
         self.n_iter = n_iter
