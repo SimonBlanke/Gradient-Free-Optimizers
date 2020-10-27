@@ -58,10 +58,13 @@ class HillClimbingOptimizer(BaseOptimizer, Search):
 
         modZero = self.nth_iter % self.n_neighbours == 0
         if modZero:
-            idx = max_list_idx(self.score_new_list)
+            score_new_list_temp = self.score_new_list[-self.n_neighbours :]
+            pos_new_list_temp = self.pos_new_list[-self.n_neighbours :]
 
-            score = self.score_new_list[idx]
-            pos = self.pos_new_list[idx]
+            idx = max_list_idx(score_new_list_temp)
+
+            score = score_new_list_temp[idx]
+            pos = pos_new_list_temp[idx]
 
             self._eval2current(pos, score)
             self._eval2best(pos, score)
