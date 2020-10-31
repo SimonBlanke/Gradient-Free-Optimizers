@@ -22,6 +22,7 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
 
         self.mutation_rate = mutation_rate
         self.crossover_rate = crossover_rate
+        self.rand_rest_p = rand_rest_p
 
         self.individuals = self.optimizers
 
@@ -77,7 +78,9 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
             return self._cross()
 
     def init_pos(self, pos):
-        individual = Individual(self.search_space)
+        individual = Individual(
+            self.search_space, rand_rest_p=self.rand_rest_p
+        )
         self.individuals.append(individual)
         individual.init_pos(pos)
 

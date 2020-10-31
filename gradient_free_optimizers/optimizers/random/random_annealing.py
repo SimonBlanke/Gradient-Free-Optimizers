@@ -9,11 +9,22 @@ from ...search import Search
 
 class RandomAnnealingOptimizer(HillClimbingOptimizer, Search):
     def __init__(
-        self, search_space, annealing_rate=0.975, start_temp=1, **kwargs
+        self,
+        search_space,
+        epsilon=0.05,
+        distribution="normal",
+        n_neighbours=3,
+        annealing_rate=0.975,
+        start_temp=1,
+        rand_rest_p=0.03,
     ):
-        super().__init__(search_space, rand_rest_p=0.005)
+        super().__init__(search_space)
+        self.epsilon = epsilon
+        self.distribution = distribution
+        self.n_neighbours = n_neighbours
         self.annealing_rate = annealing_rate
         self.temp = start_temp
+        self.rand_rest_p = rand_rest_p
 
     @HillClimbingOptimizer.track_nth_iter
     @HillClimbingOptimizer.random_restart

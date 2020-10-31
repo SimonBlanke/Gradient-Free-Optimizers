@@ -13,10 +13,11 @@ from ..local import SimulatedAnnealingOptimizer
 
 
 class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
-    def __init__(self, search_space, n_iter_swap=10, **kwargs):
+    def __init__(self, search_space, n_iter_swap=10, rand_rest_p=0.03):
         super().__init__(search_space)
 
         self.n_iter_swap = n_iter_swap
+        self.rand_rest_p = rand_rest_p
 
         self.systems = self.optimizers
 
@@ -47,7 +48,9 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
             return np.exp(score_diff_norm * temp)
 
     def init_pos(self, pos):
-        system = SimulatedAnnealingOptimizer(self.search_space)
+        system = SimulatedAnnealingOptimizer(
+            self.search_space, rand_rest_p=self.rand_rest_p
+        )
         self.systems.append(system)
         system.init_pos(pos)
 

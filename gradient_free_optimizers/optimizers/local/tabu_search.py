@@ -8,11 +8,20 @@ from ...search import Search
 
 
 class TabuOptimizer(HillClimbingOptimizer, Search):
-    def __init__(self, search_space, tabu_factor=3, **kwargs):
-        super().__init__(search_space, rand_rest_p=0.03)
+    def __init__(
+        self,
+        search_space,
+        epsilon=0.05,
+        distribution="normal",
+        n_neighbours=3,
+        tabu_factor=3,
+        rand_rest_p=0.03,
+    ):
+        super().__init__(search_space, epsilon, distribution, n_neighbours)
 
         self.tabus = []
         self.tabu_factor = tabu_factor
+        self.rand_rest_p = rand_rest_p
         self.epsilon_mod = 1
 
     @HillClimbingOptimizer.track_nth_iter

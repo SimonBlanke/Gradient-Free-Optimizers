@@ -11,11 +11,19 @@ from ...search import Search
 
 class StochasticHillClimbingOptimizer(HillClimbingOptimizer, Search):
     def __init__(
-        self, search_space, p_accept=0.1, norm_factor="adaptive", **kwargs
+        self,
+        search_space,
+        epsilon=0.05,
+        distribution="normal",
+        n_neighbours=3,
+        p_accept=0.1,
+        norm_factor="adaptive",
+        rand_rest_p=0.03,
     ):
-        super().__init__(search_space, rand_rest_p=0.03)
+        super().__init__(search_space, epsilon, distribution, n_neighbours)
         self.p_accept = p_accept
         self.norm_factor = norm_factor
+        self.rand_rest_p = rand_rest_p
 
         if self.norm_factor == "adaptive":
             self._accept = self._accept_adapt

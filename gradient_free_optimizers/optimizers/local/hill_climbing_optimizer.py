@@ -29,18 +29,18 @@ class HillClimbingOptimizer(BaseOptimizer, Search):
         search_space,
         epsilon=0.05,
         distribution="normal",
-        n_neighbours=5,
+        n_neighbours=3,
         rand_rest_p=0.03,
     ):
         super().__init__(search_space)
         self.epsilon = epsilon
-        self.distribution = dist_dict[distribution]
+        self.distribution = distribution
         self.n_neighbours = n_neighbours
         self.rand_rest_p = rand_rest_p
 
     def _move_climb(self, pos, epsilon_mod=1):
         sigma = self.max_positions * self.epsilon * epsilon_mod
-        pos_normal = self.distribution(pos, sigma, pos.shape)
+        pos_normal = dist_dict[self.distribution](pos, sigma, pos.shape)
         pos_new_int = np.rint(pos_normal)
 
         n_zeros = [0] * len(self.max_positions)
@@ -62,7 +62,6 @@ class HillClimbingOptimizer(BaseOptimizer, Search):
             pos_new_list_temp = self.pos_new_list[-self.n_neighbours :]
 
             idx = max_list_idx(score_new_list_temp)
-
             score = score_new_list_temp[idx]
             pos = pos_new_list_temp[idx]
 
