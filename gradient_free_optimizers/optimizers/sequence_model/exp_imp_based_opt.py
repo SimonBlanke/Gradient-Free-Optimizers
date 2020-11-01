@@ -12,13 +12,20 @@ from .sbom import SBOM
 
 
 class ExpectedImprovementBasedOptimization(SBOM):
-    def __init__(self, search_space, xi=0.01, **kwargs):
+    def __init__(
+        self,
+        search_space,
+        xi=0.01,
+        max_sample_size=1000000,
+        warm_start_smbo=None,
+        skip_retrain="never",
+    ):
         super().__init__(search_space)
         self.new_positions = []
         self.xi = xi
 
     def _expected_improvement(self):
-        all_pos_comb_sampled = self.get_random_sample()
+        all_pos_comb_sampled = self.all_pos_comb
 
         mu, sigma = self.regr.predict(all_pos_comb_sampled, return_std=True)
         mu_sample = self.regr.predict(self.X_sample)
@@ -47,6 +54,8 @@ class ExpectedImprovementBasedOptimization(SBOM):
 
         pos_best = [all_pos_comb_sorted[0]]
 
+        """ skip_retrain
+
         while len(pos_best) < self.skip_retrain(len(self.pos_new)):
             if all_pos_comb_sorted.shape[0] == 0:
                 break
@@ -60,6 +69,7 @@ class ExpectedImprovementBasedOptimization(SBOM):
 
             if len(all_pos_comb_sorted) > 0:
                 pos_best.append(all_pos_comb_sorted[0])
+        """
 
         return pos_best
 
