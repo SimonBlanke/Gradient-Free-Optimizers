@@ -2,10 +2,10 @@ import pytest
 from tqdm import tqdm
 import numpy as np
 
-from ._parametrize import optimizers_noSBOMnoPop
+from ._parametrize import optimizers_singleOpt
 
 
-@pytest.mark.parametrize(*optimizers_noSBOMnoPop)
+@pytest.mark.parametrize(*optimizers_singleOpt)
 def test_exploration_0(Optimizer):
     def objective_function(para):
         score = -(para["x1"] * para["x1"])
@@ -42,7 +42,7 @@ def test_exploration_0(Optimizer):
     assert 0 in uniques_2nd_dim
 
 
-@pytest.mark.parametrize(*optimizers_noSBOMnoPop)
+@pytest.mark.parametrize(*optimizers_singleOpt)
 def test_exploration_1(Optimizer):
     def objective_function(para):
         score = -(para["x1"] * para["x1"])

@@ -74,7 +74,7 @@ def test_convex_convergence_SBOM(Optimizer):
         return score
 
     search_space = {"x1": np.arange(-33, 33, 1)}
-    initialize = {"vertices": 2, "grid": 2}
+    initialize = {"vertices": 2}
 
     n_opts = 10
 
@@ -93,5 +93,9 @@ def test_convex_convergence_SBOM(Optimizer):
         scores.append(opt.best_score)
     score_mean = np.array(scores).mean()
 
+    print("scores", scores)
+
+    print("score_mean", score_mean)
     assert score_mean > -25
+    # assert False
 

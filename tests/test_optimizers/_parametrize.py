@@ -63,6 +63,20 @@ optimizers_SBOM = (
     ],
 )
 
+optimizers_local = (
+    "Optimizer",
+    [
+        (HillClimbingOptimizer),
+        (StochasticHillClimbingOptimizer),
+        (TabuOptimizer),
+        (SimulatedAnnealingOptimizer),
+        (ParallelTemperingOptimizer),
+        (ParticleSwarmOptimizer),
+        (EvolutionStrategyOptimizer),
+    ],
+)
+
+
 optimizers = (
     "Optimizer",
     [
