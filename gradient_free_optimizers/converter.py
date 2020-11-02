@@ -13,10 +13,25 @@ class Converter:
         self.dim_sizes = np.array(
             [len(array) for array in search_space.values()]
         )
+        self.search_space_positions = np.array(
+            [range(len(array)) for array in search_space.values()]
+        )
         self.max_positions = self.dim_sizes - 1
         self.search_space_values = list(search_space.values())
 
+    def returnNoneIfArgNone(func):
+        def wrapper(self, arg):
+            if arg is None:
+                return None
+            else:
+                return func(self, arg)
+
+        return wrapper
+
     def position2value(self, position):
+        if position is None:
+            return None
+
         value = []
 
         for n, space_dim in enumerate(self.search_space_values):
@@ -24,6 +39,7 @@ class Converter:
 
         return np.array(value)
 
+    @returnNoneIfArgNone
     def value2position(self, value):
         position = []
         for n, space_dim in enumerate(self.search_space_values):
@@ -32,6 +48,7 @@ class Converter:
 
         return np.array(position).astype(int)
 
+    @returnNoneIfArgNone
     def value2para(self, value):
         para = {}
         for key, p_ in zip(self.para_names, value):
