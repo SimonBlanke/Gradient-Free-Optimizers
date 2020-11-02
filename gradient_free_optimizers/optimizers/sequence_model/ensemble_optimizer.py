@@ -23,7 +23,12 @@ class EnsembleOptimizer(ExpectedImprovementBasedOptimization):
             DecisionTreeRegressor(),
             GaussianProcessRegressor(),
         ],
-        **kwargs
+        xi=0.01,
+        warm_start_sbom=None,
+        rand_rest_p=0.03,
     ):
         super().__init__(search_space)
         self.regr = EnsembleRegressor(estimators)
+        self.xi = xi
+        self.warm_start_sbom = warm_start_sbom
+        self.rand_rest_p = rand_rest_p

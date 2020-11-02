@@ -7,7 +7,7 @@ import numpy as np
 
 from sklearn.linear_model import BayesianRidge
 from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.gaussian_process.kernels import Matern, WhiteKernel
+from sklearn.gaussian_process.kernels import Matern, WhiteKernel, RBF
 from sklearn.ensemble import ExtraTreesRegressor as _ExtraTreesRegressor_
 from sklearn.ensemble import RandomForestRegressor as _RandomForestRegressor_
 
@@ -82,7 +82,7 @@ class ExtraTreesRegressor(TreeEnsembleBase, _ExtraTreesRegressor_):
 class GPR:
     def __init__(self):
         self.gpr = GaussianProcessRegressor(
-            kernel=Matern(nu=2.5) + WhiteKernel(), normalize_y=True
+            kernel=RBF() + WhiteKernel(), normalize_y=True
         )
 
     def fit(self, X, y):

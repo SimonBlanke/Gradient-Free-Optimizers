@@ -10,9 +10,17 @@ from .sbom import SBOM
 
 
 class TreeStructuredParzenEstimators(SBOM):
-    def __init__(self, search_space, gamma_tpe=0.3, **kwargs):
+    def __init__(
+        self,
+        search_space,
+        gamma_tpe=0.3,
+        warm_start_sbom=None,
+        rand_rest_p=0.03,
+    ):
         super().__init__(search_space)
         self.gamma_tpe = gamma_tpe
+        self.warm_start_sbom = warm_start_sbom
+        self.rand_rest_p = rand_rest_p
 
         self.kd_best = KernelDensity()
         self.kd_worst = KernelDensity()
@@ -58,12 +66,11 @@ class TreeStructuredParzenEstimators(SBOM):
 
         return pos_best
 
+    @SBOM.track_nth_iter
     @SBOM.track_X_sample
+    @SBOM.random_restart
     def iterate(self):
-        pos = self.propose_location()
-        self.pos_new = pos
-
-        return pos
+        return self.propose_location()
 
     def evaluate(self, score_new):
         self.score_new = score_new

@@ -13,21 +13,18 @@ from .sbom import SBOM
 
 class ExpectedImprovementBasedOptimization(SBOM):
     def __init__(
-        self,
-        search_space,
-        xi=0.01,
-        max_sample_size=1000000,
-        warm_start_smbo=None,
-        skip_retrain="never",
+        self, search_space, xi=0.01, warm_start_sbom=None, rand_rest_p=0.03,
     ):
         super().__init__(search_space)
         self.new_positions = []
         self.xi = xi
+        self.warm_start_sbom = warm_start_sbom
+        self.rand_rest_p = rand_rest_p
 
     def _expected_improvement(self):
-        all_pos_comb_sampled = self.all_pos_comb
+        # print("self.all_pos_comb", self.all_pos_comb.shape)
 
-        mu, sigma = self.regr.predict(all_pos_comb_sampled, return_std=True)
+        mu, sigma = self.regr.predict(self.all_pos_comb, return_std=True)
         mu_sample = self.regr.predict(self.X_sample)
 
         mu = mu.reshape(-1, 1)
@@ -44,47 +41,34 @@ class ExpectedImprovementBasedOptimization(SBOM):
         return exp_imp
 
     def _propose_location(self):
-        self.regr.fit(self.X_sample, self.Y_sample)
+        """
+        print(
+            "\n self.X_sample \n", self.X_sample, np.array(self.X_sample).shape
+        )
+        print(
+            "\n self.Y_sample \n", self.Y_sample, np.array(self.Y_sample).shape
+        )
+        """
+        self.regr.fit(np.array(self.X_sample), np.array(self.Y_sample))
 
         exp_imp = self._expected_improvement()
         exp_imp = exp_imp[:, 0]
+        # print("\n exp_imp \n", exp_imp)
 
         index_best = list(exp_imp.argsort()[::-1])
         all_pos_comb_sorted = self.all_pos_comb[index_best]
+        # print("\n all_pos_comb_sorted \n", all_pos_comb_sorted)
 
-        pos_best = [all_pos_comb_sorted[0]]
+        pos_best = all_pos_comb_sorted[0]
 
-        """ skip_retrain
-
-        while len(pos_best) < self.skip_retrain(len(self.pos_new)):
-            if all_pos_comb_sorted.shape[0] == 0:
-                break
-
-            dists = cdist(
-                all_pos_comb_sorted, [pos_best[-1]], metric="cityblock"
-            )
-            dists_norm = dists / dists.max()
-            bool = np.squeeze(dists_norm > 0.25)
-            all_pos_comb_sorted = all_pos_comb_sorted[bool]
-
-            if len(all_pos_comb_sorted) > 0:
-                pos_best.append(all_pos_comb_sorted[0])
-        """
+        # print("pos_best", pos_best)
 
         return pos_best
 
+    @SBOM.track_nth_iter
     @SBOM.track_X_sample
     def iterate(self):
-        if len(self.new_positions) == 0:
-            self.new_positions = self._propose_location()
-
-        pos = self.new_positions[0]
-        self.pos_new = pos
-
-        self.new_positions.pop(0)
-        self.pos = pos
-
-        return pos
+        return self._propose_location()
 
     def evaluate(self, score_new):
         self.score_new = score_new
