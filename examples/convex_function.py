@@ -13,4 +13,4 @@ search_space = {
 }
 
 opt = HillClimbingOptimizer(search_space)
-opt.search(convex_function, n_iter=30000)
+opt.search(convex_function, n_iter=300000)
