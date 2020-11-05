@@ -8,7 +8,7 @@ from scipy.stats import norm
 from scipy.spatial.distance import cdist
 
 
-from .sbom import SBOM
+from .smbo import SMBO
 
 
 def normalize(array):
@@ -21,14 +21,14 @@ def normalize(array):
         return ((num / den) + 0) / 1
 
 
-class ExpectedImprovementBasedOptimization(SBOM):
+class ExpectedImprovementBasedOptimization(SMBO):
     def __init__(
-        self, search_space, xi=0.01, warm_start_sbom=None, rand_rest_p=0.03,
+        self, search_space, xi=0.01, warm_start_smbo=None, rand_rest_p=0.03,
     ):
         super().__init__(search_space)
         self.new_positions = []
         self.xi = xi
-        self.warm_start_sbom = warm_start_sbom
+        self.warm_start_smbo = warm_start_smbo
         self.rand_rest_p = rand_rest_p
 
     def _expected_improvement(self):
@@ -64,8 +64,8 @@ class ExpectedImprovementBasedOptimization(SBOM):
 
         return pos_best
 
-    @SBOM.track_nth_iter
-    @SBOM.track_X_sample
+    @SMBO.track_nth_iter
+    @SMBO.track_X_sample
     def iterate(self):
         return self._propose_location()
 

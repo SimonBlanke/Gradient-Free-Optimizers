@@ -6,20 +6,20 @@
 import numpy as np
 
 from sklearn.neighbors import KernelDensity
-from .sbom import SBOM
+from .smbo import SMBO
 
 
-class TreeStructuredParzenEstimators(SBOM):
+class TreeStructuredParzenEstimators(SMBO):
     def __init__(
         self,
         search_space,
         gamma_tpe=0.3,
-        warm_start_sbom=None,
+        warm_start_smbo=None,
         rand_rest_p=0.03,
     ):
         super().__init__(search_space)
         self.gamma_tpe = gamma_tpe
-        self.warm_start_sbom = warm_start_sbom
+        self.warm_start_smbo = warm_start_smbo
         self.rand_rest_p = rand_rest_p
 
         self.kd_best = KernelDensity()
@@ -66,9 +66,9 @@ class TreeStructuredParzenEstimators(SBOM):
 
         return pos_best
 
-    @SBOM.track_nth_iter
-    @SBOM.track_X_sample
-    @SBOM.random_restart
+    @SMBO.track_nth_iter
+    @SMBO.track_X_sample
+    @SMBO.random_restart
     def iterate(self):
         return self.propose_location()
 

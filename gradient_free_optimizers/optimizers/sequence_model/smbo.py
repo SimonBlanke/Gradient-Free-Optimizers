@@ -11,7 +11,7 @@ from ..base_optimizer import BaseOptimizer
 from ...search import Search
 
 
-class SBOM(BaseOptimizer, Search):
+class SMBO(BaseOptimizer, Search):
     def __init__(
         self, search_space, warm_start_sbom=None,
     ):

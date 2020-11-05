@@ -22,8 +22,8 @@ search_space = {"x1": np.arange(-10, 11, 1)}
 
 
 sbom_para = [
-    ({"warm_start_sbom": None}),
-    ({"warm_start_sbom": None}),
+    ({"warm_start_smbo": None}),
+    ({"warm_start_smbo": None}),
     ({"rand_rest_p": 0}),
     ({"rand_rest_p": 0.5}),
     ({"rand_rest_p": 1}),
@@ -46,7 +46,7 @@ optimizers_sbom = (
 
 @pytest.mark.parametrize(*optimizers_sbom)
 @pytest.mark.parametrize(*pytest_wrapper)
-def test_sbom_para(Optimizer, para):
+def test_smbo_para(Optimizer, para):
     opt = Optimizer(search_space, **para)
     opt.search(
         objective_function,
