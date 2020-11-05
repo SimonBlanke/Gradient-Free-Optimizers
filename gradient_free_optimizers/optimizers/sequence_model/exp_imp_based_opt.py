@@ -11,6 +11,16 @@ from scipy.spatial.distance import cdist
 from .sbom import SBOM
 
 
+def normalize(array):
+    num = array - array.min()
+    den = array.max() - array.min()
+
+    if den == 0:
+        return np.random.random_sample(array.shape)
+    else:
+        return ((num / den) + 0) / 1
+
+
 class ExpectedImprovementBasedOptimization(SBOM):
     def __init__(
         self, search_space, xi=0.01, warm_start_sbom=None, rand_rest_p=0.03,
@@ -22,46 +32,35 @@ class ExpectedImprovementBasedOptimization(SBOM):
         self.rand_rest_p = rand_rest_p
 
     def _expected_improvement(self):
-        # print("self.all_pos_comb", self.all_pos_comb.shape)
-
         mu, sigma = self.regr.predict(self.all_pos_comb, return_std=True)
-        mu_sample = self.regr.predict(self.X_sample)
-
+        # mu_sample = self.regr.predict(self.X_sample)
         mu = mu.reshape(-1, 1)
         sigma = sigma.reshape(-1, 1)
-        mu_sample = mu_sample.reshape(-1, 1)
 
-        mu_sample_opt = np.max(mu_sample)
-        imp = mu - mu_sample_opt - self.xi
-
+        Y_sample = normalize(np.array(self.Y_sample)).reshape(-1, 1)
+        imp = mu - np.max(Y_sample) - self.xi
         Z = np.divide(imp, sigma, out=np.zeros_like(sigma), where=sigma != 0)
-        exp_imp = imp * norm.cdf(Z) + sigma * norm.pdf(Z)
+
+        exploit = imp * norm.cdf(Z)
+        explore = sigma * norm.pdf(Z)
+
+        exp_imp = exploit + explore
         exp_imp[sigma == 0.0] = 0.0
 
-        return exp_imp
+        return exp_imp[:, 0]
 
     def _propose_location(self):
-        """
-        print(
-            "\n self.X_sample \n", self.X_sample, np.array(self.X_sample).shape
-        )
-        print(
-            "\n self.Y_sample \n", self.Y_sample, np.array(self.Y_sample).shape
-        )
-        """
-        self.regr.fit(np.array(self.X_sample), np.array(self.Y_sample))
+        X_sample = np.array(self.X_sample)
+        Y_sample = np.array(self.Y_sample)
+
+        Y_sample = normalize(Y_sample).reshape(-1, 1)
+        self.regr.fit(X_sample, Y_sample)
 
         exp_imp = self._expected_improvement()
-        exp_imp = exp_imp[:, 0]
-        # print("\n exp_imp \n", exp_imp)
 
         index_best = list(exp_imp.argsort()[::-1])
         all_pos_comb_sorted = self.all_pos_comb[index_best]
-        # print("\n all_pos_comb_sorted \n", all_pos_comb_sorted)
-
         pos_best = all_pos_comb_sorted[0]
-
-        # print("pos_best", pos_best)
 
         return pos_best
 

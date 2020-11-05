@@ -17,8 +17,8 @@ class BayesianOptimizer(ExpectedImprovementBasedOptimization):
     def __init__(
         self,
         search_space,
-        gpr=gaussian_process["gp_linear"],
-        xi=0.01,
+        gpr=gaussian_process["gp_nonlinear"],
+        xi=0.03,
         warm_start_sbom=None,
         rand_rest_p=0.03,
     ):

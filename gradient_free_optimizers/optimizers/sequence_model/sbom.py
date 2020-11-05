@@ -25,7 +25,6 @@ class SBOM(BaseOptimizer, Search):
             (self.X_sample, self.Y_sample) = self.warm_start_sbom
 
         self.all_pos_comb = self._all_possible_pos()
-        # print("self.all_pos_comb", self.all_pos_comb.shape)
 
     def track_X_sample(func):
         def wrapper(self, *args, **kwargs):
