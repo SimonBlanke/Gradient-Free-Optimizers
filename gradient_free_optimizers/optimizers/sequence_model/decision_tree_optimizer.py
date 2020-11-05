@@ -7,11 +7,13 @@ from .exp_imp_based_opt import ExpectedImprovementBasedOptimization
 from .surrogate_models import (
     RandomForestRegressor,
     ExtraTreesRegressor,
+    GradientBoostingRegressor,
 )
 
 tree_regressor_dict = {
-    "random_forest": RandomForestRegressor(n_estimators=10),
-    "extra_tree": ExtraTreesRegressor(n_estimators=10),
+    "random_forest": RandomForestRegressor(n_estimators=5),
+    "extra_tree": ExtraTreesRegressor(n_estimators=5),
+    "gradient_boost": GradientBoostingRegressor(n_estimators=5),
 }
 
 
@@ -21,7 +23,7 @@ class DecisionTreeOptimizer(ExpectedImprovementBasedOptimization):
     def __init__(
         self,
         search_space,
-        tree_regressor="random_forest",
+        tree_regressor="gradient_boost",
         xi=0.01,
         warm_start_sbom=None,
         rand_rest_p=0.03,
