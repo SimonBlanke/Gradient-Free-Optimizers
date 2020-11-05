@@ -2,7 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-
+import GPy
 import numpy as np
 
 from sklearn.linear_model import BayesianRidge
@@ -10,24 +10,30 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern, WhiteKernel, RBF
 from sklearn.ensemble import ExtraTreesRegressor as _ExtraTreesRegressor_
 from sklearn.ensemble import RandomForestRegressor as _RandomForestRegressor_
+from sklearn.ensemble import (
+    GradientBoostingRegressor as _GradientBoostingRegressor_,
+)
 
 
 class EnsembleRegressor:
-    def __init__(self, estimators):
+    def __init__(self, estimators, min_std=0.001):
         self.estimators = estimators
+        self.min_std = min_std
 
     def fit(self, X, y):
         for estimator in self.estimators:
-            estimator.fit(X, y)
+            estimator.fit(X, np.ravel(y))
 
     def predict(self, X, return_std=False):
         predictions = []
         for estimator in self.estimators:
-            predictions.append(estimator.predict(X))
+            predictions.append(estimator.predict(X).reshape(-1, 1))
 
-        predictions = np.array(predictions).T
-        mean = predictions.mean(axis=1)
-        std = predictions.std(axis=1)
+        predictions = np.array(predictions)
+        mean = predictions.mean(axis=0)
+        std = predictions.std(axis=0)
+
+        std[std < self.min_std] = self.min_std
 
         if return_std:
 
@@ -36,9 +42,17 @@ class EnsembleRegressor:
 
 
 def _return_std(X, trees, predictions, min_variance):
+    """
+    used from: 
+    https://github.com/scikit-optimize/scikit-optimize/blob/master/skopt/learning/forest.py
+    """
     std = np.zeros(len(X))
+    trees = list(trees)
 
     for tree in trees:
+        if isinstance(tree, np.ndarray):
+            tree = tree[0]
+
         var_tree = tree.tree_.impurity[tree.apply(X)]
         var_tree[var_tree < min_variance] = min_variance
         mean_tree = tree.predict(X)
@@ -52,7 +66,7 @@ def _return_std(X, trees, predictions, min_variance):
 
 
 class TreeEnsembleBase:
-    def __init__(self, min_variance=0.0, **kwargs):
+    def __init__(self, min_variance=0.001, **kwargs):
         self.min_variance = min_variance
         super().__init__(**kwargs)
 
@@ -70,19 +84,33 @@ class TreeEnsembleBase:
 
 
 class RandomForestRegressor(TreeEnsembleBase, _RandomForestRegressor_):
-    def __init__(self, min_variance=0.0, **kwargs):
+    def __init__(self, min_variance=0.001, **kwargs):
         super().__init__(**kwargs)
 
 
 class ExtraTreesRegressor(TreeEnsembleBase, _ExtraTreesRegressor_):
-    def __init__(self, min_variance=0.0, **kwargs):
+    def __init__(self, min_variance=0.001, **kwargs):
+        super().__init__(**kwargs)
+
+
+class GradientBoostingRegressor(TreeEnsembleBase, _GradientBoostingRegressor_):
+    def __init__(self, min_variance=0.001, **kwargs):
         super().__init__(**kwargs)
 
 
 class GPR:
     def __init__(self):
+        length_scale_param = 1
+        length_scale_bounds_param = (1e-05, 100000.0)
+        nu_param = 0.5
+        matern = Matern(
+            # length_scale=length_scale_param,
+            # length_scale_bounds=length_scale_bounds_param,
+            nu=nu_param,
+        )
+
         self.gpr = GaussianProcessRegressor(
-            kernel=RBF() + WhiteKernel(), normalize_y=True
+            kernel=matern + WhiteKernel(), n_restarts_optimizer=0
         )
 
     def fit(self, X, y):
@@ -92,9 +120,21 @@ class GPR:
         return self.gpr.predict(X, return_std=return_std)
 
 
+class GPR1:
+    def __init__(self):
+        self.kernel = GPy.kern.RBF(input_dim=2)
+
+    def fit(self, X, y):
+        self.m = GPy.models.GPRegression(X, y)
+        self.m.optimize(messages=False)
+
+    def predict(self, X, return_std=False):
+        return self.m.predict(X)
+
+
 class GPR_linear:
     def __init__(self):
-        self.gpr = BayesianRidge(n_iter=10, normalize=True)
+        self.gpr = BayesianRidge()
 
     def fit(self, X, y):
         self.gpr.fit(X, y)

@@ -11,6 +11,7 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.svm import SVR
 from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.neural_network import MLPRegressor
 
 
 class EnsembleOptimizer(ExpectedImprovementBasedOptimization):
@@ -18,9 +19,9 @@ class EnsembleOptimizer(ExpectedImprovementBasedOptimization):
         self,
         search_space,
         estimators=[
-            GradientBoostingRegressor(n_estimators=10),
-            SVR(),
-            DecisionTreeRegressor(),
+            GradientBoostingRegressor(n_estimators=5),
+            # DecisionTreeRegressor(),
+            # MLPRegressor(),
             GaussianProcessRegressor(),
         ],
         xi=0.01,
@@ -32,3 +33,4 @@ class EnsembleOptimizer(ExpectedImprovementBasedOptimization):
         self.xi = xi
         self.warm_start_sbom = warm_start_sbom
         self.rand_rest_p = rand_rest_p
+
