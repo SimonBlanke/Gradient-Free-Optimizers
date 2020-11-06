@@ -11,7 +11,7 @@ def test_convex_convergence_singleOpt(Optimizer):
         return score
 
     search_space = {
-        "x1": np.arange(-1000, 1, 1),
+        "x1": np.arange(-100, 101, 1),
     }
 
     init1 = {
@@ -26,7 +26,7 @@ def test_convex_convergence_singleOpt(Optimizer):
         opt = Optimizer(search_space, rand_rest_p=1)
         opt.search(
             objective_function,
-            n_iter=30,
+            n_iter=20,
             random_state=rnd_st,
             memory=False,
             verbosity=False,
@@ -38,5 +38,5 @@ def test_convex_convergence_singleOpt(Optimizer):
 
     print("score_mean", score_mean)
 
-    assert score_mean > -10000
+    assert score_mean > -400
 
