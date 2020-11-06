@@ -83,7 +83,7 @@ def test_convex_convergence_SBOM(Optimizer):
         opt = Optimizer(search_space)
         opt.search(
             objective_function,
-            n_iter=30,
+            n_iter=20,
             random_state=rnd_st,
             memory=False,
             verbosity=False,
