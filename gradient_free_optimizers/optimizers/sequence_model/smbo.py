@@ -13,16 +13,19 @@ from ...search import Search
 
 class SMBO(BaseOptimizer, Search):
     def __init__(
-        self, search_space, warm_start_sbom=None,
+        self, search_space, warm_start_smbo=None,
     ):
         super().__init__(search_space)
-        self.warm_start_sbom = warm_start_sbom
+        self.warm_start_smbo = warm_start_smbo
 
         self.X_sample = []
         self.Y_sample = []
 
-        if self.warm_start_sbom is not None:
-            (self.X_sample, self.Y_sample) = self.warm_start_sbom
+        if self.warm_start_smbo is not None:
+            (X_sample_values, Y_sample) = self.warm_start_smbo
+
+            self.X_sample = self.conv.values2positions(X_sample_values)
+            self.Y_sample = Y_sample
 
         self.all_pos_comb = self._all_possible_pos()
 
