@@ -20,18 +20,17 @@ class Converter:
         self.search_space_values = list(search_space.values())
 
     def returnNoneIfArgNone(func):
-        def wrapper(self, arg):
-            if arg is None:
-                return None
+        def wrapper(self, *args):
+            for arg in [*args]:
+                if arg is None:
+                    return None
             else:
-                return func(self, arg)
+                return func(self, *args)
 
         return wrapper
 
+    @returnNoneIfArgNone
     def position2value(self, position):
-        if position is None:
-            return None
-
         value = []
 
         for n, space_dim in enumerate(self.search_space_values):
@@ -56,6 +55,7 @@ class Converter:
 
         return para
 
+    @returnNoneIfArgNone
     def para2value(self, para):
         value = []
         for para_name in self.para_names:
@@ -63,6 +63,7 @@ class Converter:
 
         return np.array(value)
 
+    @returnNoneIfArgNone
     def values2positions(self, values):
         positions_temp = []
         values_np = np.array(values)
@@ -78,6 +79,7 @@ class Converter:
 
         return positions
 
+    @returnNoneIfArgNone
     def positions2values(self, positions):
         values_temp = []
         positions_np = np.array(positions)
@@ -90,12 +92,14 @@ class Converter:
         values = list(np.array(values_temp).T)
         return values
 
+    @returnNoneIfArgNone
     def positions_scores2memory_dict(self, positions, scores):
         value_tuple_list = list(map(tuple, positions))
         memory_dict = dict(zip(value_tuple_list, scores))
 
         return memory_dict
 
+    @returnNoneIfArgNone
     def memory_dict2positions_scores(self, memory_dict):
         positions = [
             np.array(pos).astype(int) for pos in list(memory_dict.keys())
@@ -104,6 +108,7 @@ class Converter:
 
         return positions, scores
 
+    @returnNoneIfArgNone
     def dataframe2memory_dict(self, dataframe):
         parameter = set(self.search_space.keys())
         memory_para = set(dataframe.columns)
@@ -128,6 +133,7 @@ class Converter:
 
             return {}
 
+    @returnNoneIfArgNone
     def memory_dict2dataframe(self, memory_dict):
         positions, score = self.memory_dict2positions_scores(memory_dict)
         values = self.positions2values(positions)
