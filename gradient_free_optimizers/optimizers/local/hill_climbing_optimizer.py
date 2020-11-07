@@ -39,12 +39,12 @@ class HillClimbingOptimizer(BaseOptimizer, Search):
         self.rand_rest_p = rand_rest_p
 
     def _move_climb(self, pos, epsilon_mod=1):
-        sigma = self.max_positions * self.epsilon * epsilon_mod
+        sigma = self.conv.max_positions * self.epsilon * epsilon_mod
         pos_normal = dist_dict[self.distribution](pos, sigma, pos.shape)
         pos_new_int = np.rint(pos_normal)
 
-        n_zeros = [0] * len(self.max_positions)
-        pos_new = np.clip(pos_new_int, n_zeros, self.max_positions)
+        n_zeros = [0] * len(self.conv.max_positions)
+        pos_new = np.clip(pos_new_int, n_zeros, self.conv.max_positions)
 
         return pos_new.astype(int)
 

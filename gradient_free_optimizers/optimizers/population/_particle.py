@@ -30,9 +30,9 @@ class Particle(HillClimbingOptimizer):
     def _move_part(self, pos, velo):
         pos_new = (pos + velo).astype(int)
         # limit movement
-        n_zeros = [0] * len(self.max_positions)
+        n_zeros = [0] * len(self.conv.max_positions)
 
-        return np.clip(pos_new, n_zeros, self.max_positions)
+        return np.clip(pos_new, n_zeros, self.conv.max_positions)
 
     def _move_positioner(self):
         r1, r2 = random.random(), random.random()

@@ -5,26 +5,20 @@
 import random
 import numpy as np
 from .search_tracker import SearchTracker
+from ..converter import Converter
 
 
 class BaseOptimizer(SearchTracker):
     def __init__(self, search_space):
         super().__init__()
-        self.search_space = search_space
-        self.dim_sizes = np.array(
-            [len(array) for array in search_space.values()]
-        )
-        self.search_space_positions = np.array(
-            [range(len(array)) for array in search_space.values()]
-        )
-        self.max_positions = self.dim_sizes - 1
-        self.search_space_values = list(search_space.values())
+        conv = Converter(search_space)
+        self.conv = conv
 
         self.optimizers = [self]
 
     def move_random(self):
         position = []
-        for search_space_pos in self.search_space_positions:
+        for search_space_pos in self.conv.search_space_positions:
             pos_ = random.choice(search_space_pos)
             position.append(pos_)
 

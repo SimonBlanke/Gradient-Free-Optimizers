@@ -13,7 +13,6 @@ from .progress_bar import ProgressBarLVL0, ProgressBarLVL1
 from .times_tracker import TimesTracker
 from .results_manager import ResultsManager
 from .memory import Memory
-from .converter import Converter
 from .print_info import print_info
 
 p_bar_dict = {
@@ -65,12 +64,14 @@ class Search(TimesTracker):
         self.memory_dict_new = {}
 
         if isinstance(memory_warm_start, pd.DataFrame):
-            parameter = set(self.search_space.keys())
+            parameter = set(self.conv.search_space.keys())
             memory_para = set(memory_warm_start.columns)
 
             if parameter <= memory_para:
                 values_list = list(
-                    memory_warm_start[list(self.search_space.keys())].values
+                    memory_warm_start[
+                        list(self.conv.search_space.keys())
+                    ].values
                 )
                 scores = memory_warm_start["score"]
 
@@ -185,13 +186,11 @@ class Search(TimesTracker):
         self.random_state = random_state
         self.nth_process = nth_process
 
-        conv = Converter(self.search_space)
-        self.conv = conv
-        results = ResultsManager(objective_function, conv)
+        results = ResultsManager(objective_function, self.conv)
         init_positions = self._init_search()
 
         if memory is True:
-            mem = Memory(memory_warm_start, conv)
+            mem = Memory(memory_warm_start, self.conv)
             self.score = mem.memory(results.score)
         else:
             self.score = results.score
@@ -211,8 +210,8 @@ class Search(TimesTracker):
         self.results = pd.DataFrame(results.results_list)
 
         self.best_score = self.p_bar.score_best
-        self.best_value = conv.position2value(self.p_bar.pos_best)
-        self.best_para = conv.value2para(self.best_value)
+        self.best_value = self.conv.position2value(self.p_bar.pos_best)
+        self.best_para = self.conv.value2para(self.best_value)
 
         eval_time = np.array(self.eval_times).sum()
         iter_time = np.array(self.iter_times).sum()

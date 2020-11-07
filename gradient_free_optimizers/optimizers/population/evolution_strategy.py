@@ -79,7 +79,7 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
 
     def init_pos(self, pos):
         individual = Individual(
-            self.search_space, rand_rest_p=self.rand_rest_p
+            self.conv.search_space, rand_rest_p=self.rand_rest_p
         )
         self.individuals.append(individual)
         individual.init_pos(pos)

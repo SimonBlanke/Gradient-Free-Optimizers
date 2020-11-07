@@ -3,16 +3,14 @@
 # License: MIT License
 
 import numpy as np
+from ...converter import Converter
 
 
 class BasePopulationOptimizer:
     def __init__(self, search_space):
         super().__init__()
-        self.search_space = search_space
-
-        self.max_positions = np.array(
-            [len(array) - 1 for array in search_space.values()]
-        )
+        conv = Converter(search_space)
+        self.conv = conv
 
         self.eval_times = []
         self.iter_times = []

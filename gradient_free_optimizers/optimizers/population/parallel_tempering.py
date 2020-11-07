@@ -49,7 +49,7 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
 
     def init_pos(self, pos):
         system = SimulatedAnnealingOptimizer(
-            self.search_space, rand_rest_p=self.rand_rest_p
+            self.conv.search_space, rand_rest_p=self.rand_rest_p
         )
         self.systems.append(system)
         system.init_pos(pos)
