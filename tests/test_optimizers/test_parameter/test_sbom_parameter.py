@@ -21,16 +21,14 @@ def objective_function(para):
 search_space = {"x1": np.arange(-10, 11, 1)}
 
 
+warm_start_smbo = (
+    np.array([[-10, -10], [30, 30], [0, 0]]),
+    np.array([-1, 0, 1]),
+)
+
 sbom_para = [
     ({"warm_start_smbo": None}),
-    (
-        {
-            "warm_start_smbo": (
-                np.array([[-10, -10], [30, 30], [0, 0]]),
-                np.array([-1, 0, 1]),
-            )
-        }
-    ),
+    ({"warm_start_smbo": warm_start_smbo}),
     ({"rand_rest_p": 0}),
     ({"rand_rest_p": 0.5}),
     ({"rand_rest_p": 1}),

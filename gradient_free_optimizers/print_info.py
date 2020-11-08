@@ -56,6 +56,7 @@ def _print_results(objective_function, score_best, para_best):
         print(indent, "Best parameter:")
         for key in para_best.keys():
             print(indent, indent, "'{}'".format(key), para_best[key], " ")
+    print(" ")
 
 
 def print_info(
