@@ -1,6 +1,6 @@
 <h1> Gradient-Free-Optimizers </h1>
 
-<h2 align="center">A collection of gradient free optimizers.</h2>
+<h2 align="center">Simple and reliable optimization with local, global, population-based and sequential techniques in numerical search spaces.</h2>
 
 <br>
 
@@ -50,7 +50,11 @@
 
 ## Introduction
 
-Gradient-Free-Optimizers provides a collection of optimization techniques, that do not require the gradient of a given point in the search space to calculate the next one. This makes gradient-free optimization methods capable of performing hyperparameter-optimization of machine learning methods. The optimizers in this package only requires the score of the point to decide which point to evaluate next.
+Gradient-Free-Optimizers provides a collection of easy to use optimization techniques, 
+whose objective function only requires an arbitrary score that gets maximized. 
+
+
+This makes gradient-free optimization methods capable of performing hyperparameter-optimization of machine learning methods. The optimizers in this package only requires the score of the point to decide which point to evaluate next.
 
 <br>
 
@@ -61,6 +65,7 @@ Gradient-Free-Optimizers provides a collection of optimization techniques, that 
     <a href="https://github.com/SimonBlanke/Hyperactive#main-features">Main features</a> •
     <a href="https://github.com/SimonBlanke/Hyperactive#installation">Installation</a> •
     <a href="https://github.com/SimonBlanke/Hyperactive#examples">Examples</a> •
+    <a href="https://github.com/SimonBlanke/Hyperactive#Basic API-information">API-info</a> •
     <a href="https://github.com/SimonBlanke/Hyperactive#citing-hyperactive">Citation</a> •
     <a href="https://github.com/SimonBlanke/Hyperactive#license">License</a>
   </h3>
@@ -74,6 +79,18 @@ Gradient-Free-Optimizers provides a collection of optimization techniques, that 
 
 ## Main features
 
+- Easy to use:
+  - <a href="https://github.com/SimonBlanke/Hyperactive#examples">Simple API-design</a>
+  - Receive prepared information about ongoing and finished optimization runs
+
+- High performance:
+  - Modern optimization techniques
+  - Lightweight backend
+  - Save time with "short term memory"
+
+- High reliability:
+  - Extensive testing
+  - Performance test for each optimizer
 
 
 <br>
@@ -188,19 +205,69 @@ opt.search(model, n_iter=50)
 </details>
 
 
+
 <br>
 
+## Basic API-information
+
+Optimization classes:
+  - HillClimbingOptimizer
+  - StochasticHillClimbingOptimizer
+  - TabuOptimizer
+  - RandomSearchOptimizer
+  - RandomRestartHillClimbingOptimizer
+  - RandomAnnealingOptimizer
+  - SimulatedAnnealingOptimizer
+  - StochasticTunnelingOptimizer
+  - ParallelTemperingOptimizer
+  - ParticleSwarmOptimizer
+  - EvolutionStrategyOptimizer
+  - BayesianOptimizer
+  - TreeStructuredParzenEstimators
+  - DecisionTreeOptimizer
+
+Search method arguments:
+  - objective_function
+  - n_iter
+  - initialize
+  - warm_start
+  - max_time
+  - max_score
+  - memory
+  - memory_warm_start
+  - verbosity
+  - random_state
 
 
+<br>
 
-## GFOs-design
+### GFOs-design
 
-This package was created as the optimization backend of the Hyperactive package. Therefore the API of Gradient-Free-Optimizers is not designed for easy usage. Hyperactive provides a much simpler user experience. 
-However the separation of Gradient-Free-Optimizers from Hyperactive enables multiple advantages:
+This package was created as the optimization backend of the Hyperactive package.
+The separation of Gradient-Free-Optimizers from Hyperactive enables multiple advantages:
   - Other developers can easily use GFOs as an optimizaton backend if desired
   - Separate and more thorough testing
   - Better isolation from the complex information flow in Hyperactive. GFOs only uses positions and scores in a N-dimensional search-space. It returns only the new position after each iteration.
   - a smaller and cleaner code base, if you want to explore my implementation of these optimization techniques.
 
+
+
 <br>
+
+## Citing Gradient-Free-Optimizers
+
+    @Misc{gfo2020,
+      author =   {{Simon Blanke}},
+      title =    {{Gradient-Free-Optimizers}: Simple and reliable optimization with local, global, population-based and sequential techniques in numerical search spaces.},
+      howpublished = {\url{https://github.com/SimonBlanke}},
+      year = {since 2020}
+    }
+
+
+<br>
+
+## License
+
+[![LICENSE](https://img.shields.io/github/license/SimonBlanke/Gradient-Free-Optimizers?style=for-the-badge)](https://github.com/SimonBlanke/Gradient-Free-Optimizers/blob/master/LICENSE)
+
 
