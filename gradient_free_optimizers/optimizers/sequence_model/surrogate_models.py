@@ -2,7 +2,6 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import GPy
 import numpy as np
 
 from sklearn.linear_model import BayesianRidge
@@ -118,18 +117,6 @@ class GPR:
 
     def predict(self, X, return_std=False):
         return self.gpr.predict(X, return_std=return_std)
-
-
-class GPR1:
-    def __init__(self):
-        self.kernel = GPy.kern.RBF(input_dim=2)
-
-    def fit(self, X, y):
-        self.m = GPy.models.GPRegression(X, y)
-        self.m.optimize(messages=False)
-
-    def predict(self, X, return_std=False):
-        return self.m.predict(X)
 
 
 class GPR_linear:
