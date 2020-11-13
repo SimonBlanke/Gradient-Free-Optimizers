@@ -66,12 +66,12 @@ This makes gradient-free optimization methods capable of performing hyperparamet
 
 <div align="center"><a name="menu"></a>
   <h3>
-    <a href="https://github.com/SimonBlanke/Hyperactive#main-features">Main features</a> •
-    <a href="https://github.com/SimonBlanke/Hyperactive#installation">Installation</a> •
-    <a href="https://github.com/SimonBlanke/Hyperactive#examples">Examples</a> •
-    <a href="https://github.com/SimonBlanke/Hyperactive#basic-api-information">API-info</a> •
-    <a href="https://github.com/SimonBlanke/Hyperactive#citing-hyperactive">Citation</a> •
-    <a href="https://github.com/SimonBlanke/Hyperactive#license">License</a>
+    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#main-features">Main features</a> •
+    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#installation">Installation</a> •
+    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#examples">Examples</a> •
+    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#basic-api-information">API-info</a> •
+    <a href="https://github.com/SimonBlanke/gradient-free-optimizers#citing-Gradient-Free-Optimizers">Citation</a> •
+    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#license">License</a>
   </h3>
 </div>
 
