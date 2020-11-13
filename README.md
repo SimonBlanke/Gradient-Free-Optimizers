@@ -1,6 +1,10 @@
-<h1> Gradient-Free-Optimizers </h1>
+<h1 align="center"> 
+  Gradient-Free-Optimizers
+</h1>
 
-<h2 align="center">Simple and reliable optimization with local, global, population-based and sequential techniques in numerical search spaces.</h2>
+<h2 align="center">
+  Simple and reliable optimization with local, global, population-based and sequential techniques in numerical search spaces.
+</h2>
 
 <br>
 
@@ -39,7 +43,7 @@
       </td>
       <td>
         <a href="https://pypi.org/project/gradient_free_optimizers/">
-          <img src="https://img.shields.io/pypi/v/Gradient-Free-Optimizers?style=flat-square&logo=PyPi&logoColor=white" alt="img not loaded: try F5 :)">
+          <img src="https://img.shields.io/pypi/v/Gradient-Free-Optimizers?style=flat-square&logo=PyPi&logoColor=white&color=blue" alt="img not loaded: try F5 :)">
         </a>
       </td>
     </tr>
@@ -65,7 +69,7 @@ This makes gradient-free optimization methods capable of performing hyperparamet
     <a href="https://github.com/SimonBlanke/Hyperactive#main-features">Main features</a> •
     <a href="https://github.com/SimonBlanke/Hyperactive#installation">Installation</a> •
     <a href="https://github.com/SimonBlanke/Hyperactive#examples">Examples</a> •
-    <a href="https://github.com/SimonBlanke/Hyperactive#Basic API-information">API-info</a> •
+    <a href="https://github.com/SimonBlanke/Hyperactive#basic-api-information">API-info</a> •
     <a href="https://github.com/SimonBlanke/Hyperactive#citing-hyperactive">Citation</a> •
     <a href="https://github.com/SimonBlanke/Hyperactive#license">License</a>
   </h3>
