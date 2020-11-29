@@ -23,6 +23,7 @@ class RandomAnnealingOptimizer(HillClimbingOptimizer, Search):
         self.distribution = distribution
         self.n_neighbours = n_neighbours
         self.annealing_rate = annealing_rate
+        self.start_temp = start_temp
         self.temp = start_temp
         self.rand_rest_p = rand_rest_p
 
