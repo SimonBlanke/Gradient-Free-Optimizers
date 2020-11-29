@@ -30,9 +30,7 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
 
             p_accept = self._accept_swap(_p1_, _p2_)
             if p_accept > rand:
-                temp_temp = _p1_.temp  # haha!
-                _p1_.temp = _p2_.temp
-                _p2_.temp = temp_temp
+                _p1_.temp, _p2_.temp = (_p2_.temp, _p1_.temp)
 
     def _accept_swap(self, _p1_, _p2_):
         denom = _p1_.score_current + _p2_.score_current
