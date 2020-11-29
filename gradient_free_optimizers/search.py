@@ -152,6 +152,9 @@ class Search(TimesTracker):
 
         return verb_dict
 
+    def print_info(self, *args):
+        print_info(*args)
+
     def search(
         self,
         objective_function,
@@ -170,6 +173,7 @@ class Search(TimesTracker):
         random_state=None,
         nth_process=None,
     ):
+
         self.start_time = time.time()
 
         verbosity = self._init_verb_dict(verbosity)
@@ -218,7 +222,7 @@ class Search(TimesTracker):
 
         self.p_bar.close()
 
-        print_info(
+        self.print_info(
             verbosity,
             self.objective_function,
             self.best_score,
