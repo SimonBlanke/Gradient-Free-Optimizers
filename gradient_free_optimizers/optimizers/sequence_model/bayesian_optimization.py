@@ -23,6 +23,7 @@ class BayesianOptimizer(ExpectedImprovementBasedOptimization):
         rand_rest_p=0.03,
     ):
         super().__init__(search_space)
+        self.gpr = gpr
         self.regr = gpr
         self.xi = xi
         self.warm_start_smbo = warm_start_smbo
