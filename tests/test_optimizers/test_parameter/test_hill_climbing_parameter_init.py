@@ -5,14 +5,7 @@
 import pytest
 import numpy as np
 
-from gradient_free_optimizers import (
-    HillClimbingOptimizer,
-    StochasticHillClimbingOptimizer,
-    TabuOptimizer,
-    RandomRestartHillClimbingOptimizer,
-    RandomAnnealingOptimizer,
-    SimulatedAnnealingOptimizer,
-)
+from gradient_free_optimizers import HillClimbingOptimizer
 
 
 def objective_function(para):
@@ -23,7 +16,7 @@ def objective_function(para):
 search_space = {"x1": np.arange(-100, 101, 1)}
 
 
-HillClimbing_para = [
+hill_climbing_para = [
     ({"epsilon": 0.0001}),
     ({"epsilon": 1}),
     ({"epsilon": 10}),
@@ -42,35 +35,22 @@ HillClimbing_para = [
 ]
 
 
-pytest_wrapper = ("para", HillClimbing_para)
-
-optimizers_local = (
-    "Optimizer",
-    [
-        (HillClimbingOptimizer),
-        (StochasticHillClimbingOptimizer),
-        (TabuOptimizer),
-        (SimulatedAnnealingOptimizer),
-        (RandomRestartHillClimbingOptimizer),
-        (RandomAnnealingOptimizer),
-    ],
-)
+pytest_wrapper = ("opt_para", hill_climbing_para)
 
 
-@pytest.mark.parametrize(*optimizers_local)
 @pytest.mark.parametrize(*pytest_wrapper)
-def test_HillClimbing_para(Optimizer, para):
-    opt = Optimizer(search_space, **para)
+def test_hill_climbing_para(opt_para):
+    opt = HillClimbingOptimizer(search_space, **opt_para)
     opt.search(
         objective_function,
-        n_iter=10,
+        n_iter=30,
         memory=False,
         verbosity=False,
         initialize={"vertices": 1},
     )
 
     for optimizer in opt.optimizers:
-        para_key = list(para.keys())[0]
+        para_key = list(opt_para.keys())[0]
         para_value = getattr(optimizer, para_key)
 
-        assert para_value == para[para_key]
+        assert para_value == opt_para[para_key]
