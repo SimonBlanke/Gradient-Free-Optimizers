@@ -5,8 +5,10 @@
 import pytest
 import numpy as np
 
-from gradient_free_optimizers import StochasticHillClimbingOptimizer
-from .test_hill_climbing_parameter_init import hill_climbing_para
+from gradient_free_optimizers import SimulatedAnnealingOptimizer
+from .test_stochastic_hill_climbing_parameter_init import (
+    stochastic_hill_climbing_para,
+)
 
 
 def objective_function(para):
@@ -17,24 +19,24 @@ def objective_function(para):
 search_space = {"x1": np.arange(-100, 101, 1)}
 
 
-stochastic_hill_climbing_para = hill_climbing_para + [
-    ({"p_accept": 0.01}),
-    ({"p_accept": 0.5}),
-    ({"p_accept": 1}),
-    ({"p_accept": 10}),
-    ({"norm_factor": 0.1}),
-    ({"norm_factor": 0.5}),
-    ({"norm_factor": 0.9}),
-    ({"norm_factor": "adaptive"}),
+simulated_annealing_para = stochastic_hill_climbing_para + [
+    ({"annealing_rate": 0.9}),
+    ({"annealing_rate": 0.8}),
+    ({"annealing_rate": 0.5}),
+    ({"annealing_rate": 1}),
+    ({"start_temp": 1}),
+    ({"start_temp": 0.5}),
+    ({"start_temp": 3}),
+    ({"start_temp": 10}),
 ]
 
 
-pytest_wrapper = ("opt_para", stochastic_hill_climbing_para)
+pytest_wrapper = ("opt_para", simulated_annealing_para)
 
 
 @pytest.mark.parametrize(*pytest_wrapper)
-def test_stochastic_hill_climbing_para(opt_para):
-    opt = StochasticHillClimbingOptimizer(search_space, **opt_para)
+def test_simulated_annealing_para(opt_para):
+    opt = SimulatedAnnealingOptimizer(search_space, **opt_para)
     opt.search(
         objective_function,
         n_iter=30,

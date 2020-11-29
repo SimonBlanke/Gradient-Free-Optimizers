@@ -17,14 +17,21 @@ class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer, Search):
         distribution="normal",
         n_neighbours=3,
         p_accept=0.1,
+        norm_factor="adaptive",
         annealing_rate=0.975,
         start_temp=1,
         rand_rest_p=0.03,
     ):
         super().__init__(
-            search_space, epsilon, distribution, n_neighbours, p_accept
+            search_space,
+            epsilon,
+            distribution,
+            n_neighbours,
+            p_accept,
+            norm_factor,
         )
         self.annealing_rate = annealing_rate
+        self.start_temp = start_temp
         self.temp = start_temp
         self.rand_rest_p = rand_rest_p
 
