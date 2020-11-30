@@ -29,6 +29,7 @@ class DecisionTreeOptimizer(ExpectedImprovementBasedOptimization):
         rand_rest_p=0.03,
     ):
         super().__init__(search_space)
+        self.tree_regressor = tree_regressor
         self.regr = tree_regressor_dict[tree_regressor]
         self.xi = xi
         self.warm_start_smbo = warm_start_smbo
