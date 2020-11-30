@@ -23,8 +23,7 @@ def _base_para_test_func(opt_para, optimizer):
         initialize={"vertices": 1},
     )
 
-    for optimizer in opt.optimizers:
-        para_key = list(opt_para.keys())[0]
-        para_value = getattr(optimizer, para_key)
+    para_key = list(opt_para.keys())[0]
+    para_value = getattr(opt, para_key)
 
-        assert para_value == opt_para[para_key]
+    assert para_value == opt_para[para_key]
