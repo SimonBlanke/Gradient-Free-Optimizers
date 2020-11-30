@@ -6,6 +6,7 @@ import pytest
 import numpy as np
 
 from gradient_free_optimizers import DecisionTreeOptimizer
+from ._base_para_test import _base_para_test_func
 
 
 def objective_function(para):
@@ -38,22 +39,9 @@ bayesian_optimizer_para = [
 ]
 
 
-pytest_wrapper = ("para", bayesian_optimizer_para)
+pytest_wrapper = ("opt_para", bayesian_optimizer_para)
 
 
 @pytest.mark.parametrize(*pytest_wrapper)
-def test_bayesian_optimizer_para(para):
-    opt = DecisionTreeOptimizer(search_space, **para)
-    opt.search(
-        objective_function,
-        n_iter=10,
-        memory=False,
-        verbosity=False,
-        initialize={"vertices": 2},
-    )
-
-    for optimizer in opt.optimizers:
-        para_key = list(para.keys())[0]
-        para_value = getattr(optimizer, para_key)
-
-        assert para_value == para[para_key]
+def test_hill_climbing_para(opt_para):
+    _base_para_test_func(opt_para, DecisionTreeOptimizer)

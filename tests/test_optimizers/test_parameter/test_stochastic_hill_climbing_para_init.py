@@ -6,7 +6,8 @@ import pytest
 import numpy as np
 
 from gradient_free_optimizers import StochasticHillClimbingOptimizer
-from .test_hill_climbing_parameter_init import hill_climbing_para
+from .test_hill_climbing_para_init import hill_climbing_para
+from ._base_para_test import _base_para_test_func
 
 
 def objective_function(para):
@@ -33,18 +34,5 @@ pytest_wrapper = ("opt_para", stochastic_hill_climbing_para)
 
 
 @pytest.mark.parametrize(*pytest_wrapper)
-def test_stochastic_hill_climbing_para(opt_para):
-    opt = StochasticHillClimbingOptimizer(search_space, **opt_para)
-    opt.search(
-        objective_function,
-        n_iter=30,
-        memory=False,
-        verbosity=False,
-        initialize={"vertices": 1},
-    )
-
-    for optimizer in opt.optimizers:
-        para_key = list(opt_para.keys())[0]
-        para_value = getattr(optimizer, para_key)
-
-        assert para_value == opt_para[para_key]
+def test_hill_climbing_para(opt_para):
+    _base_para_test_func(opt_para, StochasticHillClimbingOptimizer)
