@@ -56,9 +56,11 @@
 
 Gradient-Free-Optimizers provides a collection of easy to use optimization techniques, 
 whose objective function only requires an arbitrary score that gets maximized. 
+This makes gradient-free methods capable of solving various optimization problems, including: 
+- Optimizing arbitrary mathematical functions.
+- Fitting multiple gauss-distributions to data.
+- Hyperparameter-optimization of machine-learning methods.
 
-
-This makes gradient-free optimization methods capable of performing hyperparameter-optimization of machine learning methods. The optimizers in this package only requires the score of the point to decide which point to evaluate next.
 
 <br>
 
@@ -70,7 +72,7 @@ This makes gradient-free optimization methods capable of performing hyperparamet
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#installation">Installation</a> •
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#examples">Examples</a> •
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#basic-api-information">API-info</a> •
-    <a href="https://github.com/SimonBlanke/gradient-free-optimizers#citing-Gradient-Free-Optimizers">Citation</a> •
+    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#citing-gradient-free-optimizers">Citation</a> •
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#license">License</a>
   </h3>
 </div>
@@ -84,7 +86,7 @@ This makes gradient-free optimization methods capable of performing hyperparamet
 ## Main features
 
 - Easy to use:
-  - <a href="https://github.com/SimonBlanke/Hyperactive#examples">Simple API-design</a>
+  - <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#examples">Simple API-design</a>
   - Receive prepared information about ongoing and finished optimization runs
 
 - High performance:
@@ -95,6 +97,27 @@ This makes gradient-free optimization methods capable of performing hyperparamet
 - High reliability:
   - Extensive testing
   - Performance test for each optimizer
+
+<br>
+
+Optimization strategies:
+- Local search
+  - Hill Climbing
+  - Stochastic Hill Climbing
+  - Tabu Search
+  - Simulated Annealing
+- Global search
+  - Random Search
+  - Random Restart Hill Climbing
+  - Random Annealing
+- Population methods
+  - Parallel Tempering
+  - Particle Swarm Optimization
+  - Evolution Strategy
+- Sequential methods
+  - Bayesian Optimization
+  - Tree of Parzen Estimators
+  - Decision Tree Optimizer
 
 
 <br>
@@ -214,6 +237,11 @@ opt.search(model, n_iter=50)
 
 ## Basic API-information
 
+<details>
+<summary><b>Optimization classes</b></summary>
+
+Every Optimization class requires "search_space" as an argument and has optional parameters.
+
 Optimization classes:
   - HillClimbingOptimizer
   - StochasticHillClimbingOptimizer
@@ -230,17 +258,56 @@ Optimization classes:
   - TreeStructuredParzenEstimators
   - DecisionTreeOptimizer
 
+</details>
+
+
+<details>
+<summary><b>Search method arguments</b></summary>
+
 Search method arguments:
-  - objective_function
-  - n_iter
-  - initialize
-  - warm_start
-  - max_time
-  - max_score
-  - memory
-  - memory_warm_start
-  - verbosity
-  - random_state
+  - objective_function 
+    - (callable)
+  - n_iter 
+    - (int)
+  - initialize 
+    - (dict, optional)
+  - warm_start 
+    - (dict, optional)
+  - max_time 
+    - (float, optional)
+  - max_score 
+    - (float, optional)
+  - memory 
+    - (bool, optional)
+  - memory_warm_start 
+    - (tuple, optional)
+  - verbosity 
+    - (dict, optional)
+  - random_state 
+    - (int, optional)
+
+</details>
+
+
+<details>
+<summary><b>Optimization class attributes</b></summary>
+
+Optimization class attributes:
+  - results
+    - (dataframe)
+  - best_score
+    - (float)
+  - best_value
+    - (tuple)
+  - best_para
+    - (dict)
+  - eval_times
+    - (float)
+  - iter_times
+    - (float)
+
+</details>
+
 
 
 <br>
@@ -271,6 +338,8 @@ The separation of Gradient-Free-Optimizers from Hyperactive enables multiple adv
 <br>
 
 ## License
+
+Gradient-Free-Optimizers is licensed under the following License:
 
 [![LICENSE](https://img.shields.io/github/license/SimonBlanke/Gradient-Free-Optimizers?style=for-the-badge)](https://github.com/SimonBlanke/Gradient-Free-Optimizers/blob/master/LICENSE)
 
