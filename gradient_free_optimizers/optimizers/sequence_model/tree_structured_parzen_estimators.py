@@ -13,7 +13,7 @@ class TreeStructuredParzenEstimators(SMBO):
     def __init__(
         self,
         search_space,
-        gamma_tpe=0.3,
+        gamma_tpe=0.5,
         warm_start_smbo=None,
         rand_rest_p=0.03,
     ):
@@ -45,12 +45,15 @@ class TreeStructuredParzenEstimators(SMBO):
         prob_best = np.exp(logprob_best)
         prob_worst = np.exp(logprob_worst)
 
-        return np.divide(
+        bestOverWorst = np.divide(
             prob_best,
             prob_worst,
             out=np.zeros_like(prob_worst),
             where=prob_worst != 0,
         )
+        exp_imp = self.gamma_tpe + bestOverWorst * (1 - self.gamma_tpe)
+
+        return exp_imp
 
     def propose_location(self):
         best_samples, worst_samples = self._get_samples()
