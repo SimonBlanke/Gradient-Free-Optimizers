@@ -91,22 +91,22 @@ class Search(TimesTracker):
                 )
 
     @TimesTracker.iter_time
-    def _initialization(self, init_pos):
+    def _initialization(self, init_pos, nth_iter):
         self.init_pos(init_pos)
 
         score_new = self._score(init_pos)
         self.evaluate(score_new)
 
-        self.p_bar.update(score_new, init_pos)
+        self.p_bar.update(score_new, init_pos, nth_iter)
 
     @TimesTracker.iter_time
-    def _iteration(self):
+    def _iteration(self, nth_iter):
         pos_new = self.iterate()
 
         score_new = self._score(pos_new)
         self.evaluate(score_new)
 
-        self.p_bar.update(score_new, pos_new)
+        self.p_bar.update(score_new, pos_new, nth_iter)
 
     def _init_search(self):
         self._init_memory(self.memory)
@@ -203,13 +203,13 @@ class Search(TimesTracker):
         for init_pos, nth_iter in zip(init_positions, range(n_iter)):
             if self._early_stop():
                 break
-            self._initialization(init_pos)
+            self._initialization(init_pos, nth_iter)
 
         # loop to do the iterations
         for nth_iter in range(len(init_positions), n_iter):
             if self._early_stop():
                 break
-            self._iteration()
+            self._iteration(nth_iter)
 
         self.results = pd.DataFrame(results.results_list)
 
