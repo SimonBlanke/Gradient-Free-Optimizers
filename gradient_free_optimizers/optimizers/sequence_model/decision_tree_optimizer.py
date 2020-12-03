@@ -23,7 +23,7 @@ class DecisionTreeOptimizer(ExpectedImprovementBasedOptimization):
     def __init__(
         self,
         search_space,
-        tree_regressor="gradient_boost",
+        tree_regressor="extra_tree",
         xi=0.01,
         warm_start_smbo=None,
         rand_rest_p=0.03,
