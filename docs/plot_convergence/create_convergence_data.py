@@ -76,7 +76,7 @@ def create_convergence_data(optimizer_key):
     )
 
     convergence_data.to_csv(
-        "./data/" + optimizer_key + "_convergence_data.csv", index=False
+        "./_data/" + optimizer_key + "_convergence_data.csv", index=False
     )
 
 

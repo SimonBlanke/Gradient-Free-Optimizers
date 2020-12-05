@@ -15,7 +15,7 @@ def create_convergence_plots(optimizer_keys, plot_name):
 
     for idx, optimizer_key in enumerate(optimizer_keys):
         convergence_data = pd.read_csv(
-            "./data/" + optimizer_key + "_convergence_data.csv"
+            "./_data/" + optimizer_key + "_convergence_data.csv"
         )
 
         x_range = range(len(convergence_data))
@@ -52,7 +52,7 @@ def create_convergence_plots(optimizer_keys, plot_name):
     plt.gca().add_artist(leg1)
 
     plt.savefig(
-        "./plots/" + plot_name + "_convergence.png", dpi=300,
+        "./_plots/" + plot_name + "_convergence.png", dpi=300,
     )
     plt.close()
 

@@ -111,7 +111,7 @@ def create_performance_data(
 
     results = np.array(results).T
     results = pd.DataFrame(results, columns=columns, index=index)
-    results.to_csv("./data/" + study_name + ".csv")
+    results.to_csv("./_data/" + study_name + ".csv")
 
 
 create_performance_data(

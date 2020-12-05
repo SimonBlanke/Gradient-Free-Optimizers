@@ -7,7 +7,7 @@ n_iter_list = range(1, 51)
 
 def get_path(optimizer_key, nth_iteration):
     return (
-        "./plots/"
+        "./_plots/"
         + str(optimizer_key)
         + "_"
         + "{0:0=2d}".format(nth_iteration)

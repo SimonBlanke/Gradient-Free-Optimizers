@@ -26,6 +26,8 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+**/_plots/
+**/_data/
 
 # Dev
 *___.*

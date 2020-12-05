@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 
 def create_performance_plots(study_name):
-    results = pd.read_csv("./data/" + study_name + ".csv", index_col=0)
+    results = pd.read_csv("./_data/" + study_name + ".csv", index_col=0)
 
     total_time = results.loc["total_time_mean"].values
     eval_time = results.loc["eval_time_mean"].values
@@ -26,7 +26,7 @@ def create_performance_plots(study_name):
     plt.legend((p1[0], p2[0]), ("Eval time", "Opt time"))
 
     plt.tight_layout()
-    plt.savefig("./plots/performance.png", dpi=300)
+    plt.savefig("./_plots/performance.png", dpi=300)
 
 
 create_performance_plots("simple function")

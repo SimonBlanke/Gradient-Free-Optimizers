@@ -138,7 +138,7 @@ def plot_search_path(
 
     plt.tight_layout()
     plt.savefig(
-        "./plots/"
+        "./_plots/"
         + str(opt.__class__.__name__)
         + "_"
         + "{0:0=2d}".format(n_iter)
