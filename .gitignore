@@ -28,6 +28,7 @@ share/python-wheels/
 MANIFEST
 **/_plots/
 **/_data/
+**/_gifs/
 
 # Dev
 *___.*
