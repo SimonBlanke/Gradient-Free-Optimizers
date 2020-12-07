@@ -18,6 +18,8 @@ class ProgressBarBase:
 
         self.objective_function = objective_function
 
+        self.n_iter_current = 0
+
     @property
     def score_best(self):
         return self._score_best
@@ -50,6 +52,7 @@ class ProgressBarLVL0(ProgressBarBase):
         super().__init__(nth_process, n_iter, objective_function)
 
     def update(self, score_new, pos_new, nth_iter):
+        self.n_iter_current = nth_iter
         self._new2best(score_new, pos_new, nth_iter)
 
     def close(self):
@@ -64,6 +67,8 @@ class ProgressBarLVL1(ProgressBarBase):
         )
 
     def update(self, score_new, pos_new, nth_iter):
+        self.n_iter_current = nth_iter
+
         self._new2best(score_new, pos_new, nth_iter)
 
         if score_new > self.score_best:
