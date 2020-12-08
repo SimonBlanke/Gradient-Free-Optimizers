@@ -72,7 +72,7 @@ This makes gradient-free methods capable of solving various optimization problem
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#installation">Installation</a> •
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#examples">Examples</a> •
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#basic-api-information">API-info</a> •
-    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#citing-gradient-free-optimizers">Citation</a> •
+    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#citation">Citation</a> •
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#license">License</a>
   </h3>
 </div>
@@ -100,7 +100,7 @@ This makes gradient-free methods capable of solving various optimization problem
 
 <br>
 
-Optimization strategies:
+### Optimization strategies:
 - Local search
   - Hill Climbing
   - Stochastic Hill Climbing
@@ -232,37 +232,347 @@ opt.search(model, n_iter=50)
 </details>
 
 
-
 <br>
 
 ## Basic API-information
 
+### Optimization classes
+
+<p align="center">
+  <br>
+  <img src="./docs/images/optimizer_table-1.png" width="950">
+  <br>
+</p>
+The table shows the expected results for each optimization strategy for a given type of problem. Those recomendations are just estimated based on personal experience and can heavily change dependend on optimization parameters, exact type of problem and number of iterations.
+
+
+
 <details>
-<summary><b>Optimization classes</b></summary>
+<summary><b>HillClimbingOptimizer(...)</b></summary>
 
-Every Optimization class requires "search_space" as an argument and has optional parameters.
+Parameter:
+  - search_space
+    - type: dict
 
-Optimization classes:
-  - HillClimbingOptimizer
-  - StochasticHillClimbingOptimizer
-  - TabuOptimizer
-  - RandomSearchOptimizer
-  - RandomRestartHillClimbingOptimizer
-  - RandomAnnealingOptimizer
-  - SimulatedAnnealingOptimizer
-  - StochasticTunnelingOptimizer
-  - ParallelTemperingOptimizer
-  - ParticleSwarmOptimizer
-  - EvolutionStrategyOptimizer
-  - BayesianOptimizer
-  - TreeStructuredParzenEstimators
-  - DecisionTreeOptimizer
+      Creates the n-dimensional search space, where "n" is the number of keys in the dictionary. The values of the dictionary must be numpy arrays. Those arrays determine which numerical values can be chosen in the objective function during the optimization run.
+
+      Examples:
+      ```python
+      # 1-dimensional search space from 0 to 9
+      search_space = {
+          "x": np.arange(0, 10, 1),
+      }
+      ```
+
+      ```python
+      # 3-dimensional search space with various ranges
+      search_space = {
+          "x": np.arange(0, 50, 0.3),
+          "y": np.arange(-10, 10, 1),
+          "z": np.arange(-100, 100, 0.1),
+      }
+      ```
+
+
+  - epsilon
+    - type: float (optional, default: 0.05)
+
+      Determines how far the hill climbing based algorithm will "jump" from one point to the next.
+
+
+  - distribution
+    - type: string (optional, default: "normal")
+
+      possible values: 
+        - "normal"
+        - "laplace"
+        - "logistic"
+        - "gumbel"
+
+      The (numpy) distribution that decides how to draw samples from the search space in hill climbing based algorithms during the optimization run.
+
+
+  - n_neighbours
+    - type: int (optional, default: 3)
+
+      Hill climbing based algorithms will draw n samples with its distribution and jump to the best of those points. Here "n" is the number of neighbours or "n_neighbours".
+
+
+  - rand_rest_p
+    - type: float (optional, default: 0.01)
+
+      Hill climbing based algorithms tend to get stuck in local optima. To avoid this but still preserve the functionality of the algorithm there is a small percentage in each iteration to jump to a random point in the search space. 
+
+
 
 </details>
 
 
 <details>
-<summary><b>Search method arguments</b></summary>
+<summary><b>StochasticHillClimbingOptimizer(...)</b></summary>
+
+Parameter:
+  - search_space
+    - type: dict
+
+      Creates the n-dimensional search space, where "n" is the number of keys in the dictionary. The values of the dictionary must be numpy arrays. Those arrays determine which numerical values can be chosen in the objective function during the optimization run.
+
+      Examples:
+      ```python
+      # 1-dimensional search space from 0 to 9
+      search_space = {
+          "x": np.arange(0, 10, 1),
+      }
+      ```
+
+      ```python
+      # 3-dimensional search space with various ranges
+      search_space = {
+          "x": np.arange(0, 50, 0.3),
+          "y": np.arange(-10, 10, 1),
+          "z": np.arange(-100, 100, 0.1),
+      }
+      ```
+
+
+  - epsilon
+    - type: float (optional, default: 0.05)
+
+      Determines how far the hill climbing based algorithm will "jump" from one point to the next.
+
+
+  - distribution
+    - type: string (optional, default: "normal")
+
+      possible values: 
+        - "normal"
+        - "laplace"
+        - "logistic"
+        - "gumbel"
+
+      The (numpy) distribution that decides how to draw samples from the search space in hill climbing based algorithms during the optimization run.
+
+
+  - n_neighbours
+    - type: int (optional, default: 3)
+
+      Hill climbing based algorithms will draw n samples with its distribution and jump to the best of those points. Here "n" is the number of neighbours or "n_neighbours".
+
+
+  - rand_rest_p
+    - type: float (optional, default: 0.01)
+
+      Hill climbing based algorithms tend to get stuck in local optima. To avoid this but still preserve the functionality of the algorithm there is a small percentage in each iteration to jump to a random point in the search space. 
+
+
+  - p_accept
+
+    type: float (optional, default: 0.1)
+
+
+  - norm_factor
+
+    type: string, float (optional, default: "adaptive")
+
+</details>
+
+
+<details>
+<summary><b>TabuOptimizer(...)</b></summary>
+
+Parameter:
+  - search_space
+    - type: dict
+
+      Creates the n-dimensional search space, where "n" is the number of keys in the dictionary. The values of the dictionary must be numpy arrays. Those arrays determine which numerical values can be chosen in the objective function during the optimization run.
+
+      Examples:
+      ```python
+      # 1-dimensional search space from 0 to 9
+      search_space = {
+          "x": np.arange(0, 10, 1),
+      }
+      ```
+
+      ```python
+      # 3-dimensional search space with various ranges
+      search_space = {
+          "x": np.arange(0, 50, 0.3),
+          "y": np.arange(-10, 10, 1),
+          "z": np.arange(-100, 100, 0.1),
+      }
+      ```
+
+
+  - epsilon
+    - type: float (optional, default: 0.05)
+
+      Determines how far the hill climbing based algorithm will "jump" from one point to the next.
+
+
+  - distribution
+    - type: string (optional, default: "normal")
+
+      possible values: 
+        - "normal"
+        - "laplace"
+        - "logistic"
+        - "gumbel"
+
+      The (numpy) distribution that decides how to draw samples from the search space in hill climbing based algorithms during the optimization run.
+
+
+  - n_neighbours
+    - type: int (optional, default: 3)
+
+      Hill climbing based algorithms will draw n samples with its distribution and jump to the best of those points. Here "n" is the number of neighbours or "n_neighbours".
+
+
+  - rand_rest_p
+    - type: float (optional, default: 0.01)
+
+      Hill climbing based algorithms tend to get stuck in local optima. To avoid this but still preserve the functionality of the algorithm there is a small percentage in each iteration to jump to a random point in the search space. 
+
+
+  - tabu_factor
+
+    type: float (optional, default: 3)
+
+
+</details>
+
+
+<details>
+<summary><b>SimulatedAnnealingOptimizer(...)</b></summary>
+
+Parameter:
+  - TODO
+
+</details>
+
+
+<details>
+<summary><b>RandomSearchOptimizer(...)</b></summary>
+
+Parameter:
+  - TODO
+
+
+</details>
+
+
+<details>
+<summary><b>RandomRestartHillClimbingOptimizer(...)</b></summary>
+
+Parameter:
+  - TODO
+
+
+</details>
+
+
+<details>
+<summary><b>RandomAnnealingOptimizer(...)</b></summary>
+
+Parameter:
+  - TODO
+
+
+</details>
+
+
+<details>
+<summary><b>ParallelTemperingOptimizer(...)</b></summary>
+
+Parameter:
+  - TODO
+
+
+</details>
+
+
+<details>
+<summary><b>ParticleSwarmOptimizer(...)</b></summary>
+
+Parameter:
+  - TODO
+
+
+</details>
+
+
+<details>
+<summary><b>EvolutionStrategyOptimizer(...)</b></summary>
+
+Parameter:
+  - TODO
+
+
+</details>
+
+
+<details>
+<summary><b>BayesianOptimizer(...)</b></summary>
+
+Parameter:
+  - TODO
+
+
+</details>
+
+
+<details>
+<summary><b>TreeStructuredParzenEstimators(...)</b></summary>
+
+Parameter:
+  - TODO
+
+
+</details>
+
+
+<details>
+<summary><b>DecisionTreeOptimizer(...)</b></summary>
+
+Parameter:
+  - TODO
+
+
+</details>
+
+
+<details>
+<summary><b>EnsembleOptimizer(...)</b></summary>
+
+Parameter:
+  - TODO
+
+
+</details>
+
+
+### Optimizer class attributes
+
+  - results
+    - (dataframe)
+  - best_score
+    - (float)
+  - best_value
+    - (tuple)
+  - best_para
+    - (dict)
+  - eval_times
+    - (float)
+  - iter_times
+    - (float)
+
+</details>
+
+
+### Optimizer class methods
+
+<details>
+<summary><b>search(...)</b></summary>
 
 Search method arguments:
   - objective_function 
@@ -289,26 +599,6 @@ Search method arguments:
 </details>
 
 
-<details>
-<summary><b>Optimization class attributes</b></summary>
-
-Optimization class attributes:
-  - results
-    - (dataframe)
-  - best_score
-    - (float)
-  - best_value
-    - (tuple)
-  - best_para
-    - (dict)
-  - eval_times
-    - (float)
-  - iter_times
-    - (float)
-
-</details>
-
-
 
 <br>
 
@@ -325,7 +615,7 @@ The separation of Gradient-Free-Optimizers from Hyperactive enables multiple adv
 
 <br>
 
-## Citing Gradient-Free-Optimizers
+## Citation
 
     @Misc{gfo2020,
       author =   {{Simon Blanke}},
