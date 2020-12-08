@@ -101,19 +101,23 @@ This makes gradient-free methods capable of solving various optimization problem
 <br>
 
 ### Optimization strategies:
+
 - Local search
   - Hill Climbing
   - Stochastic Hill Climbing
   - Tabu Search
   - Simulated Annealing
+
 - Global search
   - Random Search
   - Random Restart Hill Climbing
   - Random Annealing
+
 - Population methods
   - Parallel Tempering
   - Particle Swarm Optimization
   - Evolution Strategy
+
 - Sequential methods
   - Bayesian Optimization
   - Tree of Parzen Estimators
@@ -237,14 +241,6 @@ opt.search(model, n_iter=50)
 ## Basic API-information
 
 ### Optimization classes
-
-<p align="center">
-  <br>
-  <img src="./docs/images/optimizer_table-1.png" width="950">
-  <br>
-</p>
-The table shows the expected results for each optimization strategy for a given type of problem. Those recomendations are just estimated based on personal experience and can heavily change dependend on optimization parameters, exact type of problem and number of iterations.
-
 
 
 <details>
