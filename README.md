@@ -243,7 +243,7 @@ opt.search(model, n_iter=50)
 ### Optimization classes
 
 <details>
-<summary><b>- HillClimbingOptimizer</b></summary>
+<summary><b> HillClimbingOptimizer</b></summary>
 
     - search_space
     - epsilon=0.05
@@ -254,7 +254,7 @@ opt.search(model, n_iter=50)
 </details>
 
 <details>
-<summary><b>- StochasticHillClimbingOptimizer</b></summary>
+<summary><b> StochasticHillClimbingOptimizer</b></summary>
 
     - search_space
     - epsilon=0.05
@@ -267,7 +267,7 @@ opt.search(model, n_iter=50)
 </details>
 
 <details>
-<summary><b>- TabuOptimizer</b></summary>
+<summary><b> TabuOptimizer</b></summary>
 
     - search_space
     - epsilon=0.05
@@ -279,7 +279,7 @@ opt.search(model, n_iter=50)
 </details>
 
 <details>
-<summary><b>- SimulatedAnnealingOptimizer</b></summary>
+<summary><b> SimulatedAnnealingOptimizer</b></summary>
 
     - search_space
     - epsilon=0.05
@@ -294,14 +294,14 @@ opt.search(model, n_iter=50)
 </details>
 
 <details>
-<summary><b>- RandomSearchOptimizer</b></summary>
+<summary><b> RandomSearchOptimizer</b></summary>
 
     - search_space
 
 </details>
 
 <details>
-<summary><b>- RandomRestartHillClimbingOptimizer</b></summary>
+<summary><b> RandomRestartHillClimbingOptimizer</b></summary>
 
     - search_space
     - epsilon=0.05
@@ -313,7 +313,7 @@ opt.search(model, n_iter=50)
 </details>
 
 <details>
-<summary><b>- RandomAnnealingOptimizer</b></summary>
+<summary><b> RandomAnnealingOptimizer</b></summary>
 
     - search_space
     - epsilon=0.05
@@ -326,7 +326,7 @@ opt.search(model, n_iter=50)
 </details>
 
 <details>
-<summary><b>- ParallelTemperingOptimizer</b></summary>
+<summary><b> ParallelTemperingOptimizer</b></summary>
 
     - search_space
     - n_iter_swap=10
@@ -335,7 +335,7 @@ opt.search(model, n_iter=50)
 </details>
 
 <details>
-<summary><b>- ParticleSwarmOptimizer</b></summary>
+<summary><b> ParticleSwarmOptimizer</b></summary>
 
     - search_space
     - inertia=0.5
@@ -347,7 +347,7 @@ opt.search(model, n_iter=50)
 </details>
 
 <details>
-<summary><b>- EvolutionStrategyOptimizer</b></summary>
+<summary><b> EvolutionStrategyOptimizer</b></summary>
 
     - search_space
     - mutation_rate=0.7
@@ -357,7 +357,7 @@ opt.search(model, n_iter=50)
 </details>
 
 <details>
-<summary><b>- BayesianOptimizer</b></summary>
+<summary><b> BayesianOptimizer</b></summary>
 
     - search_space
     - gpr=gaussian_process["gp_nonlinear"]
@@ -368,7 +368,7 @@ opt.search(model, n_iter=50)
 </details>
 
 <details>
-<summary><b>- TreeStructuredParzenEstimators</b></summary>
+<summary><b> TreeStructuredParzenEstimators</b></summary>
 
     - search_space
     - gamma_tpe=0.5
@@ -378,7 +378,7 @@ opt.search(model, n_iter=50)
 </details>
 
 <details>
-<summary><b>- DecisionTreeOptimizer</b></summary>
+<summary><b> DecisionTreeOptimizer</b></summary>
 
     - search_space
     - tree_regressor="extra_tree"
@@ -389,7 +389,7 @@ opt.search(model, n_iter=50)
 </details>
 
 <details>
-<summary><b>- EnsembleOptimizer</b></summary>
+<summary><b> EnsembleOptimizer</b></summary>
 
     - search_space
     - estimators=[
@@ -404,44 +404,191 @@ opt.search(model, n_iter=50)
 
 
 
+### Input parameters
+
+- search_space
+  - Pass the search_space to the optimizer class to define the space were the optimization algorithm can search for the best parameters for the given objective function.
+
+    example:
+    ```python
+    {
+      "x1": numpy.arange(-10, 31, 0.3),
+      "x2": numpy.arange(-10, 31, 0.3),
+    }
+    ```
+
+#### Search method parameters
+
+- objective_function
+  - (callable)
+
+  - The objective function defines the optimization problem. The optimization algorithm will try to maximize the numerical value that is returned by the objective function by trying out different parameters from the search space.
+
+    example:
+    ```python
+    def objective_function(para):
+        score = -(para["x1"] * para["x1"] + para["x2"] * para["x2"])
+        return score
+    ```
+
+- n_iter 
+  - (int)
+
+  - The number of iterations that will be performed during the optimiation run. The entire iteration consists of the optimization-step, which decides the next parameter that will be evaluated and the evaluation-step, which will run the objective function with the chosen parameter and return the score.
+
+- initialize={"grid": 8, "random": 4, "vertices": 8}
+  - (dict, None)
+
+  - The initialization dictionary automatically determines a number of parameters that will be evaluated in the first n iterations (n is the sum of the values in initialize). 
+
+- warm_start=None
+  - (list, None)
+  - List of parameter dictionaries that marks additional start points for the optimization run.
+
+- max_time=None
+  - (float, None)
+  - Maximum number of seconds until the optimization stops. The time will be checked after each completed iteration.
+
+- max_score=None
+  - (float, None)
+  - Maximum score until the optimization stops. The score will be checked after each completed iteration.
+
+- memory=True
+  - (bool)
+  - Whether or not to use the "memory"-feature. The memory is a dictionary, which gets filled with parameters and scores during the optimization run. If the optimizer encounters a parameter that is already in the dictionary it just extracts the score instead of reevaluating the objective function (which can take a long time).
 
 
-### Optimizer class attributes
+- memory_warm_start=None
+  - (pandas dataframe, None)
+  - Pandas dataframe that contains score and paramter information that will be automatically loaded into the memory-dictionary.
 
-  - results
-    - (dataframe)
-  - best_score
-    - (float)
-  - best_value
-    - (tuple)
-  - best_para
-    - (dict)
-  - eval_times
-    - (float)
-  - iter_times
-    - (float)
+      example:
 
+      <table class="table">
+        <thead class="table-head">
+          <tr class="row">
+            <td class="cell">score</td>
+            <td class="cell">x1</td>
+            <td class="cell">x2</td>
+            <td class="cell">x...</td>
+          </tr>
+        </thead>
+        <tbody class="table-body">
+          <tr class="row">
+            <td class="cell">0.756</td>
+            <td class="cell">0.1</td>
+            <td class="cell">0.2</td>
+            <td class="cell">...</td>
+          </tr>
+          <tr class="row">
+            <td class="cell">0.823</td>
+            <td class="cell">0.3</td>
+            <td class="cell">0.1</td>
+            <td class="cell">...</td>
+          </tr>
+          <tr class="row">
+            <td class="cell">...</td>
+            <td class="cell">...</td>
+            <td class="cell">...</td>
+            <td class="cell">...</td>
+          </tr>
+          <tr class="row">
+            <td class="cell">...</td>
+            <td class="cell">...</td>
+            <td class="cell">...</td>
+            <td class="cell">...</td>
+          </tr>
+        </tbody>
+      </table>
+
+
+
+- verbosity={
+          "progress_bar": True,
+          "print_results": True,
+          "print_times": True,
+      }
+  - (dict, None)
+  - The verbosity dictionary determines what part of the optimization information will be printed in the command line.
+
+- random_state=None
+    - (int, None)
+    - Random state for random processes in the random, numpy and scipy module.
+
+
+
+
+
+### Results from attributes
+
+  - .results
+    - Dataframe, that contains information about the score, the value of each parameter and the evaluation and iteration time. Each row shows the information of one optimization iteration.
+
+      example:
+
+      <table class="table">
+        <thead class="table-head">
+          <tr class="row">
+            <td class="cell">score</td>
+            <td class="cell">x1</td>
+            <td class="cell">x2</td>
+            <td class="cell">x...</td>
+            <td class="cell">eval_time</td>
+            <td class="cell">iter_time</td>
+          </tr>
+        </thead>
+        <tbody class="table-body">
+          <tr class="row">
+            <td class="cell">0.756</td>
+            <td class="cell">0.1</td>
+            <td class="cell">0.2</td>
+            <td class="cell">...</td>
+            <td class="cell">0.000016</td>
+            <td class="cell">0.0.000034</td>
+          </tr>
+          <tr class="row">
+            <td class="cell">0.823</td>
+            <td class="cell">0.3</td>
+            <td class="cell">0.1</td>
+            <td class="cell">...</td>
+            <td class="cell">0.000017</td>
+            <td class="cell">0.0.000032</td>
+          </tr>
+          <tr class="row">
+            <td class="cell">...</td>
+            <td class="cell">...</td>
+            <td class="cell">...</td>
+            <td class="cell">...</td>
+            <td class="cell">...</td>
+            <td class="cell">...</td>
+          </tr>
+          <tr class="row">
+            <td class="cell">...</td>
+            <td class="cell">...</td>
+            <td class="cell">...</td>
+            <td class="cell">...</td>
+            <td class="cell">...</td>
+            <td class="cell">...</td>
+          </tr>
+        </tbody>
+      </table>
+
+  - .best_score
+    - numerical value of the best score, that was found during the optimization run.
+
+  - .best_para
+    - parameter dictionary of the best score, that was found during the optimization run.
+
+      example:
+      ```python
+      {
+        'x1': 0.2, 
+        'x2': 0.3,
+      }
+      ```
 </details>
 
 
-### Optimizer class methods
-
-- search
-  - objective_function,
-  - n_iter,
-  - initialize={"grid": 8, "random": 4, "vertices": 8},
-  - warm_start=None,
-  - max_time=None,
-  - max_score=None,
-  - memory=True,
-  - memory_warm_start=None,
-  - verbosity={
-            "progress_bar": True,
-            "print_results": True,
-            "print_times": True,
-        },
-  - random_state=None,
-  
 
 <br>
 
