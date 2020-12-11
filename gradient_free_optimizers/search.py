@@ -217,8 +217,8 @@ class Search(TimesTracker):
         self.best_value = self.conv.position2value(self.p_bar.pos_best)
         self.best_para = self.conv.value2para(self.best_value)
 
-        eval_time = np.array(self.eval_times).sum()
-        iter_time = np.array(self.iter_times).sum()
+        self.results["eval_time"] = self.eval_times
+        self.results["iter_time"] = self.iter_times
 
         self.p_bar.close()
 
@@ -227,8 +227,8 @@ class Search(TimesTracker):
             self.objective_function,
             self.best_score,
             self.best_para,
-            eval_time,
-            iter_time,
+            self.eval_times,
+            self.iter_times,
             self.n_iter,
         )
 

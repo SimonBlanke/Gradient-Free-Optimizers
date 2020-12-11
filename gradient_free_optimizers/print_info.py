@@ -2,10 +2,13 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+import numpy as np
+
 indent = "  "
 
 
 def _print_times(eval_time, iter_time, n_iter):
+
     opt_time = iter_time - eval_time
     iterPerSec = n_iter / iter_time
 
@@ -64,10 +67,13 @@ def print_info(
     objective_function,
     score_best,
     para_best,
-    eval_time,
-    iter_time,
+    eval_times,
+    iter_times,
     n_iter,
 ):
+
+    eval_time = np.array(eval_times).sum()
+    iter_time = np.array(iter_times).sum()
 
     if verbosity["print_results"] is True:
         _print_results(objective_function, score_best, para_best)
