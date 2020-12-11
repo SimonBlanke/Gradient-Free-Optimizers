@@ -242,309 +242,168 @@ opt.search(model, n_iter=50)
 
 ### Optimization classes
 
+<details>
+<summary><b>- HillClimbingOptimizer</b></summary>
+
+    - search_space
+    - epsilon=0.05
+    - distribution="normal"
+    - n_neighbours=3
+    - rand_rest_p=0.03
+
+</details>
 
 <details>
-<summary><b>HillClimbingOptimizer(...)</b></summary>
+<summary><b>- StochasticHillClimbingOptimizer</b></summary>
 
-Parameter:
-  - search_space
-    - type: dict
+    - search_space
+    - epsilon=0.05
+    - distribution="normal"
+    - n_neighbours=3
+    - rand_rest_p=0.03
+    - p_accept=0.1
+    - norm_factor="adaptive"
 
-      Creates the n-dimensional search space, where "n" is the number of keys in the dictionary. The values of the dictionary must be numpy arrays. Those arrays determine which numerical values can be chosen in the objective function during the optimization run.
+</details>
 
-      Examples:
-      ```python
-      # 1-dimensional search space from 0 to 9
-      search_space = {
-          "x": np.arange(0, 10, 1),
-      }
-      ```
+<details>
+<summary><b>- TabuOptimizer</b></summary>
 
-      ```python
-      # 3-dimensional search space with various ranges
-      search_space = {
-          "x": np.arange(0, 50, 0.3),
-          "y": np.arange(-10, 10, 1),
-          "z": np.arange(-100, 100, 0.1),
-      }
-      ```
+    - search_space
+    - epsilon=0.05
+    - distribution="normal"
+    - n_neighbours=3
+    - rand_rest_p=0.03
+    - tabu_factor=3
 
+</details>
 
-  - epsilon
-    - type: float (optional, default: 0.05)
+<details>
+<summary><b>- SimulatedAnnealingOptimizer</b></summary>
 
-      Determines how far the hill climbing based algorithm will "jump" from one point to the next.
+    - search_space
+    - epsilon=0.05
+    - distribution="normal"
+    - n_neighbours=3
+    - rand_rest_p=0.03
+    - p_accept=0.1
+    - norm_factor="adaptive"
+    - annealing_rate=0.975
+    - start_temp=1
 
+</details>
 
-  - distribution
-    - type: string (optional, default: "normal")
+<details>
+<summary><b>- RandomSearchOptimizer</b></summary>
 
-      possible values: 
-        - "normal"
-        - "laplace"
-        - "logistic"
-        - "gumbel"
+    - search_space
 
-      The (numpy) distribution that decides how to draw samples from the search space in hill climbing based algorithms during the optimization run.
+</details>
 
+<details>
+<summary><b>- RandomRestartHillClimbingOptimizer</b></summary>
 
-  - n_neighbours
-    - type: int (optional, default: 3)
+    - search_space
+    - epsilon=0.05
+    - distribution="normal"
+    - n_neighbours=3
+    - rand_rest_p=0.03
+    - n_iter_restart=10
 
-      Hill climbing based algorithms will draw n samples with its distribution and jump to the best of those points. Here "n" is the number of neighbours or "n_neighbours".
+</details>
 
+<details>
+<summary><b>- RandomAnnealingOptimizer</b></summary>
 
-  - rand_rest_p
-    - type: float (optional, default: 0.01)
+    - search_space
+    - epsilon=0.05
+    - distribution="normal"
+    - n_neighbours=3
+    - rand_rest_p=0.03
+    - annealing_rate=0.975
+    - start_temp=1
 
-      Hill climbing based algorithms tend to get stuck in local optima. To avoid this but still preserve the functionality of the algorithm there is a small percentage in each iteration to jump to a random point in the search space. 
+</details>
 
+<details>
+<summary><b>- ParallelTemperingOptimizer</b></summary>
 
+    - search_space
+    - n_iter_swap=10
+    - rand_rest_p=0.03
+
+</details>
+
+<details>
+<summary><b>- ParticleSwarmOptimizer</b></summary>
+
+    - search_space
+    - inertia=0.5
+    - cognitive_weight=0.5
+    - social_weight=0.5
+    - temp_weight=0.2
+    - rand_rest_p=0.03
+
+</details>
+
+<details>
+<summary><b>- EvolutionStrategyOptimizer</b></summary>
+
+    - search_space
+    - mutation_rate=0.7
+    - crossover_rate=0.3
+    - rand_rest_p=0.03
+
+</details>
+
+<details>
+<summary><b>- BayesianOptimizer</b></summary>
+
+    - search_space
+    - gpr=gaussian_process["gp_nonlinear"]
+    - xi=0.03
+    - warm_start_smbo=None
+    - rand_rest_p=0.03
+
+</details>
+
+<details>
+<summary><b>- TreeStructuredParzenEstimators</b></summary>
+
+    - search_space
+    - gamma_tpe=0.5
+    - warm_start_smbo=None
+    - rand_rest_p=0.03
+
+</details>
+
+<details>
+<summary><b>- DecisionTreeOptimizer</b></summary>
+
+    - search_space
+    - tree_regressor="extra_tree"
+    - xi=0.01
+    - warm_start_smbo=None
+    - rand_rest_p=0.03
+
+</details>
+
+<details>
+<summary><b>- EnsembleOptimizer</b></summary>
+
+    - search_space
+    - estimators=[
+            GradientBoostingRegressor(n_estimators=5),
+            GaussianProcessRegressor(),
+        ]
+    - xi=0.01
+    - warm_start_smbo=None
+    - rand_rest_p=0.03
 
 </details>
 
 
-<details>
-<summary><b>StochasticHillClimbingOptimizer(...)</b></summary>
 
-Parameter:
-  - search_space
-    - type: dict
-
-      Creates the n-dimensional search space, where "n" is the number of keys in the dictionary. The values of the dictionary must be numpy arrays. Those arrays determine which numerical values can be chosen in the objective function during the optimization run.
-
-      Examples:
-      ```python
-      # 1-dimensional search space from 0 to 9
-      search_space = {
-          "x": np.arange(0, 10, 1),
-      }
-      ```
-
-      ```python
-      # 3-dimensional search space with various ranges
-      search_space = {
-          "x": np.arange(0, 50, 0.3),
-          "y": np.arange(-10, 10, 1),
-          "z": np.arange(-100, 100, 0.1),
-      }
-      ```
-
-
-  - epsilon
-    - type: float (optional, default: 0.05)
-
-      Determines how far the hill climbing based algorithm will "jump" from one point to the next.
-
-
-  - distribution
-    - type: string (optional, default: "normal")
-
-      possible values: 
-        - "normal"
-        - "laplace"
-        - "logistic"
-        - "gumbel"
-
-      The (numpy) distribution that decides how to draw samples from the search space in hill climbing based algorithms during the optimization run.
-
-
-  - n_neighbours
-    - type: int (optional, default: 3)
-
-      Hill climbing based algorithms will draw n samples with its distribution and jump to the best of those points. Here "n" is the number of neighbours or "n_neighbours".
-
-
-  - rand_rest_p
-    - type: float (optional, default: 0.01)
-
-      Hill climbing based algorithms tend to get stuck in local optima. To avoid this but still preserve the functionality of the algorithm there is a small percentage in each iteration to jump to a random point in the search space. 
-
-
-  - p_accept
-
-    type: float (optional, default: 0.1)
-
-
-  - norm_factor
-
-    type: string, float (optional, default: "adaptive")
-
-</details>
-
-
-<details>
-<summary><b>TabuOptimizer(...)</b></summary>
-
-Parameter:
-  - search_space
-    - type: dict
-
-      Creates the n-dimensional search space, where "n" is the number of keys in the dictionary. The values of the dictionary must be numpy arrays. Those arrays determine which numerical values can be chosen in the objective function during the optimization run.
-
-      Examples:
-      ```python
-      # 1-dimensional search space from 0 to 9
-      search_space = {
-          "x": np.arange(0, 10, 1),
-      }
-      ```
-
-      ```python
-      # 3-dimensional search space with various ranges
-      search_space = {
-          "x": np.arange(0, 50, 0.3),
-          "y": np.arange(-10, 10, 1),
-          "z": np.arange(-100, 100, 0.1),
-      }
-      ```
-
-
-  - epsilon
-    - type: float (optional, default: 0.05)
-
-      Determines how far the hill climbing based algorithm will "jump" from one point to the next.
-
-
-  - distribution
-    - type: string (optional, default: "normal")
-
-      possible values: 
-        - "normal"
-        - "laplace"
-        - "logistic"
-        - "gumbel"
-
-      The (numpy) distribution that decides how to draw samples from the search space in hill climbing based algorithms during the optimization run.
-
-
-  - n_neighbours
-    - type: int (optional, default: 3)
-
-      Hill climbing based algorithms will draw n samples with its distribution and jump to the best of those points. Here "n" is the number of neighbours or "n_neighbours".
-
-
-  - rand_rest_p
-    - type: float (optional, default: 0.01)
-
-      Hill climbing based algorithms tend to get stuck in local optima. To avoid this but still preserve the functionality of the algorithm there is a small percentage in each iteration to jump to a random point in the search space. 
-
-
-  - tabu_factor
-
-    type: float (optional, default: 3)
-
-
-</details>
-
-
-<details>
-<summary><b>SimulatedAnnealingOptimizer(...)</b></summary>
-
-Parameter:
-  - TODO
-
-</details>
-
-
-<details>
-<summary><b>RandomSearchOptimizer(...)</b></summary>
-
-Parameter:
-  - TODO
-
-
-</details>
-
-
-<details>
-<summary><b>RandomRestartHillClimbingOptimizer(...)</b></summary>
-
-Parameter:
-  - TODO
-
-
-</details>
-
-
-<details>
-<summary><b>RandomAnnealingOptimizer(...)</b></summary>
-
-Parameter:
-  - TODO
-
-
-</details>
-
-
-<details>
-<summary><b>ParallelTemperingOptimizer(...)</b></summary>
-
-Parameter:
-  - TODO
-
-
-</details>
-
-
-<details>
-<summary><b>ParticleSwarmOptimizer(...)</b></summary>
-
-Parameter:
-  - TODO
-
-
-</details>
-
-
-<details>
-<summary><b>EvolutionStrategyOptimizer(...)</b></summary>
-
-Parameter:
-  - TODO
-
-
-</details>
-
-
-<details>
-<summary><b>BayesianOptimizer(...)</b></summary>
-
-Parameter:
-  - TODO
-
-
-</details>
-
-
-<details>
-<summary><b>TreeStructuredParzenEstimators(...)</b></summary>
-
-Parameter:
-  - TODO
-
-
-</details>
-
-
-<details>
-<summary><b>DecisionTreeOptimizer(...)</b></summary>
-
-Parameter:
-  - TODO
-
-
-</details>
-
-
-<details>
-<summary><b>EnsembleOptimizer(...)</b></summary>
-
-Parameter:
-  - TODO
-
-
-</details>
 
 
 ### Optimizer class attributes
@@ -567,38 +426,26 @@ Parameter:
 
 ### Optimizer class methods
 
-<details>
-<summary><b>search(...)</b></summary>
-
-Search method arguments:
-  - objective_function 
-    - (callable)
-  - n_iter 
-    - (int)
-  - initialize 
-    - (dict, optional)
-  - warm_start 
-    - (dict, optional)
-  - max_time 
-    - (float, optional)
-  - max_score 
-    - (float, optional)
-  - memory 
-    - (bool, optional)
-  - memory_warm_start 
-    - (tuple, optional)
-  - verbosity 
-    - (dict, optional)
-  - random_state 
-    - (int, optional)
-
-</details>
-
-
+- search
+  - objective_function,
+  - n_iter,
+  - initialize={"grid": 8, "random": 4, "vertices": 8},
+  - warm_start=None,
+  - max_time=None,
+  - max_score=None,
+  - memory=True,
+  - memory_warm_start=None,
+  - verbosity={
+            "progress_bar": True,
+            "print_results": True,
+            "print_times": True,
+        },
+  - random_state=None,
+  
 
 <br>
 
-### GFOs-design
+### Gradient Free Optimizers <=> Hyperactive
 
 This package was created as the optimization backend of the Hyperactive package.
 The separation of Gradient-Free-Optimizers from Hyperactive enables multiple advantages:
