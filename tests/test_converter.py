@@ -179,9 +179,9 @@ def test_value2para_1(test_input, expected):
 
 
 para2value_test_para_0 = [
-    ({"x1": np.array([-10])}, np.array([-10])),
-    ({"x1": np.array([10])}, np.array([10])),
-    ({"x1": np.array([0])}, np.array([0])),
+    ({"x1": -10}, -10),
+    ({"x1": 10}, 10),
+    ({"x1": 0}, 0),
 ]
 
 
@@ -198,9 +198,9 @@ def test_para2value_0(test_input, expected):
 
 
 para2value_test_para_1 = [
-    ({"x1": np.array([-10]), "x2": np.array([11])}, np.array([-10, 11])),
-    ({"x1": np.array([10]), "x2": np.array([11])}, np.array([10, 11])),
-    ({"x1": np.array([0]), "x2": np.array([0])}, np.array([0, 0])),
+    ({"x1": -10, "x2": 11}, [-10, 11]),
+    ({"x1": 10, "x2": 11}, [10, 11]),
+    ({"x1": 0, "x2": 0}, [0, 0]),
 ]
 
 

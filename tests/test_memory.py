@@ -119,6 +119,11 @@ def test_memory_warm_start_manual():
         "n_estimators": np.arange(500, 502),
     }
 
+    c_time_1 = time.time()
+    opt = RandomSearchOptimizer(search_space)
+    opt.search(objective_function, n_iter=1)
+    diff_time_1 = time.time() - c_time_1
+
     memory_warm_start = pd.DataFrame(
         [[500, 0.9], [501, 0.91]], columns=["n_estimators", "score"]
     )
@@ -130,5 +135,5 @@ def test_memory_warm_start_manual():
     )
     diff_time = time.time() - c_time
 
-    assert diff_time < 1
+    assert diff_time_1 > diff_time * 0.3
 

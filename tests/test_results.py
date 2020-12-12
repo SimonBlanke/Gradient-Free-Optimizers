@@ -80,6 +80,7 @@ def test_attributes_results_6():
     assert len(set(x1_results)) < len(x1_results)
 
 
+"""
 def test_attributes_results_7():
     def objective_function(para):
         score = -para["x1"] * para["x1"]
@@ -127,4 +128,4 @@ def test_attributes_results_8():
     x1_results = list(opt.results["x1"].values)
 
     assert 10 == x1_results[0]
-
+"""
