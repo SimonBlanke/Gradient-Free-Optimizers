@@ -57,9 +57,10 @@ class Converter:
 
     @returnNoneIfArgNone
     def para2value(self, para):
+
         value = []
         for para_name in self.para_names:
-            value.append(*para[para_name])
+            value.append(para[para_name])
 
         return np.array(value)
 

@@ -10,6 +10,7 @@ class Memory:
     def __init__(self, warm_start, conv):
         self.memory_dict = {}
         self.memory_dict_new = {}
+        self.conv = conv
 
         if warm_start is None:
             return
@@ -18,16 +19,19 @@ class Memory:
             print("'memory_warm_start' must be of type pandas.DataFrame")
             return
 
-        self.memory_dict = conv.dataframe2memory_dict(warm_start)
+        self.memory_dict = self.conv.dataframe2memory_dict(warm_start)
 
-    def memory(self, score_func):
-        def wrapper(pos):
-            pos_tuple = tuple(pos)
+    def memory(self, objective_function):
+        def wrapper(para):
+            value = self.conv.para2value(para)
+            position = self.conv.value2position(value)
+
+            pos_tuple = tuple(position)
 
             if pos_tuple in self.memory_dict:
                 return self.memory_dict[pos_tuple]
             else:
-                score = score_func(pos)
+                score = objective_function(para)
 
                 self.memory_dict[pos_tuple] = score
                 self.memory_dict_new[pos_tuple] = score

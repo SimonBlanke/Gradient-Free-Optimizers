@@ -4,15 +4,14 @@
 
 
 class ResultsManager:
-    def __init__(self, objective_function, conv):
+    def __init__(self, conv):
         super().__init__()
-        self.objective_function = objective_function
         self.conv = conv
 
         self.results_list = []
 
-    def _obj_func_results(self, para):
-        results = self.objective_function(para)
+    def _obj_func_results(self, objective_function, para):
+        results = objective_function(para)
 
         if isinstance(results, tuple):
             score = results[0]
@@ -25,12 +24,15 @@ class ResultsManager:
 
         return results_dict
 
-    def score(self, pos):
-        value = self.conv.position2value(pos)
-        para = self.conv.value2para(value)
-        results_dict = self._obj_func_results(para)
+    def score(self, objective_function):
+        def _wrapper(pos):
+            value = self.conv.position2value(pos)
+            para = self.conv.value2para(value)
+            results_dict = self._obj_func_results(objective_function, para)
 
-        self.results_list.append({**results_dict, **para})
+            self.results_list.append({**results_dict, **para})
 
-        return results_dict["score"]
+            return results_dict["score"]
+
+        return _wrapper
 

@@ -190,14 +190,14 @@ class Search(TimesTracker):
         self.random_state = random_state
         self.nth_process = nth_process
 
-        results = ResultsManager(objective_function, self.conv)
+        results = ResultsManager(self.conv)
         init_positions = self._init_search()
 
         if memory is True:
             mem = Memory(memory_warm_start, self.conv)
-            self.score = mem.memory(results.score)
+            self.score = results.score(mem.memory(objective_function))
         else:
-            self.score = results.score
+            self.score = results.score(objective_function)
 
         # loop to initialize N positions
         for init_pos, nth_iter in zip(init_positions, range(n_iter)):
