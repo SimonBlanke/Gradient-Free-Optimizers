@@ -27,7 +27,7 @@ class TabuOptimizer(HillClimbingOptimizer, Search):
     @HillClimbingOptimizer.track_nth_iter
     @HillClimbingOptimizer.random_restart
     def iterate(self):
-        return self._move_climb(self.pos_current)
+        return self._move_climb(self.pos_current, epsilon_mod=self.epsilon_mod)
 
     def evaluate(self, score_new):
         super().evaluate(score_new)
