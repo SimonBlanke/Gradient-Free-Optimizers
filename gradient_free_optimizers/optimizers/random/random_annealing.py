@@ -14,7 +14,7 @@ class RandomAnnealingOptimizer(HillClimbingOptimizer, Search):
         epsilon=0.05,
         distribution="normal",
         n_neighbours=3,
-        annealing_rate=0.975,
+        annealing_rate=0.97,
         start_temp=1,
         rand_rest_p=0.03,
     ):

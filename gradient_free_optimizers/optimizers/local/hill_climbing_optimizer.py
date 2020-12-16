@@ -27,10 +27,10 @@ class HillClimbingOptimizer(BaseOptimizer, Search):
     def __init__(
         self,
         search_space,
-        epsilon=0.05,
+        epsilon=0.03,
         distribution="normal",
         n_neighbours=3,
-        rand_rest_p=0.03,
+        rand_rest_p=0.01,
     ):
         super().__init__(search_space)
         self.epsilon = epsilon
