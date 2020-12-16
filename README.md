@@ -100,28 +100,80 @@ This makes gradient-free methods capable of solving various optimization problem
 
 <br>
 
-### Optimization strategies:
 
-- Local search
-  - Hill Climbing
-  - Stochastic Hill Climbing
-  - Tabu Search
-  - Simulated Annealing
+## Optimization strategies:
 
-- Global search
-  - Random Search
-  - Random Restart Hill Climbing
-  - Random Annealing
 
-- Population methods
-  - Parallel Tempering
-  - Particle Swarm Optimization
-  - Evolution Strategy
+<table style="width:100%">
+  <tr>
+    <th> <b>Optimization Strategy</b> </th>
+    <th> <b>Convex Function</b> </th> 
+    <th> <b>Non-convex Function</b> </th>
+  </tr>
+  <tr>
+    <th> <ins>Hill Climbing</ins> <br><br> Evaluates the score of n neighbours in an epsilon environment and moves to the best one. </th>
+    <td> <img src="https://github.com/SimonBlanke/optimization-tutorial/blob/main/docs/finished_media/hill_climbing_convex.gif" width="100%"> </td>
+    <td> <img src="https://github.com/SimonBlanke/optimization-tutorial/blob/main/docs/finished_media/hill_climbing_nonconvex.gif" width="100%"> </td>
+  </tr>
+  <tr>
+    <th> <ins>Tabu Search</ins> <br><br> Hill climbing iteration + increases epsilon by a factor if no better neighbour was found. </th>
+    <td> <img src="https://github.com/SimonBlanke/optimization-tutorial/blob/main/docs/finished_media/tabu_convex.gif" width="100%"> </td>
+    <td> <img src="https://github.com/SimonBlanke/optimization-tutorial/blob/main/docs/finished_media/tabu_nonconvex.gif" width="100%"> </td>
+  </tr>
+  <tr>
+    <th> <ins>Simulated Annealing</ins> <br><br> Hill climbing iteration + accepts moving to worse positions with decreasing probability over time (transition probability). </th>
+    <td> <img src="https://github.com/SimonBlanke/optimization-tutorial/blob/main/docs/finished_media/sim_ann_convex.gif" width="100%"> </td>
+    <td> <img src="https://github.com/SimonBlanke/optimization-tutorial/blob/main/docs/finished_media/sim_ann_nonconvex.gif" width="100%"> </td>
+  </tr>
+  <tr>
+    <th> <ins>Random Search</ins> <br><br> Moves to random positions in each iteration. </th>
+    <td> <img src="https://github.com/SimonBlanke/optimization-tutorial/blob/main/docs/finished_media/random_convex.gif" width="100%"> </td>
+    <td> <img src="https://github.com/SimonBlanke/optimization-tutorial/blob/main/docs/finished_media/random_nonconvex.gif" width="100%"> </td>
+  </tr>
+  <tr>
+    <th> <ins>Random Restart Hill Climbing</ins> <br><br> Hill climbing + moves to a random position after n iterations. </th>
+    <td> <img src="https://github.com/SimonBlanke/optimization-tutorial/blob/main/docs/finished_media/rrhc_convex.gif" width="100%"> </td>
+    <td> <img src="https://github.com/SimonBlanke/optimization-tutorial/blob/main/docs/finished_media/rrhc_nonconvex.gif" width="100%"> </td>
+  </tr>
+  <tr>
+    <th> <ins>Random Annealing</ins> <br><br> Hill Climbing + large epsilon that decreases over time. </th>
+    <td> <img src="https://github.com/SimonBlanke/optimization-tutorial/blob/main/docs/finished_media/random_ann_convex.gif" width="100%"> </td>
+    <td> <img src="https://github.com/SimonBlanke/optimization-tutorial/blob/main/docs/finished_media/random_ann_nonconvex.gif" width="100%"> </td>
+  </tr>
+  <tr>
+    <th> <ins>Parallel Tempering</ins> <br><br> Population of n simulated annealers, which occasionally swap transition probabilities. </th>
+    <td> <img src="https://github.com/SimonBlanke/optimization-tutorial/blob/main/docs/finished_media/par_temp_convex.gif" width="100%"> </td>
+    <td> <img src="https://github.com/SimonBlanke/optimization-tutorial/blob/main/docs/finished_media/par_temp_nonconvex.gif" width="100%"> </td>
+  </tr>
+  <tr>
+    <th> <ins>Particle Swarm Optimization</ins> <br><br> Population of n particles attracting each other and moving towards the best particle. </th>
+    <td> <img src="https://github.com/SimonBlanke/optimization-tutorial/blob/main/docs/finished_media/particle_swarm_convex.gif" width="100%"> </td>
+    <td> <img src="https://github.com/SimonBlanke/optimization-tutorial/blob/main/docs/finished_media/particle_swarm_nonconvex.gif" width="100%"> </td>
+  </tr>
+  <tr>
+    <th> <ins>Evolution Strategy</ins> <br><br> Population of n hill climbers occasionally mixing positional information. </th>
+    <td> <img src="https://github.com/SimonBlanke/optimization-tutorial/blob/main/docs/finished_media/evo_strat_convex.gif" width="100%"> </td>
+    <td> <img src="https://github.com/SimonBlanke/optimization-tutorial/blob/main/docs/finished_media/evo_strat_nonconvex.gif" width="100%"> </td>
+  </tr>
+  <tr>
+    <th> <ins>Bayesian Optimization</ins> <br><br> Gaussian process fitting to explored positions and predicting promising new positions. </th>
+    <td> <img src="https://github.com/SimonBlanke/optimization-tutorial/blob/main/docs/finished_media/bayes_convex.gif" width="100%"> </td>
+    <td> <img src="https://github.com/SimonBlanke/optimization-tutorial/blob/main/docs/finished_media/bayes_nonconvex.gif" width="100%"> </td>
+  </tr>
+  <tr>
+    <th> <ins>Tree of Parzen Estimators</ins> <br><br> Kernel density estimators fitting to good and bad explored positions and predicting promising new positions. </th>
+    <td> <img src="https://github.com/SimonBlanke/optimization-tutorial/blob/main/docs/finished_media/tpe_convex.gif" width="100%"> </td>
+    <td> <img src="https://github.com/SimonBlanke/optimization-tutorial/blob/main/docs/finished_media/tpe_nonconvex.gif" width="100%"> </td>
+  </tr>
+  <tr>
+    <th> <ins>Decision Tree Optimizer</ins> <br><br> Ensemble of decision trees fitting to explored positions and predicting promising new positions. </th>
+    <td> <img src="https://github.com/SimonBlanke/optimization-tutorial/blob/main/docs/finished_media/dto_convex.gif" width="100%"> </td>
+    <td> <img src="https://github.com/SimonBlanke/optimization-tutorial/blob/main/docs/finished_media/dto_nonconvex.gif" width="100%"> </td>
+  </tr>
+</table>
 
-- Sequential methods
-  - Bayesian Optimization
-  - Tree of Parzen Estimators
-  - Decision Tree Optimizer
+</body>
+</html>
 
 
 <br>
