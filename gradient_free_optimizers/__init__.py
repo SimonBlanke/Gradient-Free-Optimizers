@@ -2,13 +2,13 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-__version__ = "0.2.2"
+__version__ = "0.2.3"
 __license__ = "MIT"
 
 from .optimizers import (
     HillClimbingOptimizer,
     StochasticHillClimbingOptimizer,
-    TabuOptimizer,
+    RepulsingHillClimbingOptimizer,
     SimulatedAnnealingOptimizer,
     RandomSearchOptimizer,
     RandomRestartHillClimbingOptimizer,
@@ -26,7 +26,7 @@ from .optimizers import (
 __all__ = [
     "HillClimbingOptimizer",
     "StochasticHillClimbingOptimizer",
-    "TabuOptimizer",
+    "RepulsingHillClimbingOptimizer",
     "RandomSearchOptimizer",
     "RandomRestartHillClimbingOptimizer",
     "RandomAnnealingOptimizer",

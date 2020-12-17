@@ -5,12 +5,12 @@
 
 from .hill_climbing_optimizer import HillClimbingOptimizer
 from .stochastic_hill_climbing import StochasticHillClimbingOptimizer
-from .tabu_search import TabuOptimizer
+from .repulsing_hill_climbing_optimizer import RepulsingHillClimbingOptimizer
 from .simulated_annealing import SimulatedAnnealingOptimizer
 
 __all__ = [
     "HillClimbingOptimizer",
     "StochasticHillClimbingOptimizer",
-    "TabuOptimizer",
+    "RepulsingHillClimbingOptimizer",
     "SimulatedAnnealingOptimizer",
 ]

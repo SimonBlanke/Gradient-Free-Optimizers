@@ -298,7 +298,7 @@ opt.search(model, n_iter=50)
 <summary><b> HillClimbingOptimizer</b></summary>
 
     - search_space
-    - epsilon=0.05
+    - epsilon=0.03
     - distribution="normal"
     - n_neighbours=3
     - rand_rest_p=0.03
@@ -306,27 +306,14 @@ opt.search(model, n_iter=50)
 </details>
 
 <details>
-<summary><b> StochasticHillClimbingOptimizer</b></summary>
+<summary><b> RepulsingHillClimbingOptimizer</b></summary>
 
     - search_space
-    - epsilon=0.05
+    - epsilon=0.03
     - distribution="normal"
     - n_neighbours=3
     - rand_rest_p=0.03
-    - p_accept=0.1
-    - norm_factor="adaptive"
-
-</details>
-
-<details>
-<summary><b> TabuOptimizer</b></summary>
-
-    - search_space
-    - epsilon=0.05
-    - distribution="normal"
-    - n_neighbours=3
-    - rand_rest_p=0.03
-    - tabu_factor=3
+    - repulsion_factor=5
 
 </details>
 
@@ -334,7 +321,7 @@ opt.search(model, n_iter=50)
 <summary><b> SimulatedAnnealingOptimizer</b></summary>
 
     - search_space
-    - epsilon=0.05
+    - epsilon=0.03
     - distribution="normal"
     - n_neighbours=3
     - rand_rest_p=0.03
@@ -356,7 +343,7 @@ opt.search(model, n_iter=50)
 <summary><b> RandomRestartHillClimbingOptimizer</b></summary>
 
     - search_space
-    - epsilon=0.05
+    - epsilon=0.03
     - distribution="normal"
     - n_neighbours=3
     - rand_rest_p=0.03
@@ -368,7 +355,7 @@ opt.search(model, n_iter=50)
 <summary><b> RandomAnnealingOptimizer</b></summary>
 
     - search_space
-    - epsilon=0.05
+    - epsilon=0.03
     - distribution="normal"
     - n_neighbours=3
     - rand_rest_p=0.03

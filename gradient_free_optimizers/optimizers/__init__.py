@@ -5,7 +5,7 @@
 from .local import (
     HillClimbingOptimizer,
     StochasticHillClimbingOptimizer,
-    TabuOptimizer,
+    RepulsingHillClimbingOptimizer,
     SimulatedAnnealingOptimizer,
 )
 
@@ -32,7 +32,7 @@ from .sequence_model import (
 __all__ = [
     "HillClimbingOptimizer",
     "StochasticHillClimbingOptimizer",
-    "TabuOptimizer",
+    "RepulsingHillClimbingOptimizer",
     "RandomSearchOptimizer",
     "RandomRestartHillClimbingOptimizer",
     "RandomAnnealingOptimizer",

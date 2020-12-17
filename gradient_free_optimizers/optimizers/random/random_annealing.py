@@ -11,7 +11,7 @@ class RandomAnnealingOptimizer(HillClimbingOptimizer, Search):
     def __init__(
         self,
         search_space,
-        epsilon=0.05,
+        epsilon=0.03,
         distribution="normal",
         n_neighbours=3,
         annealing_rate=0.97,

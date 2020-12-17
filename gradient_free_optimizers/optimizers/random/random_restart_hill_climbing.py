@@ -11,7 +11,7 @@ class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer, Search):
     def __init__(
         self,
         search_space,
-        epsilon=0.05,
+        epsilon=0.03,
         distribution="normal",
         n_neighbours=3,
         n_iter_restart=10,

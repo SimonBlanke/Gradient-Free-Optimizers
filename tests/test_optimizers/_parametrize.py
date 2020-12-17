@@ -1,7 +1,7 @@
 from gradient_free_optimizers import (
     HillClimbingOptimizer,
     StochasticHillClimbingOptimizer,
-    TabuOptimizer,
+    RepulsingHillClimbingOptimizer,
     RandomSearchOptimizer,
     RandomRestartHillClimbingOptimizer,
     RandomAnnealingOptimizer,
@@ -20,7 +20,7 @@ optimizers_singleOpt = (
     [
         (HillClimbingOptimizer),
         (StochasticHillClimbingOptimizer),
-        (TabuOptimizer),
+        (RepulsingHillClimbingOptimizer),
         (RandomSearchOptimizer),
         (RandomRestartHillClimbingOptimizer),
         (RandomAnnealingOptimizer),
@@ -42,7 +42,7 @@ optimizers_noSBOM = (
     [
         (HillClimbingOptimizer),
         (StochasticHillClimbingOptimizer),
-        (TabuOptimizer),
+        (RepulsingHillClimbingOptimizer),
         (RandomSearchOptimizer),
         (RandomRestartHillClimbingOptimizer),
         (RandomAnnealingOptimizer),
@@ -68,7 +68,7 @@ optimizers_local = (
     [
         (HillClimbingOptimizer),
         (StochasticHillClimbingOptimizer),
-        (TabuOptimizer),
+        (RepulsingHillClimbingOptimizer),
         (SimulatedAnnealingOptimizer),
         (ParallelTemperingOptimizer),
         (ParticleSwarmOptimizer),
@@ -82,7 +82,7 @@ optimizers = (
     [
         (HillClimbingOptimizer),
         (StochasticHillClimbingOptimizer),
-        (TabuOptimizer),
+        (RepulsingHillClimbingOptimizer),
         (RandomSearchOptimizer),
         (RandomRestartHillClimbingOptimizer),
         (RandomAnnealingOptimizer),
