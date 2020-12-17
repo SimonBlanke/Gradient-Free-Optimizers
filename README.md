@@ -116,7 +116,7 @@ This makes gradient-free methods capable of solving various optimization problem
     <td> <img src="./docs/gifs/hill_climbing_nonconvex.gif" width="100%"> </td>
   </tr>
   <tr>
-    <th> <ins>Tabu Search</ins> <br><br> Hill climbing iteration + increases epsilon by a factor if no better neighbour was found. </th>
+    <th> <ins>Repulsing Hill Climbing</ins> <br><br> Hill climbing iteration + increases epsilon by a factor if no better neighbour was found. </th>
     <td> <img src="./docs/gifs/tabu_convex.gif" width="100%"> </td>
     <td> <img src="./docs/gifs/tabu_nonconvex.gif" width="100%"> </td>
   </tr>
