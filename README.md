@@ -52,6 +52,11 @@
 
 <br>
 
+
+
+
+
+
 ## Introduction
 
 Gradient-Free-Optimizers provides a collection of easy to use optimization techniques, 
@@ -61,6 +66,8 @@ This makes gradient-free methods capable of solving various optimization problem
 - Fitting multiple gauss-distributions to data.
 - Hyperparameter-optimization of machine-learning methods.
 
+Gradient-Free-Optimizers is the optimization backend of Hyperactive (in v3.0.0 and higher) but it can also be used by itself as a leaner and simpler optimization toolkit. 
+
 
 <br>
 
@@ -69,6 +76,7 @@ This makes gradient-free methods capable of solving various optimization problem
 <div align="center"><a name="menu"></a>
   <h3>
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#main-features">Main features</a> •
+    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#optimization-strategies">Optimization strategies</a> •
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#installation">Installation</a> •
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#examples">Examples</a> •
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#basic-api-information">API-info</a> •
@@ -79,27 +87,99 @@ This makes gradient-free methods capable of solving various optimization problem
 
 ---
 
+
 <br>
-
-
 
 ## Main features
 
 - Easy to use:
-  - <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#examples">Simple API-design</a>
-  - Receive prepared information about ongoing and finished optimization runs
+  <details>
+  <summary><b> Simple API-design</b></summary>
+
+  You can optimize anything that can be defined in a python function. For example a simple parabola function:
+  ```python
+  def objective_function(para):
+      score = para["x1"] * para["x1"]
+      return -score
+  ```
+
+  Define where to search via numpy ranges:
+  ```python
+  search_space = {
+      "x": np.arange(0, 5, 0.1),
+  }
+  ```
+
+  That`s all the information the algorithm needs to search for the maximum in the objective function:
+  ```python
+  from gradient_free_optimizers import RandomSearchOptimizer
+
+  opt = RandomSearchOptimizer(search_space)
+  opt.search(objective_function, n_iter=100000)
+  ```
+
+
+  </details>
+
+  <details>
+  <summary><b> Receive prepared information about ongoing and finished optimization runs</b></summary>
+
+  During the optimization you will receive ongoing information in a progress bar:
+    - current best score
+    - the position in the search space of the current best score
+    - the iteration when the current best score was found
+    - other information about the progress native to tqdm
+
+  </details>
 
 - High performance:
-  - Modern optimization techniques
-  - Lightweight backend
-  - Save time with "short term memory"
+  <details>
+  <summary><b> Modern optimization techniques</b></summary>
+
+  Gradient-Free-Optimizers provides not just meta-heuristic optimization methods but also sequential model based optimizers like bayesian optimization, which delivers good results for expensive objetive functions like deep-learning models.
+
+  </details>
+
+  <details>
+  <summary><b> Lightweight backend</b></summary>
+
+  Even for the very simple parabola function the optimization time is about 60% of the entire iteration time when optimizing with random search.  This shows, that (despite all its features) Gradient-Free-Optimizers has an efficient optimization backend without any unnecessary slowdown.
+
+  </details>
+
+  <details>
+  <summary><b> Save time with memory dictionary</b></summary>
+
+  Per default Gradient-Free-Optimizers will look for the current position in a memory dictionary before evaluating the objective function. 
+  
+    - If the position is not in the dictionary the objective function will be evaluated and the position and score is saved in the dictionary. 
+    
+    - If a position is already saved in the dictionary Gradient-Free-Optimizers will just extract the score from it instead of evaluating the objective function. This avoids reevaluating computationally expensive objective functions (machine- or deep-learning) and therefore saves time.
+
+
+  </details>
 
 - High reliability:
-  - Extensive testing
-  - Performance test for each optimizer
+  <details>
+  <summary><b> Extensive testing</b></summary>
+
+  Gradient-Free-Optimizers is extensivly tested with more than 400 tests in 2500 lines of test code. This includes the testing of:
+    - Each optimization algorithm 
+    - Each optimization parameter
+    - All attributes that are part of the public api
+
+  </details>
+
+
+  <details>
+  <summary><b> Performance test for each optimizer</b></summary>
+
+  Each optimization algorithm must perform above a certain threshold (for selected objetive functions) to be included. Poorly performing algorithms are reworked or scraped.
+
+  </details>
+
 
 <br>
-
 
 ## Optimization strategies:
 
@@ -634,12 +714,39 @@ opt.search(model, n_iter=50)
 
 ### Gradient Free Optimizers <=> Hyperactive
 
-This package was created as the optimization backend of the Hyperactive package.
+Gradient-Free-Optimizers was created as the optimization backend of the Hyperactive package. Therefore the algorithms are exactly the same in both packages and deliver the same results. 
+However you can still use Gradient-Free-Optimizers as a standalone package.
 The separation of Gradient-Free-Optimizers from Hyperactive enables multiple advantages:
+  - Even easier to use than Hyperactive
   - Other developers can easily use GFOs as an optimizaton backend if desired
   - Separate and more thorough testing
   - Better isolation from the complex information flow in Hyperactive. GFOs only uses positions and scores in a N-dimensional search-space. It returns only the new position after each iteration.
   - a smaller and cleaner code base, if you want to explore my implementation of these optimization techniques.
+
+
+<table>
+  <tr>
+    <th> </th>
+    <th>Gradient-Free-Optimizers</th>
+    <th>Hyperactive</th>
+  </tr>
+  <tr>
+    <td> Search space composition </td>
+    <td> only numerical </td>
+    <td> any python object </td>
+  </tr>
+  <tr>
+    <td> Multiprocessing </td>
+    <td> not supported </td>
+    <td> yes, via joblib or multiprocessing </td>
+  </tr>
+  <tr>
+    <td> Distributed computing </td>
+    <td> not supported</td>
+    <td> yes, via data sharing at runtime</td>
+  </tr>
+  </tr>
+</table>
 
 
 
