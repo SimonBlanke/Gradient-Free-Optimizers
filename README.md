@@ -103,6 +103,7 @@ This makes gradient-free methods capable of solving various optimization problem
 
 ## Optimization strategies:
 
+Gradient-Free-Optimizers supports a variety of optimization algorithms, which can make choosing the right algorithm a tedious endeavor. The gifs in this section give a visual representation how the different optimization algorithms explore the search space and exploit the collected information about the search space for a convex and non-convex objective function. 
 
 <table style="width:100%">
   <tr>
