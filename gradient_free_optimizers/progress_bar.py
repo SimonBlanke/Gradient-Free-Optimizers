@@ -69,14 +69,14 @@ class ProgressBarLVL1(ProgressBarBase):
     def update(self, score_new, pos_new, nth_iter):
         self.n_iter_current = nth_iter
 
-        self._new2best(score_new, pos_new, nth_iter)
-
         if score_new > self.score_best:
             self._tqdm.set_postfix(
                 best_score=str(score_new),
                 best_pos=str(pos_new),
                 best_iter=str(self._best_since_iter),
             )
+
+        self._new2best(score_new, pos_new, nth_iter)
 
         self._tqdm.update(1)
         # self._tqdm.refresh()
