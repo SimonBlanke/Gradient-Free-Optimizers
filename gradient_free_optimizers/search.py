@@ -115,9 +115,6 @@ class Search(TimesTracker):
         )
         set_random_seed(self.nth_process, self.random_state)
 
-        if self.warm_start is not None:
-            self.initialize["warm_start"] = self.warm_start
-
         # get init positions
         init = Initializer(self.conv)
         init_positions = init.set_pos(self.initialize)
@@ -160,7 +157,6 @@ class Search(TimesTracker):
         objective_function,
         n_iter,
         initialize={"grid": 8, "random": 4, "vertices": 8},
-        warm_start=None,
         max_time=None,
         max_score=None,
         memory=True,
@@ -181,7 +177,6 @@ class Search(TimesTracker):
         self.objective_function = objective_function
         self.n_iter = n_iter
         self.initialize = initialize
-        self.warm_start = warm_start
         self.max_time = max_time
         self.max_score = max_score
         self.memory = memory
