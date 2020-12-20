@@ -85,14 +85,16 @@ class ProgressBarLVL1(ProgressBarBase):
         self._tqdm.close()
 
     def _tqdm_dict(self, nth_process, n_iter, objective_function):
-        """Generates the parameter dict for tqdm in the iteration-loop of each optimizer"""
+        """
+        Generates the parameter dict for tqdm in the iteration-loop of each optimizer
+        """
 
         self.objective_function = objective_function
 
         if nth_process is None:
             process_str = ""
         else:
-            process_str = "Process " + str(nth_process)
+            process_str = str(objective_function.__name__)
 
         return {
             "total": n_iter,
