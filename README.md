@@ -79,9 +79,7 @@ Gradient-Free-Optimizers is the optimization backend of Hyperactive (in v3.0.0 a
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#optimization-strategies">Optimization strategies</a> •
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#installation">Installation</a> •
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#examples">Examples</a> •
-    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#basic-api-information">API-info</a> •
-    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#citation">Citation</a> •
-    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#license">License</a>
+    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#basic-api-information">API-info</a>
   </h3>
 </div>
 
@@ -556,14 +554,20 @@ opt.search(model, n_iter=50)
 
   - The number of iterations that will be performed during the optimiation run. The entire iteration consists of the optimization-step, which decides the next parameter that will be evaluated and the evaluation-step, which will run the objective function with the chosen parameter and return the score.
 
-- initialize={"grid": 8, "random": 4, "vertices": 8}
+- initialize={"grid": 8, "vertices": 8, "random": 4, "warm_start": []}
   - (dict, None)
 
-  - The initialization dictionary automatically determines a number of parameters that will be evaluated in the first n iterations (n is the sum of the values in initialize). 
+  - The initialization dictionary automatically determines a number of parameters that will be evaluated in the first n iterations (n is the sum of the values in initialize). The initialize keywords are the following:
+    - grid
+      - Initializes positions in a grid like pattern. Positions that cannot be put into a grid are randomly positioned.
+    - vertices
+      - Initializes positions at the vertices of the search space. Positions that cannot be put into a vertices are randomly positioned.
 
-- warm_start=None
-  - (list, None)
-  - List of parameter dictionaries that marks additional start points for the optimization run.
+    - random
+      - Number of random initialized positions
+
+    - warm_start
+      - List of parameter dictionaries that marks additional start points for the optimization run.
 
 - max_time=None
   - (float, None)
