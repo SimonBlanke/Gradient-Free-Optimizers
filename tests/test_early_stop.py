@@ -52,8 +52,7 @@ def test_max_score_0():
     opt.search(
         objective_function,
         n_iter=100000,
-        initialize={},
-        warm_start=[{"x1": 99}],
+        initialize={"warm_start": [{"x1": 99}]},
         max_score=max_score,
     )
 
@@ -82,8 +81,7 @@ def test_max_score_1():
     opt.search(
         objective_function,
         n_iter=100000,
-        initialize={},
-        warm_start=[{"x1": 99}],
+        initialize={"warm_start": [{"x1": 99}]},
         max_score=max_score,
     )
     diff_time = time.time() - c_time

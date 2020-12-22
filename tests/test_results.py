@@ -44,7 +44,7 @@ def test_attributes_results_3():
 def test_attributes_results_4():
     opt = RandomSearchOptimizer(search_space)
     opt.search(
-        objective_function, n_iter=1, initialize={}, warm_start=[{"x1": 0}]
+        objective_function, n_iter=1, initialize={"warm_start": [{"x1": 0}]}
     )
 
     assert 0 in list(opt.results["x1"].values)
@@ -53,7 +53,7 @@ def test_attributes_results_4():
 def test_attributes_results_5():
     opt = RandomSearchOptimizer(search_space)
     opt.search(
-        objective_function, n_iter=1, initialize={}, warm_start=[{"x1": 10}]
+        objective_function, n_iter=1, initialize={"warm_start": [{"x1": 10}]}
     )
 
     assert 10 in list(opt.results["x1"].values)
