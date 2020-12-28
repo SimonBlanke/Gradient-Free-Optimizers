@@ -15,11 +15,6 @@ from .results_manager import ResultsManager
 from .memory import Memory
 from .print_info import print_info
 
-p_bar_dict = {
-    False: ProgressBarLVL0,
-    True: ProgressBarLVL1,
-}
-
 
 def time_exceeded(start_time, max_time):
     run_time = time.time() - start_time
@@ -110,9 +105,16 @@ class Search(TimesTracker):
 
     def _init_search(self):
         self._init_memory(self.memory)
-        self.p_bar = p_bar_dict[self.progress_bar](
-            self.nth_process, self.n_iter, self.objective_function
-        )
+
+        if "progress_bar" in self.verbosity:
+            self.p_bar = ProgressBarLVL1(
+                self.nth_process, self.n_iter, self.objective_function
+            )
+        else:
+            self.p_bar = ProgressBarLVL0(
+                self.nth_process, self.n_iter, self.objective_function
+            )
+
         set_random_seed(self.nth_process, self.random_state)
 
         # get init positions
@@ -161,18 +163,15 @@ class Search(TimesTracker):
         max_score=None,
         memory=True,
         memory_warm_start=None,
-        verbosity={
-            "progress_bar": True,
-            "print_results": True,
-            "print_times": True,
-        },
+        verbosity=["progress_bar", "print_results", "print_times"],
         random_state=None,
         nth_process=None,
     ):
 
         self.start_time = time.time()
 
-        verbosity = self._init_verb_dict(verbosity)
+        if verbosity is False:
+            verbosity = []
 
         self.objective_function = objective_function
         self.n_iter = n_iter
@@ -181,7 +180,7 @@ class Search(TimesTracker):
         self.max_score = max_score
         self.memory = memory
         self.memory_warm_start = memory_warm_start
-        self.progress_bar = verbosity["progress_bar"]
+        self.verbosity = verbosity
         self.random_state = random_state
         self.nth_process = nth_process
 

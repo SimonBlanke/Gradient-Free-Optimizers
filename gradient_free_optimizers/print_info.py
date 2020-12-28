@@ -75,9 +75,9 @@ def print_info(
     eval_time = np.array(eval_times).sum()
     iter_time = np.array(iter_times).sum()
 
-    if verbosity["print_results"] is True:
+    if "print_results" in verbosity:
         _print_results(objective_function, score_best, para_best)
 
-    if verbosity["print_times"] is True:
+    if "print_times" in verbosity:
         _print_times(eval_time, iter_time, n_iter)
 
