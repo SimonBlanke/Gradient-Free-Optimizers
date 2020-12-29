@@ -627,13 +627,13 @@ opt.search(model, n_iter=50)
 
 
 
-- verbosity={
-          "progress_bar": True,
-          "print_results": True,
-          "print_times": True,
-      }
-  - (dict, None)
-  - The verbosity dictionary determines what part of the optimization information will be printed in the command line.
+- verbosity=[
+          "progress_bar",
+          "print_results",
+          "print_times"
+      ]
+  - (list, False)
+  - The verbosity list determines what part of the optimization information will be printed in the command line.
 
 - random_state=None
     - (int, None)
