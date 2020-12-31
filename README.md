@@ -66,7 +66,7 @@ This makes gradient-free methods capable of solving various optimization problem
 - Fitting multiple gauss-distributions to data.
 - Hyperparameter-optimization of machine-learning methods.
 
-Gradient-Free-Optimizers is the optimization backend of Hyperactive (in v3.0.0 and higher) but it can also be used by itself as a leaner and simpler optimization toolkit. 
+Gradient-Free-Optimizers is the optimization backend of <a href="https://github.com/SimonBlanke/Hyperactive">Hyperactive</a>  (in v3.0.0 and higher) but it can also be used by itself as a leaner and simpler optimization toolkit. 
 
 
 <br>
