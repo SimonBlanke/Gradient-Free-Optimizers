@@ -79,7 +79,7 @@ Gradient-Free-Optimizers is the optimization backend of <a href="https://github.
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#optimization-strategies">Optimization strategies</a> •
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#installation">Installation</a> •
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#examples">Examples</a> •
-    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#basic-api-information">API-info</a>
+    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#basic-api-reference">API reference</a>
   </h3>
 </div>
 
@@ -369,7 +369,29 @@ opt.search(model, n_iter=50)
 
 <br>
 
-## Basic API-information
+## Basic API reference
+
+### General optimization arguments
+
+The following arguments are necessary for each optimization class:
+
+- search_space
+  - Pass the search_space to the optimizer class to define the space were the optimization algorithm can search for the best parameters for the given objective function.
+
+    example:
+    ```python
+    ...
+    
+    search_space = {
+      "x1": numpy.arange(-10, 31, 0.3),
+      "x2": numpy.arange(-10, 31, 0.3),
+    }
+    
+    opt = HillClimbingOptimizer(search_space)
+    
+    ...
+    ```
+
 
 ### Optimization classes
 
@@ -520,22 +542,10 @@ opt.search(model, n_iter=50)
 
 </details>
 
+<br>
 
-
-### Input parameters
-
-- search_space
-  - Pass the search_space to the optimizer class to define the space were the optimization algorithm can search for the best parameters for the given objective function.
-
-    example:
-    ```python
-    {
-      "x1": numpy.arange(-10, 31, 0.3),
-      "x2": numpy.arange(-10, 31, 0.3),
-    }
-    ```
-
-#### Search method parameters
+<details>
+<summary><b> .search(...)</b></summary>
 
 - objective_function
   - (callable)
@@ -639,77 +649,80 @@ opt.search(model, n_iter=50)
     - (int, None)
     - Random state for random processes in the random, numpy and scipy module.
 
+</details>
+
+<br>
+
+<details>
+<summary><b> Results from attributes </b></summary>
 
 
+- .results
+  - Dataframe, that contains information about the score, the value of each parameter and the evaluation and iteration time. Each row shows the information of one optimization iteration.
 
+    example:
 
-### Results from attributes
+    <table class="table">
+      <thead class="table-head">
+        <tr class="row">
+          <td class="cell">score</td>
+          <td class="cell">x1</td>
+          <td class="cell">x2</td>
+          <td class="cell">x...</td>
+          <td class="cell">eval_time</td>
+          <td class="cell">iter_time</td>
+        </tr>
+      </thead>
+      <tbody class="table-body">
+        <tr class="row">
+          <td class="cell">0.756</td>
+          <td class="cell">0.1</td>
+          <td class="cell">0.2</td>
+          <td class="cell">...</td>
+          <td class="cell">0.000016</td>
+          <td class="cell">0.0.000034</td>
+        </tr>
+        <tr class="row">
+          <td class="cell">0.823</td>
+          <td class="cell">0.3</td>
+          <td class="cell">0.1</td>
+          <td class="cell">...</td>
+          <td class="cell">0.000017</td>
+          <td class="cell">0.0.000032</td>
+        </tr>
+        <tr class="row">
+          <td class="cell">...</td>
+          <td class="cell">...</td>
+          <td class="cell">...</td>
+          <td class="cell">...</td>
+          <td class="cell">...</td>
+          <td class="cell">...</td>
+        </tr>
+        <tr class="row">
+          <td class="cell">...</td>
+          <td class="cell">...</td>
+          <td class="cell">...</td>
+          <td class="cell">...</td>
+          <td class="cell">...</td>
+          <td class="cell">...</td>
+        </tr>
+      </tbody>
+    </table>
 
-  - .results
-    - Dataframe, that contains information about the score, the value of each parameter and the evaluation and iteration time. Each row shows the information of one optimization iteration.
+- .best_score
+  - numerical value of the best score, that was found during the optimization run.
 
-      example:
+- .best_para
+  - parameter dictionary of the best score, that was found during the optimization run.
 
-      <table class="table">
-        <thead class="table-head">
-          <tr class="row">
-            <td class="cell">score</td>
-            <td class="cell">x1</td>
-            <td class="cell">x2</td>
-            <td class="cell">x...</td>
-            <td class="cell">eval_time</td>
-            <td class="cell">iter_time</td>
-          </tr>
-        </thead>
-        <tbody class="table-body">
-          <tr class="row">
-            <td class="cell">0.756</td>
-            <td class="cell">0.1</td>
-            <td class="cell">0.2</td>
-            <td class="cell">...</td>
-            <td class="cell">0.000016</td>
-            <td class="cell">0.0.000034</td>
-          </tr>
-          <tr class="row">
-            <td class="cell">0.823</td>
-            <td class="cell">0.3</td>
-            <td class="cell">0.1</td>
-            <td class="cell">...</td>
-            <td class="cell">0.000017</td>
-            <td class="cell">0.0.000032</td>
-          </tr>
-          <tr class="row">
-            <td class="cell">...</td>
-            <td class="cell">...</td>
-            <td class="cell">...</td>
-            <td class="cell">...</td>
-            <td class="cell">...</td>
-            <td class="cell">...</td>
-          </tr>
-          <tr class="row">
-            <td class="cell">...</td>
-            <td class="cell">...</td>
-            <td class="cell">...</td>
-            <td class="cell">...</td>
-            <td class="cell">...</td>
-            <td class="cell">...</td>
-          </tr>
-        </tbody>
-      </table>
-
-  - .best_score
-    - numerical value of the best score, that was found during the optimization run.
-
-  - .best_para
-    - parameter dictionary of the best score, that was found during the optimization run.
-
-      example:
-      ```python
-      {
-        'x1': 0.2, 
-        'x2': 0.3,
-      }
-      ```
+    example:
+    ```python
+    {
+      'x1': 0.2, 
+      'x2': 0.3,
+    }
+    ```
+      
 </details>
 
 
