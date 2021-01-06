@@ -23,70 +23,52 @@ err = 0.01
 
 
 def test_random_state_0():
-    opt0 = RandomSearchOptimizer(search_space)
+    opt0 = RandomSearchOptimizer(search_space, initialize={"random": 1})
     opt0.search(
-        objective_function,
-        n_iter=100,
-        initialize={"random": 1},
-        random_state=1,
+        objective_function, n_iter=100, random_state=1,
     )
 
-    opt1 = RandomSearchOptimizer(search_space)
+    opt1 = RandomSearchOptimizer(search_space, initialize={"random": 1})
     opt1.search(
-        objective_function,
-        n_iter=100,
-        initialize={"random": 1},
-        random_state=1,
+        objective_function, n_iter=100, random_state=1,
     )
 
     assert abs(opt0.best_score - opt1.best_score) < err
 
 
 def test_random_state_1():
-    opt0 = RandomSearchOptimizer(search_space)
+    opt0 = RandomSearchOptimizer(search_space, initialize={"random": 1})
     opt0.search(
-        objective_function,
-        n_iter=100,
-        initialize={"random": 1},
-        random_state=10,
+        objective_function, n_iter=100, random_state=10,
     )
 
-    opt1 = RandomSearchOptimizer(search_space)
+    opt1 = RandomSearchOptimizer(search_space, initialize={"random": 1})
     opt1.search(
-        objective_function,
-        n_iter=100,
-        initialize={"random": 1},
-        random_state=10,
+        objective_function, n_iter=100, random_state=10,
     )
 
     assert abs(opt0.best_score - opt1.best_score) < err
 
 
 def test_random_state_2():
-    opt0 = RandomSearchOptimizer(search_space)
+    opt0 = RandomSearchOptimizer(search_space, initialize={"random": 1})
     opt0.search(
-        objective_function,
-        n_iter=100,
-        initialize={"random": 1},
-        random_state=1,
+        objective_function, n_iter=100, random_state=1,
     )
 
-    opt1 = RandomSearchOptimizer(search_space)
+    opt1 = RandomSearchOptimizer(search_space, initialize={"random": 1})
     opt1.search(
-        objective_function,
-        n_iter=100,
-        initialize={"random": 1},
-        random_state=10,
+        objective_function, n_iter=100, random_state=10,
     )
 
     assert abs(opt0.best_score - opt1.best_score) > err
 
 
 def test_no_random_state_0():
-    opt0 = RandomSearchOptimizer(search_space)
-    opt0.search(objective_function, n_iter=100, initialize={"random": 1})
+    opt0 = RandomSearchOptimizer(search_space, initialize={"random": 1})
+    opt0.search(objective_function, n_iter=100)
 
-    opt1 = RandomSearchOptimizer(search_space)
-    opt1.search(objective_function, n_iter=100, initialize={"random": 1})
+    opt1 = RandomSearchOptimizer(search_space, initialize={"random": 1})
+    opt1.search(objective_function, n_iter=100)
 
     assert abs(opt0.best_score - opt1.best_score) > err

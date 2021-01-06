@@ -13,9 +13,12 @@ from ...search import Search
 
 class SMBO(BaseOptimizer, Search):
     def __init__(
-        self, search_space, warm_start_smbo=None,
+        self,
+        search_space,
+        initialize={"grid": 4, "random": 2, "vertices": 4},
+        warm_start_smbo=None,
     ):
-        super().__init__(search_space)
+        super().__init__(search_space, initialize)
         self.warm_start_smbo = warm_start_smbo
 
         self.X_sample = []

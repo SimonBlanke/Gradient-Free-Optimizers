@@ -22,14 +22,13 @@ def test_convex_convergence_singleOpt(Optimizer):
 
     scores = []
     for rnd_st in tqdm(range(n_opts)):
-        opt = Optimizer(search_space)
+        opt = Optimizer(search_space, initialize=initialize)
         opt.search(
             objective_function,
             n_iter=100,
             random_state=rnd_st,
             memory=False,
             verbosity=False,
-            initialize=initialize,
         )
 
         scores.append(opt.best_score)
@@ -51,14 +50,13 @@ def test_convex_convergence_popBased(Optimizer):
 
     scores = []
     for rnd_st in tqdm(range(n_opts)):
-        opt = Optimizer(search_space)
+        opt = Optimizer(search_space, initialize=initialize,)
         opt.search(
             objective_function,
             n_iter=80,
             random_state=rnd_st,
             memory=False,
             verbosity=False,
-            initialize=initialize,
         )
 
         scores.append(opt.best_score)
@@ -80,14 +78,13 @@ def test_convex_convergence_SBOM(Optimizer):
 
     scores = []
     for rnd_st in tqdm(range(n_opts)):
-        opt = Optimizer(search_space)
+        opt = Optimizer(search_space, initialize=initialize)
         opt.search(
             objective_function,
             n_iter=20,
             random_state=rnd_st,
             memory=False,
             verbosity=False,
-            initialize=initialize,
         )
 
         scores.append(opt.best_score)

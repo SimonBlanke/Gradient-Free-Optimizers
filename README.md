@@ -373,7 +373,7 @@ opt.search(model, n_iter=50)
 
 ### General optimization arguments
 
-The following arguments are necessary for each optimization class:
+The following arguments can be passed to each optimization class:
 
 - search_space
   - Pass the search_space to the optimizer class to define the space were the optimization algorithm can search for the best parameters for the given objective function.
@@ -391,6 +391,23 @@ The following arguments are necessary for each optimization class:
     
     ...
     ```
+
+- initialize={"grid": 8, "vertices": 8, "random": 4, "warm_start": []}
+  - (dict, None)
+
+  - The initialization dictionary automatically determines a number of parameters that will be evaluated in the first n iterations (n is the sum of the values in initialize). The initialize keywords are the following:
+    - grid
+      - Initializes positions in a grid like pattern. Positions that cannot be put into a grid are randomly positioned.
+    - vertices
+      - Initializes positions at the vertices of the search space. Positions that cannot be put into a vertices are randomly positioned.
+
+    - random
+      - Number of random initialized positions
+
+    - warm_start
+      - List of parameter dictionaries that marks additional start points for the optimization run.
+
+
 
 
 ### Optimization classes
@@ -563,21 +580,6 @@ The following arguments are necessary for each optimization class:
   - (int)
 
   - The number of iterations that will be performed during the optimiation run. The entire iteration consists of the optimization-step, which decides the next parameter that will be evaluated and the evaluation-step, which will run the objective function with the chosen parameter and return the score.
-
-- initialize={"grid": 8, "vertices": 8, "random": 4, "warm_start": []}
-  - (dict, None)
-
-  - The initialization dictionary automatically determines a number of parameters that will be evaluated in the first n iterations (n is the sum of the values in initialize). The initialize keywords are the following:
-    - grid
-      - Initializes positions in a grid like pattern. Positions that cannot be put into a grid are randomly positioned.
-    - vertices
-      - Initializes positions at the vertices of the search space. Positions that cannot be put into a vertices are randomly positioned.
-
-    - random
-      - Number of random initialized positions
-
-    - warm_start
-      - List of parameter dictionaries that marks additional start points for the optimization run.
 
 - max_time=None
   - (float, None)

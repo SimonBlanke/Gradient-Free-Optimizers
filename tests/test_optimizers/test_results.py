@@ -14,13 +14,12 @@ def test_results_0(Optimizer):
 
     initialize = {"random": 2}
 
-    opt = Optimizer(search_space)
+    opt = Optimizer(search_space, initialize=initialize)
     opt.search(
         objective_function,
         n_iter=30,
         memory=False,
         verbosity={"print_results": False, "progress_bar": False},
-        initialize=initialize,
     )
 
     results_set = set(opt.results["x1"])
@@ -39,13 +38,12 @@ def test_results_1(Optimizer):
 
     initialize = {"random": 2}
 
-    opt = Optimizer(search_space)
+    opt = Optimizer(search_space, initialize=initialize)
     opt.search(
         objective_function,
         n_iter=50,
         memory=False,
         verbosity={"print_results": False, "progress_bar": False},
-        initialize=initialize,
     )
 
     results_set_x1 = set(opt.results["x1"])

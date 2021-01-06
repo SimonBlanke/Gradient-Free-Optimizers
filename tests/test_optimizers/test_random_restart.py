@@ -23,14 +23,13 @@ def test_convex_convergence_singleOpt(Optimizer):
 
     scores = []
     for rnd_st in range(n_opts):
-        opt = Optimizer(search_space, rand_rest_p=1)
+        opt = Optimizer(search_space, initialize=initialize, rand_rest_p=1)
         opt.search(
             objective_function,
             n_iter=20,
             random_state=rnd_st,
             memory=False,
             verbosity=False,
-            initialize=initialize,
         )
 
         scores.append(opt.best_score)

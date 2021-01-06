@@ -18,13 +18,9 @@ def test_convex_convergence_singleOpt(Optimizer, n_iter):
     search_space = {"x1": np.arange(-10, 11, 1)}
     initialize = {"vertices": 1}
 
-    opt = Optimizer(search_space)
+    opt = Optimizer(search_space, initialize=initialize)
     opt.search(
-        objective_function,
-        n_iter=n_iter,
-        memory=False,
-        verbosity=False,
-        initialize=initialize,
+        objective_function, n_iter=n_iter, memory=False, verbosity=False,
     )
 
     n_new_positions = 0

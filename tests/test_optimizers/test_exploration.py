@@ -22,13 +22,12 @@ def test_exploration_0(Optimizer):
     init2 = {
         "x1": 9,
     }
-    opt = Optimizer(search_space)
+    opt = Optimizer(search_space, initialize={"warm_start": [init1, init2]})
     opt.search(
         objective_function,
         n_iter=300,
         memory=False,
         verbosity={"print_results": False, "progress_bar": False},
-        initialize={"warm_start": [init1, init2]},
     )
 
     uniques_2nd_dim = list(opt.results["x1"].values)
@@ -60,13 +59,12 @@ def test_exploration_1(Optimizer):
         "x1": -9,
     }
 
-    opt = Optimizer(search_space)
+    opt = Optimizer(search_space, initialize={"warm_start": [init1, init2]})
     opt.search(
         objective_function,
         n_iter=300,
         memory=False,
         verbosity={"print_results": False, "progress_bar": False},
-        initialize={"warm_start": [init1, init2]},
     )
 
     uniques_2nd_dim = list(opt.results["x1"].values)

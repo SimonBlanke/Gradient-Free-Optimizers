@@ -18,6 +18,7 @@ class EnsembleOptimizer(ExpectedImprovementBasedOptimization):
     def __init__(
         self,
         search_space,
+        initialize={"grid": 4, "random": 2, "vertices": 4},
         estimators=[
             GradientBoostingRegressor(n_estimators=5),
             # DecisionTreeRegressor(),
@@ -28,7 +29,7 @@ class EnsembleOptimizer(ExpectedImprovementBasedOptimization):
         warm_start_smbo=None,
         rand_rest_p=0.03,
     ):
-        super().__init__(search_space)
+        super().__init__(search_space, initialize)
         self.regr = EnsembleRegressor(estimators)
         self.xi = xi
         self.warm_start_smbo = warm_start_smbo

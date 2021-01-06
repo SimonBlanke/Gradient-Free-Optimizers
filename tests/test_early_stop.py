@@ -48,12 +48,14 @@ def test_max_score_0():
 
     max_score = -9999
 
-    opt = HillClimbingOptimizer(search_space, epsilon=0.01, rand_rest_p=0)
-    opt.search(
-        objective_function,
-        n_iter=100000,
+    opt = HillClimbingOptimizer(
+        search_space,
         initialize={"warm_start": [{"x1": 99}]},
-        max_score=max_score,
+        epsilon=0.01,
+        rand_rest_p=0,
+    )
+    opt.search(
+        objective_function, n_iter=100000, max_score=max_score,
     )
 
     print("\n Results head \n", opt.results.head())
@@ -77,12 +79,11 @@ def test_max_score_1():
     max_score = -9999
 
     c_time = time.time()
-    opt = HillClimbingOptimizer(search_space)
+    opt = HillClimbingOptimizer(
+        search_space, initialize={"warm_start": [{"x1": 99}]}
+    )
     opt.search(
-        objective_function,
-        n_iter=100000,
-        initialize={"warm_start": [{"x1": 99}]},
-        max_score=max_score,
+        objective_function, n_iter=100000, max_score=max_score,
     )
     diff_time = time.time() - c_time
 

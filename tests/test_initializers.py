@@ -19,10 +19,10 @@ def test_initialize_warm_start_0():
 
     initialize = {"warm_start": [init]}
 
-    opt = RandomSearchOptimizer(search_space)
-    opt.search(
-        objective_function, n_iter=1, initialize=initialize,
-    )
+    opt = RandomSearchOptimizer(search_space, initialize=initialize)
+    opt.search(objective_function, n_iter=1)
+
+    # print("\nself.results \n", opt.results)
 
     assert abs(opt.best_score) < 0.001
 
@@ -37,10 +37,8 @@ def test_initialize_warm_start_1():
 
     initialize = {"warm_start": [init]}
 
-    opt = RandomSearchOptimizer(search_space)
-    opt.search(
-        objective_function, n_iter=1, initialize=initialize,
-    )
+    opt = RandomSearchOptimizer(search_space, initialize=initialize)
+    opt.search(objective_function, n_iter=1)
 
     assert opt.best_para == init
 
@@ -48,10 +46,8 @@ def test_initialize_warm_start_1():
 def test_initialize_vertices():
     initialize = {"vertices": 2}
 
-    opt = RandomSearchOptimizer(search_space)
-    opt.search(
-        objective_function, n_iter=2, initialize=initialize,
-    )
+    opt = RandomSearchOptimizer(search_space, initialize=initialize)
+    opt.search(objective_function, n_iter=2)
 
     assert abs(opt.best_score) - 10000 < 0.001
 
@@ -62,10 +58,8 @@ def test_initialize_grid_0():
     }
     initialize = {"grid": 1}
 
-    opt = RandomSearchOptimizer(search_space)
-    opt.search(
-        objective_function, n_iter=1, initialize=initialize,
-    )
+    opt = RandomSearchOptimizer(search_space, initialize=initialize)
+    opt.search(objective_function, n_iter=1)
 
     assert abs(opt.best_score) < 0.001
 
@@ -77,10 +71,7 @@ def test_initialize_grid_1():
 
     initialize = {"grid": 1}
 
-    opt = RandomSearchOptimizer(search_space)
-    opt.search(
-        objective_function, n_iter=1, initialize=initialize,
-    )
+    opt = RandomSearchOptimizer(search_space, initialize=initialize)
+    opt.search(objective_function, n_iter=1)
 
     assert abs(opt.best_score) - 1 < 0.001
-

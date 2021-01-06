@@ -40,13 +40,12 @@ def test_best_results_0(Optimizer, objective):
 
     initialize = {"vertices": 2}
 
-    opt = Optimizer(search_space)
+    opt = Optimizer(search_space, initialize=initialize)
     opt.search(
         objective_function,
         n_iter=30,
         memory=False,
         verbosity={"print_results": False, "progress_bar": False},
-        initialize=initialize,
     )
 
     assert opt.best_score == objective_function(opt.best_para)
@@ -62,13 +61,12 @@ def test_best_results_1(Optimizer):
 
     initialize = {"vertices": 2}
 
-    opt = Optimizer(search_space)
+    opt = Optimizer(search_space, initialize=initialize)
     opt.search(
         objective_function,
         n_iter=30,
         memory=False,
         verbosity={"print_results": False, "progress_bar": False},
-        initialize=initialize,
     )
 
     assert opt.best_para["x1"] in list(opt.results["x1"])

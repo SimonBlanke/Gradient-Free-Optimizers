@@ -13,6 +13,7 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer, Search):
     def __init__(
         self,
         search_space,
+        initialize={"grid": 4, "random": 2, "vertices": 4},
         epsilon=0.05,
         distribution="normal",
         n_neighbours=3,
@@ -20,7 +21,9 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer, Search):
         norm_factor="adaptive",
         rand_rest_p=0.03,
     ):
-        super().__init__(search_space, epsilon, distribution, n_neighbours)
+        super().__init__(
+            search_space, initialize, epsilon, distribution, n_neighbours
+        )
         self.p_accept = p_accept
         self.norm_factor = norm_factor
         self.rand_rest_p = rand_rest_p

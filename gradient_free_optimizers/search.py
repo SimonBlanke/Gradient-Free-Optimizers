@@ -11,7 +11,6 @@ import pandas as pd
 from .init_positions import Initializer
 from .progress_bar import ProgressBarLVL0, ProgressBarLVL1
 from .times_tracker import TimesTracker
-from .results_manager import ResultsManager
 from .memory import Memory
 from .print_info import print_info
 
@@ -158,7 +157,6 @@ class Search(TimesTracker):
         self,
         objective_function,
         n_iter,
-        initialize={"grid": 8, "random": 4, "vertices": 8},
         max_time=None,
         max_score=None,
         memory=True,
@@ -167,7 +165,6 @@ class Search(TimesTracker):
         random_state=None,
         nth_process=None,
     ):
-
         self.start_time = time.time()
 
         if verbosity is False:
@@ -175,7 +172,6 @@ class Search(TimesTracker):
 
         self.objective_function = objective_function
         self.n_iter = n_iter
-        self.initialize = initialize
         self.max_time = max_time
         self.max_score = max_score
         self.memory = memory
@@ -184,14 +180,15 @@ class Search(TimesTracker):
         self.random_state = random_state
         self.nth_process = nth_process
 
-        results = ResultsManager(self.conv)
         init_positions = self._init_search()
 
         if memory is True:
             mem = Memory(memory_warm_start, self.conv)
-            self.score = results.score(mem.memory(objective_function))
+            self.score = self.results_mang.score(
+                mem.memory(objective_function)
+            )
         else:
-            self.score = results.score(objective_function)
+            self.score = self.results_mang.score(objective_function)
 
         # loop to initialize N positions
         for init_pos, nth_iter in zip(init_positions, range(n_iter)):
@@ -205,7 +202,7 @@ class Search(TimesTracker):
                 break
             self._iteration(nth_iter)
 
-        self.results = pd.DataFrame(results.results_list)
+        self.results = pd.DataFrame(self.results_mang.results_list)
 
         self.best_score = self.p_bar.score_best
         self.best_value = self.conv.position2value(self.p_bar.pos_best)

@@ -14,13 +14,14 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
     def __init__(
         self,
         search_space,
+        initialize={"grid": 4, "random": 2, "vertices": 4},
         inertia=0.5,
         cognitive_weight=0.5,
         social_weight=0.5,
         temp_weight=0.2,
         rand_rest_p=0.03,
     ):
-        super().__init__(search_space)
+        super().__init__(search_space, initialize)
 
         self.inertia = inertia
         self.cognitive_weight = cognitive_weight

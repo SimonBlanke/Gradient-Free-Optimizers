@@ -23,9 +23,14 @@ def normalize(array):
 
 class ExpectedImprovementBasedOptimization(SMBO):
     def __init__(
-        self, search_space, xi=0.01, warm_start_smbo=None, rand_rest_p=0.03,
+        self,
+        search_space,
+        initialize={"grid": 4, "random": 2, "vertices": 4},
+        xi=0.01,
+        warm_start_smbo=None,
+        rand_rest_p=0.03,
     ):
-        super().__init__(search_space)
+        super().__init__(search_space, initialize)
         self.new_positions = []
         self.xi = xi
         self.warm_start_smbo = warm_start_smbo
