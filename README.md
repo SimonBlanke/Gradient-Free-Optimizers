@@ -1,6 +1,6 @@
 <p align="center">
   <br>
-  <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers"><img src="./docs/images/gradient_logo_ink.png" height="250"></a>
+  <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers"><img src="./docs/images/gradient_logo_ink.png" height="280"></a>
   <br>
 </p>
 
