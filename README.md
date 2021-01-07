@@ -1,6 +1,14 @@
-<h1 align="center"> 
-  Gradient-Free-Optimizers
-</h1>
+<p align="center">
+  <br>
+  <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers"><img src="./docs/images/gradient_logo_ink.png" height="200"></a>
+  <br>
+</p>
+
+<br>
+
+---
+
+
 
 <h2 align="center">
   Simple and reliable optimization with local, global, population-based and sequential techniques in numerical search spaces.
