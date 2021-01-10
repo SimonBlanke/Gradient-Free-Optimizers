@@ -51,39 +51,6 @@ class Search(TimesTracker):
     def _score(self, pos):
         return self.score(pos)
 
-    def _init_memory(self, memory):
-        memory_warm_start = self.memory_warm_start
-
-        self.memory_dict = {}
-        self.memory_dict_new = {}
-
-        if isinstance(memory_warm_start, pd.DataFrame):
-            parameter = set(self.conv.search_space.keys())
-            memory_para = set(memory_warm_start.columns)
-
-            if parameter <= memory_para:
-                values_list = list(
-                    memory_warm_start[
-                        list(self.conv.search_space.keys())
-                    ].values
-                )
-                scores = memory_warm_start["score"]
-
-                value_tuple_list = list(map(tuple, values_list))
-                self.memory_dict = dict(zip(value_tuple_list, scores))
-            else:
-                missing = parameter - memory_para
-
-                print(
-                    "\nWarning:",
-                    '"{}"'.format(*missing),
-                    "is in search_space but not in memory dataframe",
-                )
-                print(
-                    "Optimization run will continue "
-                    "without memory warm start\n"
-                )
-
     @TimesTracker.iter_time
     def _initialization(self, init_pos, nth_iter):
         self.init_pos(init_pos)
@@ -103,8 +70,6 @@ class Search(TimesTracker):
         self.p_bar.update(score_new, pos_new, nth_iter)
 
     def _init_search(self):
-        self._init_memory(self.memory)
-
         if "progress_bar" in self.verbosity:
             self.p_bar = ProgressBarLVL1(
                 self.nth_process, self.n_iter, self.objective_function
@@ -210,6 +175,11 @@ class Search(TimesTracker):
 
         self.results["eval_time"] = self.eval_times
         self.results["iter_time"] = self.iter_times
+
+        if memory is not False:
+            self.memory_dict = mem.memory_dict
+        else:
+            self.memory_dict = {}
 
         self.p_bar.close()
 
