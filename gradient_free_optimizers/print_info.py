@@ -81,3 +81,5 @@ def print_info(
     if "print_times" in verbosity:
         _print_times(eval_time, iter_time, n_iter)
 
+    print("")
+
