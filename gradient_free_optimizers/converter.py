@@ -71,8 +71,10 @@ class Converter:
 
         for n, space_dim in enumerate(self.search_space_values):
             values_1d = values_np[:, n]
-            m_conv = np.abs(values_1d - space_dim[:, np.newaxis])
-            pos_list = m_conv.argmin(0)
+
+            # m_conv = np.abs(values_1d - space_dim[:, np.newaxis])
+            # pos_list = m_conv.argmin(0)
+            pos_list = space_dim.searchsorted(values_1d)
 
             positions_temp.append(pos_list)
 
