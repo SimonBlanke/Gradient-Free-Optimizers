@@ -87,7 +87,8 @@ Gradient-Free-Optimizers is the optimization backend of <a href="https://github.
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#optimization-strategies">Optimization strategies</a> •
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#installation">Installation</a> •
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#examples">Examples</a> •
-    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#basic-api-reference">API reference</a>
+    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#basic-api-reference">API reference</a> •
+    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#roadmap">Roadmap</a>
   </h3>
 </div>
 
@@ -736,10 +737,26 @@ The following arguments can be passed to each optimization class:
 </details>
 
 
+<br>
+
+## Roadmap
+
+
+<details open>
+<summary><b>v1.0.0</b></summary>
+
+  - [ ] Final API
+  - [ ] add Downhill-simplex-algorithm to optimizers
+  - [ ] improve access to parameters of optimizers within population-based-optimizers (e.g. annealing rate of simulated annealing population in parallel tempering)
+
+
+</details>
+
+
 
 <br>
 
-### Gradient Free Optimizers <=> Hyperactive
+## Gradient Free Optimizers <=> Hyperactive
 
 Gradient-Free-Optimizers was created as the optimization backend of the Hyperactive package. Therefore the algorithms are exactly the same in both packages and deliver the same results. 
 However you can still use Gradient-Free-Optimizers as a standalone package.
