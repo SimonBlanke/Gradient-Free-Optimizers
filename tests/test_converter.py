@@ -30,9 +30,7 @@ def unordered_dict_workaround(conv, order):
     # workaround for doing this test with unordered dicts
 
     idx_order = get_idx_order(order, conv.para_names)
-    search_space_values_reordered = reorder(
-        conv.search_space_values, idx_order
-    )
+    search_space_values_reordered = reorder(conv.search_space_values, idx_order)
     para_names_reordered = reorder(conv.para_names, idx_order)
 
     conv.search_space_values = search_space_values_reordered
@@ -364,6 +362,7 @@ values_1 = [
     np.array([0]),
 ]
 
+
 positions_1 = [
     np.array([0]),
     np.array([20]),
@@ -559,9 +558,7 @@ dataframe2memory_dict_test_para_0 = [
 ]
 
 
-@pytest.mark.parametrize(
-    "test_input,expected", dataframe2memory_dict_test_para_0
-)
+@pytest.mark.parametrize("test_input,expected", dataframe2memory_dict_test_para_0)
 def test_dataframe2memory_dict_0(test_input, expected):
     search_space = {
         "x1": np.arange(-10, 11, 1),
@@ -595,9 +592,7 @@ memory_dict2dataframe_test_para_0 = [
 ]
 
 
-@pytest.mark.parametrize(
-    "test_input,expected", memory_dict2dataframe_test_para_0
-)
+@pytest.mark.parametrize("test_input,expected", memory_dict2dataframe_test_para_0)
 def test_memory_dict2dataframe_0(test_input, expected):
     search_space = {
         "x1": np.arange(-10, 11, 1),

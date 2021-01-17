@@ -10,22 +10,20 @@ class Converter:
     def __init__(self, search_space):
         self.search_space = search_space
         self.para_names = list(search_space.keys())
-        self.dim_sizes = np.array(
-            [len(array) for array in search_space.values()]
-        )
+        self.dim_sizes = np.array([len(array) for array in search_space.values()])
         self.search_space_positions = np.array(
             [range(len(array)) for array in search_space.values()]
         )
         self.max_positions = self.dim_sizes - 1
         self.search_space_values = list(search_space.values())
 
-    def returnNoneIfArgNone(func):
+    def returnNoneIfArgNone(func_):
         def wrapper(self, *args):
             for arg in [*args]:
                 if arg is None:
                     return None
             else:
-                return func(self, *args)
+                return func_(self, *args)
 
         return wrapper
 
@@ -72,6 +70,9 @@ class Converter:
         for n, space_dim in enumerate(self.search_space_values):
             values_1d = values_np[:, n]
 
+            print("\nvalues_1d", values_1d)
+            print("space_dim", space_dim)
+
             # m_conv = np.abs(values_1d - space_dim[:, np.newaxis])
             # pos_list = m_conv.argmin(0)
             pos_list = space_dim.searchsorted(values_1d)
@@ -104,9 +105,7 @@ class Converter:
 
     @returnNoneIfArgNone
     def memory_dict2positions_scores(self, memory_dict):
-        positions = [
-            np.array(pos).astype(int) for pos in list(memory_dict.keys())
-        ]
+        positions = [np.array(pos).astype(int) for pos in list(memory_dict.keys())]
         scores = list(memory_dict.values())
 
         return positions, scores

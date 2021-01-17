@@ -149,9 +149,7 @@ class Search(TimesTracker):
 
         if memory is True:
             mem = Memory(memory_warm_start, self.conv)
-            self.score = self.results_mang.score(
-                mem.memory(objective_function)
-            )
+            self.score = self.results_mang.score(mem.memory(objective_function))
         else:
             self.score = self.results_mang.score(objective_function)
 
@@ -192,4 +190,3 @@ class Search(TimesTracker):
             self.iter_times,
             self.n_iter,
         )
-
