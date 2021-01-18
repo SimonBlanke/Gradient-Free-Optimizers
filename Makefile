@@ -24,4 +24,4 @@ test-examples:
 		python test_examples.py
 
 test:
-	python -m pytest -p no:warnings -rfEX tests/ \
+	python -m pytest -x -p no:warnings -rfEX tests/ \
