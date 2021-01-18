@@ -69,10 +69,6 @@ class Converter:
 
         for n, space_dim in enumerate(self.search_space_values):
             values_1d = values_np[:, n]
-
-            print("\nvalues_1d", values_1d)
-            print("space_dim", space_dim)
-
             # m_conv = np.abs(values_1d - space_dim[:, np.newaxis])
             # pos_list = m_conv.argmin(0)
             pos_list = space_dim.searchsorted(values_1d)
