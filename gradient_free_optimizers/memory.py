@@ -16,7 +16,15 @@ class Memory:
             return
 
         if not isinstance(warm_start, pd.DataFrame):
-            print("'memory_warm_start' must be of type pandas.DataFrame")
+            print("Memory warm start must be of type pandas.DataFrame")
+            print("Optimization will continue without memory warm start")
+
+            return
+
+        if len(warm_start) == 0:
+            print("Memory warm start has no values in current search space")
+            print("Optimization will continue without memory warm start")
+
             return
 
         self.memory_dict = self.conv.dataframe2memory_dict(warm_start)
@@ -39,4 +47,3 @@ class Memory:
                 return score
 
         return wrapper
-
