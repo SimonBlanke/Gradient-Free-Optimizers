@@ -30,7 +30,9 @@ test-hyper:
 	cd ../Hyperactive; \
 		make test
 
-# test-debug:
+test-debug:
+	cd tests; \
+		python _test_debug.py
 	
 test:
 	make test-hyper
