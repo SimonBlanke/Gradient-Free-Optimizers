@@ -23,5 +23,17 @@ test-examples:
 	cd tests; \
 		python test_examples.py
 
+test-hyper:
+	# test if new version of gfo works with current release of hyperactive 
+	pip install --upgrade --force-reinstall hyperactive; \
+	make install; \
+	cd ../Hyperactive; \
+		make test
+
+# test-debug:
+	
 test:
-	python -m pytest -x -p no:warnings -rfEX tests/ \
+	make test-hyper
+	python -m pytest -x -p no:warnings -rfEX tests/
+	make test-examples
+
