@@ -27,21 +27,12 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
 
         self.individuals = self.optimizers
 
-    def _mutate(self):
-
-        self.p_current = self.individuals[nth_iter % len(self.individuals)]
-        pos_new = self.p_current._move_climb(self.p_current.pos_current)
-
-        return pos_new
-
     def _random_cross(self, array_list):
         n_arrays = len(array_list)
         size = array_list[0].size
         shape = array_list[0].shape
 
-        choice = (
-            np.random.randint(n_arrays, size=size).reshape(shape).astype(bool)
-        )
+        choice = np.random.randint(n_arrays, size=size).reshape(shape).astype(bool)
         return np.choose(choice, array_list)
 
     def _sort_best(self):
@@ -79,9 +70,7 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
             return self._cross()
 
     def init_pos(self, pos):
-        individual = Individual(
-            self.conv.search_space, rand_rest_p=self.rand_rest_p
-        )
+        individual = Individual(self.conv.search_space, rand_rest_p=self.rand_rest_p)
         self.individuals.append(individual)
         individual.init_pos(pos)
 
@@ -97,4 +86,3 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
 
         self.p_current._evaluate_new2current(score_new)
         self.p_current._evaluate_current2best()
-
