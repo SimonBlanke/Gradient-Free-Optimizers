@@ -43,6 +43,22 @@ def test_initialize_warm_start_1():
     assert opt.best_para == init
 
 
+def test_initialize_warm_start_2():
+    search_space = {
+        "x1": np.arange(-10, 10, 1),
+    }
+    init = {
+        "x1": -10,
+    }
+
+    initialize = {"warm_start": [init], "random": 0, "vertices": 0, "grid": 0}
+
+    opt = RandomSearchOptimizer(search_space, initialize=initialize)
+    opt.search(objective_function, n_iter=1)
+
+    assert opt.best_para == init
+
+
 def test_initialize_vertices():
     initialize = {"vertices": 2}
 
