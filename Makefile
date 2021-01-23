@@ -35,7 +35,7 @@ test-debug:
 		python _test_debug.py
 	
 test:
-	make test-hyper
 	python -m pytest -x -p no:warnings -rfEX tests/
+	make test-hyper
 	make test-examples
 
