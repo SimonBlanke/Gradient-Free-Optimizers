@@ -24,14 +24,14 @@ class SMBO(BaseOptimizer, Search):
         self.X_sample = []
         self.Y_sample = []
 
+        self.all_pos_comb = self._all_possible_pos()
+
     def init_warm_start_smbo(self):
         if self.warm_start_smbo is not None:
             (X_sample_values, Y_sample) = self.warm_start_smbo
 
             self.X_sample = self.conv.values2positions(X_sample_values)
-            self.Y_sample = Y_sample
-
-        self.all_pos_comb = self._all_possible_pos()
+            self.Y_sample = list(Y_sample)
 
     def track_X_sample(func):
         def wrapper(self, *args, **kwargs):
