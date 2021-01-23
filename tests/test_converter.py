@@ -46,6 +46,7 @@ position2value_test_para_0 = [
     (np.array([0]), np.array([-10])),
     (np.array([20]), np.array([10])),
     (np.array([10]), np.array([0])),
+    (None, None),
 ]
 
 
@@ -542,10 +543,11 @@ def test_memory_dict2positions_scores_0(test_input, expected):
 """ --- test dataframe2memory_dict --- """
 
 
-dataframe = pd.DataFrame(
+dataframe0 = pd.DataFrame(
     [[-10, 10, 0.1], [10, 10, 0.2], [0, 0, 0.3]], columns=["x1", "x2", "score"]
 )
 
+dataframe1 = pd.DataFrame([[-10, 0.1], [10, 0.2], [0, 0.3]], columns=["x1", "score"])
 
 memory_dict_0 = {
     (0, 10): 0.1,
@@ -554,7 +556,8 @@ memory_dict_0 = {
 }
 
 dataframe2memory_dict_test_para_0 = [
-    (dataframe, memory_dict_0),
+    (dataframe0, memory_dict_0),
+    (dataframe1, {}),
 ]
 
 
