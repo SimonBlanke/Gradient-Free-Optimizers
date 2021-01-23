@@ -95,26 +95,6 @@ class Search(TimesTracker):
         else:
             return False
 
-    def _init_verb_dict(self, verb_dict):
-        if verb_dict in [None, False]:
-            return {
-                "progress_bar": False,
-                "print_results": False,
-                "print_times": False,
-            }
-
-        verb_default = {
-            "progress_bar": True,
-            "print_results": True,
-            "print_times": True,
-        }
-
-        for verb_key in verb_default.keys():
-            if verb_key not in verb_dict:
-                verb_dict[verb_key] = verb_default[verb_key]
-
-        return verb_dict
-
     def print_info(self, *args):
         print_info(*args)
 
