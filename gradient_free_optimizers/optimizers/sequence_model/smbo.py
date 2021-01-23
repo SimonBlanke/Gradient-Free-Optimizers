@@ -24,6 +24,7 @@ class SMBO(BaseOptimizer, Search):
         self.X_sample = []
         self.Y_sample = []
 
+    def init_warm_start_smbo(self):
         if self.warm_start_smbo is not None:
             (X_sample_values, Y_sample) = self.warm_start_smbo
 
@@ -52,4 +53,3 @@ class SMBO(BaseOptimizer, Search):
     def init_pos(self, pos):
         super().init_pos(pos)
         return pos
-
