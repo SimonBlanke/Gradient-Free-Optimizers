@@ -47,6 +47,7 @@ def _print_times(eval_time, iter_time, n_iter):
             indent,
             "[{} sec/iter]".format(round(secPerIter, 2)),
         )
+    print(" ")
 
 
 def _print_results(objective_function, score_best, para_best):
@@ -80,6 +81,3 @@ def print_info(
 
     if "print_times" in verbosity:
         _print_times(eval_time, iter_time, n_iter)
-
-    print("")
-
