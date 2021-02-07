@@ -2,13 +2,25 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-
+import warnings
 import numpy as np
 
 np.seterr(divide="ignore", invalid="ignore")
 
 from ..base_optimizer import BaseOptimizer
 from ...search import Search
+
+
+def memory_warning_(all_pos_comb):
+    all_pos_comb_gbyte = all_pos_comb.nbytes / 1000000000
+    if all_pos_comb_gbyte > 1:
+        warning_message0 = "\n Warning:"
+        warning_message1 = "\n search space too large for smb-optimization."
+        warning_message2 = "\n Memory-load exceeding recommended limit."
+        warning_message3 = "\n Please reduce search space size for better performance."
+        warnings.warn(
+            warning_message0 + warning_message1 + warning_message2 + warning_message3
+        )
 
 
 class SMBO(BaseOptimizer, Search):
@@ -21,10 +33,16 @@ class SMBO(BaseOptimizer, Search):
         super().__init__(search_space, initialize)
         self.warm_start_smbo = warm_start_smbo
 
+        search_space_size = 1
+        for value_ in search_space.values():
+            search_space_size *= len(value_)
+
         self.X_sample = []
         self.Y_sample = []
 
         self.all_pos_comb = self._all_possible_pos()
+
+        memory_warning_(self.all_pos_comb)
 
     def init_warm_start_smbo(self):
         if self.warm_start_smbo is not None:
