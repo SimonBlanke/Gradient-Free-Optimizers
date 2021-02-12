@@ -4,6 +4,7 @@
 
 import warnings
 import numpy as np
+from itertools import compress
 
 np.seterr(divide="ignore", invalid="ignore")
 
@@ -55,6 +56,11 @@ class SMBO(BaseOptimizer, Search):
 
             self.X_sample = self.conv.values2positions(X_sample_values)
             self.Y_sample = list(Y_sample)
+
+            # filter out nan
+            mask = ~np.isnan(Y_sample)
+            self.X_sample = list(compress(self.X_sample, mask))
+            self.Y_sample = list(compress(self.Y_sample, mask))
 
     def track_X_sample(func):
         def wrapper(self, *args, **kwargs):
