@@ -8,6 +8,7 @@ from tqdm import tqdm
 
 class ProgressBarBase:
     def __init__(self, nth_process, n_iter, objective_function):
+        self.pos_best = None
         self._score_best = -np.inf
         self.score_best_list = []
 
@@ -62,9 +63,7 @@ class ProgressBarLVL0(ProgressBarBase):
 class ProgressBarLVL1(ProgressBarBase):
     def __init__(self, nth_process, n_iter, objective_function):
         super().__init__(nth_process, n_iter, objective_function)
-        self._tqdm = tqdm(
-            **self._tqdm_dict(nth_process, n_iter, objective_function)
-        )
+        self._tqdm = tqdm(**self._tqdm_dict(nth_process, n_iter, objective_function))
 
     def update(self, score_new, pos_new, nth_iter):
         self.n_iter_current = nth_iter
@@ -103,4 +102,3 @@ class ProgressBarLVL1(ProgressBarBase):
             "leave": False,
             # "smoothing": 1.0,
         }
-
