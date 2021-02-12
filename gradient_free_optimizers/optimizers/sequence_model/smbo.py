@@ -11,16 +11,20 @@ from ..base_optimizer import BaseOptimizer
 from ...search import Search
 
 
-def memory_warning_(all_pos_comb):
+def memory_warning_1(search_space_size):
+    if search_space_size > 1000000:
+        warning_message0 = "\n Warning:"
+        warning_message1 = "\n search space too large for smb-optimization."
+        warning_message3 = "\n Please reduce search space size for better performance."
+        print(warning_message0 + warning_message1 + warning_message3)
+
+
+def memory_warning_2(all_pos_comb):
     all_pos_comb_gbyte = all_pos_comb.nbytes / 1000000000
     if all_pos_comb_gbyte > 1:
         warning_message0 = "\n Warning:"
-        warning_message1 = "\n search space too large for smb-optimization."
         warning_message2 = "\n Memory-load exceeding recommended limit."
-        warning_message3 = "\n Please reduce search space size for better performance."
-        warnings.warn(
-            warning_message0 + warning_message1 + warning_message2 + warning_message3
-        )
+        print(warning_message0 + warning_message2)
 
 
 class SMBO(BaseOptimizer, Search):
@@ -40,9 +44,9 @@ class SMBO(BaseOptimizer, Search):
         self.X_sample = []
         self.Y_sample = []
 
+        memory_warning_1(search_space_size)
         self.all_pos_comb = self._all_possible_pos()
-
-        memory_warning_(self.all_pos_comb)
+        memory_warning_2(self.all_pos_comb)
 
     def init_warm_start_smbo(self):
         if self.warm_start_smbo is not None:
