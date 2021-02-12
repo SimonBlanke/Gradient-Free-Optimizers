@@ -11,7 +11,9 @@ from ..results_manager import ResultsManager
 
 class BaseOptimizer(SearchTracker):
     def __init__(
-        self, search_space, initialize={"grid": 4, "random": 2, "vertices": 4},
+        self,
+        search_space,
+        initialize={"grid": 4, "random": 2, "vertices": 4},
     ):
         super().__init__()
         self.conv = Converter(search_space)
@@ -47,6 +49,10 @@ class BaseOptimizer(SearchTracker):
         return wrapper
 
     def init_pos(self, pos):
+        if self.pos_best is None:
+            self._new2current()
+            self._current2best()
+
         self.nth_iter = len(self.pos_new_list)
         self.pos_new = pos
 
