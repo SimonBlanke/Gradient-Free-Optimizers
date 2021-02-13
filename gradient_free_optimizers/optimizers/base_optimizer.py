@@ -49,15 +49,18 @@ class BaseOptimizer(SearchTracker):
         return wrapper
 
     def init_pos(self, pos):
-        if self.pos_best is None:
-            self._new2current()
-            self._current2best()
-
-        self.nth_iter = len(self.pos_new_list)
         self.pos_new = pos
+        self.nth_iter = len(self.pos_new_list)
 
     def evaluate(self, score_new):
         self.score_new = score_new
 
-        self._evaluate_new2current(score_new)
-        self._evaluate_current2best()
+        if self.pos_best is None:
+            self.pos_best = self.pos_new
+            self.pos_current = self.pos_new
+
+            self.score_best = score_new
+            self.score_current = score_new
+
+        # self._evaluate_new2current(score_new)
+        # self._evaluate_current2best()

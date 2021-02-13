@@ -55,12 +55,14 @@ class HillClimbingOptimizer(BaseOptimizer, Search):
         return self._move_climb(self.pos_current)
 
     def evaluate(self, score_new):
-        self.score_new = score_new
+        BaseOptimizer.evaluate(self, score_new)
+        if len(self.scores_valid) == 0:
+            return
 
         modZero = self.nth_iter % self.n_neighbours == 0
         if modZero:
-            score_new_list_temp = self.score_new_list[-self.n_neighbours :]
-            pos_new_list_temp = self.pos_new_list[-self.n_neighbours :]
+            score_new_list_temp = self.scores_valid[-self.n_neighbours :]
+            pos_new_list_temp = self.positions_valid[-self.n_neighbours :]
 
             idx = max_list_idx(score_new_list_temp)
             score = score_new_list_temp[idx]
@@ -68,4 +70,3 @@ class HillClimbingOptimizer(BaseOptimizer, Search):
 
             self._eval2current(pos, score)
             self._eval2best(pos, score)
-
