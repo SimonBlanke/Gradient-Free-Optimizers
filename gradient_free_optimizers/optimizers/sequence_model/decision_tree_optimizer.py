@@ -35,3 +35,5 @@ class DecisionTreeOptimizer(ExpectedImprovementBasedOptimization):
         self.xi = xi
         self.warm_start_smbo = warm_start_smbo
         self.rand_rest_p = rand_rest_p
+
+        self.init_warm_start_smbo()

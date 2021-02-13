@@ -26,6 +26,8 @@ class TreeStructuredParzenEstimators(SMBO):
         self.kd_best = KernelDensity()
         self.kd_worst = KernelDensity()
 
+        self.init_warm_start_smbo()
+
     def _get_samples(self):
         n_samples = len(self.X_sample)
 
