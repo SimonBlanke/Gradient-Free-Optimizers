@@ -85,6 +85,6 @@ class ExpectedImprovementBasedOptimization(SMBO):
 
         self.Y_sample.append(score_new)
 
-        if np.isnan(score_new):
+        if np.isnan(score_new) or np.isinf(score_new):
             del self.X_sample[-1]
             del self.Y_sample[-1]
