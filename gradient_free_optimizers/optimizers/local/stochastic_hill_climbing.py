@@ -21,9 +21,7 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer, Search):
         norm_factor="adaptive",
         rand_rest_p=0.03,
     ):
-        super().__init__(
-            search_space, initialize, epsilon, distribution, n_neighbours
-        )
+        super().__init__(search_space, initialize, epsilon, distribution, n_neighbours)
         self.p_accept = p_accept
         self.norm_factor = norm_factor
         self.rand_rest_p = rand_rest_p
@@ -48,11 +46,7 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer, Search):
         elif abs(denom) == np.inf:
             return 0
         else:
-            return (
-                self.norm_factor
-                * (self.score_current - self.score_new)
-                / denom
-            )
+            return self.norm_factor * (self.score_current - self.score_new) / denom
 
     def _score_norm_adapt(self):
         diff = abs(self.score_current - self.score_new)
@@ -80,8 +74,8 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer, Search):
             self._consider(p_accept)
 
     def evaluate(self, score_new):
-        self.score_new = score_new
+        HillClimbingOptimizer.evaluate(self, score_new)
 
-        self._evaluate_new2current(score_new)
+        # self._evaluate_new2current(score_new)
         self._transition(score_new)
-        self._evaluate_current2best()
+        # self._evaluate_current2best()

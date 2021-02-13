@@ -44,6 +44,6 @@ class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer, Search):
         return self._score_norm_adapt() / self.temp
 
     def evaluate(self, score_new):
-        super().evaluate(score_new)
+        StochasticHillClimbingOptimizer.evaluate(self, score_new)
 
         self.temp = self.temp * self.annealing_rate
