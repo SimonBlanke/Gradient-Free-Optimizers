@@ -27,6 +27,10 @@ class SearchTracker:
         self.pos_best_list = []
         self.score_best_list = []
 
+        # non inf and non nan
+        self.positions_valid = []
+        self.scores_valid = []
+
     ##################### evaluate #####################
 
     def _eval2current(self, pos, score):
@@ -76,6 +80,13 @@ class SearchTracker:
     def score_new(self, score):
         self.score_new_list.append(score)
         self._score_new = score
+
+        if ~np.isinf(score) and ~np.isnan(score):
+            self.positions_valid.append(self.pos_new)
+            self.scores_valid.append(self.score_new)
+
+        # print("self.scores_valid", self.scores_valid)
+        # print("self.score_new_list", self.score_new_list)
 
     ##################### current #####################
 
