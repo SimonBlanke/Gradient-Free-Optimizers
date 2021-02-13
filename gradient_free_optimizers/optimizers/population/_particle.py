@@ -38,11 +38,7 @@ class Particle(HillClimbingOptimizer):
         r1, r2 = random.random(), random.random()
 
         A = self.inertia * self.velo
-        B = (
-            self.cognitive_weight
-            * r1
-            * np.subtract(self.pos_best, self.pos_current)
-        )
+        B = self.cognitive_weight * r1 * np.subtract(self.pos_best, self.pos_current)
         C = (
             self.social_weight
             * r2
@@ -58,7 +54,4 @@ class Particle(HillClimbingOptimizer):
         return self._move_positioner()
 
     def evaluate(self, score_new):
-        self.score_new = score_new
-
-        self._evaluate_new2current(score_new)
-        self._evaluate_current2best()
+        HillClimbingOptimizer.evaluate(self, score_new)

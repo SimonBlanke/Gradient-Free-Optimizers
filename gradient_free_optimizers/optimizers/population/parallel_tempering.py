@@ -56,9 +56,8 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
             self.conv.search_space, rand_rest_p=self.rand_rest_p
         )
         self.systems.append(system)
-        system.init_pos(pos)
-
         self.p_current = system
+        self.p_current.init_pos(pos)
 
     def iterate(self):
         nth_iter = self._iterations(self.systems)
@@ -75,8 +74,4 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
         if notZero and modZero:
             self._swap_pos()
 
-        self.p_current.score_new = score_new
-
-        self.p_current._evaluate_new2current(score_new)
-        self.p_current._evaluate_current2best()
-
+        self.p_current.evaluate(score_new)

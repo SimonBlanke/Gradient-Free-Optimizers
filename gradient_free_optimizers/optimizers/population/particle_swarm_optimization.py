@@ -51,9 +51,9 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
             rand_rest_p=self.rand_rest_p,
         )
         self.particles.append(particle)
-        particle.init_pos(pos)
 
         self.p_current = particle
+        self.p_current.init_pos(pos)
         self.p_current.velo = np.zeros(len(self.conv.max_positions))
 
     def iterate(self):
@@ -69,4 +69,3 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
 
     def evaluate(self, score_new):
         self.p_current.evaluate(score_new)
-

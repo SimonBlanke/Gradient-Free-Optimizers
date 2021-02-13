@@ -72,9 +72,9 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
     def init_pos(self, pos):
         individual = Individual(self.conv.search_space, rand_rest_p=self.rand_rest_p)
         self.individuals.append(individual)
-        individual.init_pos(pos)
 
         self.p_current = individual
+        self.p_current.init_pos(pos)
 
     def iterate(self):
         nth_iter = self._iterations(self.individuals)
@@ -82,7 +82,4 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
         return self._evo_iterate()
 
     def evaluate(self, score_new):
-        self.p_current.score_new = score_new
-
-        self.p_current._evaluate_new2current(score_new)
-        self.p_current._evaluate_current2best()
+        self.p_current.evaluate(score_new)
