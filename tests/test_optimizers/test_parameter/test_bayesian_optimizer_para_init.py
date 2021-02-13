@@ -18,15 +18,8 @@ def objective_function(para):
 
 
 search_space = {"x1": np.arange(-10, 11, 1)}
-
 search_space2 = {"x1": np.arange(-10, 51, 1)}
 search_space3 = {"x1": np.arange(-50, 11, 1)}
-
-
-warm_start_smbo = (
-    np.array([[-10, -10], [30, 30], [0, 0]]),
-    np.array([-1, 0, 1]),
-)
 
 
 opt1 = RandomSearchOptimizer(search_space)

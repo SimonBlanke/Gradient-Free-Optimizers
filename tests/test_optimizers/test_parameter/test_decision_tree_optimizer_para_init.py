@@ -7,6 +7,7 @@ import numpy as np
 
 from gradient_free_optimizers import DecisionTreeOptimizer
 from ._base_para_test import _base_para_test_func
+from gradient_free_optimizers import RandomSearchOptimizer
 
 
 def objective_function(para):
@@ -15,12 +16,21 @@ def objective_function(para):
 
 
 search_space = {"x1": np.arange(-10, 11, 1)}
+search_space2 = {"x1": np.arange(-10, 51, 1)}
+search_space3 = {"x1": np.arange(-50, 11, 1)}
 
 
-warm_start_smbo = (
-    np.array([[-10, -10], [30, 30], [0, 0]]),
-    np.array([-1, 0, 1]),
-)
+opt1 = RandomSearchOptimizer(search_space)
+opt2 = RandomSearchOptimizer(search_space2)
+opt3 = RandomSearchOptimizer(search_space3)
+
+opt1.search(objective_function, n_iter=30)
+opt2.search(objective_function, n_iter=30)
+opt3.search(objective_function, n_iter=30)
+
+search_data1 = opt1.results
+search_data2 = opt2.results
+search_data3 = opt3.results
 
 
 bayesian_optimizer_para = [
@@ -31,7 +41,9 @@ bayesian_optimizer_para = [
     ({"xi": 0.5}),
     ({"xi": 0.9}),
     ({"warm_start_smbo": None}),
-    ({"warm_start_smbo": warm_start_smbo}),
+    ({"warm_start_smbo": search_data1}),
+    ({"warm_start_smbo": search_data2}),
+    ({"warm_start_smbo": search_data3}),
     ({"rand_rest_p": 0}),
     ({"rand_rest_p": 0.5}),
     ({"rand_rest_p": 1}),
