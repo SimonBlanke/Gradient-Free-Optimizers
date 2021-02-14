@@ -18,7 +18,7 @@ class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer, Search):
         distribution="normal",
         n_neighbours=3,
         p_accept=0.1,
-        norm_factor="adaptive",
+        norm_factor=1,
         annealing_rate=0.97,
         start_temp=1,
         rand_rest_p=0.03,
