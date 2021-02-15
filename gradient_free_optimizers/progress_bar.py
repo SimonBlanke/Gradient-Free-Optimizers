@@ -43,7 +43,6 @@ class ProgressBarBase:
         if score_new > self.score_best:
             self.score_best = score_new
             self.pos_best = pos_new
-            self.best_since_iter = nth_iter
 
         self.convergence_data.append(self.score_best)
 
@@ -69,6 +68,8 @@ class ProgressBarLVL1(ProgressBarBase):
         self.n_iter_current = nth_iter
 
         if score_new > self.score_best:
+            self.best_since_iter = nth_iter
+
             self._tqdm.set_postfix(
                 best_score=str(score_new),
                 best_pos=str(pos_new),
