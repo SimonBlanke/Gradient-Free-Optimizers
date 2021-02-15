@@ -50,7 +50,23 @@ def _print_times(eval_time, iter_time, n_iter):
     print(" ")
 
 
+def align_para_names(para_names):
+    str_lengths = [len(str_) for str_ in para_names]
+    max_length = max(str_lengths)
+
+    para_names_aligned = []
+    for para_name, str_length in zip(para_names, str_lengths):
+        added_spaces = max_length - str_length
+        para_name_aligned = para_name + " " * added_spaces
+        para_names_aligned.append(para_name_aligned)
+
+    return para_names_aligned
+
+
 def _print_results(objective_function, score_best, para_best):
+    para_names = list(para_best.keys())
+    para_names_aligned = align_para_names(para_names)
+
     print("\nResults: '{}'".format(objective_function.__name__), " ")
     if para_best is None:
         print(indent, "Best score:", score_best, " ")
@@ -58,8 +74,10 @@ def _print_results(objective_function, score_best, para_best):
     else:
         print(indent, "Best score:", score_best, " ")
         print(indent, "Best parameter:")
-        for key in para_best.keys():
-            print(indent, indent, "'{}'".format(key), para_best[key], " ")
+        for para_key, para_name_aln in zip(para_best.keys(), para_names_aligned):
+            print(
+                indent, indent, "'{}':".format(para_name_aln), para_best[para_key], " "
+            )
     print(" ")
 
 
