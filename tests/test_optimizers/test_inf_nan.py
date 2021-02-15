@@ -49,7 +49,21 @@ objective_para = (
 @pytest.mark.parametrize(*optimizers)
 def test_best_results_0(Optimizer, objective):
     objective_function = objective
-    initialize = {"random": 25}
+    initialize = {"random": 20}
+
+    opt = Optimizer(search_space, initialize=initialize)
+    opt.search(
+        objective_function,
+        n_iter=80,
+        verbosity={"print_results": False, "progress_bar": False},
+    )
+
+
+@pytest.mark.parametrize(*objective_para)
+@pytest.mark.parametrize(*optimizers)
+def test_best_results_1(Optimizer, objective):
+    objective_function = objective
+    initialize = {"random": 20}
 
     opt = Optimizer(search_space, initialize=initialize)
     opt.search(
