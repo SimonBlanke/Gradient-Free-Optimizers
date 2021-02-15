@@ -417,156 +417,24 @@ The following arguments can be passed to each optimization class:
       - List of parameter dictionaries that marks additional start points for the optimization run.
 
 
+### Optimizer Classes
+
+Each optimization class needs the "search_space" as an input argument. Optionally "initialize" and optimizer-specific parameters can be passed as well. You can read more about each optimization-strategy and its parameters in the [Optimization Tutorial](https://github.com/SimonBlanke/optimization-tutorial).
+
+- HillClimbingOptimizer
+- RepulsingHillClimbingOptimizer
+- SimulatedAnnealingOptimizer
+- RandomSearchOptimizer
+- RandomRestartHillClimbingOptimizer
+- RandomAnnealingOptimizer
+- ParallelTemperingOptimizer
+- ParticleSwarmOptimizer
+- EvolutionStrategyOptimizer
+- BayesianOptimizer
+- TreeStructuredParzenEstimators
+- DecisionTreeOptimizer
 
 
-### Optimization classes
-
-<details>
-<summary><b> HillClimbingOptimizer</b></summary>
-
-    - search_space
-    - epsilon=0.03
-    - distribution="normal"
-    - n_neighbours=3
-    - rand_rest_p=0.03
-
-</details>
-
-<details>
-<summary><b> RepulsingHillClimbingOptimizer</b></summary>
-
-    - search_space
-    - epsilon=0.03
-    - distribution="normal"
-    - n_neighbours=3
-    - rand_rest_p=0.03
-    - repulsion_factor=5
-
-</details>
-
-<details>
-<summary><b> SimulatedAnnealingOptimizer</b></summary>
-
-    - search_space
-    - epsilon=0.03
-    - distribution="normal"
-    - n_neighbours=3
-    - rand_rest_p=0.03
-    - p_accept=0.1
-    - norm_factor="adaptive"
-    - annealing_rate=0.975
-    - start_temp=1
-
-</details>
-
-<details>
-<summary><b> RandomSearchOptimizer</b></summary>
-
-    - search_space
-
-</details>
-
-<details>
-<summary><b> RandomRestartHillClimbingOptimizer</b></summary>
-
-    - search_space
-    - epsilon=0.03
-    - distribution="normal"
-    - n_neighbours=3
-    - rand_rest_p=0.03
-    - n_iter_restart=10
-
-</details>
-
-<details>
-<summary><b> RandomAnnealingOptimizer</b></summary>
-
-    - search_space
-    - epsilon=0.03
-    - distribution="normal"
-    - n_neighbours=3
-    - rand_rest_p=0.03
-    - annealing_rate=0.975
-    - start_temp=1
-
-</details>
-
-<details>
-<summary><b> ParallelTemperingOptimizer</b></summary>
-
-    - search_space
-    - n_iter_swap=10
-    - rand_rest_p=0.03
-
-</details>
-
-<details>
-<summary><b> ParticleSwarmOptimizer</b></summary>
-
-    - search_space
-    - inertia=0.5
-    - cognitive_weight=0.5
-    - social_weight=0.5
-    - temp_weight=0.2
-    - rand_rest_p=0.03
-
-</details>
-
-<details>
-<summary><b> EvolutionStrategyOptimizer</b></summary>
-
-    - search_space
-    - mutation_rate=0.7
-    - crossover_rate=0.3
-    - rand_rest_p=0.03
-
-</details>
-
-<details>
-<summary><b> BayesianOptimizer</b></summary>
-
-    - search_space
-    - gpr=gaussian_process["gp_nonlinear"]
-    - xi=0.03
-    - warm_start_smbo=None
-    - rand_rest_p=0.03
-
-</details>
-
-<details>
-<summary><b> TreeStructuredParzenEstimators</b></summary>
-
-    - search_space
-    - gamma_tpe=0.5
-    - warm_start_smbo=None
-    - rand_rest_p=0.03
-
-</details>
-
-<details>
-<summary><b> DecisionTreeOptimizer</b></summary>
-
-    - search_space
-    - tree_regressor="extra_tree"
-    - xi=0.01
-    - warm_start_smbo=None
-    - rand_rest_p=0.03
-
-</details>
-
-<details>
-<summary><b> EnsembleOptimizer</b></summary>
-
-    - search_space
-    - estimators=[
-            GradientBoostingRegressor(n_estimators=5),
-            GaussianProcessRegressor(),
-        ]
-    - xi=0.01
-    - warm_start_smbo=None
-    - rand_rest_p=0.03
-
-</details>
 
 <br>
 
