@@ -2,6 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+import time
 import pytest
 import random
 import numpy as np
@@ -100,3 +101,9 @@ pytest_wrapper = ("opt_para", bayesian_optimizer_para)
 @pytest.mark.parametrize(*pytest_wrapper)
 def test_hill_climbing_para(opt_para):
     _base_para_test_func(opt_para, DecisionTreeOptimizer)
+
+
+def test_warm_start_0():
+    opt = DecisionTreeOptimizer(search_space, warm_start_smbo=search_data1)
+
+    assert len(opt.X_sample) == 30
