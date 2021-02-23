@@ -3,6 +3,7 @@
 # License: MIT License
 
 import pytest
+import random
 import numpy as np
 
 from gradient_free_optimizers import BayesianOptimizer
@@ -10,6 +11,36 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import Matern, WhiteKernel, RBF
 from ._base_para_test import _base_para_test_func
 from gradient_free_optimizers import RandomSearchOptimizer
+
+
+def objective_function_nan(para):
+    rand = random.randint(0, 1)
+
+    if rand == 0:
+        return 1
+    else:
+        return np.nan
+
+
+def objective_function_m_inf(para):
+    rand = random.randint(0, 1)
+
+    if rand == 0:
+        return 1
+    else:
+        return -np.inf
+
+
+def objective_function_inf(para):
+    rand = random.randint(0, 1)
+
+    if rand == 0:
+        return 1
+    else:
+        return np.inf
+
+
+search_space_ = {"x1": np.arange(0, 20, 1)}
 
 
 def objective_function(para):
@@ -25,14 +56,23 @@ search_space3 = {"x1": np.arange(-50, 11, 1)}
 opt1 = RandomSearchOptimizer(search_space)
 opt2 = RandomSearchOptimizer(search_space2)
 opt3 = RandomSearchOptimizer(search_space3)
+opt4 = RandomSearchOptimizer(search_space_)
+opt5 = RandomSearchOptimizer(search_space_)
+opt6 = RandomSearchOptimizer(search_space_)
 
 opt1.search(objective_function, n_iter=30)
 opt2.search(objective_function, n_iter=30)
 opt3.search(objective_function, n_iter=30)
+opt4.search(objective_function_nan, n_iter=30)
+opt5.search(objective_function_m_inf, n_iter=30)
+opt6.search(objective_function_inf, n_iter=30)
 
 search_data1 = opt1.results
 search_data2 = opt2.results
 search_data3 = opt3.results
+search_data4 = opt4.results
+search_data5 = opt5.results
+search_data6 = opt6.results
 
 
 class GPR:
@@ -45,7 +85,7 @@ class GPR:
         )
 
         self.gpr = GaussianProcessRegressor(
-            kernel=matern + RBF() + WhiteKernel(), n_restarts_optimizer=0
+            kernel=matern + RBF() + WhiteKernel(), n_restarts_optimizer=1
         )
 
     def fit(self, X, y):
@@ -64,6 +104,9 @@ bayesian_optimizer_para = [
     ({"warm_start_smbo": search_data1}),
     ({"warm_start_smbo": search_data2}),
     ({"warm_start_smbo": search_data3}),
+    ({"warm_start_smbo": search_data4}),
+    ({"warm_start_smbo": search_data5}),
+    ({"warm_start_smbo": search_data6}),
     ({"rand_rest_p": 0}),
     ({"rand_rest_p": 0.5}),
     ({"rand_rest_p": 1}),
