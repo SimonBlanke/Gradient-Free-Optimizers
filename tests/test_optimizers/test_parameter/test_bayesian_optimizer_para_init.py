@@ -127,15 +127,3 @@ def test_warm_start_0():
     opt = BayesianOptimizer(search_space, warm_start_smbo=search_data1)
 
     assert len(opt.X_sample) == 30
-
-
-def test_warm_start_1():
-    c_time1 = time.time()
-    _base_para_test_func({"warm_start_smbo": None}, BayesianOptimizer)
-    d_time1 = time.time() - c_time1
-
-    c_time2 = time.time()
-    _base_para_test_func({"warm_start_smbo": search_data1}, BayesianOptimizer)
-    d_time2 = time.time() - c_time2
-
-    assert d_time2 * 0.9 > d_time1
