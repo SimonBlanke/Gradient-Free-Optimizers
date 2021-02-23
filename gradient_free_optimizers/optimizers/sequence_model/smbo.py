@@ -2,7 +2,6 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import warnings
 import numpy as np
 from itertools import compress
 
@@ -13,15 +12,15 @@ from ...search import Search
 
 
 def memory_warning_1(search_space_size):
-    if search_space_size > 1000000:
+    if search_space_size > 10000000:
         warning_message0 = "\n Warning:"
         warning_message1 = "\n search space too large for smb-optimization."
-        warning_message3 = "\n Please reduce search space size for better performance."
+        warning_message3 = "\n Reduce search space size for better performance."
         print(warning_message0 + warning_message1 + warning_message3)
 
 
 def memory_warning_2(all_pos_comb):
-    all_pos_comb_gbyte = all_pos_comb.nbytes / 1000000000
+    all_pos_comb_gbyte = all_pos_comb.nbytes / 3000000000
     if all_pos_comb_gbyte > 1:
         warning_message0 = "\n Warning:"
         warning_message2 = "\n Memory-load exceeding recommended limit."
