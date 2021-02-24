@@ -71,7 +71,7 @@ class SMBO(BaseOptimizer, Search):
 
     def _all_possible_pos(self):
         pos_space = []
-        for dim_ in self.conv.max_positions:
+        for dim_ in self.conv.dim_sizes:
             pos_space.append(np.arange(dim_))
 
         n_dim = len(pos_space)
