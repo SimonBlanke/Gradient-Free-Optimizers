@@ -15,8 +15,8 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
         self,
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
-        mutation_rate=0.7,
-        crossover_rate=0.3,
+        mutation_rate=0.66,
+        crossover_rate=0.33,
         rand_rest_p=0.03,
     ):
         super().__init__(search_space, initialize)
@@ -30,10 +30,14 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
     def _random_cross(self, array_list):
         n_arrays = len(array_list)
         size = array_list[0].size
-        shape = array_list[0].shape
 
-        choice = np.random.randint(n_arrays, size=size).reshape(shape).astype(bool)
-        return np.choose(choice, array_list)
+        choice = [True, False]
+        if size > 2:
+            add_choice = np.random.randint(n_arrays, size=size - 2).astype(bool)
+            choice += list(add_choice)
+
+        cross_array = np.choose(choice, array_list)
+        return cross_array
 
     def _sort_best(self):
         scores_list = []
@@ -78,7 +82,13 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
 
     def iterate(self):
         nth_iter = self._iterations(self.individuals)
-        self.p_current = self.individuals[nth_iter % len(self.individuals)]
+
+        if nth_iter > 20:
+            ind_sorted = self._sort_best()
+            self.p_current = ind_sorted[0]
+        else:
+            self.p_current = self.individuals[nth_iter % len(self.individuals)]
+
         return self._evo_iterate()
 
     def evaluate(self, score_new):
