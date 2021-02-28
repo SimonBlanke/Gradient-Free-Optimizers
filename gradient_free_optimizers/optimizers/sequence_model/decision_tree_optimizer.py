@@ -27,6 +27,7 @@ class DecisionTreeOptimizer(ExpectedImprovementBasedOptimization):
         tree_regressor="extra_tree",
         xi=0.01,
         warm_start_smbo=None,
+        sampling={"random": 1000000},
         warnings=100000000,
         rand_rest_p=0.03,
     ):
@@ -35,6 +36,7 @@ class DecisionTreeOptimizer(ExpectedImprovementBasedOptimization):
         self.regr = tree_regressor_dict[tree_regressor]
         self.xi = xi
         self.warm_start_smbo = warm_start_smbo
+        self.sampling = sampling
         self.warnings = warnings
         self.rand_rest_p = rand_rest_p
 

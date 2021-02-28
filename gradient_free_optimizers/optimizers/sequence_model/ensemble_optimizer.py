@@ -27,6 +27,7 @@ class EnsembleOptimizer(ExpectedImprovementBasedOptimization):
         ],
         xi=0.01,
         warm_start_smbo=None,
+        sampling={"random": 1000000},
         warnings=100000000,
         rand_rest_p=0.03,
     ):
@@ -34,6 +35,7 @@ class EnsembleOptimizer(ExpectedImprovementBasedOptimization):
         self.regr = EnsembleRegressor(estimators)
         self.xi = xi
         self.warm_start_smbo = warm_start_smbo
+        self.sampling = sampling
         self.warnings = warnings
         self.rand_rest_p = rand_rest_p
 

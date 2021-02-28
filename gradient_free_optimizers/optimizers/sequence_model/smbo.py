@@ -18,10 +18,12 @@ class SMBO(BaseOptimizer, Search):
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
         warm_start_smbo=None,
+        sampling={"random": 100000},
         warnings=100000000,
     ):
         super().__init__(search_space, initialize)
         self.warm_start_smbo = warm_start_smbo
+        self.sampling = sampling
         self.warnings = warnings
 
     def init_position_combinations(self):
@@ -56,6 +58,17 @@ class SMBO(BaseOptimizer, Search):
             return pos
 
         return wrapper
+
+    def random_sampling(self):
+        n_samples = self.sampling["random"]
+        n_pos_comb = self.all_pos_comb.shape[0]
+
+        if n_pos_comb <= n_samples:
+            return self.all_pos_comb
+        else:
+            _idx_sample = np.random.choice(n_pos_comb, n_samples, replace=False)
+            pos_comb_sampled = self.all_pos_comb[_idx_sample, :]
+            return pos_comb_sampled
 
     def _all_possible_pos(self):
         if self.conv.max_dim < 255:

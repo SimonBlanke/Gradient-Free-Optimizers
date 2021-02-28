@@ -21,6 +21,7 @@ class BayesianOptimizer(ExpectedImprovementBasedOptimization):
         gpr=gaussian_process["gp_nonlinear"],
         xi=0.03,
         warm_start_smbo=None,
+        sampling={"random": 100000},
         warnings=100000000,
         rand_rest_p=0.03,
     ):
@@ -29,6 +30,7 @@ class BayesianOptimizer(ExpectedImprovementBasedOptimization):
         self.regr = gpr
         self.xi = xi
         self.warm_start_smbo = warm_start_smbo
+        self.sampling = sampling
         self.warnings = warnings
         self.rand_rest_p = rand_rest_p
 

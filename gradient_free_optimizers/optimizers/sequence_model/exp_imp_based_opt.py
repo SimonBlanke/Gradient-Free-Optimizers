@@ -26,6 +26,7 @@ class ExpectedImprovementBasedOptimization(SMBO):
         initialize={"grid": 4, "random": 2, "vertices": 4},
         xi=0.01,
         warm_start_smbo=None,
+        sampling={"random": 1000000},
         warnings=100000000,
         rand_rest_p=0.03,
     ):
@@ -33,11 +34,19 @@ class ExpectedImprovementBasedOptimization(SMBO):
         self.new_positions = []
         self.xi = xi
         self.warm_start_smbo = warm_start_smbo
+        self.sampling = sampling
         self.warnings = warnings
         self.rand_rest_p = rand_rest_p
 
+    def _sampling(self):
+        if self.sampling is False:
+            return self.all_pos_comb
+        elif "random" in self.sampling:
+            return self.random_sampling()
+
     def _expected_improvement(self):
-        mu, sigma = self.regr.predict(self.all_pos_comb, return_std=True)
+        self.pos_comb = self._sampling()
+        mu, sigma = self.regr.predict(self.pos_comb, return_std=True)
         # mu_sample = self.regr.predict(self.X_sample)
         mu = mu.reshape(-1, 1)
         sigma = sigma.reshape(-1, 1)
@@ -67,7 +76,7 @@ class ExpectedImprovementBasedOptimization(SMBO):
         exp_imp = self._expected_improvement()
 
         index_best = list(exp_imp.argsort()[::-1])
-        all_pos_comb_sorted = self.all_pos_comb[index_best]
+        all_pos_comb_sorted = self.pos_comb[index_best]
         pos_best = all_pos_comb_sorted[0]
 
         return pos_best
