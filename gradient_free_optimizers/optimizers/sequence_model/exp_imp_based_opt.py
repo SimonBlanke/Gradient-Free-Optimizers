@@ -5,8 +5,6 @@
 
 import numpy as np
 from scipy.stats import norm
-from scipy.spatial.distance import cdist
-
 
 from .smbo import SMBO
 
@@ -28,12 +26,14 @@ class ExpectedImprovementBasedOptimization(SMBO):
         initialize={"grid": 4, "random": 2, "vertices": 4},
         xi=0.01,
         warm_start_smbo=None,
+        warnings=100000000,
         rand_rest_p=0.03,
     ):
         super().__init__(search_space, initialize)
         self.new_positions = []
         self.xi = xi
         self.warm_start_smbo = warm_start_smbo
+        self.warnings = warnings
         self.rand_rest_p = rand_rest_p
 
     def _expected_improvement(self):

@@ -2,29 +2,14 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import numpy as np
-from itertools import compress
-
-np.seterr(divide="ignore", invalid="ignore")
 
 from ..base_optimizer import BaseOptimizer
 from ...search import Search
 
+import numpy as np
+from itertools import compress
 
-def memory_warning_1(search_space_size):
-    if search_space_size > 10000000:
-        warning_message0 = "\n Warning:"
-        warning_message1 = "\n search space too large for smb-optimization."
-        warning_message3 = "\n Reduce search space size for better performance."
-        print(warning_message0 + warning_message1 + warning_message3)
-
-
-def memory_warning_2(all_pos_comb):
-    all_pos_comb_gbyte = all_pos_comb.nbytes / 3000000000
-    if all_pos_comb_gbyte > 1:
-        warning_message0 = "\n Warning:"
-        warning_message2 = "\n Memory-load exceeding recommended limit."
-        print(warning_message0 + warning_message2)
+np.seterr(divide="ignore", invalid="ignore")
 
 
 class SMBO(BaseOptimizer, Search):
@@ -33,20 +18,23 @@ class SMBO(BaseOptimizer, Search):
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
         warm_start_smbo=None,
+        warnings=100000000,
     ):
         super().__init__(search_space, initialize)
         self.warm_start_smbo = warm_start_smbo
+        self.warnings = warnings
 
+    def init_position_combinations(self):
         search_space_size = 1
-        for value_ in search_space.values():
+        for value_ in self.conv.search_space.values():
             search_space_size *= len(value_)
 
         self.X_sample = []
         self.Y_sample = []
 
-        memory_warning_1(search_space_size)
+        if self.warnings:
+            self.memory_warning(search_space_size)
         self.all_pos_comb = self._all_possible_pos()
-        memory_warning_2(self.all_pos_comb)
 
     def init_warm_start_smbo(self):
         if self.warm_start_smbo is not None:
@@ -76,6 +64,17 @@ class SMBO(BaseOptimizer, Search):
 
         n_dim = len(pos_space)
         return np.array(np.meshgrid(*pos_space)).T.reshape(-1, n_dim)
+
+    def memory_warning(self, search_space_size):
+        if search_space_size > self.warnings:
+            warning_message0 = "\n Warning:"
+            warning_message1 = (
+                "\n search space size of "
+                + str(search_space_size)
+                + " exceeding recommended limit."
+            )
+            warning_message3 = "\n Reduce search space size for better performance."
+            print(warning_message0 + warning_message1 + warning_message3)
 
     @track_X_sample
     def init_pos(self, pos):

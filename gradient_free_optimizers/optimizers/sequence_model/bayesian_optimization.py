@@ -21,6 +21,7 @@ class BayesianOptimizer(ExpectedImprovementBasedOptimization):
         gpr=gaussian_process["gp_nonlinear"],
         xi=0.03,
         warm_start_smbo=None,
+        warnings=100000000,
         rand_rest_p=0.03,
     ):
         super().__init__(search_space, initialize)
@@ -28,6 +29,8 @@ class BayesianOptimizer(ExpectedImprovementBasedOptimization):
         self.regr = gpr
         self.xi = xi
         self.warm_start_smbo = warm_start_smbo
+        self.warnings = warnings
         self.rand_rest_p = rand_rest_p
 
+        self.init_position_combinations()
         self.init_warm_start_smbo()

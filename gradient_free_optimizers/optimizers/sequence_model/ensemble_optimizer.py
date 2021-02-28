@@ -27,12 +27,15 @@ class EnsembleOptimizer(ExpectedImprovementBasedOptimization):
         ],
         xi=0.01,
         warm_start_smbo=None,
+        warnings=100000000,
         rand_rest_p=0.03,
     ):
         super().__init__(search_space, initialize)
         self.regr = EnsembleRegressor(estimators)
         self.xi = xi
         self.warm_start_smbo = warm_start_smbo
+        self.warnings = warnings
         self.rand_rest_p = rand_rest_p
 
+        self.init_position_combinations()
         self.init_warm_start_smbo()
