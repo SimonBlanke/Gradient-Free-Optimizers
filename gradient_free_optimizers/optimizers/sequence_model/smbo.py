@@ -58,9 +58,18 @@ class SMBO(BaseOptimizer, Search):
         return wrapper
 
     def _all_possible_pos(self):
+        if self.conv.max_dim < 255:
+            _dtype = np.uint8
+        elif self.conv.max_dim < 65535:
+            _dtype = np.uint16
+        elif self.conv.max_dim < 4294967295:
+            _dtype = np.uint32
+        else:
+            _dtype = np.uint64
+
         pos_space = []
         for dim_ in self.conv.dim_sizes:
-            pos_space.append(np.arange(dim_))
+            pos_space.append(np.arange(dim_, dtype=_dtype))
 
         n_dim = len(pos_space)
         return np.array(np.meshgrid(*pos_space)).T.reshape(-1, n_dim)

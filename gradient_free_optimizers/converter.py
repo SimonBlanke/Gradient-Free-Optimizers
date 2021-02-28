@@ -8,9 +8,11 @@ import pandas as pd
 
 class Converter:
     def __init__(self, search_space):
+        self.n_dimensions = len(search_space)
         self.search_space = search_space
         self.para_names = list(search_space.keys())
         self.dim_sizes = np.array([len(array) for array in search_space.values()])
+        self.max_dim = np.amax(self.dim_sizes)
         self.search_space_positions = np.array(
             [range(len(array)) for array in search_space.values()]
         )
