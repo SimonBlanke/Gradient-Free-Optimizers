@@ -15,9 +15,9 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
         self,
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
-        mutation_rate=0.66,
-        crossover_rate=0.33,
-        rand_rest_p=0.03,
+        mutation_rate=0.7,
+        crossover_rate=0.3,
+        rand_rest_p=0.05,
     ):
         super().__init__(search_space, initialize)
 
@@ -50,17 +50,18 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
         return [self.individuals[idx] for idx in idx_sorted_ind]
 
     def _cross(self):
-        ind_sorted = self._sort_best()
+        rnd_int2 = random.choice(
+            [i for i in range(0, self.n_ind - 2) if i not in [self.rnd_int]]
+        )
 
-        p_best = ind_sorted[0]
-        rnd_int = random.randint(1, len(ind_sorted) - 1)
-        p_sec_best = ind_sorted[rnd_int]
+        p_sec = self.ind_sorted[rnd_int2]
+        p_worst = self.ind_sorted[-1]
 
-        two_best_pos = [p_best.pos_current, p_sec_best.pos_current]
+        two_best_pos = [self.p_current.pos_current, p_sec.pos_current]
         pos_new = self._random_cross(two_best_pos)
 
-        self.p_current = p_sec_best
-        p_sec_best.pos_new = pos_new
+        self.p_current = p_worst
+        p_worst.pos_new = pos_new
 
         return pos_new
 
@@ -81,13 +82,12 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
         self.p_current.init_pos(pos)
 
     def iterate(self):
-        nth_iter = self._iterations(self.individuals)
+        # nth_iter = self._iterations(self.individuals)
+        self.n_ind = len(self.individuals)
 
-        if nth_iter > 20:
-            ind_sorted = self._sort_best()
-            self.p_current = ind_sorted[0]
-        else:
-            self.p_current = self.individuals[nth_iter % len(self.individuals)]
+        self.ind_sorted = self._sort_best()
+        self.rnd_int = random.randint(0, len(self.ind_sorted) - 2)
+        self.p_current = self.ind_sorted[self.rnd_int]
 
         return self._evo_iterate()
 
