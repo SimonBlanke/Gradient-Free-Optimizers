@@ -50,9 +50,14 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
         return [self.individuals[idx] for idx in idx_sorted_ind]
 
     def _cross(self):
-        rnd_int2 = random.choice(
-            [i for i in range(0, self.n_ind - 2) if i not in [self.rnd_int]]
-        )
+        if len(self.individuals) > 2:
+            rnd_int2 = random.choice(
+                [i for i in range(0, self.n_ind - 1) if i not in [self.rnd_int]]
+            )
+        else:
+            rnd_int2 = random.choice(
+                [i for i in range(0, self.n_ind) if i not in [self.rnd_int]]
+            )
 
         p_sec = self.ind_sorted[rnd_int2]
         p_worst = self.ind_sorted[-1]
@@ -65,15 +70,6 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
 
         return pos_new
 
-    def _evo_iterate(self):
-        total_rate = self.mutation_rate + self.crossover_rate
-        rand = np.random.uniform(low=0, high=total_rate)
-
-        if len(self.individuals) == 1 or rand <= self.mutation_rate:
-            return self.p_current.iterate()
-        else:
-            return self._cross()
-
     def init_pos(self, pos):
         individual = Individual(self.conv.search_space, rand_rest_p=self.rand_rest_p)
         self.individuals.append(individual)
@@ -82,14 +78,23 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
         self.p_current.init_pos(pos)
 
     def iterate(self):
-        # nth_iter = self._iterations(self.individuals)
         self.n_ind = len(self.individuals)
 
+        if self.n_ind == 1:
+            self.p_current = self.individuals[0]
+            return self.p_current.iterate()
+
         self.ind_sorted = self._sort_best()
-        self.rnd_int = random.randint(0, len(self.ind_sorted) - 2)
+        self.rnd_int = random.randint(0, len(self.ind_sorted) - 1)
         self.p_current = self.ind_sorted[self.rnd_int]
 
-        return self._evo_iterate()
+        total_rate = self.mutation_rate + self.crossover_rate
+        rand = np.random.uniform(low=0, high=total_rate)
+
+        if rand <= self.mutation_rate:
+            return self.p_current.iterate()
+        else:
+            return self._cross()
 
     def evaluate(self, score_new):
         self.p_current.evaluate(score_new)
