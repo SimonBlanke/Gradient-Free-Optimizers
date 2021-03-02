@@ -16,14 +16,12 @@ class TreeStructuredParzenEstimators(SMBO):
         initialize={"grid": 4, "random": 2, "vertices": 4},
         gamma_tpe=0.5,
         warm_start_smbo=None,
-        sampling={"random": 1000000},
         warnings=100000000,
         rand_rest_p=0.03,
     ):
         super().__init__(search_space, initialize)
         self.gamma_tpe = gamma_tpe
         self.warm_start_smbo = warm_start_smbo
-        self.sampling = sampling
         self.warnings = warnings
         self.rand_rest_p = rand_rest_p
 
