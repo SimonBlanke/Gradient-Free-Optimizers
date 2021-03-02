@@ -48,9 +48,19 @@ class BaseOptimizer(SearchTracker):
 
         return wrapper
 
+    def conv2pos(self, pos):
+        # position to int
+        r_pos = np.rint(pos)
+        n_zeros = [0] * len(self.conv.max_positions)
+        # clip into search space boundaries
+        return np.clip(r_pos, n_zeros, self.conv.max_positions).astype(int)
+
     def init_pos(self, pos):
         self.pos_new = pos
         self.nth_iter = len(self.pos_new_list)
+
+    def finish_initialization(self):
+        pass
 
     def evaluate(self, score_new):
         self.score_new = score_new
