@@ -19,17 +19,40 @@ def objective_function_p5(para):
     return score
 
 
-search_space = {"x1": np.arange(-100, 101, 1)}
+search_space_0 = {"x1": np.arange(-100, 101, 1)}
+search_space_1 = {"x1": np.arange(-100, 101, 1), "x2": np.arange(-100, 101, 1)}
 
 
 objective_para = (
     "objective",
     [
-        (objective_function, search_space),
-        (objective_function_m5, search_space),
-        (objective_function_p5, search_space),
+        (objective_function, search_space_0),
+        (objective_function_m5, search_space_0),
+        (objective_function_p5, search_space_0),
+        (objective_function, search_space_1),
+        (objective_function_m5, search_space_1),
+        (objective_function_p5, search_space_1),
     ],
 )
+
+
+@pytest.mark.parametrize(*objective_para)
+@pytest.mark.parametrize(*optimizers)
+def test_best_results_0(Optimizer, objective):
+    search_space = objective[1]
+    objective_function = objective[0]
+
+    initialize = {"vertices": 1}
+
+    opt = Optimizer(search_space, initialize=initialize)
+    opt.search(
+        objective_function,
+        n_iter=50,
+        memory=False,
+        verbosity={"print_results": False, "progress_bar": False},
+    )
+
+    assert opt.best_score == objective_function(opt.best_para)
 
 
 @pytest.mark.parametrize(*objective_para)
@@ -43,7 +66,7 @@ def test_best_results_0(Optimizer, objective):
     opt = Optimizer(search_space, initialize=initialize)
     opt.search(
         objective_function,
-        n_iter=30,
+        n_iter=50,
         memory=False,
         verbosity={"print_results": False, "progress_bar": False},
     )
@@ -64,10 +87,9 @@ def test_best_results_1(Optimizer):
     opt = Optimizer(search_space, initialize=initialize)
     opt.search(
         objective_function,
-        n_iter=30,
+        n_iter=50,
         memory=False,
         verbosity={"print_results": False, "progress_bar": False},
     )
 
     assert opt.best_para["x1"] in list(opt.results["x1"])
-
