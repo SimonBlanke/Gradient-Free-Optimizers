@@ -9,7 +9,9 @@ from ...results_manager import ResultsManager
 
 class BasePopulationOptimizer:
     def __init__(
-        self, search_space, initialize={"grid": 4, "random": 2, "vertices": 4},
+        self,
+        search_space,
+        initialize={"grid": 4, "random": 2, "vertices": 4},
     ):
         super().__init__()
         self.conv = Converter(search_space)
@@ -25,3 +27,6 @@ class BasePopulationOptimizer:
             nth_iter = nth_iter + len(p.pos_new_list)
 
         return nth_iter
+
+    def finish_initialization(self):
+        pass
