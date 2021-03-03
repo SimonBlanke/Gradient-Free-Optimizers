@@ -611,10 +611,30 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 
 
 <details open>
+<summary><b>v0.3.0</b></summary>
+
+  - [ ] add Downhill-simplex algorithm to optimizers
+  - [ ] add Powell's Method to optimizers
+  - [ ] DIviding RECTangles algorithm to optimizers
+
+</details>
+
+
+<details>
+<summary><b>v0.4.0</b></summary>
+
+  - [ ] add other acquisition functions to smbo
+  - [ ] explore feasibility of tabu search algorithm (smbo variant)
+  - [ ] explore feasibility of other density functions in tpe
+  - [ ] maybe: helper functions for constraints in search space
+
+</details>
+
+
+<details>
 <summary><b>v1.0.0</b></summary>
 
   - [ ] Final API
-  - [ ] add Downhill-simplex-algorithm to optimizers
   - [ ] improve access to parameters of optimizers within population-based-optimizers (e.g. annealing rate of simulated annealing population in parallel tempering)
 
 
