@@ -19,6 +19,9 @@ test-visual:
 	cd tests/local; \
 		python _visualize_search_paths.py
 
+test-gfo:
+	python -m pytest -x -p no:warnings -rfEX tests/
+
 test-examples:
 	cd tests; \
 		python test_examples.py
@@ -35,7 +38,7 @@ test-debug:
 		python _test_debug.py
 	
 test:
-	python -m pytest -x -p no:warnings -rfEX tests/
+	test-gfo
 	make test-hyper
 	make test-examples
 
