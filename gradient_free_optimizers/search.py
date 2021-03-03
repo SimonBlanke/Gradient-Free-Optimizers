@@ -139,6 +139,8 @@ class Search(TimesTracker):
                 break
             self._initialization(init_pos, nth_iter)
 
+        self.finish_initialization()
+
         # loop to do the iterations
         for nth_iter in range(len(init_positions), n_iter):
             if self._early_stop():
