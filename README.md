@@ -103,6 +103,8 @@ Gradient-Free-Optimizers is the optimization backend of <a href="https://github.
   <details>
   <summary><b> Simple API-design</b></summary>
 
+  <br>
+
   You can optimize anything that can be defined in a python function. For example a simple parabola function:
   ```python
   def objective_function(para):
@@ -128,8 +130,11 @@ Gradient-Free-Optimizers is the optimization backend of <a href="https://github.
 
   </details>
 
+
   <details>
   <summary><b> Receive prepared information about ongoing and finished optimization runs</b></summary>
+
+  <br>
 
   During the optimization you will receive ongoing information in a progress bar:
     - current best score
@@ -139,23 +144,32 @@ Gradient-Free-Optimizers is the optimization backend of <a href="https://github.
 
   </details>
 
+
 - High performance:
   <details>
   <summary><b> Modern optimization techniques</b></summary>
+
+  <br>
 
   Gradient-Free-Optimizers provides not just meta-heuristic optimization methods but also sequential model based optimizers like bayesian optimization, which delivers good results for expensive objetive functions like deep-learning models.
 
   </details>
 
+
   <details>
   <summary><b> Lightweight backend</b></summary>
+
+  <br>
 
   Even for the very simple parabola function the optimization time is about 60% of the entire iteration time when optimizing with random search.  This shows, that (despite all its features) Gradient-Free-Optimizers has an efficient optimization backend without any unnecessary slowdown.
 
   </details>
 
+
   <details>
   <summary><b> Save time with memory dictionary</b></summary>
+
+  <br>
 
   Per default Gradient-Free-Optimizers will look for the current position in a memory dictionary before evaluating the objective function. 
   
@@ -166,9 +180,12 @@ Gradient-Free-Optimizers is the optimization backend of <a href="https://github.
 
   </details>
 
+
 - High reliability:
   <details>
   <summary><b> Extensive testing</b></summary>
+
+  <br>
 
   Gradient-Free-Optimizers is extensivly tested with more than 400 tests in 2500 lines of test code. This includes the testing of:
     - Each optimization algorithm 
@@ -180,6 +197,8 @@ Gradient-Free-Optimizers is the optimization backend of <a href="https://github.
 
   <details>
   <summary><b> Performance test for each optimizer</b></summary>
+
+  <br>
 
   Each optimization algorithm must perform above a certain threshold (for selected objetive functions) to be included. Poorly performing algorithms are reworked or scraped.
 
