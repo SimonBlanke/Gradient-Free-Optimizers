@@ -23,11 +23,11 @@
         <strong>Master status:</strong>
       </td>
       <td>
-        <a href="https://travis-ci.com/SimonBlanke/Gradient-Free-Optimizers">
-          <img src="https://img.shields.io/travis/com/SimonBlanke/Gradient-Free-Optimizers/master?style=flat-square&logo=travis" alt="img not loaded: try F5 :)">
+        <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions">
+          <img src="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions/workflows/tests.yml/badge.svg?branch=master" alt="img not loaded: try F5 :)">
         </a>
-        <a href="https://coveralls.io/github/SimonBlanke/Gradient-Free-Optimizers">
-          <img src="https://img.shields.io/coveralls/github/SimonBlanke/Gradient-Free-Optimizers?style=flat-square&logo=codecov" alt="img not loaded: try F5 :)">
+        <a href="https://app.codecov.io/gh/SimonBlanke/Gradient-Free-Optimizers">
+          <img src="https://img.shields.io/codecov/c/github/SimonBlanke/Gradient-Free-Optimizers/master" alt="img not loaded: try F5 :)">
         </a>
       </td>
     </tr>
