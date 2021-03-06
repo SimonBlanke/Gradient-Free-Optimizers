@@ -11,7 +11,7 @@
 
 
 <h2 align="center">
-  Simple and reliable optimization with local, global, population-based and sequential techniques in numerical search spaces.
+  Simple and reliable optimization with local, global, population-based and sequential techniques in numerical discrete search spaces.
 </h2>
 
 <br>
@@ -200,7 +200,7 @@ Gradient-Free-Optimizers is the optimization backend of <a href="https://github.
 
   <br>
 
-  Each optimization algorithm must perform above a certain threshold (for selected objetive functions) to be included. Poorly performing algorithms are reworked or scraped.
+  Each optimization algorithm must perform above a certain threshold to be included. Poorly performing algorithms are reworked or scraped.
 
   </details>
 
