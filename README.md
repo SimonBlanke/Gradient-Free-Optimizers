@@ -633,8 +633,10 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 <summary><b>v0.3.0</b></summary>
 
   - [ ] add Downhill-simplex algorithm to optimizers
-  - [ ] add Powell's Method to optimizers
-  - [ ] DIviding RECTangles algorithm to optimizers
+  - [ ] add Bayesian Powell's Method to optimizers
+  - [ ] add sampling parameter to Bayesian optimizer
+  - [ ] add warnings parameter to Bayesian optimizer
+  - [ ] improve access to parameters of optimizers within population-based-optimizers (e.g. annealing rate of simulated annealing population in parallel tempering)
 
 </details>
 
@@ -654,8 +656,7 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 <summary><b>v1.0.0</b></summary>
 
   - [ ] Final API
-  - [ ] improve access to parameters of optimizers within population-based-optimizers (e.g. annealing rate of simulated annealing population in parallel tempering)
-
+  
 
 </details>
 
