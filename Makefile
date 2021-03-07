@@ -38,7 +38,7 @@ test-debug:
 		python _test_debug.py
 	
 test:
-	test-gfo
+	make test-gfo
 	make test-hyper
 	make test-examples
 
