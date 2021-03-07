@@ -8,7 +8,6 @@ import random
 import numpy as np
 import pandas as pd
 
-from .init_positions import Initializer
 from .progress_bar import ProgressBarLVL0, ProgressBarLVL1
 from .times_tracker import TimesTracker
 from .memory import Memory
@@ -81,12 +80,6 @@ class Search(TimesTracker):
 
         set_random_seed(self.nth_process, self.random_state)
 
-        # get init positions
-        init = Initializer(self.conv)
-        init_positions = init.set_pos(self.initialize)
-
-        return init_positions
-
     def _early_stop(self):
         if time_exceeded(self.start_time, self.max_time):
             return True
@@ -125,7 +118,7 @@ class Search(TimesTracker):
         self.random_state = random_state
         self.nth_process = nth_process
 
-        init_positions = self._init_search()
+        self._init_search()
 
         if memory is True:
             mem = Memory(memory_warm_start, self.conv)
@@ -134,7 +127,7 @@ class Search(TimesTracker):
             self.score = self.results_mang.score(objective_function)
 
         # loop to initialize N positions
-        for init_pos, nth_iter in zip(init_positions, range(n_iter)):
+        for init_pos, nth_iter in zip(self.init_positions, range(n_iter)):
             if self._early_stop():
                 break
             self._initialization(init_pos, nth_iter)
@@ -142,7 +135,7 @@ class Search(TimesTracker):
         self.finish_initialization()
 
         # loop to do the iterations
-        for nth_iter in range(len(init_positions), n_iter):
+        for nth_iter in range(len(self.init_positions), n_iter):
             if self._early_stop():
                 break
             self._iteration(nth_iter)

@@ -7,6 +7,7 @@ import numpy as np
 from .search_tracker import SearchTracker
 from ..converter import Converter
 from ..results_manager import ResultsManager
+from ..init_positions import Initializer
 
 
 class BaseOptimizer(SearchTracker):
@@ -21,6 +22,10 @@ class BaseOptimizer(SearchTracker):
         self.initialize = initialize
 
         self.optimizers = [self]
+
+        # get init positions
+        init = Initializer(self.conv)
+        self.init_positions = init.set_pos(initialize)
 
     def move_random(self):
         position = []

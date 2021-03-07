@@ -5,6 +5,7 @@
 import numpy as np
 from ...converter import Converter
 from ...results_manager import ResultsManager
+from ...init_positions import Initializer
 
 
 class BasePopulationOptimizer:
@@ -20,6 +21,10 @@ class BasePopulationOptimizer:
 
         self.eval_times = []
         self.iter_times = []
+
+        # get init positions
+        init = Initializer(self.conv)
+        self.init_positions = init.set_pos(initialize)
 
     def _iterations(self, positioners):
         nth_iter = 0
