@@ -20,6 +20,7 @@ from .optimizers import (
     BayesianOptimizer,
     TreeStructuredParzenEstimators,
     DecisionTreeOptimizer,
+    PowellsMethod,
     EnsembleOptimizer,
 )
 
@@ -39,5 +40,6 @@ __all__ = [
     "BayesianOptimizer",
     "TreeStructuredParzenEstimators",
     "DecisionTreeOptimizer",
+    "PowellsMethod",
     "EnsembleOptimizer",
 ]
