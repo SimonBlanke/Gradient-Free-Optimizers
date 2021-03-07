@@ -13,9 +13,11 @@ class Converter:
         self.para_names = list(search_space.keys())
         self.dim_sizes = np.array([len(array) for array in search_space.values()])
         self.max_dim = np.amax(self.dim_sizes)
-        self.search_space_positions = np.array(
-            [range(len(array)) for array in search_space.values()]
-        )
+
+        self.search_space_positions = [
+            range(len(array)) for array in search_space.values()
+        ]
+
         self.max_positions = self.dim_sizes - 1
         self.search_space_values = list(search_space.values())
 
