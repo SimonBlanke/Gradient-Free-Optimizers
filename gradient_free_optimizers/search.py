@@ -12,6 +12,7 @@ from .progress_bar import ProgressBarLVL0, ProgressBarLVL1
 from .times_tracker import TimesTracker
 from .memory import Memory
 from .print_info import print_info
+from .init_positions import Initializer
 
 
 def time_exceeded(start_time, max_time):
@@ -119,6 +120,10 @@ class Search(TimesTracker):
         self.nth_process = nth_process
 
         self._init_search()
+
+        # get init positions
+        init = Initializer(self.conv)
+        self.init_positions = init.set_pos(self.initialize)
 
         if memory is True:
             mem = Memory(memory_warm_start, self.conv)
