@@ -15,6 +15,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
         self,
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
+        population=10,
         inertia=0.5,
         cognitive_weight=0.5,
         social_weight=0.5,
@@ -23,13 +24,15 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
     ):
         super().__init__(search_space, initialize)
 
+        self.population = population
         self.inertia = inertia
         self.cognitive_weight = cognitive_weight
         self.social_weight = social_weight
         self.temp_weight = temp_weight
         self.rand_rest_p = rand_rest_p
 
-        self.particles = self.optimizers
+        self.particles = self._create_population(Particle)
+        self.optimizers = self.particles
 
     def _sort_best(self):
         scores_list = []
@@ -42,22 +45,18 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
         self.p_sorted = [self.particles[i] for i in idx_sorted_ind]
 
     def init_pos(self, pos):
-        particle = Particle(
-            self.conv.search_space,
-            inertia=self.inertia,
-            cognitive_weight=self.cognitive_weight,
-            social_weight=self.social_weight,
-            temp_weight=self.temp_weight,
-            rand_rest_p=self.rand_rest_p,
-        )
-        self.particles.append(particle)
+        nth_pop = self.nth_iter % len(self.particles)
 
-        self.p_current = particle
+        self.p_current = self.particles[nth_pop]
         self.p_current.init_pos(pos)
-        self.p_current.velo = np.zeros(len(self.conv.max_positions))
 
-    def finish_initialization(self):
-        pass
+        self.p_current.inertia = self.inertia
+        self.p_current.cognitive_weight = self.cognitive_weight
+        self.p_current.social_weight = self.social_weight
+        self.p_current.temp_weight = self.temp_weight
+        self.p_current.rand_rest_p = self.rand_rest_p
+
+        self.p_current.velo = np.zeros(len(self.conv.max_positions))
 
     def iterate(self):
         n_iter = self._iterations(self.particles)

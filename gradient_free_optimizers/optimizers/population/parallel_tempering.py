@@ -28,6 +28,7 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
         self.rand_rest_p = rand_rest_p
 
         self.systems = self._create_population(SimulatedAnnealingOptimizer)
+        self.optimizers = self.systems
 
     def _swap_pos(self):
         _systems_temp = self.systems[:]
@@ -58,9 +59,6 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
 
         self.p_current = self.systems[nth_pop]
         self.p_current.init_pos(pos)
-
-    def finish_initialization(self):
-        pass
 
     def iterate(self):
         nth_iter = self._iterations(self.systems)

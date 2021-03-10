@@ -43,11 +43,12 @@ class BasePopulationOptimizer:
             if isinstance(init_value, int):
                 n_inits += init_value
             else:
-                n_inits += len(n_inits)
+                n_inits += len(init_value)
 
-        print("n_inits", n_inits)
         if n_inits < len(population):
-            print("\n\n -------> Error!!! \n\n")
+            print("\n Warning: Not enough initial positions for population size")
+            print(" Population size is reduced to", n_inits)
+            population = population[:n_inits]
 
         return population
 

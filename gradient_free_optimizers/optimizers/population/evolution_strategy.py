@@ -15,17 +15,20 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
         self,
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
+        population=10,
         mutation_rate=0.7,
         crossover_rate=0.3,
         rand_rest_p=0.05,
     ):
         super().__init__(search_space, initialize)
 
+        self.population = population
         self.mutation_rate = mutation_rate
         self.crossover_rate = crossover_rate
         self.rand_rest_p = rand_rest_p
 
-        self.individuals = self.optimizers
+        self.individuals = self._create_population(Individual)
+        self.optimizers = self.individuals
 
     def _random_cross(self, array_list):
         n_arrays = len(array_list)
@@ -71,14 +74,10 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
         return pos_new
 
     def init_pos(self, pos):
-        individual = Individual(self.conv.search_space, rand_rest_p=self.rand_rest_p)
-        self.individuals.append(individual)
+        nth_pop = self.nth_iter % len(self.individuals)
 
-        self.p_current = individual
+        self.p_current = self.individuals[nth_pop]
         self.p_current.init_pos(pos)
-
-    def finish_initialization(self):
-        pass
 
     def iterate(self):
         self.n_ind = len(self.individuals)

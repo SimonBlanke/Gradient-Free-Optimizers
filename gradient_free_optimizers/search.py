@@ -53,6 +53,7 @@ class Search(TimesTracker):
 
     @TimesTracker.iter_time
     def _initialization(self, init_pos, nth_iter):
+        self.nth_iter = nth_iter
         self.init_pos(init_pos)
 
         score_new = self._score(init_pos)
@@ -62,6 +63,7 @@ class Search(TimesTracker):
 
     @TimesTracker.iter_time
     def _iteration(self, nth_iter):
+        self.nth_iter = nth_iter
         pos_new = self.iterate()
 
         score_new = self._score(pos_new)
