@@ -27,5 +27,29 @@ class BasePopulationOptimizer:
 
         return nth_iter
 
+    def _create_population(self, Optimizer):
+        if isinstance(self.population, int):
+            population = []
+            for pop_ in range(self.population):
+                population.append(
+                    Optimizer(self.conv.search_space, rand_rest_p=self.rand_rest_p)
+                )
+        else:
+            population = self.population
+
+        n_inits = 0
+        for key_ in self.initialize.keys():
+            init_value = self.initialize[key_]
+            if isinstance(init_value, int):
+                n_inits += init_value
+            else:
+                n_inits += len(n_inits)
+
+        print("n_inits", n_inits)
+        if n_inits < len(population):
+            print("\n\n -------> Error!!! \n\n")
+
+        return population
+
     def finish_initialization(self):
         pass

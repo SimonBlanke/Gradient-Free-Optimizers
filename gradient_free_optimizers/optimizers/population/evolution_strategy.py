@@ -77,6 +77,9 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
         self.p_current = individual
         self.p_current.init_pos(pos)
 
+    def finish_initialization(self):
+        pass
+
     def iterate(self):
         self.n_ind = len(self.individuals)
 

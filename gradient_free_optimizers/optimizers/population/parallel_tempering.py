@@ -17,15 +17,17 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
         self,
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
+        population=10,
         n_iter_swap=10,
         rand_rest_p=0.03,
     ):
         super().__init__(search_space, initialize)
 
+        self.population = population
         self.n_iter_swap = n_iter_swap
         self.rand_rest_p = rand_rest_p
 
-        self.systems = self.optimizers
+        self.systems = self._create_population(SimulatedAnnealingOptimizer)
 
     def _swap_pos(self):
         _systems_temp = self.systems[:]
@@ -52,12 +54,13 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
             return np.exp(score_diff_norm * temp)
 
     def init_pos(self, pos):
-        system = SimulatedAnnealingOptimizer(
-            self.conv.search_space, rand_rest_p=self.rand_rest_p
-        )
-        self.systems.append(system)
-        self.p_current = system
+        nth_pop = self.nth_iter % len(self.systems)
+
+        self.p_current = self.systems[nth_pop]
         self.p_current.init_pos(pos)
+
+    def finish_initialization(self):
+        pass
 
     def iterate(self):
         nth_iter = self._iterations(self.systems)

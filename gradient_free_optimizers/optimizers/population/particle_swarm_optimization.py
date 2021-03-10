@@ -56,6 +56,9 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
         self.p_current.init_pos(pos)
         self.p_current.velo = np.zeros(len(self.conv.max_positions))
 
+    def finish_initialization(self):
+        pass
+
     def iterate(self):
         n_iter = self._iterations(self.particles)
         self.p_current = self.particles[n_iter % len(self.particles)]
