@@ -55,8 +55,6 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
         self.simplex_pos = [self.positions_valid[idx] for idx in idx_sorted]
         self.simplex_scores = [self.scores_valid[idx] for idx in idx_sorted]
 
-        print("\n self.simplex_pos \n", self.simplex_pos)
-
         self.simplex_step = 1
 
         self.i_x_0 = 0
@@ -65,14 +63,13 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
 
     @BaseOptimizer.track_nth_iter
     def iterate(self):
-        print("")
         if self.simplex_step == 1:
-            print("iter 1 ")
             idx_sorted = sort_list_idx(self.simplex_scores)
             self.simplex_pos = [self.simplex_pos[idx] for idx in idx_sorted]
             self.simplex_scores = [self.simplex_scores[idx] for idx in idx_sorted]
 
             self.center_array = centeroid(self.simplex_pos[:-1])
+
             r_pos = self.center_array + self.alpha * (
                 self.center_array - self.simplex_pos[-1]
             )
@@ -81,22 +78,18 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
             return self.r_pos
 
         elif self.simplex_step == 2:
-            print("iter 2 ")
             e_pos = self.center_array + self.gamma * (
                 self.center_array + self.simplex_pos[-1]
             )
             self.e_pos = self.conv2pos(e_pos)
-            print(" self.e_pos ", self.e_pos)
             self.simplex_step = 1
 
             return self.e_pos
 
         elif self.simplex_step == 3:
-            print("iter 3 ")
             return self.r_pos
 
         elif self.simplex_step == 4:
-            print("iter 4 self.c_pos", self.c_pos)
             return self.c_pos
 
         elif self.simplex_step == 5:
@@ -109,21 +102,17 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
         self.score_new = score_new
 
         if self.simplex_step == 1:
-            print(" self.simplex_step ", self.simplex_step)
             if score_new > self.simplex_scores[0]:
-                print("eval 1 ")
                 # if r is better than x0
                 self.simplex_pos[-1] = self.r_pos
                 self.simplex_scores[-1] = score_new
                 self.simplex_step = 2
             elif score_new > self.simplex_scores[-2]:
-                print("eval 2 ")
                 # if r is better than x N-1
                 self.simplex_pos[-2] = self.r_pos
                 self.simplex_scores[-2] = score_new
                 self.simplex_step = 3
             elif score_new > self.simplex_scores[-1]:
-                print("eval 3 ")
                 # if r is better than x N
                 self.h_pos = self.r_pos
                 c_pos = self.h_pos + self.beta * (self.center_array - self.h_pos)
@@ -131,7 +120,6 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
 
                 self.simplex_step = 4
             else:
-                print("eval 4 ")
                 # if r is worse than x N
                 self.h_pos = self.simplex_pos[-1]
                 c_pos = self.h_pos + self.beta * (self.center_array - self.h_pos)
@@ -140,24 +128,16 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
                 self.simplex_step = 4
 
         elif self.simplex_step == 2:
-            print(" self.simplex_step ", self.simplex_step)
-
             idx_sorted = sort_list_idx(self.scores_valid[-2:])
             self.simplex_pos[-1] = self.simplex_pos[-2:][idx_sorted][0]
             self.simplex_scores[-1] = self.simplex_scores[-2:][idx_sorted][0]
 
             self.simplex_step -= 1
 
-            print(" self.simplex_pos[-1] ", self.simplex_pos[-1])
-
         elif self.simplex_step == 3:
-            print(" self.simplex_step ", self.simplex_step)
-
             self.simplex_step = 1
 
         elif self.simplex_step == 4:
-            print(" self.simplex_step ", self.simplex_step)
-
             if score_new > self.simplex_scores[-1]:
                 self.simplex_pos[-1] = self.c_pos
                 self.simplex_scores[-1] = score_new
@@ -167,8 +147,6 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
                 self.compress_idx = 0
 
         elif self.simplex_step == 5:
-            print(" self.simplex_step ", self.simplex_step)
-
             self.simplex_scores[self.compress_idx] = score_new
             self.compress_idx += 1
 
