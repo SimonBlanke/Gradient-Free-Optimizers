@@ -7,6 +7,7 @@ import numpy as np
 
 from gradient_free_optimizers import EvolutionStrategyOptimizer
 from ._base_para_test import _base_para_test_func
+from gradient_free_optimizers import HillClimbingOptimizer
 
 
 def objective_function(para):
@@ -28,6 +29,19 @@ parallel_tempering_para = [
     ({"crossover_rate": 0.1}),
     ({"crossover_rate": 0}),
     ({"crossover_rate": 2}),
+    ({"population": 1}),
+    ({"population": 2}),
+    ({"population": 100}),
+    (
+        {
+            "population": [
+                HillClimbingOptimizer(search_space),
+                HillClimbingOptimizer(search_space),
+                HillClimbingOptimizer(search_space),
+                HillClimbingOptimizer(search_space),
+            ]
+        }
+    ),
     ({"rand_rest_p": 0}),
     ({"rand_rest_p": 0.5}),
     ({"rand_rest_p": 1}),

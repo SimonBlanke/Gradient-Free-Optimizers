@@ -7,6 +7,7 @@ import numpy as np
 
 from gradient_free_optimizers import ParallelTemperingOptimizer
 from ._base_para_test import _base_para_test_func
+from gradient_free_optimizers import SimulatedAnnealingOptimizer
 
 
 def objective_function(para):
@@ -22,6 +23,19 @@ parallel_tempering_para = [
     ({"n_iter_swap": 2}),
     ({"n_iter_swap": 10}),
     ({"n_iter_swap": 100}),
+    ({"population": 1}),
+    ({"population": 2}),
+    ({"population": 100}),
+    (
+        {
+            "population": [
+                SimulatedAnnealingOptimizer(search_space),
+                SimulatedAnnealingOptimizer(search_space),
+                SimulatedAnnealingOptimizer(search_space),
+                SimulatedAnnealingOptimizer(search_space),
+            ]
+        }
+    ),
     ({"rand_rest_p": 0}),
     ({"rand_rest_p": 0.5}),
     ({"rand_rest_p": 1}),
