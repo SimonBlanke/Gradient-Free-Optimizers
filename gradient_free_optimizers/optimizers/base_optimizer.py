@@ -22,6 +22,15 @@ class BaseOptimizer(SearchTracker):
 
         self.optimizers = [self]
 
+        n_inits = 0
+        for key_ in self.initialize.keys():
+            init_value = self.initialize[key_]
+            if isinstance(init_value, int):
+                n_inits += init_value
+            else:
+                n_inits += len(init_value)
+        self.n_inits = n_inits
+
     def move_random(self):
         position = []
         for search_space_pos in self.conv.search_space_positions:
