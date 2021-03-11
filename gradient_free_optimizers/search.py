@@ -126,9 +126,6 @@ class Search(TimesTracker):
         # get init positions
         init = Initializer(self.conv)
         self.init_positions = init.set_pos(self.initialize)
-        print("self.initialize", self.initialize)
-
-        print("self.init_positions", self.init_positions)
 
         if memory is True:
             mem = Memory(memory_warm_start, self.conv)
