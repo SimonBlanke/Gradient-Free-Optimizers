@@ -2,10 +2,11 @@ from gradient_free_optimizers import (
     HillClimbingOptimizer,
     StochasticHillClimbingOptimizer,
     RepulsingHillClimbingOptimizer,
+    SimulatedAnnealingOptimizer,
+    # DownhillSimplexOptimizer,
     RandomSearchOptimizer,
     RandomRestartHillClimbingOptimizer,
     RandomAnnealingOptimizer,
-    SimulatedAnnealingOptimizer,
     ParallelTemperingOptimizer,
     ParticleSwarmOptimizer,
     EvolutionStrategyOptimizer,
@@ -25,6 +26,7 @@ optimizers_singleOpt = (
         (RandomRestartHillClimbingOptimizer),
         (RandomAnnealingOptimizer),
         (SimulatedAnnealingOptimizer),
+        # (DownhillSimplexOptimizer),
     ],
 )
 
@@ -50,6 +52,7 @@ optimizers_noSBOM = (
         (ParallelTemperingOptimizer),
         (ParticleSwarmOptimizer),
         (EvolutionStrategyOptimizer),
+        # (DownhillSimplexOptimizer),
     ],
 )
 
@@ -73,6 +76,7 @@ optimizers_local = (
         (ParallelTemperingOptimizer),
         (ParticleSwarmOptimizer),
         (EvolutionStrategyOptimizer),
+        # (DownhillSimplexOptimizer),
     ],
 )
 
@@ -83,10 +87,11 @@ optimizers = (
         (HillClimbingOptimizer),
         (StochasticHillClimbingOptimizer),
         (RepulsingHillClimbingOptimizer),
+        (SimulatedAnnealingOptimizer),
+        # (DownhillSimplexOptimizer),
         (RandomSearchOptimizer),
         (RandomRestartHillClimbingOptimizer),
         (RandomAnnealingOptimizer),
-        (SimulatedAnnealingOptimizer),
         (ParallelTemperingOptimizer),
         (ParticleSwarmOptimizer),
         (EvolutionStrategyOptimizer),
