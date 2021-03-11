@@ -33,7 +33,7 @@ def set_random_seed(nth_process, random_state):
         nth_process = 0
 
     if random_state is None:
-        random_state = np.random.randint(0, high=2 ** 32 - 2)
+        random_state = np.random.randint(0, high=2 ** 31 - 2, dtype=np.int64)
 
     random.seed(random_state + nth_process)
     np.random.seed(random_state + nth_process)
@@ -126,6 +126,9 @@ class Search(TimesTracker):
         # get init positions
         init = Initializer(self.conv)
         self.init_positions = init.set_pos(self.initialize)
+        print("self.initialize", self.initialize)
+
+        print("self.init_positions", self.init_positions)
 
         if memory is True:
             mem = Memory(memory_warm_start, self.conv)
