@@ -83,7 +83,6 @@ Gradient-Free-Optimizers is the optimization backend of <a href="https://github.
 
 <div align="center"><a name="menu"></a>
   <h3>
-    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#main-features">Main features</a> •
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#optimization-strategies">Optimization strategies</a> •
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#installation">Installation</a> •
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#examples">Examples</a> •
@@ -629,20 +628,20 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 ## Roadmap
 
 
-<details open>
-<summary><b>v0.3.0</b></summary>
+<details>
+<summary><b>v0.3.0</b> :heavy_check_mark:</summary>
 
-  - [ ] add Downhill-simplex algorithm to optimizers
-  - [ ] add sampling parameter to Bayesian optimizer
-  - [ ] add warnings parameter to Bayesian optimizer
-  - [ ] improve access to parameters of optimizers within population-based-optimizers (e.g. annealing rate of simulated annealing population in parallel tempering)
+  - [x] add sampling parameter to Bayesian optimizer
+  - [x] add warnings parameter to Bayesian optimizer
+  - [x] improve access to parameters of optimizers within population-based-optimizers (e.g. annealing rate of simulated annealing population in parallel tempering)
 
 </details>
 
 
-<details>
+<details open>
 <summary><b>v0.4.0</b></summary>
 
+  - [ ] add Downhill-simplex algorithm to optimizers
   - [ ] add other acquisition functions to smbo
   - [ ] explore feasibility of tabu search algorithm (smbo variant)
   - [ ] explore feasibility of other density functions in tpe
@@ -695,7 +694,7 @@ The separation of Gradient-Free-Optimizers from Hyperactive enables multiple adv
   <tr>
     <td> Distributed computing </td>
     <td> not supported</td>
-    <td> yes, via data sharing at runtime</td>
+    <td> yes, via data sharing at runtime (in future versions)</td>
   </tr>
   </tr>
 </table>
