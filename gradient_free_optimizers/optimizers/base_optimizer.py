@@ -60,9 +60,12 @@ class BaseOptimizer(SearchTracker):
     def conv2pos(self, pos):
         # position to int
         r_pos = np.rint(pos)
+
         n_zeros = [0] * len(self.conv.max_positions)
         # clip into search space boundaries
-        return np.clip(r_pos, n_zeros, self.conv.max_positions).astype(int)
+        pos = np.clip(r_pos, n_zeros, self.conv.max_positions).astype(int)
+
+        return pos
 
     def init_pos(self, pos):
         self.pos_new = pos
