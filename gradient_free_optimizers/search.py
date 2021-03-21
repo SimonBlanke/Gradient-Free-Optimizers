@@ -127,7 +127,7 @@ class Search(TimesTracker):
         init = Initializer(self.conv)
         self.init_positions = init.set_pos(self.initialize)
 
-        if memory is True:
+        if memory is not False:
             mem = Memory(memory_warm_start, self.conv)
             self.score = self.results_mang.score(mem.memory(objective_function))
         else:

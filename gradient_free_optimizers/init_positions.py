@@ -102,9 +102,7 @@ class Initializer:
             sub_arrays.append(sub_array)
 
         n_dims = len(self.conv.max_positions)
-        pos_comb_np = list(
-            np.array(np.meshgrid(*sub_arrays)).T.reshape(-1, n_dims)
-        )
+        pos_comb_np = list(np.array(np.meshgrid(*sub_arrays)).T.reshape(-1, n_dims))
         k = min(len(pos_comb_np), n_pos)
 
         positions = random.sample(pos_comb_np, k)
@@ -112,4 +110,3 @@ class Initializer:
         positions = self._fill_rest_random(n_pos, positions)
 
         return positions
-

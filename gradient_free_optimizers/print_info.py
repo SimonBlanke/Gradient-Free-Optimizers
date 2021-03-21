@@ -63,14 +63,14 @@ def align_para_names(para_names):
 
 
 def _print_results(objective_function, score_best, para_best):
-    para_names = list(para_best.keys())
-    para_names_align = align_para_names(para_names)
-
     print("\nResults: '{}'".format(objective_function.__name__), " ")
     if para_best is None:
         print(indent, "Best score:", score_best, " ")
         print(indent, "Best parameter:", para_best, " ")
     else:
+        para_names = list(para_best.keys())
+        para_names_align = align_para_names(para_names)
+
         print(indent, "Best score:", score_best, " ")
         print(indent, "Best parameter:")
         for para_key in para_best.keys():
