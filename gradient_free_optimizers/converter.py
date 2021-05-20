@@ -5,13 +5,20 @@
 import numpy as np
 import pandas as pd
 
+from functools import reduce
+
 
 class Converter:
     def __init__(self, search_space):
         self.n_dimensions = len(search_space)
         self.search_space = search_space
         self.para_names = list(search_space.keys())
-        self.dim_sizes = np.array([len(array) for array in search_space.values()])
+
+        dim_sizes_list = [len(array) for array in search_space.values()]
+        self.dim_sizes = np.array(dim_sizes_list)
+
+        # product of list
+        self.search_space_size = reduce((lambda x, y: x * y), dim_sizes_list)
         self.max_dim = np.amax(self.dim_sizes)
 
         self.search_space_positions = [

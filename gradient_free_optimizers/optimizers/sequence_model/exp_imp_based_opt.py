@@ -45,6 +45,12 @@ class ExpectedImprovementBasedOptimization(SMBO):
             return self.random_sampling()
 
     def _expected_improvement(self):
+        import time
+
+        c = time.time()
+        self.all_pos_comb = self._all_possible_pos()
+        print("Time", round((time.time() - c), 3))
+
         self.pos_comb = self._sampling()
         mu, sigma = self.regr.predict(self.pos_comb, return_std=True)
         # mu_sample = self.regr.predict(self.X_sample)

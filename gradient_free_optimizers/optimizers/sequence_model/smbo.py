@@ -5,6 +5,7 @@
 
 from ..base_optimizer import BaseOptimizer
 from ...search import Search
+from .sampling import InitialSampler
 
 import numpy as np
 from itertools import compress
@@ -18,7 +19,8 @@ class SMBO(BaseOptimizer, Search):
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
         warm_start_smbo=None,
-        sampling={"random": 100000},
+        init_sample_size=10000000,
+        sampling={"random": 1000000},
         warnings=100000000,
     ):
         super().__init__(search_space, initialize)
@@ -26,17 +28,14 @@ class SMBO(BaseOptimizer, Search):
         self.sampling = sampling
         self.warnings = warnings
 
-    def init_position_combinations(self):
-        search_space_size = 1
-        for value_ in self.conv.search_space.values():
-            search_space_size *= len(value_)
-
-        self.X_sample = []
-        self.Y_sample = []
+        self.sampler = InitialSampler(self.conv, init_sample_size)
 
         if self.warnings:
-            self.memory_warning(search_space_size)
-        self.all_pos_comb = self._all_possible_pos()
+            self.memory_warning(init_sample_size)
+
+    def init_position_combinations(self):
+        self.X_sample = []
+        self.Y_sample = []
 
     def init_warm_start_smbo(self):
         if self.warm_start_smbo is not None:
@@ -71,28 +70,20 @@ class SMBO(BaseOptimizer, Search):
             return pos_comb_sampled
 
     def _all_possible_pos(self):
-        if self.conv.max_dim < 255:
-            _dtype = np.uint8
-        elif self.conv.max_dim < 65535:
-            _dtype = np.uint16
-        elif self.conv.max_dim < 4294967295:
-            _dtype = np.uint32
-        else:
-            _dtype = np.uint64
-
-        pos_space = []
-        for dim_ in self.conv.dim_sizes:
-            pos_space.append(np.arange(dim_, dtype=_dtype))
-
+        pos_space = self.sampler.get_pos_space()
+        # print("pos_space", pos_space)
         n_dim = len(pos_space)
         return np.array(np.meshgrid(*pos_space)).T.reshape(-1, n_dim)
 
-    def memory_warning(self, search_space_size):
-        if search_space_size > self.warnings:
+    def memory_warning(self, init_sample_size):
+        if (
+            self.conv.search_space_size > self.warnings
+            and init_sample_size > self.warnings
+        ):
             warning_message0 = "\n Warning:"
             warning_message1 = (
                 "\n search space size of "
-                + str(search_space_size)
+                + str(self.conv.search_space_size)
                 + " exceeding recommended limit."
             )
             warning_message3 = "\n Reduce search space size for better performance."
