@@ -639,24 +639,15 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 
 
 <details open>
-<summary><b>v0.4.0</b></summary>
+<summary><b>Next Features
+</b></summary>
 
   - [ ] add Downhill-simplex algorithm to optimizers
-  - [ ] add other acquisition functions to smbo
-  - [ ] explore feasibility of tabu search algorithm (smbo variant)
-  - [ ] explore feasibility of other density functions in tpe
-  - [ ] maybe: helper functions for constraints in search space
-
-</details>
-
-
-<details>
-<summary><b>v1.0.0</b></summary>
-
+  - [ ] add other acquisition functions to smbo (Probability of improvement, Entropy search, ...)
+  - [ ] Improved sampling for smb-optimizers
   - [ ] add Bayesian Powell's Method to optimizers
-  - [ ] Final API
+  - [ ] Finalize API (1.0.0)
   
-
 </details>
 
 
