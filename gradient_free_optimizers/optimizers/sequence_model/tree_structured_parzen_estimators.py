@@ -16,6 +16,8 @@ class TreeStructuredParzenEstimators(SMBO):
         initialize={"grid": 4, "random": 2, "vertices": 4},
         gamma_tpe=0.5,
         warm_start_smbo=None,
+        init_sample_size=10000000,
+        sampling={"random": 1000000},
         warnings=100000000,
         rand_rest_p=0.03,
     ):
@@ -45,8 +47,11 @@ class TreeStructuredParzenEstimators(SMBO):
         return best_samples, worst_samples
 
     def expected_improvement(self):
-        logprob_best = self.kd_best.score_samples(self.all_pos_comb)
-        logprob_worst = self.kd_worst.score_samples(self.all_pos_comb)
+        all_pos_comb = self._all_possible_pos()
+        self.pos_comb = self._sampling(all_pos_comb)
+
+        logprob_best = self.kd_best.score_samples(self.pos_comb)
+        logprob_worst = self.kd_worst.score_samples(self.pos_comb)
 
         prob_best = np.exp(logprob_best)
         prob_worst = np.exp(logprob_worst)
@@ -73,7 +78,7 @@ class TreeStructuredParzenEstimators(SMBO):
         exp_imp = self.expected_improvement()
         index_best = list(exp_imp.argsort()[::-1])
 
-        all_pos_comb_sorted = self.all_pos_comb[index_best]
+        all_pos_comb_sorted = self.pos_comb[index_best]
         pos_best = all_pos_comb_sorted[0]
 
         return pos_best
