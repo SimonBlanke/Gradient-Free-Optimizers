@@ -108,6 +108,9 @@ bayesian_optimizer_para = [
     ({"warm_start_smbo": search_data4}),
     ({"warm_start_smbo": search_data5}),
     ({"warm_start_smbo": search_data6}),
+    ({"init_sample_size": 10000000}),
+    ({"init_sample_size": 10000}),
+    ({"init_sample_size": 1000000000}),
     ({"sampling": False}),
     ({"sampling": {"random": 1}}),
     ({"sampling": {"random": 100000000}}),
@@ -125,7 +128,7 @@ pytest_wrapper = ("opt_para", bayesian_optimizer_para)
 
 
 @pytest.mark.parametrize(*pytest_wrapper)
-def test_hill_climbing_para(opt_para):
+def test_bayesian_para(opt_para):
     _base_para_test_func(opt_para, BayesianOptimizer)
 
 

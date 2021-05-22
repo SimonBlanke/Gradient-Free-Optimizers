@@ -7,7 +7,12 @@ import pytest
 import random
 import numpy as np
 
-from gradient_free_optimizers import TreeStructuredParzenEstimators
+from gradient_free_optimizers import EnsembleOptimizer
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.gaussian_process import GaussianProcessRegressor
+from sklearn.neural_network import MLPRegressor
+from sklearn.gaussian_process.kernels import Matern, WhiteKernel, RBF
 from ._base_para_test import _base_para_test_func
 from gradient_free_optimizers import RandomSearchOptimizer
 
@@ -74,10 +79,48 @@ search_data5 = opt5.results
 search_data6 = opt6.results
 
 
-tpe_para = [
-    ({"gamma_tpe": 0.001}),
-    ({"gamma_tpe": 0.5}),
-    ({"gamma_tpe": 0.9}),
+class GPR:
+    def __init__(self):
+        nu_param = 0.5
+        matern = Matern(
+            # length_scale=length_scale_param,
+            # length_scale_bounds=length_scale_bounds_param,
+            nu=nu_param,
+        )
+
+        self.gpr = GaussianProcessRegressor(
+            kernel=matern + RBF() + WhiteKernel(), n_restarts_optimizer=1
+        )
+
+    def fit(self, X, y):
+        self.gpr.fit(X, y)
+
+    def predict(self, X, return_std=False):
+        return self.gpr.predict(X, return_std=return_std)
+
+
+ensemble_optimizer_para = [
+    (
+        {
+            "estimators": [
+                GradientBoostingRegressor(n_estimators=5),
+                GaussianProcessRegressor(),
+            ]
+        }
+    ),
+    (
+        {
+            "estimators": [
+                GradientBoostingRegressor(n_estimators=5),
+                DecisionTreeRegressor(),
+                MLPRegressor(),
+                GaussianProcessRegressor(),
+            ]
+        }
+    ),
+    ({"xi": 0.001}),
+    ({"xi": 0.5}),
+    ({"xi": 0.9}),
     ({"warm_start_smbo": None}),
     ({"warm_start_smbo": search_data1}),
     ({"warm_start_smbo": search_data2}),
@@ -101,15 +144,15 @@ tpe_para = [
 ]
 
 
-pytest_wrapper = ("opt_para", tpe_para)
+pytest_wrapper = ("opt_para", ensemble_optimizer_para)
 
 
 @pytest.mark.parametrize(*pytest_wrapper)
-def test_tpe_para(opt_para):
-    _base_para_test_func(opt_para, TreeStructuredParzenEstimators)
+def test_ensemble_para(opt_para):
+    _base_para_test_func(opt_para, EnsembleOptimizer)
 
 
 def test_warm_start_0():
-    opt = TreeStructuredParzenEstimators(search_space, warm_start_smbo=search_data1)
+    opt = EnsembleOptimizer(search_space, warm_start_smbo=search_data1)
 
     assert len(opt.X_sample) == 30
