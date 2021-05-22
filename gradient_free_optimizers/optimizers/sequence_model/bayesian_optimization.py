@@ -31,6 +31,7 @@ class BayesianOptimizer(ExpectedImprovementBasedOptimization):
         self.regr = gpr
         self.xi = xi
         self.warm_start_smbo = warm_start_smbo
+        self.init_sample_size = init_sample_size
         self.sampling = sampling
         self.warnings = warnings
         self.rand_rest_p = rand_rest_p

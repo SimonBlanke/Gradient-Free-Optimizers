@@ -24,6 +24,8 @@ class TreeStructuredParzenEstimators(SMBO):
         super().__init__(search_space, initialize)
         self.gamma_tpe = gamma_tpe
         self.warm_start_smbo = warm_start_smbo
+        self.init_sample_size = init_sample_size
+        self.sampling = sampling
         self.warnings = warnings
         self.rand_rest_p = rand_rest_p
 

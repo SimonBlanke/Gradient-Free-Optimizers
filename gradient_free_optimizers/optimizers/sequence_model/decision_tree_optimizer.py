@@ -37,6 +37,7 @@ class DecisionTreeOptimizer(ExpectedImprovementBasedOptimization):
         self.regr = tree_regressor_dict[tree_regressor]
         self.xi = xi
         self.warm_start_smbo = warm_start_smbo
+        self.init_sample_size = init_sample_size
         self.sampling = sampling
         self.warnings = warnings
         self.rand_rest_p = rand_rest_p
