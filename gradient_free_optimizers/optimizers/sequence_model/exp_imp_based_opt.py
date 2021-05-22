@@ -63,11 +63,8 @@ class ExpectedImprovementBasedOptimization(SMBO):
         X_sample = np.array(self.X_sample)
         Y_sample = np.array(self.Y_sample)
 
-        try:
-            Y_sample = normalize(Y_sample).reshape(-1, 1)
-            self.regr.fit(X_sample, Y_sample)
-        except ValueError:
-            print("Error: Surrogate model cannot fit to samples")
+        Y_sample = normalize(Y_sample).reshape(-1, 1)
+        self.regr.fit(X_sample, Y_sample)
 
         exp_imp = self._expected_improvement()
 
