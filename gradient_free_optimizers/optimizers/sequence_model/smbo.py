@@ -39,16 +39,16 @@ class SMBO(BaseOptimizer, Search):
 
     def init_warm_start_smbo(self):
         if self.warm_start_smbo is not None:
-            X_sample_values = self.warm_start_smbo[self.conv.para_names].values
-            Y_sample = self.warm_start_smbo["score"].values
+            # filter out nan and inf
+            warm_start_smbo = self.warm_start_smbo[
+                ~self.warm_start_smbo.isin([np.nan, np.inf, -np.inf]).any(1)
+            ]
+
+            X_sample_values = warm_start_smbo[self.conv.para_names].values
+            Y_sample = warm_start_smbo["score"].values
 
             self.X_sample = self.conv.values2positions(X_sample_values)
             self.Y_sample = list(Y_sample)
-
-            # filter out nan
-            mask = ~np.isnan(Y_sample)
-            self.X_sample = list(compress(self.X_sample, mask))
-            self.Y_sample = list(compress(self.Y_sample, mask))
 
     def track_X_sample(func):
         def wrapper(self, *args, **kwargs):
