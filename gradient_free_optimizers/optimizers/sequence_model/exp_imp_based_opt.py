@@ -38,20 +38,10 @@ class ExpectedImprovementBasedOptimization(SMBO):
         self.warnings = warnings
         self.rand_rest_p = rand_rest_p
 
-    def _sampling(self):
-        if self.sampling is False:
-            return self.all_pos_comb
-        elif "random" in self.sampling:
-            return self.random_sampling()
-
     def _expected_improvement(self):
-        import time
+        all_pos_comb = self._all_possible_pos()
+        self.pos_comb = self._sampling(all_pos_comb)
 
-        c = time.time()
-        self.all_pos_comb = self._all_possible_pos()
-        print("Time", round((time.time() - c), 3))
-
-        self.pos_comb = self._sampling()
         mu, sigma = self.regr.predict(self.pos_comb, return_std=True)
         # mu_sample = self.regr.predict(self.X_sample)
         mu = mu.reshape(-1, 1)

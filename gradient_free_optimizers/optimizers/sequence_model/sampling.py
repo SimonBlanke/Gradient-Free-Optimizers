@@ -14,16 +14,10 @@ class InitialSampler:
         self.dim_max_sample_size = dim_max_sample_size
 
     def get_pos_space(self):
-        print("\nself.init_sample_size", self.init_sample_size)
-        print("self.conv.dim_sizes", self.conv.dim_sizes)
-        print("self.conv.search_space_size", self.conv.search_space_size)
-        print("\n")
-
         if self.init_sample_size < self.conv.search_space_size:
             n_samples_array = self.get_n_samples_dims()
             return self.random_choices(n_samples_array)
         else:
-            print("\n no sampling! \n")
             if self.conv.max_dim < 255:
                 _dtype = np.uint8
             elif self.conv.max_dim < 65535:
@@ -40,14 +34,15 @@ class InitialSampler:
             return pos_space
 
     def get_n_samples_dims(self):
+        # TODO of search space is > 33 dims termination criterion must be:
+        # "search_space_size < self.init_sample_size"
+
         dim_sizes_temp = self.conv.dim_sizes
         dim_sizes_temp = np.clip(
             dim_sizes_temp, a_min=1, a_max=self.dim_max_sample_size
         )
-
         search_space_size = self.conv.dim_sizes.prod()
 
-        print("1")
         while abs(search_space_size - self.init_sample_size) > 10000:
             n_samples_array = []
             for idx, dim_size in enumerate(np.nditer(dim_sizes_temp)):
@@ -55,24 +50,15 @@ class InitialSampler:
                 n_samples_array.append(array_diff_)
 
                 sub = int((dim_size / 1000) ** 1.5)
-                dim_sizes_temp[idx] = dim_size - sub
-
-            # array_diff = np.array(array_diff)
-            # n_samples_array = np.max(1, np.subtract(dim_sizes_temp, array_diff))
+                dim_sizes_temp[idx] = np.maximum(1, dim_size - sub)
 
             search_space_size = np.array(n_samples_array).prod()
-
-        print("\n\nsearch_space_size", search_space_size)
-        print("n_samples_array", n_samples_array)
 
         return n_samples_array
 
     def random_choices(self, n_samples_array):
-        print("2")
-
         pos_space = []
         for n_samples, dim_size in zip(n_samples_array, self.conv.dim_sizes):
-            print("\n  n_samples", n_samples)
 
             if dim_size > self.dim_max_sample_size:
                 pos_space.append(
@@ -82,7 +68,5 @@ class InitialSampler:
                 pos_space.append(
                     np.random.choice(dim_size, size=n_samples, replace=False)
                 )
-            print("  rnd finished")
-        print("3")
 
         return pos_space

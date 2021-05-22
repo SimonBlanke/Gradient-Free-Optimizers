@@ -58,15 +58,21 @@ class SMBO(BaseOptimizer, Search):
 
         return wrapper
 
-    def random_sampling(self):
+    def _sampling(self, all_pos_comb):
+        if self.sampling is False:
+            return all_pos_comb
+        elif "random" in self.sampling:
+            return self.random_sampling(all_pos_comb)
+
+    def random_sampling(self, pos_comb):
         n_samples = self.sampling["random"]
-        n_pos_comb = self.all_pos_comb.shape[0]
+        n_pos_comb = pos_comb.shape[0]
 
         if n_pos_comb <= n_samples:
-            return self.all_pos_comb
+            return pos_comb
         else:
             _idx_sample = np.random.choice(n_pos_comb, n_samples, replace=False)
-            pos_comb_sampled = self.all_pos_comb[_idx_sample, :]
+            pos_comb_sampled = pos_comb[_idx_sample, :]
             return pos_comb_sampled
 
     def _all_possible_pos(self):
