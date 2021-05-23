@@ -8,7 +8,6 @@ from ...search import Search
 from .sampling import InitialSampler
 
 import numpy as np
-from itertools import compress
 
 np.seterr(divide="ignore", invalid="ignore")
 
@@ -19,19 +18,19 @@ class SMBO(BaseOptimizer, Search):
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
         warm_start_smbo=None,
-        init_sample_size=10000000,
+        max_sample_size=10000000,
         sampling={"random": 1000000},
-        warnings=100000000,
+        # warnings={"training": 100000, "prediction": 100000000},
     ):
         super().__init__(search_space, initialize)
         self.warm_start_smbo = warm_start_smbo
         self.sampling = sampling
-        self.warnings = warnings
+        # self.warnings = warnings
 
-        self.sampler = InitialSampler(self.conv, init_sample_size)
+        self.sampler = InitialSampler(self.conv, max_sample_size)
 
-        if self.warnings:
-            self.memory_warning(init_sample_size)
+        # if self.warnings:
+        #     self.memory_warning(max_sample_size)
 
     def init_position_combinations(self):
         self.X_sample = []
@@ -81,10 +80,10 @@ class SMBO(BaseOptimizer, Search):
         n_dim = len(pos_space)
         return np.array(np.meshgrid(*pos_space)).T.reshape(-1, n_dim)
 
-    def memory_warning(self, init_sample_size):
+    def memory_warning(self, max_sample_size):
         if (
             self.conv.search_space_size > self.warnings
-            and init_sample_size > self.warnings
+            and max_sample_size > self.warnings
         ):
             warning_message0 = "\n Warning:"
             warning_message1 = (

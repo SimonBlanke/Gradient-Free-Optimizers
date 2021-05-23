@@ -8,13 +8,13 @@ import numpy as np
 
 
 class InitialSampler:
-    def __init__(self, conv, init_sample_size, dim_max_sample_size=1000000):
+    def __init__(self, conv, max_sample_size, dim_max_sample_size=1000000):
         self.conv = conv
-        self.init_sample_size = init_sample_size
+        self.max_sample_size = max_sample_size
         self.dim_max_sample_size = dim_max_sample_size
 
     def get_pos_space(self):
-        if self.init_sample_size < self.conv.search_space_size:
+        if self.max_sample_size < self.conv.search_space_size:
             n_samples_array = self.get_n_samples_dims()
             return self.random_choices(n_samples_array)
         else:
@@ -35,7 +35,7 @@ class InitialSampler:
 
     def get_n_samples_dims(self):
         # TODO of search space is > 33 dims termination criterion must be:
-        # "search_space_size < self.init_sample_size"
+        # "search_space_size < self.max_sample_size"
 
         dim_sizes_temp = self.conv.dim_sizes
         dim_sizes_temp = np.clip(
@@ -43,7 +43,7 @@ class InitialSampler:
         )
         search_space_size = self.conv.dim_sizes.prod()
 
-        while abs(search_space_size - self.init_sample_size) > 10000:
+        while abs(search_space_size - self.max_sample_size) > 10000:
             n_samples_array = []
             for idx, dim_size in enumerate(np.nditer(dim_sizes_temp)):
                 array_diff_ = random.randint(1, dim_size)
