@@ -43,8 +43,22 @@ class SMBO(BaseOptimizer, Search):
                 ~self.warm_start_smbo.isin([np.nan, np.inf, -np.inf]).any(1)
             ]
 
-            X_sample_values = warm_start_smbo[self.conv.para_names].values
-            Y_sample = warm_start_smbo["score"].values
+            # filter out elements that are not in search space
+            int_idx_list = []
+            for para_name in self.conv.para_names:
+                search_data_dim = warm_start_smbo[para_name].values
+                search_space_dim = self.conv.search_space[para_name]
+
+                int_idx = np.nonzero(np.in1d(search_data_dim, search_space_dim))[0]
+                int_idx_list.append(int_idx)
+
+            intersec = int_idx_list[0]
+            for int_idx in int_idx_list[1:]:
+                intersec = np.intersect1d(intersec, int_idx)
+            warm_start_smbo_f = warm_start_smbo.iloc[intersec]
+
+            X_sample_values = warm_start_smbo_f[self.conv.para_names].values
+            Y_sample = warm_start_smbo_f["score"].values
 
             self.X_sample = self.conv.values2positions(X_sample_values)
             self.Y_sample = list(Y_sample)
