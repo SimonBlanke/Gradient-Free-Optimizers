@@ -4,6 +4,7 @@
 
 from ...converter import Converter
 from ...results_manager import ResultsManager
+from ...optimizers.base_optimizer import get_n_inits
 
 
 class BasePopulationOptimizer:
@@ -37,13 +38,7 @@ class BasePopulationOptimizer:
         else:
             population = self.population
 
-        n_inits = 0
-        for key_ in self.initialize.keys():
-            init_value = self.initialize[key_]
-            if isinstance(init_value, int):
-                n_inits += init_value
-            else:
-                n_inits += len(init_value)
+        n_inits = get_n_inits(self.initialize)
 
         if n_inits < len(population):
             print("\n Warning: Not enough initial positions for population size")

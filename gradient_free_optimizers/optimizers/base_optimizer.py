@@ -9,6 +9,17 @@ from ..converter import Converter
 from ..results_manager import ResultsManager
 
 
+def get_n_inits(initialize):
+    n_inits = 0
+    for key_ in initialize.keys():
+        init_value = initialize[key_]
+        if isinstance(init_value, int):
+            n_inits += init_value
+        else:
+            n_inits += len(init_value)
+    return n_inits
+
+
 class BaseOptimizer(SearchTracker):
     def __init__(
         self,
@@ -22,14 +33,7 @@ class BaseOptimizer(SearchTracker):
 
         self.optimizers = [self]
 
-        n_inits = 0
-        for key_ in self.initialize.keys():
-            init_value = self.initialize[key_]
-            if isinstance(init_value, int):
-                n_inits += init_value
-            else:
-                n_inits += len(init_value)
-        self.n_inits = n_inits
+        self.n_inits = get_n_inits(initialize)
 
     def move_random(self):
         position = []
