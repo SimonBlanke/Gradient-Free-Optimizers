@@ -27,7 +27,7 @@ from .sequence_model import (
     BayesianOptimizer,
     TreeStructuredParzenEstimators,
     DecisionTreeOptimizer,
-    PowellsMethod,
+    # PowellsMethod,
     EnsembleOptimizer,
 )
 
@@ -46,6 +46,6 @@ __all__ = [
     "BayesianOptimizer",
     "TreeStructuredParzenEstimators",
     "DecisionTreeOptimizer",
-    "PowellsMethod",
+    # "PowellsMethod",
     "EnsembleOptimizer",
 ]

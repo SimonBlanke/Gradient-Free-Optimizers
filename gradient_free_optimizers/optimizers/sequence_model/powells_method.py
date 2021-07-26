@@ -2,6 +2,8 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+
+"""
 import numpy as np
 
 from ..base_optimizer import BaseOptimizer
@@ -100,3 +102,4 @@ class PowellsMethod(BaseOptimizer, Search):
             BaseOptimizer.evaluate(self, score_new)
         else:
             self.bayes_opt.evaluate(score_new)
+"""
