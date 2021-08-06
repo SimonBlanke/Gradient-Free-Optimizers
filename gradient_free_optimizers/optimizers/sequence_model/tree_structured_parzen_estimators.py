@@ -14,7 +14,7 @@ class TreeStructuredParzenEstimators(SMBO):
         self,
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
-        gamma_tpe=0.5,
+        gamma_tpe=0.2,
         warm_start_smbo=None,
         max_sample_size=10000000,
         sampling={"random": 1000000},
@@ -41,10 +41,12 @@ class TreeStructuredParzenEstimators(SMBO):
         n_best = int(n_samples * self.gamma_tpe)
 
         Y_sample = np.array(self.Y_sample)
-        index_best = Y_sample.argsort()[-n_best:][::-1]
+        index_best = Y_sample.argsort()[-n_best:]
+        n_worst = int(n_samples - n_best)
+        index_worst = Y_sample.argsort()[:n_worst]
 
         best_samples = [self.X_sample[i] for i in index_best]
-        worst_samples = [self.X_sample[i] for i in ~index_best]
+        worst_samples = [self.X_sample[i] for i in index_worst]
 
         return best_samples, worst_samples
 
@@ -58,13 +60,15 @@ class TreeStructuredParzenEstimators(SMBO):
         prob_best = np.exp(logprob_best)
         prob_worst = np.exp(logprob_worst)
 
-        bestOverWorst = np.divide(
-            prob_best,
+        WorstOverbest = np.divide(
             prob_worst,
+            prob_best,
             out=np.zeros_like(prob_worst),
             where=prob_worst != 0,
         )
-        exp_imp = self.gamma_tpe + bestOverWorst * (1 - self.gamma_tpe)
+
+        exp_imp_inv = self.gamma_tpe + WorstOverbest * (1 - self.gamma_tpe)
+        exp_imp = 1 / exp_imp_inv
 
         return exp_imp
 
