@@ -42,7 +42,7 @@ class EnsembleRegressor:
 
 def _return_std(X, trees, predictions, min_variance):
     """
-    used from: 
+    used from:
     https://github.com/scikit-optimize/scikit-optimize/blob/master/skopt/learning/forest.py
     """
     std = np.zeros(len(X))
@@ -55,7 +55,7 @@ def _return_std(X, trees, predictions, min_variance):
         var_tree = tree.tree_.impurity[tree.apply(X)]
         var_tree[var_tree < min_variance] = min_variance
         mean_tree = tree.predict(X)
-        std += var_tree + mean_tree ** 2
+        std += var_tree ** 2 + mean_tree ** 2
 
     std /= len(trees)
     std -= predictions ** 2.0
@@ -84,17 +84,17 @@ class TreeEnsembleBase:
 
 class RandomForestRegressor(TreeEnsembleBase, _RandomForestRegressor_):
     def __init__(self, min_variance=0.001, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(**kwargs, min_variance=min_variance)
 
 
 class ExtraTreesRegressor(TreeEnsembleBase, _ExtraTreesRegressor_):
     def __init__(self, min_variance=0.001, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(**kwargs, min_variance=min_variance)
 
 
 class GradientBoostingRegressor(TreeEnsembleBase, _GradientBoostingRegressor_):
     def __init__(self, min_variance=0.001, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(**kwargs, min_variance=min_variance)
 
 
 class GPR:
