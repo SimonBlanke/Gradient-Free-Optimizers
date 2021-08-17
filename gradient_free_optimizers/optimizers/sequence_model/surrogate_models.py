@@ -45,7 +45,7 @@ def _return_std(X, trees, predictions, min_variance):
     used from:
     https://github.com/scikit-optimize/scikit-optimize/blob/master/skopt/learning/forest.py
     """
-    std = np.zeros(len(X))
+    variance = np.zeros(len(X))
     trees = list(trees)
 
     for tree in trees:
@@ -55,17 +55,17 @@ def _return_std(X, trees, predictions, min_variance):
         var_tree = tree.tree_.impurity[tree.apply(X)]
         var_tree[var_tree < min_variance] = min_variance
         mean_tree = tree.predict(X)
-        std += var_tree ** 2 + mean_tree ** 2
+        variance += var_tree ** 2 + mean_tree ** 2
 
-    std /= len(trees)
-    std -= predictions ** 2.0
-    std[std < 0.0] = 0.0
-    std = std ** 0.5
+    variance /= len(trees)
+    variance -= predictions ** 2.0
+    variance[variance < 0.0] = 0.0
+    std = variance ** 0.5
     return std
 
 
 class TreeEnsembleBase:
-    def __init__(self, min_variance=0.001, **kwargs):
+    def __init__(self, min_variance=0.0, **kwargs):
         self.min_variance = min_variance
         super().__init__(**kwargs)
 
@@ -83,17 +83,17 @@ class TreeEnsembleBase:
 
 
 class RandomForestRegressor(TreeEnsembleBase, _RandomForestRegressor_):
-    def __init__(self, min_variance=0.001, **kwargs):
+    def __init__(self, min_variance=0.0, **kwargs):
         super().__init__(**kwargs, min_variance=min_variance)
 
 
 class ExtraTreesRegressor(TreeEnsembleBase, _ExtraTreesRegressor_):
-    def __init__(self, min_variance=0.001, **kwargs):
+    def __init__(self, min_variance=0.0, **kwargs):
         super().__init__(**kwargs, min_variance=min_variance)
 
 
 class GradientBoostingRegressor(TreeEnsembleBase, _GradientBoostingRegressor_):
-    def __init__(self, min_variance=0.001, **kwargs):
+    def __init__(self, min_variance=0.0, **kwargs):
         super().__init__(**kwargs, min_variance=min_variance)
 
 
