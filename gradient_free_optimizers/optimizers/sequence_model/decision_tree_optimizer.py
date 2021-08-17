@@ -11,9 +11,9 @@ from .surrogate_models import (
 )
 
 tree_regressor_dict = {
-    "random_forest": RandomForestRegressor(n_estimators=5),
-    "extra_tree": ExtraTreesRegressor(n_estimators=5),
-    "gradient_boost": GradientBoostingRegressor(n_estimators=5),
+    "random_forest": RandomForestRegressor,
+    "extra_tree": ExtraTreesRegressor,
+    "gradient_boost": GradientBoostingRegressor,
 }
 
 
@@ -25,7 +25,8 @@ class DecisionTreeOptimizer(ExpectedImprovementBasedOptimization):
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
         tree_regressor="extra_tree",
-        xi=0.01,
+        tree_para={"n_estimators": 100},
+        xi=0.03,
         warm_start_smbo=None,
         max_sample_size=10000000,
         sampling={"random": 1000000},
@@ -34,7 +35,8 @@ class DecisionTreeOptimizer(ExpectedImprovementBasedOptimization):
     ):
         super().__init__(search_space, initialize)
         self.tree_regressor = tree_regressor
-        self.regr = tree_regressor_dict[tree_regressor]
+        self.tree_para = tree_para
+        self.regr = tree_regressor_dict[tree_regressor](**self.tree_para)
         self.xi = xi
         self.warm_start_smbo = warm_start_smbo
         self.max_sample_size = max_sample_size
