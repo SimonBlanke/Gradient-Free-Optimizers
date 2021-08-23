@@ -10,10 +10,9 @@ from .local import (
     DownhillSimplexOptimizer,
 )
 
-from .random import (
+from .global_opt import (
     RandomSearchOptimizer,
     RandomRestartHillClimbingOptimizer,
-    RandomAnnealingOptimizer,
 )
 
 
@@ -27,7 +26,11 @@ from .sequence_model import (
     BayesianOptimizer,
     TreeStructuredParzenEstimators,
     DecisionTreeOptimizer,
-    # PowellsMethod,
+)
+
+from .experimental import (
+    RandomAnnealingOptimizer,
+    PowellsMethod,
     EnsembleOptimizer,
 )
 
@@ -46,6 +49,6 @@ __all__ = [
     "BayesianOptimizer",
     "TreeStructuredParzenEstimators",
     "DecisionTreeOptimizer",
-    # "PowellsMethod",
+    "PowellsMethod",
     "EnsembleOptimizer",
 ]
