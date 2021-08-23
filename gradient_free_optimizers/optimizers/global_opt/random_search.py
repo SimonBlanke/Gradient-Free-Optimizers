@@ -12,8 +12,9 @@ class RandomSearchOptimizer(BaseOptimizer, Search):
         self,
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
+        random_state=None,
     ):
-        super().__init__(search_space, initialize)
+        super().__init__(search_space, initialize, random_state)
 
     @BaseOptimizer.track_nth_iter
     def iterate(self):
