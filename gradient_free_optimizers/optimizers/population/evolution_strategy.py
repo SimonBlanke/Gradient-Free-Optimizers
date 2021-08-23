@@ -15,12 +15,13 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
         self,
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
+        random_state=None,
         population=10,
         mutation_rate=0.7,
         crossover_rate=0.3,
         rand_rest_p=0.05,
     ):
-        super().__init__(search_space, initialize)
+        super().__init__(search_space, initialize, random_state)
 
         self.population = population
         self.mutation_rate = mutation_rate

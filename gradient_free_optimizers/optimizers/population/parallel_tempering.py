@@ -17,11 +17,12 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
         self,
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
+        random_state=None,
         population=10,
         n_iter_swap=10,
         rand_rest_p=0.03,
     ):
-        super().__init__(search_space, initialize)
+        super().__init__(search_space, initialize, random_state)
 
         self.population = population
         self.n_iter_swap = n_iter_swap

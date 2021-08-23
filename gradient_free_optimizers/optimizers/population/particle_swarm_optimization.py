@@ -15,6 +15,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
         self,
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
+        random_state=None,
         population=10,
         inertia=0.5,
         cognitive_weight=0.5,
@@ -22,7 +23,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
         temp_weight=0.2,
         rand_rest_p=0.03,
     ):
-        super().__init__(search_space, initialize)
+        super().__init__(search_space, initialize, random_state)
 
         self.population = population
         self.inertia = inertia

@@ -14,6 +14,7 @@ class TreeStructuredParzenEstimators(SMBO):
         self,
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
+        random_state=None,
         gamma_tpe=0.2,
         warm_start_smbo=None,
         max_sample_size=10000000,
@@ -21,7 +22,7 @@ class TreeStructuredParzenEstimators(SMBO):
         warnings=100000000,
         rand_rest_p=0.03,
     ):
-        super().__init__(search_space, initialize)
+        super().__init__(search_space, initialize, random_state)
         self.gamma_tpe = gamma_tpe
         self.warm_start_smbo = warm_start_smbo
         self.max_sample_size = max_sample_size
@@ -29,8 +30,14 @@ class TreeStructuredParzenEstimators(SMBO):
         self.warnings = warnings
         self.rand_rest_p = rand_rest_p
 
-        self.kd_best = KernelDensity()
-        self.kd_worst = KernelDensity()
+        kde_para = {
+            "kernel": "gaussian",
+            "bandwidth": 1,
+            "rtol": 0.001,
+        }
+
+        self.kd_best = KernelDensity(**kde_para)
+        self.kd_worst = KernelDensity(**kde_para)
 
         self.init_position_combinations()
         self.init_warm_start_smbo()

@@ -17,12 +17,13 @@ class SMBO(BaseOptimizer, Search):
         self,
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
+        random_state=None,
         warm_start_smbo=None,
         max_sample_size=10000000,
         sampling={"random": 1000000},
         # warnings={"training": 100000, "prediction": 100000000},
     ):
-        super().__init__(search_space, initialize)
+        super().__init__(search_space, initialize, random_state)
         self.warm_start_smbo = warm_start_smbo
         self.sampling = sampling
         # self.warnings = warnings

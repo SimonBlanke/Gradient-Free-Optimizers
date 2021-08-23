@@ -32,13 +32,14 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
         self,
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
+        random_state=None,
         alpha=1,
         gamma=2,
         beta=0.5,
         sigma=0.5,
         rand_rest_p=0.01,
     ):
-        super().__init__(search_space, initialize)
+        super().__init__(search_space, initialize, random_state)
 
         self.alpha = alpha
         self.gamma = gamma

@@ -12,6 +12,7 @@ class RepulsingHillClimbingOptimizer(HillClimbingOptimizer, Search):
         self,
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
+        random_state=None,
         epsilon=0.03,
         distribution="normal",
         n_neighbours=3,
@@ -19,7 +20,7 @@ class RepulsingHillClimbingOptimizer(HillClimbingOptimizer, Search):
         rand_rest_p=0.03,
     ):
         super().__init__(
-            search_space, initialize, epsilon, distribution, n_neighbours
+            search_space, initialize, random_state, epsilon, distribution, n_neighbours
         )
 
         self.tabus = []
@@ -39,4 +40,3 @@ class RepulsingHillClimbingOptimizer(HillClimbingOptimizer, Search):
             self.epsilon_mod = self.repulsion_factor
         else:
             self.epsilon_mod = 1
-

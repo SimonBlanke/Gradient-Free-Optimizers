@@ -2,9 +2,28 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+import random
+import numpy as np
+
 from ...converter import Converter
 from ...results_manager import ResultsManager
 from ...optimizers.base_optimizer import get_n_inits
+from ...init_positions import Initializer
+
+
+def set_random_seed(nth_process, random_state):
+    """
+    Sets the random seed separately for each thread
+    (to avoid getting the same results in each thread)
+    """
+    if nth_process is None:
+        nth_process = 0
+
+    if random_state is None:
+        random_state = np.random.randint(0, high=2 ** 31 - 2, dtype=np.int64)
+
+    random.seed(random_state + nth_process)
+    np.random.seed(random_state + nth_process)
 
 
 class BasePopulationOptimizer:
@@ -12,14 +31,24 @@ class BasePopulationOptimizer:
         self,
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
+        random_state=None,
+        nth_process=None,
     ):
         super().__init__()
         self.conv = Converter(search_space)
         self.results_mang = ResultsManager(self.conv)
         self.initialize = initialize
+        self.random_state = random_state
+        self.nth_process = nth_process
 
         self.eval_times = []
         self.iter_times = []
+
+        set_random_seed(nth_process, random_state)
+
+        # get init positions
+        init = Initializer(self.conv)
+        self.init_positions = init.set_pos(self.initialize)
 
     def _iterations(self, positioners):
         nth_iter = 0

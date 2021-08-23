@@ -12,7 +12,6 @@ from .progress_bar import ProgressBarLVL0, ProgressBarLVL1
 from .times_tracker import TimesTracker
 from .memory import Memory
 from .print_info import print_info
-from .init_positions import Initializer
 
 
 def time_exceeded(start_time, max_time):
@@ -22,21 +21,6 @@ def time_exceeded(start_time, max_time):
 
 def score_exceeded(score_best, max_score):
     return max_score and score_best >= max_score
-
-
-def set_random_seed(nth_process, random_state):
-    """
-    Sets the random seed separately for each thread
-    (to avoid getting the same results in each thread)
-    """
-    if nth_process is None:
-        nth_process = 0
-
-    if random_state is None:
-        random_state = np.random.randint(0, high=2 ** 31 - 2, dtype=np.int64)
-
-    random.seed(random_state + nth_process)
-    np.random.seed(random_state + nth_process)
 
 
 class Search(TimesTracker):
@@ -85,8 +69,6 @@ class Search(TimesTracker):
                 self.nth_process, self.n_iter, self.objective_function
             )
 
-        set_random_seed(self.nth_process, self.random_state)
-
     def _early_stop(self):
         if time_exceeded(self.start_time, self.max_time):
             return True
@@ -107,8 +89,6 @@ class Search(TimesTracker):
         memory=True,
         memory_warm_start=None,
         verbosity=["progress_bar", "print_results", "print_times"],
-        random_state=None,
-        nth_process=None,
     ):
         self.start_time = time.time()
 
@@ -122,14 +102,8 @@ class Search(TimesTracker):
         self.memory = memory
         self.memory_warm_start = memory_warm_start
         self.verbosity = verbosity
-        self.random_state = random_state
-        self.nth_process = nth_process
 
         self._init_search()
-
-        # get init positions
-        init = Initializer(self.conv)
-        self.init_positions = init.set_pos(self.initialize)
 
         if memory is not False:
             mem = Memory(memory_warm_start, self.conv)

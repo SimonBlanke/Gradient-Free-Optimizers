@@ -14,6 +14,7 @@ class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer, Search):
         self,
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
+        random_state=None,
         epsilon=0.03,
         distribution="normal",
         n_neighbours=3,
@@ -26,6 +27,7 @@ class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer, Search):
         super().__init__(
             search_space,
             initialize,
+            random_state,
             epsilon,
             distribution,
             n_neighbours,
