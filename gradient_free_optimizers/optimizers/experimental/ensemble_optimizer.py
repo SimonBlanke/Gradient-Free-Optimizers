@@ -3,8 +3,8 @@
 # License: MIT License
 
 
-from .exp_imp_based_opt import ExpectedImprovementBasedOptimization
-from .surrogate_models import EnsembleRegressor
+from ..sequence_model.exp_imp_based_opt import ExpectedImprovementBasedOptimization
+from ..sequence_model.surrogate_models import EnsembleRegressor
 
 
 from sklearn.tree import DecisionTreeRegressor
@@ -19,6 +19,7 @@ class EnsembleOptimizer(ExpectedImprovementBasedOptimization):
         self,
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
+        random_state=None,
         estimators=[
             GradientBoostingRegressor(n_estimators=5),
             # DecisionTreeRegressor(),
@@ -32,7 +33,7 @@ class EnsembleOptimizer(ExpectedImprovementBasedOptimization):
         warnings=100000000,
         rand_rest_p=0.03,
     ):
-        super().__init__(search_space, initialize)
+        super().__init__(search_space, initialize, random_state)
         self.estimators = estimators
         self.regr = EnsembleRegressor(estimators)
         self.xi = xi

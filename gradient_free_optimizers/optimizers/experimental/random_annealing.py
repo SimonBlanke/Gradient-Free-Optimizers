@@ -12,6 +12,7 @@ class RandomAnnealingOptimizer(HillClimbingOptimizer, Search):
         self,
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
+        random_state=None,
         epsilon=0.03,
         distribution="normal",
         n_neighbours=3,
@@ -19,7 +20,7 @@ class RandomAnnealingOptimizer(HillClimbingOptimizer, Search):
         start_temp=1,
         rand_rest_p=0.03,
     ):
-        super().__init__(search_space, initialize)
+        super().__init__(search_space, initialize, random_state)
         self.epsilon = epsilon
         self.distribution = distribution
         self.n_neighbours = n_neighbours

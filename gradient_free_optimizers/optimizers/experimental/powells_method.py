@@ -3,12 +3,11 @@
 # License: MIT License
 
 
-"""
 import numpy as np
 
 from ..base_optimizer import BaseOptimizer
 from ...search import Search
-from .bayesian_optimization import BayesianOptimizer
+from ..sequence_model.bayesian_optimization import BayesianOptimizer
 
 
 def sort_list_idx(list_):
@@ -22,9 +21,10 @@ class PowellsMethod(BaseOptimizer, Search):
         self,
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
+        random_state=None,
         iters_p_dim=20,
     ):
-        super().__init__(search_space, initialize)
+        super().__init__(search_space, initialize, random_state)
 
         self.iters_p_dim = iters_p_dim
 
@@ -102,4 +102,3 @@ class PowellsMethod(BaseOptimizer, Search):
             BaseOptimizer.evaluate(self, score_new)
         else:
             self.bayes_opt.evaluate(score_new)
-"""
