@@ -10,7 +10,7 @@ n_iter_para = ("n_iter", [(10), (20), (30)])
 
 @pytest.mark.parametrize(*n_iter_para)
 @pytest.mark.parametrize(*optimizers)
-def test_convex_convergence_singleOpt(Optimizer, n_iter):
+def test_search_tracker(Optimizer, n_iter):
     def objective_function(para):
         score = -para["x1"] * para["x1"]
         return score
@@ -20,7 +20,10 @@ def test_convex_convergence_singleOpt(Optimizer, n_iter):
 
     opt = Optimizer(search_space, initialize=initialize)
     opt.search(
-        objective_function, n_iter=n_iter, memory=False, verbosity=False,
+        objective_function,
+        n_iter=n_iter,
+        memory=False,
+        verbosity=False,
     )
 
     n_new_positions = 0
@@ -37,9 +40,7 @@ def test_convex_convergence_singleOpt(Optimizer, n_iter):
         n_new_positions = n_new_positions + len(optimizer.pos_new_list)
         n_new_scores = n_new_scores + len(optimizer.score_new_list)
 
-        n_current_positions = n_current_positions + len(
-            optimizer.pos_current_list
-        )
+        n_current_positions = n_current_positions + len(optimizer.pos_current_list)
         n_current_scores = n_current_scores + len(optimizer.score_current_list)
 
         n_best_positions = n_best_positions + len(optimizer.pos_best_list)
@@ -53,4 +54,3 @@ def test_convex_convergence_singleOpt(Optimizer, n_iter):
 
     assert n_best_positions == n_best_scores
     assert n_best_positions <= n_new_positions
-

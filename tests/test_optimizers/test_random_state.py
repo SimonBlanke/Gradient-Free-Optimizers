@@ -31,19 +31,20 @@ n_last = n_iter - n_random
 
 @pytest.mark.parametrize(*optimizers)
 def test_random_state_0(Optimizer):
-    opt0 = Optimizer(search_space, initialize={"random": n_random})
+    opt0 = Optimizer(search_space, initialize={"random": n_random}, random_state=1)
     opt0.search(
         ackkley_function,
         n_iter=n_iter,
-        random_state=1,
     )
 
-    opt1 = Optimizer(search_space, initialize={"random": n_random})
+    opt1 = Optimizer(search_space, initialize={"random": n_random}, random_state=1)
     opt1.search(
         ackkley_function,
         n_iter=n_iter,
-        random_state=1,
     )
+
+    print("\n opt0.results \n", opt0.results)
+    print("\n opt1.results \n", opt1.results)
 
     n_last_scores0 = list(opt0.results["score"].values)[-n_last:]
     n_last_scores1 = list(opt1.results["score"].values)[-n_last:]
@@ -53,18 +54,16 @@ def test_random_state_0(Optimizer):
 
 @pytest.mark.parametrize(*optimizers)
 def test_random_state_1(Optimizer):
-    opt0 = Optimizer(search_space, initialize={"random": n_random})
+    opt0 = Optimizer(search_space, initialize={"random": n_random}, random_state=10)
     opt0.search(
         ackkley_function,
         n_iter=n_iter,
-        random_state=10,
     )
 
-    opt1 = Optimizer(search_space, initialize={"random": n_random})
+    opt1 = Optimizer(search_space, initialize={"random": n_random}, random_state=10)
     opt1.search(
         ackkley_function,
         n_iter=n_iter,
-        random_state=10,
     )
 
     n_last_scores0 = list(opt0.results["score"].values)[-n_last:]
@@ -75,18 +74,16 @@ def test_random_state_1(Optimizer):
 
 @pytest.mark.parametrize(*optimizers)
 def test_random_state_2(Optimizer):
-    opt0 = Optimizer(search_space, initialize={"random": n_random})
+    opt0 = Optimizer(search_space, initialize={"random": n_random}, random_state=1)
     opt0.search(
         ackkley_function,
         n_iter=n_iter,
-        random_state=1,
     )
 
-    opt1 = Optimizer(search_space, initialize={"random": n_random})
+    opt1 = Optimizer(search_space, initialize={"random": n_random}, random_state=10)
     opt1.search(
         ackkley_function,
         n_iter=n_iter,
-        random_state=10,
     )
 
     print("\n opt0.results \n", opt0.results)

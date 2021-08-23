@@ -5,7 +5,7 @@ from ._parametrize import optimizers_local
 
 
 @pytest.mark.parametrize(*optimizers_local)
-def test_convex_convergence_singleOpt(Optimizer):
+def test_random_restart(Optimizer):
     def objective_function(para):
         score = -(para["x1"] * para["x1"])
         return score
@@ -23,11 +23,12 @@ def test_convex_convergence_singleOpt(Optimizer):
 
     scores = []
     for rnd_st in range(n_opts):
-        opt = Optimizer(search_space, initialize=initialize, rand_rest_p=1)
+        opt = Optimizer(
+            search_space, initialize=initialize, rand_rest_p=1, random_state=rnd_st
+        )
         opt.search(
             objective_function,
             n_iter=20,
-            random_state=rnd_st,
             memory=False,
             verbosity=False,
         )
@@ -38,4 +39,3 @@ def test_convex_convergence_singleOpt(Optimizer):
     print("score_mean", score_mean)
 
     assert score_mean > -400
-
