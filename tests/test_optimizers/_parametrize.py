@@ -3,8 +3,9 @@ from gradient_free_optimizers import (
     StochasticHillClimbingOptimizer,
     RepulsingHillClimbingOptimizer,
     SimulatedAnnealingOptimizer,
-    # DownhillSimplexOptimizer,
+    DownhillSimplexOptimizer,
     RandomSearchOptimizer,
+    PowellsMethod,
     RandomRestartHillClimbingOptimizer,
     RandomAnnealingOptimizer,
     ParallelTemperingOptimizer,
@@ -13,6 +14,7 @@ from gradient_free_optimizers import (
     BayesianOptimizer,
     TreeStructuredParzenEstimators,
     DecisionTreeOptimizer,
+    OneDimensionalBayesianOptimization,
     EnsembleOptimizer,
 )
 
@@ -23,6 +25,7 @@ optimizers_singleOpt = (
         (StochasticHillClimbingOptimizer),
         (RepulsingHillClimbingOptimizer),
         (RandomSearchOptimizer),
+        (PowellsMethod),
         (RandomRestartHillClimbingOptimizer),
         (RandomAnnealingOptimizer),
         (SimulatedAnnealingOptimizer),
@@ -46,6 +49,7 @@ optimizers_noSBOM = (
         (StochasticHillClimbingOptimizer),
         (RepulsingHillClimbingOptimizer),
         (RandomSearchOptimizer),
+        (PowellsMethod),
         (RandomRestartHillClimbingOptimizer),
         (RandomAnnealingOptimizer),
         (SimulatedAnnealingOptimizer),
@@ -60,6 +64,7 @@ optimizers_SBOM = (
     "Optimizer",
     [
         (BayesianOptimizer),
+        (OneDimensionalBayesianOptimization),
         (TreeStructuredParzenEstimators),
         (DecisionTreeOptimizer),
         (EnsembleOptimizer),
@@ -90,6 +95,7 @@ optimizers = (
         (SimulatedAnnealingOptimizer),
         # (DownhillSimplexOptimizer),
         (RandomSearchOptimizer),
+        (PowellsMethod),
         (RandomRestartHillClimbingOptimizer),
         (RandomAnnealingOptimizer),
         (ParallelTemperingOptimizer),
@@ -99,5 +105,6 @@ optimizers = (
         (TreeStructuredParzenEstimators),
         (DecisionTreeOptimizer),
         (EnsembleOptimizer),
+        (OneDimensionalBayesianOptimization),
     ],
 )
