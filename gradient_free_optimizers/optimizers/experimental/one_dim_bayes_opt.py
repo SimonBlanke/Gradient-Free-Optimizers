@@ -16,13 +16,13 @@ def sort_list_idx(list_):
     return idx_sorted
 
 
-class PowellsMethod(BaseOptimizer, Search):
+class OneDimensionalBayesianOptimization(BaseOptimizer, Search):
     def __init__(
         self,
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
         random_state=None,
-        iters_p_dim=20,
+        iters_p_dim=10,
     ):
         super().__init__(search_space, initialize, random_state)
 
@@ -96,9 +96,8 @@ class PowellsMethod(BaseOptimizer, Search):
         return pos_new
 
     def evaluate(self, score_new):
-        self.score_new = score_new
-
         if self.current_search_dim == -1:
             BaseOptimizer.evaluate(self, score_new)
         else:
+            self.score_new = score_new
             self.bayes_opt.evaluate(score_new)

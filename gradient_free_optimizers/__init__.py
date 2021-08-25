@@ -12,6 +12,7 @@ from .optimizers import (
     SimulatedAnnealingOptimizer,
     DownhillSimplexOptimizer,
     RandomSearchOptimizer,
+    PowellsMethod,
     RandomRestartHillClimbingOptimizer,
     RandomAnnealingOptimizer,
     ParallelTemperingOptimizer,
@@ -20,7 +21,7 @@ from .optimizers import (
     BayesianOptimizer,
     TreeStructuredParzenEstimators,
     DecisionTreeOptimizer,
-    PowellsMethod,
+    OneDimensionalBayesianOptimization,
     EnsembleOptimizer,
 )
 
@@ -32,6 +33,7 @@ __all__ = [
     "SimulatedAnnealingOptimizer",
     "DownhillSimplexOptimizer",
     "RandomSearchOptimizer",
+    "PowellsMethod",
     "RandomRestartHillClimbingOptimizer",
     "RandomAnnealingOptimizer",
     "ParallelTemperingOptimizer",
@@ -40,6 +42,6 @@ __all__ = [
     "BayesianOptimizer",
     "TreeStructuredParzenEstimators",
     "DecisionTreeOptimizer",
-    "PowellsMethod",
+    "OneDimensionalBayesianOptimization",
     "EnsembleOptimizer",
 ]

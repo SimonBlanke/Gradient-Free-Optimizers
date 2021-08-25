@@ -12,6 +12,7 @@ from .local import (
 
 from .global_opt import (
     RandomSearchOptimizer,
+    PowellsMethod,
     RandomRestartHillClimbingOptimizer,
 )
 
@@ -30,7 +31,7 @@ from .sequence_model import (
 
 from .experimental import (
     RandomAnnealingOptimizer,
-    PowellsMethod,
+    OneDimensionalBayesianOptimization,
     EnsembleOptimizer,
 )
 
@@ -41,6 +42,7 @@ __all__ = [
     "SimulatedAnnealingOptimizer",
     "DownhillSimplexOptimizer",
     "RandomSearchOptimizer",
+    "PowellsMethod",
     "RandomRestartHillClimbingOptimizer",
     "RandomAnnealingOptimizer",
     "ParallelTemperingOptimizer",
@@ -49,6 +51,6 @@ __all__ = [
     "BayesianOptimizer",
     "TreeStructuredParzenEstimators",
     "DecisionTreeOptimizer",
-    "PowellsMethod",
+    "OneDimensionalBayesianOptimization",
     "EnsembleOptimizer",
 ]
