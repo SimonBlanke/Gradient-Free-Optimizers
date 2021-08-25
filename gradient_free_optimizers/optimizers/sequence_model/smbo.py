@@ -111,5 +111,4 @@ class SMBO(BaseOptimizer, Search):
 
     @track_X_sample
     def init_pos(self, pos):
-        super().init_pos(pos)
-        return pos
+        return super().init_pos(pos)

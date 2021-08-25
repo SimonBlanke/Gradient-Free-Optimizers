@@ -100,6 +100,7 @@ class BaseOptimizer(SearchTracker):
     def init_pos(self, pos):
         self.pos_new = pos
         self.nth_iter = len(self.pos_new_list)
+        return pos
 
     def finish_initialization(self):
         pass
