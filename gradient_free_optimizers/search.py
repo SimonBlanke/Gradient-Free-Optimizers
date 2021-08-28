@@ -8,6 +8,8 @@ import random
 import numpy as np
 import pandas as pd
 
+from multiprocessing.managers import DictProxy
+
 from .progress_bar import ProgressBarLVL0, ProgressBarLVL1
 from .times_tracker import TimesTracker
 from .memory import Memory
@@ -26,7 +28,9 @@ def score_exceeded(score_best, max_score):
 
 def no_change(score_new_list, early_stopping):
     if "n_iter_no_change" not in early_stopping:
-        print("Warning")
+        print(
+            "Warning n_iter_no_change-parameter must be set in order for early stopping to work"
+        )
         return False
 
     n_iter_no_change = early_stopping["n_iter_no_change"]
@@ -42,7 +46,6 @@ def no_change(score_new_list, early_stopping):
     diff = length_pos - max_index
 
     if diff > n_iter_no_change:
-        print("\n n_iter_no_change")
         return True
 
     first_n = length_pos - n_iter_no_change
@@ -50,19 +53,17 @@ def no_change(score_new_list, early_stopping):
 
     max_first_n = max(scores_first_n)
 
-    if "tol_abs" in early_stopping:
+    if "tol_abs" in early_stopping and early_stopping["tol_abs"] is not None:
         tol_abs = early_stopping["tol_abs"]
 
         if abs(max_first_n - max_score) < tol_abs:
-            print("\n tol_abs")
             return True
 
-    if "tol_rel" in early_stopping:
+    if "tol_rel" in early_stopping and early_stopping["tol_rel"] is not None:
         tol_rel = early_stopping["tol_rel"]
 
         percent_imp = ((max_score - max_first_n) / abs(max_first_n)) * 100
         if percent_imp < tol_rel:
-            print("\n tol_rel")
             return True
 
 
@@ -135,9 +136,9 @@ class Search(TimesTracker):
         if self.stop:
             return
 
-        if time_exceeded(self.start_time, self.max_time):
+        if self.max_time and time_exceeded(self.start_time, self.max_time):
             self.stop = True
-        elif score_exceeded(self.p_bar.score_best, self.max_score):
+        elif self.max_score and score_exceeded(self.p_bar.score_best, self.max_score):
             self.stop = True
         elif self.early_stopping and no_change(
             self.score_new_list, self.early_stopping
@@ -182,7 +183,10 @@ class Search(TimesTracker):
         init = Initializer(self.conv)
         self.init_positions = init.set_pos(self.initialize)
 
-        if memory is not False:
+        if isinstance(memory, DictProxy):
+            mem = Memory(memory_warm_start, self.conv, dict_proxy=memory)
+            self.score = self.results_mang.score(mem.memory(objective_function))
+        elif memory is True:
             mem = Memory(memory_warm_start, self.conv)
             self.score = self.results_mang.score(mem.memory(objective_function))
         else:
