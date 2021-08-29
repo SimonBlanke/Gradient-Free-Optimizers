@@ -110,10 +110,10 @@ def test_early_stop_4():
     }
 
     start1 = {"x1": 0}
-    start2 = {"x1": 0.11}
-    start3 = {"x1": 0.22}
-    start4 = {"x1": 0.33}
-    start5 = {"x1": 0.44}
+    start2 = {"x1": 0.1}
+    start3 = {"x1": 0.2}
+    start4 = {"x1": 0.3}
+    start5 = {"x1": 0.4}
 
     warm_start_l = [
         start1,
@@ -216,10 +216,10 @@ def test_early_stop_6():
     }
 
     start1 = {"x1": 1}
-    start2 = {"x1": 1.11}
-    start3 = {"x1": 1.23}
-    start4 = {"x1": 1.36}
-    start5 = {"x1": 1.49}
+    start2 = {"x1": 1.1}
+    start3 = {"x1": 1.22}
+    start4 = {"x1": 1.35}
+    start5 = {"x1": 1.48}
 
     warm_start_l = [
         start1,
