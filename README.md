@@ -484,6 +484,16 @@ Each optimization class needs the "search_space" as an input argument. Optionall
   - (float, None)
   - Maximum score until the optimization stops. The score will be checked after each completed iteration.
 
+
+- early_stopping=None
+  - (dict, None)
+  - Stops the optimization run early if it did not achive any score-improvement within the last iterations. The early_stopping-parameter enables to set three parameters:
+    - `n_iter_no_change`: Non-optional int-parameter. This marks the last n iterations to look for an improvement over the iterations that came before n. If the best score of the entire run is within those last n iterations the run will continue (until other stopping criteria are met), otherwise the run will stop.
+    - `tol_abs`: Optional float-paramter. The score must have improved at least this absolute tolerance in the last n iterations over the best score in the iterations before n. This is an absolute value, so 0.1 means an imporvement of 0.8 -> 0.9 is acceptable but 0.81 -> 0.9 would stop the run.
+    - `tol_rel`: Optional float-paramter. The score must have imporved at least this relative tolerance (in percentage) in the last n iterations over the best score in the iterations before n. This is a relative value, so 10 means an imporvement of 0.8 -> 0.88 is acceptable but 0.8 -> 0.87 would stop the run.
+
+  
+
 - memory=True
   - (bool)
   - Whether or not to use the "memory"-feature. The memory is a dictionary, which gets filled with parameters and scores during the optimization run. If the optimizer encounters a parameter that is already in the dictionary it just extracts the score instead of reevaluating the objective function (which can take a long time).
@@ -645,7 +655,7 @@ Each optimization class needs the "search_space" as an input argument. Optionall
   - [ ] add Downhill-simplex algorithm to optimizers
   - [ ] add other acquisition functions to smbo (Probability of improvement, Entropy search, ...)
   - [ ] Improved sampling for smb-optimizers
-  - [ ] add Bayesian Powell's Method to optimizers
+  - [ ] add Bayesian 1D Bayesian-optimization to optimizers
   - [ ] Finalize API (1.0.0)
   
 </details>
