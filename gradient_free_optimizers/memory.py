@@ -7,10 +7,13 @@ import pandas as pd
 
 
 class Memory:
-    def __init__(self, warm_start, conv):
+    def __init__(self, warm_start, conv, dict_proxy=None):
         self.memory_dict = {}
         self.memory_dict_new = {}
         self.conv = conv
+
+        if dict_proxy is not None:
+            self.memory_dict = dict_proxy
 
         if warm_start is None:
             return
@@ -27,7 +30,7 @@ class Memory:
 
             return
 
-        self.memory_dict = self.conv.dataframe2memory_dict(warm_start)
+        self.memory_dict.update(self.conv.dataframe2memory_dict(warm_start))
 
     def memory(self, objective_function):
         def wrapper(para):

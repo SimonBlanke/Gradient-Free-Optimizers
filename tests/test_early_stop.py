@@ -1,4 +1,5 @@
 import time
+import pytest
 import numpy as np
 from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import cross_val_score
@@ -19,25 +20,52 @@ search_space = {
 }
 
 
-def test_max_time_0():
-    c_time1 = time.time()
-    opt = RandomSearchOptimizer(search_space)
-    opt.search(objective_function, n_iter=1000000, max_time=0.1)
-    diff_time1 = time.time() - c_time1
+def test_early_stop_0():
+    early_stopping = {
+        "n_iter_no_change": 5,
+        "tol_abs": 0.1,
+        "tol_rel": 0.1,
+    }
 
-    assert diff_time1 < 1
-
-
-def test_max_time_1():
-    c_time1 = time.time()
-    opt = RandomSearchOptimizer(search_space)
-    opt.search(objective_function, n_iter=1000000, max_time=1)
-    diff_time1 = time.time() - c_time1
-
-    assert 0.3 < diff_time1 < 2
+    opt = HillClimbingOptimizer(search_space, initialize={"warm_start": [{"x1": 0}]})
+    opt.search(
+        objective_function,
+        n_iter=1000,
+        early_stopping=early_stopping,
+    )
 
 
-def test_max_score_0():
+def test_early_stop_1():
+    early_stopping = {
+        "n_iter_no_change": 5,
+        "tol_abs": None,
+        "tol_rel": 5,
+    }
+
+    opt = HillClimbingOptimizer(search_space, initialize={"warm_start": [{"x1": 0}]})
+    opt.search(
+        objective_function,
+        n_iter=1000,
+        early_stopping=early_stopping,
+    )
+
+
+def test_early_stop_2():
+    early_stopping = {
+        "n_iter_no_change": 5,
+        "tol_abs": 0.1,
+        "tol_rel": None,
+    }
+
+    opt = HillClimbingOptimizer(search_space, initialize={"warm_start": [{"x1": 0}]})
+    opt.search(
+        objective_function,
+        n_iter=1000,
+        early_stopping=early_stopping,
+    )
+
+
+def test_early_stop_3():
     def objective_function(para):
         score = -para["x1"] * para["x1"]
         return score
@@ -46,53 +74,233 @@ def test_max_score_0():
         "x1": np.arange(0, 100, 0.1),
     }
 
-    max_score = -9999
+    n_iter_no_change = 5
+    early_stopping = {
+        "n_iter_no_change": n_iter_no_change,
+    }
 
-    opt = HillClimbingOptimizer(
-        search_space,
-        initialize={"warm_start": [{"x1": 99}]},
-        epsilon=0.01,
-        rand_rest_p=0,
-    )
+    opt = HillClimbingOptimizer(search_space, initialize={"warm_start": [{"x1": 0}]})
     opt.search(
-        objective_function, n_iter=100000, max_score=max_score,
+        objective_function,
+        n_iter=100000,
+        early_stopping=early_stopping,
     )
+    search_data = opt.results
+    n_performed_iter = len(search_data)
 
-    print("\n Results head \n", opt.results.head())
-    print("\n Results tail \n", opt.results.tail())
+    print("\n n_performed_iter \n", n_performed_iter)
+    print("\n n_iter_no_change \n", n_iter_no_change)
 
-    print("\nN iter:", len(opt.results))
-
-    assert -100 > opt.best_score > max_score
+    assert n_performed_iter == (n_iter_no_change + 1)
 
 
-def test_max_score_1():
+def test_early_stop_4():
     def objective_function(para):
-        score = -para["x1"] * para["x1"]
-        time.sleep(0.01)
-        return score
+        return para["x1"]
 
     search_space = {
         "x1": np.arange(0, 100, 0.1),
     }
 
-    max_score = -9999
+    n_iter_no_change = 5
+    early_stopping = {
+        "n_iter_no_change": 5,
+        "tol_abs": 0.1,
+        "tol_rel": None,
+    }
 
-    c_time = time.time()
-    opt = HillClimbingOptimizer(
-        search_space, initialize={"warm_start": [{"x1": 99}]}
-    )
+    start1 = {"x1": 0}
+    start2 = {"x1": 0.11}
+    start3 = {"x1": 0.22}
+    start4 = {"x1": 0.33}
+    start5 = {"x1": 0.44}
+
+    warm_start_l = [
+        start1,
+        start1,
+        start1,
+        start1,
+        start1,
+        start2,
+        start2,
+        start2,
+        start3,
+        start3,
+        start3,
+        start4,
+        start4,
+        start4,
+        start5,
+        start5,
+        start5,
+    ]
+    n_iter = len(warm_start_l)
+
+    opt = HillClimbingOptimizer(search_space, initialize={"warm_start": warm_start_l})
     opt.search(
-        objective_function, n_iter=100000, max_score=max_score,
+        objective_function,
+        n_iter=n_iter,
+        early_stopping=early_stopping,
     )
-    diff_time = time.time() - c_time
+    search_data = opt.results
+    n_performed_iter = len(search_data)
 
-    print("\n Results head \n", opt.results.head())
-    print("\n Results tail \n", opt.results.tail())
+    print("\n n_performed_iter \n", n_performed_iter)
+    print("\n n_iter_no_change \n", n_iter_no_change)
 
-    print("\nN iter:", len(opt.results))
-
-    assert diff_time < 1
+    assert n_performed_iter == n_iter
 
 
-test_max_score_1()
+def test_early_stop_5():
+    def objective_function(para):
+        return para["x1"]
+
+    search_space = {
+        "x1": np.arange(0, 100, 0.01),
+    }
+
+    n_iter_no_change = 5
+    early_stopping = {
+        "n_iter_no_change": n_iter_no_change,
+        "tol_abs": 0.1,
+        "tol_rel": None,
+    }
+
+    start1 = {"x1": 0}
+    start2 = {"x1": 0.09}
+    start3 = {"x1": 0.20}
+
+    warm_start_l = [
+        start1,
+        start1,
+        start1,
+        start1,
+        start1,
+        start2,
+        start2,
+        start2,
+        start3,
+        start3,
+        start3,
+    ]
+    n_iter = len(warm_start_l)
+
+    opt = HillClimbingOptimizer(search_space, initialize={"warm_start": warm_start_l})
+    opt.search(
+        objective_function,
+        n_iter=n_iter,
+        early_stopping=early_stopping,
+    )
+    search_data = opt.results
+    n_performed_iter = len(search_data)
+
+    print("\n n_performed_iter \n", n_performed_iter)
+    print("\n n_iter_no_change \n", n_iter_no_change)
+
+    assert n_performed_iter == (n_iter_no_change + 1)
+
+
+def test_early_stop_6():
+    def objective_function(para):
+        return para["x1"]
+
+    search_space = {
+        "x1": np.arange(0, 100, 0.01),
+    }
+
+    n_iter_no_change = 5
+    early_stopping = {
+        "n_iter_no_change": 5,
+        "tol_abs": None,
+        "tol_rel": 10,
+    }
+
+    start1 = {"x1": 1}
+    start2 = {"x1": 1.11}
+    start3 = {"x1": 1.23}
+    start4 = {"x1": 1.36}
+    start5 = {"x1": 1.49}
+
+    warm_start_l = [
+        start1,
+        start1,
+        start1,
+        start1,
+        start1,
+        start2,
+        start2,
+        start2,
+        start3,
+        start3,
+        start3,
+        start4,
+        start4,
+        start4,
+        start5,
+        start5,
+        start5,
+    ]
+    n_iter = len(warm_start_l)
+
+    opt = HillClimbingOptimizer(search_space, initialize={"warm_start": warm_start_l})
+    opt.search(
+        objective_function,
+        n_iter=n_iter,
+        early_stopping=early_stopping,
+    )
+    search_data = opt.results
+    n_performed_iter = len(search_data)
+
+    print("\n n_performed_iter \n", n_performed_iter)
+    print("\n n_iter_no_change \n", n_iter_no_change)
+
+    assert n_performed_iter == n_iter
+
+
+def test_early_stop_7():
+    def objective_function(para):
+        return para["x1"]
+
+    search_space = {
+        "x1": np.arange(0, 100, 0.01),
+    }
+
+    n_iter_no_change = 5
+    early_stopping = {
+        "n_iter_no_change": n_iter_no_change,
+        "tol_abs": None,
+        "tol_rel": 10,
+    }
+
+    start1 = {"x1": 1}
+    start2 = {"x1": 1.09}
+    start3 = {"x1": 1.20}
+
+    warm_start_l = [
+        start1,
+        start1,
+        start1,
+        start1,
+        start1,
+        start2,
+        start2,
+        start2,
+        start3,
+        start3,
+        start3,
+    ]
+    n_iter = len(warm_start_l)
+
+    opt = HillClimbingOptimizer(search_space, initialize={"warm_start": warm_start_l})
+    opt.search(
+        objective_function,
+        n_iter=n_iter,
+        early_stopping=early_stopping,
+    )
+    search_data = opt.results
+    n_performed_iter = len(search_data)
+
+    print("\n n_performed_iter \n", n_performed_iter)
+    print("\n n_iter_no_change \n", n_iter_no_change)
+
+    assert n_performed_iter == (n_iter_no_change + 1)
