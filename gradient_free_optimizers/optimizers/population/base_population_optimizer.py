@@ -2,9 +2,11 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+
 import random
 import numpy as np
 
+from ..search_tracker import SearchTracker
 from ...converter import Converter
 from ...results_manager import ResultsManager
 from ...optimizers.base_optimizer import get_n_inits
@@ -26,7 +28,7 @@ def set_random_seed(nth_process, random_state):
     np.random.seed(random_state + nth_process)
 
 
-class BasePopulationOptimizer:
+class BasePopulationOptimizer(SearchTracker):
     def __init__(
         self,
         search_space,
