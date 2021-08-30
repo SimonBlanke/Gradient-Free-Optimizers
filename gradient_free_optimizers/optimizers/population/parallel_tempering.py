@@ -29,6 +29,8 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
         self.rand_rest_p = rand_rest_p
 
         self.systems = self._create_population(SimulatedAnnealingOptimizer)
+        for system in self.systems:
+            system.temp = 1.1 ** random.uniform(0, 25)
         self.optimizers = self.systems
 
     def _swap_pos(self):
