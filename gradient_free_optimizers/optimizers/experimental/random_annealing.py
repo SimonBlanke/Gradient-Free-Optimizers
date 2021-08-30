@@ -16,8 +16,8 @@ class RandomAnnealingOptimizer(HillClimbingOptimizer, Search):
         epsilon=0.03,
         distribution="normal",
         n_neighbours=3,
-        annealing_rate=0.97,
-        start_temp=1,
+        annealing_rate=0.98,
+        start_temp=10,
         rand_rest_p=0.03,
     ):
         super().__init__(search_space, initialize, random_state)
@@ -32,7 +32,7 @@ class RandomAnnealingOptimizer(HillClimbingOptimizer, Search):
     @HillClimbingOptimizer.track_nth_iter
     @HillClimbingOptimizer.random_restart
     def iterate(self):
-        pos = self._move_climb(self.pos_current, epsilon_mod=self.temp * 10)
+        pos = self._move_climb(self.pos_current, epsilon_mod=self.temp)
         self.temp = self.temp * self.annealing_rate
 
         return pos
