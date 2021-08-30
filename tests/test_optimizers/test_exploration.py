@@ -30,13 +30,13 @@ def test_exploration_0(Optimizer):
         verbosity={"print_results": False, "progress_bar": False},
     )
 
-    uniques_2nd_dim = list(opt.results["x1"].values)
+    uniques_2nd_dim = list(opt.search_data["x1"].values)
 
     print("\n uniques_2nd_dim \n", uniques_2nd_dim, "\n")
-    print("\n Results head \n", opt.results.head())
-    print("\n Results tail \n", opt.results.tail())
+    print("\n Results head \n", opt.search_data.head())
+    print("\n Results tail \n", opt.search_data.tail())
 
-    print("\nN iter:", len(opt.results))
+    print("\nN iter:", len(opt.search_data))
 
     assert 0 in uniques_2nd_dim
 
@@ -67,13 +67,12 @@ def test_exploration_1(Optimizer):
         verbosity={"print_results": False, "progress_bar": False},
     )
 
-    uniques_2nd_dim = list(opt.results["x1"].values)
+    uniques_2nd_dim = list(opt.search_data["x1"].values)
 
     print("\n uniques_2nd_dim \n", uniques_2nd_dim, "\n")
-    print("\n Results head \n", opt.results.head())
-    print("\n Results tail \n", opt.results.tail())
+    print("\n Results head \n", opt.search_data.head())
+    print("\n Results tail \n", opt.search_data.tail())
 
-    print("\nN iter:", len(opt.results))
+    print("\nN iter:", len(opt.search_data))
 
     assert 0 in uniques_2nd_dim
-

@@ -50,7 +50,7 @@ def test_obj_func_return_dictionary_0():
     opt = RandomSearchOptimizer(search_space)
     opt.search(objective_function, n_iter=30)
 
-    assert "_x1_" in list(opt.results.columns)
+    assert "_x1_" in list(opt.search_data.columns)
 
 
 def test_obj_func_return_dictionary_1():
@@ -65,5 +65,5 @@ def test_obj_func_return_dictionary_1():
     opt = RandomSearchOptimizer(search_space)
     opt.search(objective_function, n_iter=30)
 
-    assert "_x1_" in list(opt.results.columns)
-    assert "_x1_*2" in list(opt.results.columns)
+    assert "_x1_" in list(opt.search_data.columns)
+    assert "_x1_*2" in list(opt.search_data.columns)

@@ -22,7 +22,7 @@ def test_initialize_warm_start_0():
     opt = RandomSearchOptimizer(search_space, initialize=initialize)
     opt.search(objective_function, n_iter=1)
 
-    # print("\nself.results \n", opt.results)
+    # print("\nself.results \n", opt.search_data)
 
     assert abs(opt.best_score) < 0.001
 

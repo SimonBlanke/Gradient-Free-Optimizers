@@ -43,11 +43,11 @@ def test_random_state_0(Optimizer):
         n_iter=n_iter,
     )
 
-    print("\n opt0.results \n", opt0.results)
-    print("\n opt1.results \n", opt1.results)
+    print("\n opt0.search_data \n", opt0.search_data)
+    print("\n opt1.search_data \n", opt1.search_data)
 
-    n_last_scores0 = list(opt0.results["score"].values)[-n_last:]
-    n_last_scores1 = list(opt1.results["score"].values)[-n_last:]
+    n_last_scores0 = list(opt0.search_data["score"].values)[-n_last:]
+    n_last_scores1 = list(opt1.search_data["score"].values)[-n_last:]
 
     assert abs(np.sum(n_last_scores0) - np.sum(n_last_scores1)) < err
 
@@ -66,8 +66,8 @@ def test_random_state_1(Optimizer):
         n_iter=n_iter,
     )
 
-    n_last_scores0 = list(opt0.results["score"].values)[-n_last:]
-    n_last_scores1 = list(opt1.results["score"].values)[-n_last:]
+    n_last_scores0 = list(opt0.search_data["score"].values)[-n_last:]
+    n_last_scores1 = list(opt1.search_data["score"].values)[-n_last:]
 
     assert abs(np.sum(n_last_scores0) - np.sum(n_last_scores1)) < err
 
@@ -86,11 +86,11 @@ def test_random_state_2(Optimizer):
         n_iter=n_iter,
     )
 
-    print("\n opt0.results \n", opt0.results)
-    print("\n opt1.results \n", opt1.results)
+    print("\n opt0.search_data \n", opt0.search_data)
+    print("\n opt1.search_data \n", opt1.search_data)
 
-    n_last_scores0 = list(opt0.results["score"].values)[-n_last:]
-    n_last_scores1 = list(opt1.results["score"].values)[-n_last:]
+    n_last_scores0 = list(opt0.search_data["score"].values)[-n_last:]
+    n_last_scores1 = list(opt1.search_data["score"].values)[-n_last:]
 
     assert abs(np.sum(n_last_scores0) - np.sum(n_last_scores1)) > err
 
@@ -103,10 +103,10 @@ def test_no_random_state_0(Optimizer):
     opt1 = Optimizer(search_space, initialize={"random": n_random})
     opt1.search(ackkley_function, n_iter=n_iter)
 
-    print("\n opt0.results \n", opt0.results)
-    print("\n opt1.results \n", opt1.results)
+    print("\n opt0.search_data \n", opt0.search_data)
+    print("\n opt1.search_data \n", opt1.search_data)
 
-    n_last_scores0 = list(opt0.results["score"].values)[-n_last:]
-    n_last_scores1 = list(opt1.results["score"].values)[-n_last:]
+    n_last_scores0 = list(opt0.search_data["score"].values)[-n_last:]
+    n_last_scores1 = list(opt1.search_data["score"].values)[-n_last:]
 
     assert abs(np.sum(n_last_scores0) - np.sum(n_last_scores1)) > err

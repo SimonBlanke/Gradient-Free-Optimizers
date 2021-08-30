@@ -73,7 +73,7 @@ def test_best_results_1(Optimizer, objective):
         verbosity={"print_results": False, "progress_bar": False},
     )
 
-    search_data = opt.results
+    search_data = opt.search_data
     print("\n search_data \n", search_data)
 
     non_inf_mask = ~np.isinf(search_data["score"].values)

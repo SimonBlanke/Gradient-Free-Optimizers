@@ -564,7 +564,7 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 <summary><b> Results from attributes </b></summary>
 
 
-- .results
+- .search_data
   - Dataframe, that contains information about the score, the value of each parameter and the evaluation and iteration time. Each row shows the information of one optimization iteration.
 
     example:

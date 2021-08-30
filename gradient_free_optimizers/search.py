@@ -197,7 +197,7 @@ class Search(TimesTracker):
                 break
             self._iteration(nth_iter)
 
-        self.results = pd.DataFrame(self.results_mang.results_list)
+        self.search_data = pd.DataFrame(self.results_mang.results_list)
 
         self.best_score = self.p_bar.score_best
         self.best_value = self.conv.position2value(self.p_bar.pos_best)

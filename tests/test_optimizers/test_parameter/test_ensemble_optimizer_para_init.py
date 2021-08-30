@@ -71,12 +71,12 @@ opt4.search(objective_function_nan, n_iter=30)
 opt5.search(objective_function_m_inf, n_iter=30)
 opt6.search(objective_function_inf, n_iter=30)
 
-search_data1 = opt1.results
-search_data2 = opt2.results
-search_data3 = opt3.results
-search_data4 = opt4.results
-search_data5 = opt5.results
-search_data6 = opt6.results
+search_data1 = opt1.search_data
+search_data2 = opt2.search_data
+search_data3 = opt3.search_data
+search_data4 = opt4.search_data
+search_data5 = opt5.search_data
+search_data6 = opt6.search_data
 
 
 class GPR:

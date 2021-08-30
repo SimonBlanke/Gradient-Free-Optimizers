@@ -56,7 +56,7 @@ for optimizer in optimizer_list:
 
     opt2 = optimizer(search_space)
     opt2.search(
-        objective_function, n_iter=15, verbosity=False, memory_warm_start=opt1.results
+        objective_function, n_iter=15, verbosity=False, memory_warm_start=opt1.search_data
     )
 
     opt3 = optimizer(search_space, initialize={"warm_start": [{"x1": 1}]})

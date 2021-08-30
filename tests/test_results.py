@@ -17,46 +17,42 @@ def test_attributes_results_0():
     opt = RandomSearchOptimizer(search_space)
     opt.search(objective_function, n_iter=100)
 
-    assert isinstance(opt.results, pd.DataFrame)
+    assert isinstance(opt.search_data, pd.DataFrame)
 
 
 def test_attributes_results_1():
     opt = RandomSearchOptimizer(search_space)
     opt.search(objective_function, n_iter=100)
 
-    assert set(search_space.keys()) < set(opt.results.columns)
+    assert set(search_space.keys()) < set(opt.search_data.columns)
 
 
 def test_attributes_results_2():
     opt = RandomSearchOptimizer(search_space)
     opt.search(objective_function, n_iter=100)
 
-    assert "x1" in list(opt.results.columns)
+    assert "x1" in list(opt.search_data.columns)
 
 
 def test_attributes_results_3():
     opt = RandomSearchOptimizer(search_space)
     opt.search(objective_function, n_iter=100)
 
-    assert "score" in list(opt.results.columns)
+    assert "score" in list(opt.search_data.columns)
 
 
 def test_attributes_results_4():
-    opt = RandomSearchOptimizer(
-        search_space, initialize={"warm_start": [{"x1": 0}]}
-    )
+    opt = RandomSearchOptimizer(search_space, initialize={"warm_start": [{"x1": 0}]})
     opt.search(objective_function, n_iter=1)
 
-    assert 0 in list(opt.results["x1"].values)
+    assert 0 in list(opt.search_data["x1"].values)
 
 
 def test_attributes_results_5():
-    opt = RandomSearchOptimizer(
-        search_space, initialize={"warm_start": [{"x1": 10}]}
-    )
+    opt = RandomSearchOptimizer(search_space, initialize={"warm_start": [{"x1": 10}]})
     opt.search(objective_function, n_iter=1)
 
-    assert 10 in list(opt.results["x1"].values)
+    assert 10 in list(opt.search_data["x1"].values)
 
 
 def test_attributes_results_6():
@@ -71,7 +67,7 @@ def test_attributes_results_6():
     opt = RandomSearchOptimizer(search_space, initialize={"random": 1})
     opt.search(objective_function, n_iter=20, memory=False)
 
-    x1_results = list(opt.results["x1"].values)
+    x1_results = list(opt.search_data["x1"].values)
 
     print("\n x1_results \n", x1_results)
 
@@ -93,7 +89,7 @@ def test_attributes_results_7():
         objective_function, n_iter=20, initialize={"random": 1}, memory=True
     )
 
-    x1_results = list(opt.results["x1"].values)
+    x1_results = list(opt.search_data["x1"].values)
 
     print("\n x1_results \n", x1_results)
 
@@ -121,9 +117,9 @@ def test_attributes_results_8():
         memory_warm_start=results,
     )
 
-    print("\n opt.results \n", opt.results)
+    print("\n opt.search_data \n", opt.search_data)
 
-    x1_results = list(opt.results["x1"].values)
+    x1_results = list(opt.search_data["x1"].values)
 
     assert 10 == x1_results[0]
 """

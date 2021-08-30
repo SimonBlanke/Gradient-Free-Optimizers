@@ -22,7 +22,7 @@ def test_results_0(Optimizer):
         verbosity={"print_results": False, "progress_bar": False},
     )
 
-    results_set = set(opt.results["x1"])
+    results_set = set(opt.search_data["x1"])
     search_space_set = set(search_space["x1"])
 
     assert results_set.issubset(search_space_set)
@@ -46,12 +46,12 @@ def test_results_1(Optimizer):
         verbosity={"print_results": False, "progress_bar": False},
     )
 
-    results_set_x1 = set(opt.results["x1"])
+    results_set_x1 = set(opt.search_data["x1"])
     search_space_set_x1 = set(search_space["x1"])
 
     assert results_set_x1.issubset(search_space_set_x1)
 
-    results_set_x2 = set(opt.results["x2"])
+    results_set_x2 = set(opt.search_data["x2"])
     search_space_set_x2 = set(search_space["x2"])
 
     assert results_set_x2.issubset(search_space_set_x2)

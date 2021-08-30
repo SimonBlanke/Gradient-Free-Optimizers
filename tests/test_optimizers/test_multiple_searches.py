@@ -21,8 +21,8 @@ def test_searches_0(Optimizer):
     opt.search(objective_function, n_iter=1)
     opt.search(objective_function, n_iter=1)
 
-    assert -100 in opt.results["x1"].values
-    assert len(opt.results["x1"]) == 2
+    assert -100 in opt.search_data["x1"].values
+    assert len(opt.search_data["x1"]) == 2
 
 
 @pytest.mark.parametrize(*optimizers)
@@ -33,8 +33,8 @@ def test_searches_1(Optimizer):
     opt.search(objective_function, n_iter=1)
     opt.search(objective_function, n_iter=10)
 
-    assert -100 in opt.results["x1"].values
-    assert len(opt.results["x1"]) == 11
+    assert -100 in opt.search_data["x1"].values
+    assert len(opt.search_data["x1"]) == 11
 
 
 @pytest.mark.parametrize(*optimizers)
@@ -45,8 +45,8 @@ def test_searches_2(Optimizer):
     opt.search(objective_function, n_iter=1)
     opt.search(objective_function, n_iter=20)
 
-    assert -100 in opt.results["x1"].values
-    assert len(opt.results["x1"]) == 21
+    assert -100 in opt.search_data["x1"].values
+    assert len(opt.search_data["x1"]) == 21
 
 
 @pytest.mark.parametrize(*optimizers)
@@ -57,8 +57,8 @@ def test_searches_3(Optimizer):
     opt.search(objective_function, n_iter=10)
     opt.search(objective_function, n_iter=20)
 
-    assert -100 in opt.results["x1"].values
-    assert len(opt.results["x1"]) == 30
+    assert -100 in opt.search_data["x1"].values
+    assert len(opt.search_data["x1"]) == 30
 
 
 @pytest.mark.parametrize(*optimizers)
@@ -70,5 +70,5 @@ def test_searches_4(Optimizer):
     opt.search(objective_function, n_iter=10)
     opt.search(objective_function, n_iter=10)
 
-    assert -100 in opt.results["x1"].values
-    assert len(opt.results["x1"]) == 30
+    assert -100 in opt.search_data["x1"].values
+    assert len(opt.search_data["x1"]) == 30

@@ -92,4 +92,4 @@ def test_best_results_1(Optimizer):
         verbosity={"print_results": False, "progress_bar": False},
     )
 
-    assert opt.best_para["x1"] in list(opt.results["x1"])
+    assert opt.best_para["x1"] in list(opt.search_data["x1"])

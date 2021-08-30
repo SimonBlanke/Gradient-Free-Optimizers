@@ -23,9 +23,7 @@ def test_memory_timeSave_0():
     X, y = data.data, data.target
 
     def objective_function(para):
-        dtc = DecisionTreeClassifier(
-            min_samples_split=para["min_samples_split"]
-        )
+        dtc = DecisionTreeClassifier(min_samples_split=para["min_samples_split"])
         scores = cross_val_score(dtc, X, y, cv=5)
 
         return scores.mean()
@@ -97,10 +95,10 @@ def test_memory_warm_start():
 
     c_time2 = time.time()
     opt1 = RandomSearchOptimizer(search_space)
-    opt1.search(objective_function, n_iter=300, memory_warm_start=opt0.results)
+    opt1.search(objective_function, n_iter=300, memory_warm_start=opt0.search_data)
     diff_time2 = time.time() - c_time2
 
-    print("\n opt0.results \n", opt0.results)
+    print("\n opt0.search_data \n", opt0.search_data)
 
     assert diff_time2 < diff_time1 * 0.5
 
@@ -110,7 +108,9 @@ def test_memory_warm_start_manual():
     X, y = data.data, data.target
 
     def objective_function(para):
-        dtc = GradientBoostingClassifier(n_estimators=para["n_estimators"],)
+        dtc = GradientBoostingClassifier(
+            n_estimators=para["n_estimators"],
+        )
         scores = cross_val_score(dtc, X, y, cv=5)
 
         return scores.mean()
@@ -130,10 +130,7 @@ def test_memory_warm_start_manual():
 
     c_time = time.time()
     opt = RandomSearchOptimizer(search_space)
-    opt.search(
-        objective_function, n_iter=10, memory_warm_start=memory_warm_start
-    )
+    opt.search(objective_function, n_iter=10, memory_warm_start=memory_warm_start)
     diff_time = time.time() - c_time
 
     assert diff_time_1 > diff_time * 0.3
-

@@ -42,10 +42,10 @@ def test_max_score_0():
         max_score=max_score,
     )
 
-    print("\n Results head \n", opt.results.head())
-    print("\n Results tail \n", opt.results.tail())
+    print("\n Results head \n", opt.search_data.head())
+    print("\n Results tail \n", opt.search_data.tail())
 
-    print("\nN iter:", len(opt.results))
+    print("\nN iter:", len(opt.search_data))
 
     assert -100 > opt.best_score > max_score
 
@@ -71,9 +71,9 @@ def test_max_score_1():
     )
     diff_time = time.time() - c_time
 
-    print("\n Results head \n", opt.results.head())
-    print("\n Results tail \n", opt.results.tail())
+    print("\n Results head \n", opt.search_data.head())
+    print("\n Results tail \n", opt.search_data.tail())
 
-    print("\nN iter:", len(opt.results))
+    print("\nN iter:", len(opt.search_data))
 
     assert diff_time < 1

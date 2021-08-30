@@ -85,7 +85,7 @@ def test_early_stop_3():
         n_iter=100000,
         early_stopping=early_stopping,
     )
-    search_data = opt.results
+    search_data = opt.search_data
     n_performed_iter = len(search_data)
 
     print("\n n_performed_iter \n", n_performed_iter)
@@ -142,7 +142,7 @@ def test_early_stop_4():
         n_iter=n_iter,
         early_stopping=early_stopping,
     )
-    search_data = opt.results
+    search_data = opt.search_data
     n_performed_iter = len(search_data)
 
     print("\n n_performed_iter \n", n_performed_iter)
@@ -191,7 +191,7 @@ def test_early_stop_5():
         n_iter=n_iter,
         early_stopping=early_stopping,
     )
-    search_data = opt.results
+    search_data = opt.search_data
     n_performed_iter = len(search_data)
 
     print("\n n_performed_iter \n", n_performed_iter)
@@ -248,7 +248,7 @@ def test_early_stop_6():
         n_iter=n_iter,
         early_stopping=early_stopping,
     )
-    search_data = opt.results
+    search_data = opt.search_data
     n_performed_iter = len(search_data)
 
     print("\n n_performed_iter \n", n_performed_iter)
@@ -297,7 +297,7 @@ def test_early_stop_7():
         n_iter=n_iter,
         early_stopping=early_stopping,
     )
-    search_data = opt.results
+    search_data = opt.search_data
     n_performed_iter = len(search_data)
 
     print("\n n_performed_iter \n", n_performed_iter)
