@@ -42,7 +42,8 @@ class ParallelAnnealingOptimizer(BasePopulationOptimizer, Search):
     def _swap_pos(self):
         for _p1_ in self.systems:
             _systems_temp = copy.copy(self.systems)
-            _systems_temp.remove(_p1_)
+            if len(_systems_temp) > 1:
+                _systems_temp.remove(_p1_)
 
             rand = random.uniform(0, 1) * 100
             _p2_ = np.random.choice(_systems_temp)
