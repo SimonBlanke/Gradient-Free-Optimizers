@@ -14,56 +14,7 @@ from .progress_bar import ProgressBarLVL0, ProgressBarLVL1
 from .times_tracker import TimesTracker
 from .memory import Memory
 from .print_info import print_info
-
-
-def time_exceeded(start_time, max_time):
-    run_time = time.time() - start_time
-    return max_time and run_time > max_time
-
-
-def score_exceeded(score_best, max_score):
-    return max_score and score_best >= max_score
-
-
-def no_change(score_new_list, early_stopping):
-    if "n_iter_no_change" not in early_stopping:
-        print(
-            "Warning n_iter_no_change-parameter must be set in order for early stopping to work"
-        )
-        return False
-
-    n_iter_no_change = early_stopping["n_iter_no_change"]
-    if len(score_new_list) <= n_iter_no_change:
-        return False
-
-    scores_np = np.array(score_new_list)
-
-    max_score = max(score_new_list)
-    max_index = np.argmax(scores_np)
-    length_pos = len(score_new_list)
-
-    diff = length_pos - max_index
-
-    if diff > n_iter_no_change:
-        return True
-
-    first_n = length_pos - n_iter_no_change
-    scores_first_n = score_new_list[:first_n]
-
-    max_first_n = max(scores_first_n)
-
-    if "tol_abs" in early_stopping and early_stopping["tol_abs"] is not None:
-        tol_abs = early_stopping["tol_abs"]
-
-        if abs(max_first_n - max_score) < tol_abs:
-            return True
-
-    if "tol_rel" in early_stopping and early_stopping["tol_rel"] is not None:
-        tol_rel = early_stopping["tol_rel"]
-
-        percent_imp = ((max_score - max_first_n) / abs(max_first_n)) * 100
-        if percent_imp < tol_rel:
-            return True
+from .stop_run import StopRun
 
 
 def set_random_seed(nth_process, random_state):
@@ -118,8 +69,6 @@ class Search(TimesTracker):
         self.p_bar.update(score_new, pos_new, nth_iter)
 
     def _init_search(self):
-        self.stop = False
-
         if "progress_bar" in self.verbosity:
             self.p_bar = ProgressBarLVL1(
                 self.nth_process, self.n_iter, self.objective_function
@@ -128,19 +77,6 @@ class Search(TimesTracker):
             self.p_bar = ProgressBarLVL0(
                 self.nth_process, self.n_iter, self.objective_function
             )
-
-    def _early_stop(self):
-        if self.stop:
-            return
-
-        if self.max_time and time_exceeded(self.start_time, self.max_time):
-            self.stop = True
-        elif self.max_score and score_exceeded(self.p_bar.score_best, self.max_score):
-            self.stop = True
-        elif self.early_stopping and no_change(
-            self.score_new_list, self.early_stopping
-        ):
-            self.stop = True
 
     def print_info(self, *args):
         print_info(*args)
@@ -170,6 +106,8 @@ class Search(TimesTracker):
         self.memory_warm_start = memory_warm_start
         self.verbosity = verbosity
 
+        self.stop = StopRun(max_time, max_score, early_stopping)
+
         self._init_search()
 
         if isinstance(memory, DictProxy):
@@ -183,8 +121,9 @@ class Search(TimesTracker):
 
         # loop to initialize N positions
         for init_pos, nth_iter in zip(self.init_positions, range(n_iter)):
-            self._early_stop()
-            if self.stop:
+            if self.stop.check(
+                self.start_time, self.p_bar.score_best, self.score_new_list
+            ):
                 break
             self._initialization(init_pos, nth_iter)
 
@@ -192,8 +131,9 @@ class Search(TimesTracker):
 
         # loop to do the iterations
         for nth_iter in range(len(self.init_positions), n_iter):
-            self._early_stop()
-            if self.stop:
+            if self.stop.check(
+                self.start_time, self.p_bar.score_best, self.score_new_list
+            ):
                 break
             self._iteration(nth_iter)
 
