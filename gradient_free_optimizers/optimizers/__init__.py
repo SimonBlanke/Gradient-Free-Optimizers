@@ -32,6 +32,7 @@ from .sequence_model import (
 from .experimental import (
     RandomAnnealingOptimizer,
     OneDimensionalBayesianOptimization,
+    ParallelAnnealingOptimizer,
     EnsembleOptimizer,
 )
 
@@ -52,5 +53,6 @@ __all__ = [
     "TreeStructuredParzenEstimators",
     "DecisionTreeOptimizer",
     "OneDimensionalBayesianOptimization",
+    "ParallelAnnealingOptimizer",
     "EnsembleOptimizer",
 ]

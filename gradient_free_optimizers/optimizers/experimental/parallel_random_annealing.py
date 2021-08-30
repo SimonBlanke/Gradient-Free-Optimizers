@@ -2,23 +2,30 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-
+import copy
 import random
 
 import numpy as np
 
 from ..population.base_population_optimizer import BasePopulationOptimizer
 from ...search import Search
-from ..local import RandomAnnealingOptimizer
+from . import RandomAnnealingOptimizer
 
 
-class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
+def norm_value(v, p):
+    if v < 0:
+        return -abs(v) ** p
+    else:
+        return v ** p
+
+
+class ParallelAnnealingOptimizer(BasePopulationOptimizer, Search):
     def __init__(
         self,
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
-        population=10,
-        n_iter_swap=10,
+        population=5,
+        n_iter_swap=5,
         rand_rest_p=0.03,
     ):
         super().__init__(search_space, initialize)
@@ -28,13 +35,16 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
         self.rand_rest_p = rand_rest_p
 
         self.systems = self._create_population(RandomAnnealingOptimizer)
+        for system in self.systems:
+            system.temp = 1.1 ** random.uniform(0, 25)
         self.optimizers = self.systems
 
     def _swap_pos(self):
-        _systems_temp = self.systems[:]
-
         for _p1_ in self.systems:
-            rand = random.uniform(0, 1)
+            _systems_temp = copy.copy(self.systems)
+            _systems_temp.remove(_p1_)
+
+            rand = random.uniform(0, 1) * 100
             _p2_ = np.random.choice(_systems_temp)
 
             p_accept = self._accept_swap(_p1_, _p2_)
@@ -42,17 +52,16 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
                 _p1_.temp, _p2_.temp = (_p2_.temp, _p1_.temp)
 
     def _accept_swap(self, _p1_, _p2_):
-        denom = _p1_.score_current + _p2_.score_current
+        s = (_p1_.score_current - _p2_.score_current) / (
+            _p1_.score_current + _p2_.score_current
+        )
+        t = (_p1_.temp - _p2_.temp) / (_p1_.temp + _p2_.temp)
 
-        if denom == 0:
-            return 100
-        elif abs(denom) == np.inf:
-            return 0
-        else:
-            score_diff_norm = (_p1_.score_current - _p2_.score_current) / denom
+        s_norm = norm_value(s, 0.1)
+        t_norm = norm_value(t, 0.5)
 
-            temp = (1 / _p1_.temp) - (1 / _p2_.temp)
-            return np.exp(score_diff_norm * temp)
+        p = t_norm * s_norm * 100
+        return p
 
     def init_pos(self, pos):
         nth_pop = self.nth_iter % len(self.systems)
