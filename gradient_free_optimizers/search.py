@@ -90,6 +90,9 @@ class Search(TimesTracker):
         self.new_results_list = []
         self.all_results_list = []
 
+        self.score_l = []
+        self.pos_l = []
+
     @TimesTracker.eval_time
     def _score(self, pos):
         return self.score(pos)
@@ -104,6 +107,9 @@ class Search(TimesTracker):
         score_new = self._score(init_pos)
         self.evaluate(score_new)
 
+        self.pos_l.append(init_pos)
+        self.score_l.append(score_new)
+
         self.p_bar.update(score_new, init_pos, nth_iter)
 
     @TimesTracker.iter_time
@@ -115,6 +121,9 @@ class Search(TimesTracker):
 
         score_new = self._score(pos_new)
         self.evaluate(score_new)
+
+        self.pos_l.append(pos_new)
+        self.score_l.append(score_new)
 
         self.p_bar.update(score_new, pos_new, nth_iter)
 
@@ -140,9 +149,7 @@ class Search(TimesTracker):
             self.stop = True
         elif self.max_score and score_exceeded(self.p_bar.score_best, self.max_score):
             self.stop = True
-        elif self.early_stopping and no_change(
-            self.score_new_list, self.early_stopping
-        ):
+        elif self.early_stopping and no_change(self.score_l, self.early_stopping):
             self.stop = True
 
     def print_info(self, *args):

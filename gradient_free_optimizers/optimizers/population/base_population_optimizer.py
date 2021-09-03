@@ -8,7 +8,7 @@ from ...results_manager import ResultsManager
 from ...optimizers.base_optimizer import get_n_inits
 
 
-class BasePopulationOptimizer(SearchTracker):
+class BasePopulationOptimizer:
     def __init__(
         self,
         search_space,
