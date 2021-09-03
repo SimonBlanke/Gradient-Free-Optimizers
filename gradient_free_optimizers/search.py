@@ -40,6 +40,9 @@ class Search(TimesTracker):
         self.new_results_list = []
         self.all_results_list = []
 
+        self.score_l = []
+        self.pos_l = []
+
     @TimesTracker.eval_time
     def _score(self, pos):
         return self.score(pos)
@@ -54,6 +57,9 @@ class Search(TimesTracker):
         score_new = self._score(init_pos)
         self.evaluate(score_new)
 
+        self.pos_l.append(init_pos)
+        self.score_l.append(score_new)
+
         self.p_bar.update(score_new, init_pos, nth_iter)
 
     @TimesTracker.iter_time
@@ -65,6 +71,9 @@ class Search(TimesTracker):
 
         score_new = self._score(pos_new)
         self.evaluate(score_new)
+
+        self.pos_l.append(pos_new)
+        self.score_l.append(score_new)
 
         self.p_bar.update(score_new, pos_new, nth_iter)
 
@@ -121,9 +130,7 @@ class Search(TimesTracker):
 
         # loop to initialize N positions
         for init_pos, nth_iter in zip(self.init_positions, range(n_iter)):
-            if self.stop.check(
-                self.start_time, self.p_bar.score_best, self.score_new_list
-            ):
+            if self.stop.check(self.start_time, self.p_bar.score_best, self.score_l):
                 break
             self._initialization(init_pos, nth_iter)
 
@@ -131,9 +138,7 @@ class Search(TimesTracker):
 
         # loop to do the iterations
         for nth_iter in range(len(self.init_positions), n_iter):
-            if self.stop.check(
-                self.start_time, self.p_bar.score_best, self.score_new_list
-            ):
+            if self.stop.check(self.start_time, self.p_bar.score_best, self.score_l):
                 break
             self._iteration(nth_iter)
 

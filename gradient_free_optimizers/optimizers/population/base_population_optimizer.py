@@ -28,7 +28,7 @@ def set_random_seed(nth_process, random_state):
     np.random.seed(random_state + nth_process)
 
 
-class BasePopulationOptimizer(SearchTracker):
+class BasePopulationOptimizer:
     def __init__(
         self,
         search_space,
