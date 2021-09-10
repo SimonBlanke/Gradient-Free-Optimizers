@@ -70,15 +70,17 @@ class VariableResolutionBayesianOptimizer(SMBO):
         self.score_para_d = score_para_d_tmp
 
     def decrease_ss_reso(
-        self, search_space, para_list=None, f_reso=10, min_dim_size=100
+        self, search_space, para_list=None, min_dim_size=20, margin=100, n_samples=10
     ):
         search_space_reso = {}
+        # para_list = None
 
         for para in list(search_space.keys()):
             dim_values = search_space[para]
             dim_size = len(dim_values)
 
             if dim_size > min_dim_size:
+                f_reso = int(dim_size / min_dim_size)
                 dim_values_new = dim_values[::f_reso]
 
                 if para_list is None or len(para_list) == 0:
@@ -88,15 +90,17 @@ class VariableResolutionBayesianOptimizer(SMBO):
                     for para_d in para_list:
                         density = (max(dim_values) - min(dim_values)) / len(dim_values)
 
-                        margin = 10
                         center = para_d[para]
                         min_ = center - density * margin
                         max_ = center + density * margin
 
-                        dim_values_center = np.where(
+                        dim_pos_center = np.where(
                             np.logical_and(dim_values >= min_, dim_values <= max_)
                         )[0]
-                        dim_values_cen_l.append(dim_values_center)
+                        dim_values_center = dim_values[dim_pos_center]
+                        samples = np.random.choice(dim_values_center, size=n_samples)
+
+                        dim_values_cen_l.append(samples)
 
                     dim_values_conc = np.hstack((dim_values_cen_l))
                     dim_values_unique = np.unique(dim_values_conc)
