@@ -39,7 +39,6 @@ class TreeStructuredParzenEstimators(SMBO):
         self.kd_best = KernelDensity(**kde_para)
         self.kd_worst = KernelDensity(**kde_para)
 
-        self.init_position_combinations()
         self.init_warm_start_smbo()
 
     def _get_samples(self):
@@ -102,14 +101,9 @@ class TreeStructuredParzenEstimators(SMBO):
     def iterate(self):
         return self.propose_location()
 
+    @SMBO.track_y_sample
     def evaluate(self, score_new):
         self.score_new = score_new
 
         self._evaluate_new2current(score_new)
         self._evaluate_current2best()
-
-        self.Y_sample.append(score_new)
-
-        if np.isnan(score_new):
-            del self.X_sample[-1]
-            del self.Y_sample[-1]

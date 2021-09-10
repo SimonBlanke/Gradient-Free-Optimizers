@@ -43,5 +43,4 @@ class EnsembleOptimizer(ExpectedImprovementBasedOptimization):
         self.warnings = warnings
         self.rand_rest_p = rand_rest_p
 
-        self.init_position_combinations()
         self.init_warm_start_smbo()

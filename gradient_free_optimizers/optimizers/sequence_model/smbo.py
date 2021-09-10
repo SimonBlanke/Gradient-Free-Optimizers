@@ -33,7 +33,6 @@ class SMBO(BaseOptimizer, Search):
         # if self.warnings:
         #     self.memory_warning(max_sample_size)
 
-    def init_position_combinations(self):
         self.X_sample = []
         self.Y_sample = []
 
@@ -64,11 +63,22 @@ class SMBO(BaseOptimizer, Search):
             self.X_sample = self.conv.values2positions(X_sample_values)
             self.Y_sample = list(Y_sample)
 
-    def track_X_sample(func):
+    def track_X_sample(iterate):
         def wrapper(self, *args, **kwargs):
-            pos = func(self, *args, **kwargs)
+            pos = iterate(self, *args, **kwargs)
             self.X_sample.append(pos)
             return pos
+
+        return wrapper
+
+    def track_y_sample(evaluate):
+        def wrapper(self, score):
+            evaluate(self, score)
+
+            if np.isnan(score) or np.isinf(score):
+                del self.X_sample[-1]
+            else:
+                self.Y_sample.append(score)
 
         return wrapper
 
