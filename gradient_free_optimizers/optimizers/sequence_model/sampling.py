@@ -43,7 +43,7 @@ class InitialSampler:
         )
         search_space_size = self.conv.dim_sizes.prod()
 
-        while abs(search_space_size - self.max_sample_size) > 10000:
+        while abs(search_space_size - self.max_sample_size) > self.max_sample_size / 10:
             n_samples_array = []
             for idx, dim_size in enumerate(np.nditer(dim_sizes_temp)):
                 array_diff_ = random.randint(1, dim_size)
