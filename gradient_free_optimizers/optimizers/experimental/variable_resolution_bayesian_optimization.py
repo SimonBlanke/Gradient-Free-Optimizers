@@ -70,7 +70,7 @@ class VariableResolutionBayesianOptimizer(SMBO):
         self.score_para_d = score_para_d_tmp
 
     def decrease_ss_reso(
-        self, search_space, para_list=None, min_dim_size=20, margin=100, n_samples=10
+        self, search_space, para_list=None, min_dim_size=20, margin=5, n_samples=20
     ):
         search_space_reso = {}
         # para_list = None
@@ -91,8 +91,8 @@ class VariableResolutionBayesianOptimizer(SMBO):
                         density = (max(dim_values) - min(dim_values)) / len(dim_values)
 
                         center = para_d[para]
-                        min_ = center - density * margin
-                        max_ = center + density * margin
+                        min_ = center - density * dim_size * margin / 100
+                        max_ = center + density * dim_size * margin / 100
 
                         dim_pos_center = np.where(
                             np.logical_and(dim_values >= min_, dim_values <= max_)
