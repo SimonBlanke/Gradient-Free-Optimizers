@@ -17,12 +17,10 @@ class EvoSubSpaceBayesianOptimizer(BaseOptimizer, Search):
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
         random_state=None,
-        max_size=100000,
-        n_iter_evo=500,
-        n_ss_min=5,
+        max_size=300000,
+        n_ss_min=1,
     ):
         super().__init__(search_space, initialize, random_state)
-        self.n_iter_evo = n_iter_evo
         self.n_ss_min = n_ss_min
 
         sub_search_spaces = SubSearchSpaces(search_space, max_size=max_size)
@@ -44,6 +42,10 @@ class EvoSubSpaceBayesianOptimizer(BaseOptimizer, Search):
             )
 
         self.n_sub_spaces = len(sub_search_spaces_l)
+        print("\n self.n_sub_spaces \n", self.n_sub_spaces)
+
+        self.n_iter_evo = sum(initialize.values()) * self.n_sub_spaces * 2
+        print("\n self.n_iter_evo \n", self.n_iter_evo)
 
     def init_pos(self, pos):
         self.pos_new = pos
@@ -64,10 +66,11 @@ class EvoSubSpaceBayesianOptimizer(BaseOptimizer, Search):
             pos_new = bayes_opt.iterate()
 
         sub_search_space = self.sss_id_d[self.sss_id]
-
+        # print("\n sub_search_space \n", sub_search_space)
         pos_sss = bayes_opt.iterate()
         value_sss = bayes_opt.conv.position2value(pos_sss)
         pos_new = self.conv.value2position(value_sss)
+        # print("\n n sss_id \n", len(self.sss_ids))
 
         return pos_new
 
@@ -89,8 +92,8 @@ class EvoSubSpaceBayesianOptimizer(BaseOptimizer, Search):
 
             for sss_id in self.sss_ids:
                 scores = np.array(self.sss_scores_d[sss_id])
-                # max_score = np.amax(scores)
-                metric = scores.mean()
+                # metric = scores.mean()
+                metric = np.amax(scores)
                 if metric < metric_worst:
                     metric_worst = metric
                     sss_id_worst = sss_id
