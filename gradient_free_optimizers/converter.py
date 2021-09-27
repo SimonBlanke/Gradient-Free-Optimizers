@@ -55,7 +55,7 @@ class Converter:
             pos = np.abs(value[n] - np.array(space_dim)).argmin()
             position.append(int(pos))
 
-        return position
+        return np.array(position)
 
     @returnNoneIfArgNone
     def value2para(self, value: Optional[list]) -> Optional[dict]:
@@ -114,9 +114,7 @@ class Converter:
         return memory_dict
 
     @returnNoneIfArgNone
-    def memory_dict2positions_scores(
-        self, memory_dict: Optional[dict]
-    ) -> Optional[tuple[list, list]]:
+    def memory_dict2positions_scores(self, memory_dict: Optional[dict]):
         positions = [np.array(pos).astype(int) for pos in list(memory_dict.keys())]
         scores = list(memory_dict.values())
 

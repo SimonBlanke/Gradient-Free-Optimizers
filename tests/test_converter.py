@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 import pandas as pd
+
 from gradient_free_optimizers.converter import Converter
 
 
@@ -109,9 +110,9 @@ def test_value2position_0(test_input, expected):
 
 
 value2position_test_para_1 = [
-    (np.array([-10, 11]), np.array([0, 10])),
-    (np.array([10, 11]), np.array([20, 10])),
-    (np.array([0, 0]), np.array([10, 0])),
+    ([-10, 11], np.array([0, 10])),
+    ([10, 11], np.array([20, 10])),
+    ([0, 0], np.array([10, 0])),
 ]
 
 
@@ -178,9 +179,9 @@ def test_value2para_1(test_input, expected):
 
 
 para2value_test_para_0 = [
-    ({"x1": -10}, -10),
-    ({"x1": 10}, 10),
-    ({"x1": 0}, 0),
+    ({"x1": -10}, [-10]),
+    ({"x1": 10}, [10]),
+    ({"x1": 0}, [0]),
 ]
 
 
@@ -215,7 +216,10 @@ def test_para2value_1(test_input, expected):
     conv = unordered_dict_workaround(conv, order)
     value = conv.para2value(test_input)
 
-    assert (value == expected).all()
+    print("value", type(value))
+    print("expected", type(expected))
+
+    assert (np.array(value) == np.array(expected)).all()
 
 
 ######### test values2positions #########
@@ -616,33 +620,3 @@ def test_memory_dict2dataframe_0(test_input, expected):
     dataframe = dataframe[expected.columns]
 
     assert dataframe.equals(expected)
-
-
-""" --- test search spaces with mixed int/float types --- """
-
-
-def test_mixed_type_search_space():
-    def objective_function(para):
-        nonlocal para_types
-        for v, t in zip(para.values(), para_types):
-            assert isinstance(v, t)
-        score = 0
-        for x1 in range(para["x1"]):
-            score += -(x1 ** 2) + para["x2"] + 100
-        return score
-
-    search_space = {
-        "x1": range(10, 20),
-        "x2": np.arange(1, 2, 0.1),
-    }
-    para_types = [int, float]
-    expected_pos = [1, 9]
-
-    opt = RandomSearchOptimizer(search_space)
-    opt.search(objective_function, n_iter=100)
-
-    for best_para_val, expected_p, dim_space, p_type in zip(
-        opt.best_para.values(), expected_pos, search_space.values(), para_types
-    ):
-        assert best_para_val == dim_space[expected_p]
-        assert isinstance(best_para_val, p_type)
