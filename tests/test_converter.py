@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 import pandas as pd
+
 from gradient_free_optimizers.converter import Converter
 
 
@@ -109,9 +110,9 @@ def test_value2position_0(test_input, expected):
 
 
 value2position_test_para_1 = [
-    (np.array([-10, 11]), np.array([0, 10])),
-    (np.array([10, 11]), np.array([20, 10])),
-    (np.array([0, 0]), np.array([10, 0])),
+    ([-10, 11], np.array([0, 10])),
+    ([10, 11], np.array([20, 10])),
+    ([0, 0], np.array([10, 0])),
 ]
 
 
@@ -178,9 +179,9 @@ def test_value2para_1(test_input, expected):
 
 
 para2value_test_para_0 = [
-    ({"x1": -10}, -10),
-    ({"x1": 10}, 10),
-    ({"x1": 0}, 0),
+    ({"x1": -10}, [-10]),
+    ({"x1": 10}, [10]),
+    ({"x1": 0}, [0]),
 ]
 
 
@@ -215,7 +216,10 @@ def test_para2value_1(test_input, expected):
     conv = unordered_dict_workaround(conv, order)
     value = conv.para2value(test_input)
 
-    assert (value == expected).all()
+    print("value", type(value))
+    print("expected", type(expected))
+
+    assert (np.array(value) == np.array(expected)).all()
 
 
 ######### test values2positions #########

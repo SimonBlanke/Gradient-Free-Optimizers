@@ -6,10 +6,11 @@ import numpy as np
 import pandas as pd
 
 from functools import reduce
+from typing import Optional
 
 
 class Converter:
-    def __init__(self, search_space):
+    def __init__(self, search_space: dict) -> None:
         self.n_dimensions = len(search_space)
         self.search_space = search_space
         self.para_names = list(search_space.keys())
@@ -39,25 +40,25 @@ class Converter:
         return wrapper
 
     @returnNoneIfArgNone
-    def position2value(self, position):
+    def position2value(self, position: Optional[list]) -> Optional[list]:
         value = []
 
         for n, space_dim in enumerate(self.search_space_values):
             value.append(space_dim[position[n]])
 
-        return np.array(value)
+        return value
 
     @returnNoneIfArgNone
-    def value2position(self, value):
+    def value2position(self, value: Optional[list]) -> Optional[list]:
         position = []
         for n, space_dim in enumerate(self.search_space_values):
-            pos = np.abs(value[n] - space_dim).argmin()
-            position.append(pos)
+            pos = np.abs(value[n] - np.array(space_dim)).argmin()
+            position.append(int(pos))
 
-        return np.array(position).astype(int)
+        return np.array(position)
 
     @returnNoneIfArgNone
-    def value2para(self, value):
+    def value2para(self, value: Optional[list]) -> Optional[dict]:
         para = {}
         for key, p_ in zip(self.para_names, value):
             para[key] = p_
@@ -65,16 +66,16 @@ class Converter:
         return para
 
     @returnNoneIfArgNone
-    def para2value(self, para):
+    def para2value(self, para: Optional[dict]) -> Optional[list]:
 
         value = []
         for para_name in self.para_names:
             value.append(para[para_name])
 
-        return np.array(value)
+        return value
 
     @returnNoneIfArgNone
-    def values2positions(self, values):
+    def values2positions(self, values: Optional[list]) -> Optional[list]:
         positions_temp = []
         values_np = np.array(values)
 
@@ -91,34 +92,38 @@ class Converter:
         return positions
 
     @returnNoneIfArgNone
-    def positions2values(self, positions):
-        values_temp = []
+    def positions2values(self, positions: Optional[list]) -> Optional[list]:
+        values = []
         positions_np = np.array(positions)
 
         for n, space_dim in enumerate(self.search_space_values):
             pos_1d = positions_np[:, n]
             value_ = np.take(space_dim, pos_1d, axis=0)
-            values_temp.append(value_)
+            values.append(value_)
 
-        values = list(np.array(values_temp).T)
+        values = [list(t) for t in zip(*values)]
         return values
 
     @returnNoneIfArgNone
-    def positions_scores2memory_dict(self, positions, scores):
+    def positions_scores2memory_dict(
+        self, positions: Optional[list], scores: Optional[list]
+    ) -> Optional[dict]:
         value_tuple_list = list(map(tuple, positions))
         memory_dict = dict(zip(value_tuple_list, scores))
 
         return memory_dict
 
     @returnNoneIfArgNone
-    def memory_dict2positions_scores(self, memory_dict):
+    def memory_dict2positions_scores(self, memory_dict: Optional[dict]):
         positions = [np.array(pos).astype(int) for pos in list(memory_dict.keys())]
         scores = list(memory_dict.values())
 
         return positions, scores
 
     @returnNoneIfArgNone
-    def dataframe2memory_dict(self, dataframe):
+    def dataframe2memory_dict(
+        self, dataframe: Optional[pd.DataFrame]
+    ) -> Optional[dict]:
         parameter = set(self.search_space.keys())
         memory_para = set(dataframe.columns)
 
@@ -143,7 +148,9 @@ class Converter:
             return {}
 
     @returnNoneIfArgNone
-    def memory_dict2dataframe(self, memory_dict):
+    def memory_dict2dataframe(
+        self, memory_dict: Optional[dict]
+    ) -> Optional[pd.DataFrame]:
         positions, score = self.memory_dict2positions_scores(memory_dict)
         values = self.positions2values(positions)
 
