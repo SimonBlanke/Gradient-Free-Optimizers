@@ -688,14 +688,19 @@ The separation of Gradient-Free-Optimizers from Hyperactive enables multiple adv
     <td> any python object </td>
   </tr>
   <tr>
-    <td> Multiprocessing </td>
+    <td> Parallel Computing </td>
     <td> not supported </td>
     <td> yes, via joblib or multiprocessing </td>
   </tr>
   <tr>
     <td> Distributed computing </td>
     <td> not supported</td>
-    <td> yes, via data sharing at runtime (in future versions)</td>
+    <td> yes, via data sharing at runtime</td>
+  </tr>
+  <tr>
+    <td> Visualization </td>
+    <td> not supported</td>
+    <td> yes, via progress-board</td>
   </tr>
   </tr>
 </table>
