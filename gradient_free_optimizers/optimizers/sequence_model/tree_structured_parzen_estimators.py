@@ -12,17 +12,16 @@ from .smbo import SMBO
 class TreeStructuredParzenEstimators(SMBO):
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        random_state=None,
+        *args,
         gamma_tpe=0.2,
         warm_start_smbo=None,
         max_sample_size=10000000,
         sampling={"random": 1000000},
         warnings=100000000,
         rand_rest_p=0.03,
+        **kwargs,
     ):
-        super().__init__(search_space, initialize, random_state)
+        super().__init__(*args, **kwargs)
         self.gamma_tpe = gamma_tpe
         self.warm_start_smbo = warm_start_smbo
         self.max_sample_size = max_sample_size

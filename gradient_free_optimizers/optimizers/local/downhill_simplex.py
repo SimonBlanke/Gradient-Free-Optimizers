@@ -30,16 +30,15 @@ def centeroid(array_list):
 class DownhillSimplexOptimizer(BaseOptimizer, Search):
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        random_state=None,
+        *args,
         alpha=1,
         gamma=2,
         beta=0.5,
         sigma=0.5,
         rand_rest_p=0.01,
+        **kwargs,
     ):
-        super().__init__(search_space, initialize, random_state)
+        super().__init__(*args, **kwargs)
 
         self.alpha = alpha
         self.gamma = gamma
@@ -47,7 +46,7 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
         self.sigma = sigma
         self.rand_rest_p = rand_rest_p
 
-        self.n_simp_positions = len(search_space) + 1
+        self.n_simp_positions = len(self.search_space) + 1
         self.simp_positions = []
 
         self.simplex_step = 0

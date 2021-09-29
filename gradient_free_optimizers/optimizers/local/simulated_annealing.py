@@ -12,28 +12,13 @@ from ...search import Search
 class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer, Search):
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        random_state=None,
-        epsilon=0.03,
-        distribution="normal",
-        n_neighbours=3,
-        p_accept=0.1,
-        norm_factor=1,
+        *args,
         annealing_rate=0.97,
         start_temp=1,
         rand_rest_p=0.03,
+        **kwargs,
     ):
-        super().__init__(
-            search_space,
-            initialize,
-            random_state,
-            epsilon,
-            distribution,
-            n_neighbours,
-            p_accept,
-            norm_factor,
-        )
+        super().__init__(*args, **kwargs)
         self.annealing_rate = annealing_rate
         self.start_temp = start_temp
         self.temp = start_temp

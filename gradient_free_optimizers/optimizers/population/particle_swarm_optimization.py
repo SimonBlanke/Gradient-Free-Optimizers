@@ -13,17 +13,16 @@ from ._particle import Particle
 class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        random_state=None,
+        *args,
         population=10,
         inertia=0.5,
         cognitive_weight=0.5,
         social_weight=0.5,
         temp_weight=0.2,
         rand_rest_p=0.03,
+        **kwargs,
     ):
-        super().__init__(search_space, initialize, random_state)
+        super().__init__(*args, **kwargs)
 
         self.population = population
         self.inertia = inertia

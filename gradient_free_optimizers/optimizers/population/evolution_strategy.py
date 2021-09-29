@@ -13,15 +13,14 @@ from ._individual import Individual
 class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        random_state=None,
+        *args,
         population=10,
         mutation_rate=0.7,
         crossover_rate=0.3,
         rand_rest_p=0.05,
+        **kwargs,
     ):
-        super().__init__(search_space, initialize, random_state)
+        super().__init__(*args, **kwargs)
 
         self.population = population
         self.mutation_rate = mutation_rate

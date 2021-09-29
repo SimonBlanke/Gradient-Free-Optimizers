@@ -15,14 +15,13 @@ from ..local import SimulatedAnnealingOptimizer
 class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        random_state=None,
+        *args,
         population=5,
         n_iter_swap=5,
         rand_rest_p=0.03,
+        **kwargs,
     ):
-        super().__init__(search_space, initialize, random_state)
+        super().__init__(*args, **kwargs)
 
         self.population = population
         self.n_iter_swap = n_iter_swap

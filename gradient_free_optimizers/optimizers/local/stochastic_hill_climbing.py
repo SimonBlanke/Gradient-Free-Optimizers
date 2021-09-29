@@ -12,19 +12,13 @@ from ...search import Search
 class StochasticHillClimbingOptimizer(HillClimbingOptimizer, Search):
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        random_state=None,
-        epsilon=0.05,
-        distribution="normal",
-        n_neighbours=3,
+        *args,
         p_accept=0.1,
         norm_factor=1,
         rand_rest_p=0.03,
+        **kwargs,
     ):
-        super().__init__(
-            search_space, initialize, random_state, epsilon, distribution, n_neighbours
-        )
+        super().__init__(*args, **kwargs)
         self.p_accept = p_accept
         self.norm_factor = norm_factor
         self.rand_rest_p = rand_rest_p

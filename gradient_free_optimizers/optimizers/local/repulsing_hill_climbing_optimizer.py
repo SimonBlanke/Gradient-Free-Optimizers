@@ -10,18 +10,12 @@ from ...search import Search
 class RepulsingHillClimbingOptimizer(HillClimbingOptimizer, Search):
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        random_state=None,
-        epsilon=0.03,
-        distribution="normal",
-        n_neighbours=3,
+        *args,
         repulsion_factor=5,
         rand_rest_p=0.03,
+        **kwargs,
     ):
-        super().__init__(
-            search_space, initialize, random_state, epsilon, distribution, n_neighbours
-        )
+        super().__init__(*args, **kwargs)
 
         self.tabus = []
         self.repulsion_factor = repulsion_factor

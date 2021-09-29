@@ -10,16 +10,15 @@ from ...search import Search
 class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer, Search):
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        random_state=None,
+        *args,
         epsilon=0.03,
         distribution="normal",
         n_neighbours=3,
         n_iter_restart=10,
         rand_rest_p=0,
+        **kwargs,
     ):
-        super().__init__(search_space, initialize, random_state)
+        super().__init__(*args, **kwargs)
         self.epsilon = epsilon
         self.distribution = distribution
         self.n_neighbours = n_neighbours

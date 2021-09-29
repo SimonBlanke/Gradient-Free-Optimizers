@@ -17,9 +17,7 @@ from sklearn.neural_network import MLPRegressor
 class EnsembleOptimizer(ExpectedImprovementBasedOptimization):
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        random_state=None,
+        *args,
         estimators=[
             GradientBoostingRegressor(n_estimators=5),
             # DecisionTreeRegressor(),
@@ -32,8 +30,9 @@ class EnsembleOptimizer(ExpectedImprovementBasedOptimization):
         sampling={"random": 1000000},
         warnings=100000000,
         rand_rest_p=0.03,
+        **kwargs,
     ):
-        super().__init__(search_space, initialize, random_state)
+        super().__init__(*args, **kwargs)
         self.estimators = estimators
         self.regr = EnsembleRegressor(estimators)
         self.xi = xi

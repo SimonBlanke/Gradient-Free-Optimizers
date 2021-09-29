@@ -15,22 +15,19 @@ from ..sequence_model.smbo import SMBO
 class VariableResolutionBayesianOptimizer(SMBO):
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        random_state=None,
+        *args,
         n_best_pos=5,
         n_iter_reso=10,
+        **kwargs,
     ):
-        super().__init__(search_space, initialize, random_state)
-
-        self.search_space = search_space
+        super().__init__(*args, **kwargs)
 
         self.n_best_pos = n_best_pos
         self.n_iter_reso = n_iter_reso
 
         self.score_para_d = {}
-        self.search_space_reso = search_space
-        self.bayes = BayesianOptimizer(search_space)
+        self.search_space_reso = self.search_space
+        self.bayes = BayesianOptimizer(self.search_space)
 
     @SMBO.track_nth_iter
     @SMBO.track_X_sample

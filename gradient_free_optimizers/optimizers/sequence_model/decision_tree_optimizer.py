@@ -22,9 +22,7 @@ class DecisionTreeOptimizer(ExpectedImprovementBasedOptimization):
 
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        random_state=None,
+        *args,
         tree_regressor="extra_tree",
         tree_para={"n_estimators": 100},
         xi=0.03,
@@ -33,8 +31,9 @@ class DecisionTreeOptimizer(ExpectedImprovementBasedOptimization):
         sampling={"random": 1000000},
         warnings=100000000,
         rand_rest_p=0.03,
+        **kwargs,
     ):
-        super().__init__(search_space, initialize, random_state)
+        super().__init__(*args, **kwargs)
         self.tree_regressor = tree_regressor
         self.tree_para = tree_para
         self.regr = tree_regressor_dict[tree_regressor](**self.tree_para)

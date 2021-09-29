@@ -16,9 +16,7 @@ gaussian_process = {"gp_nonlinear": GPR(), "gp_linear": GPR_linear()}
 class BayesianOptimizer(ExpectedImprovementBasedOptimization):
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        random_state=None,
+        *args,
         gpr=gaussian_process["gp_nonlinear"],
         xi=0.03,
         warm_start_smbo=None,
@@ -26,8 +24,9 @@ class BayesianOptimizer(ExpectedImprovementBasedOptimization):
         sampling={"random": 1000000},
         warnings=100000000,
         rand_rest_p=0.03,
+        **kwargs,
     ):
-        super().__init__(search_space, initialize, random_state)
+        super().__init__(*args, **kwargs)
         self.gpr = gpr
         self.regr = gpr
         self.xi = xi

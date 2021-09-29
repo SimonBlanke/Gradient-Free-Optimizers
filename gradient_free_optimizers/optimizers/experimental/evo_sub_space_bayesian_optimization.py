@@ -14,16 +14,15 @@ from ..sequence_model import BayesianOptimizer
 class EvoSubSpaceBayesianOptimizer(BaseOptimizer, Search):
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        random_state=None,
+        *args,
         max_size=300000,
         n_ss_min=1,
+        **kwargs,
     ):
-        super().__init__(search_space, initialize, random_state)
+        super().__init__(*args, **kwargs)
         self.n_ss_min = n_ss_min
 
-        sub_search_spaces = SubSearchSpaces(search_space, max_size=max_size)
+        sub_search_spaces = SubSearchSpaces(self.search_space, max_size=max_size)
         sub_search_spaces_l = sub_search_spaces.slice()
 
         self.sss_ids = list(range(len(sub_search_spaces_l)))
@@ -38,13 +37,13 @@ class EvoSubSpaceBayesianOptimizer(BaseOptimizer, Search):
 
             sub_search_space = self.sss_id_d[sss_id]
             self.sss_bayes_opt_d[sss_id] = BayesianOptimizer(
-                sub_search_space, initialize
+                sub_search_space, self.initialize
             )
 
         self.n_sub_spaces = len(sub_search_spaces_l)
         print("\n self.n_sub_spaces \n", self.n_sub_spaces)
 
-        self.n_iter_evo = sum(initialize.values()) * self.n_sub_spaces * 2
+        self.n_iter_evo = sum(self.initialize.values()) * self.n_sub_spaces * 2
         print("\n self.n_iter_evo \n", self.n_iter_evo)
 
     def init_pos(self, pos):

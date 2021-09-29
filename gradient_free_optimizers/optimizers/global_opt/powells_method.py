@@ -19,12 +19,11 @@ def sort_list_idx(list_):
 class PowellsMethod(BaseOptimizer, Search):
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        random_state=None,
+        *args,
         iters_p_dim=10,
+        **kwargs,
     ):
-        super().__init__(search_space, initialize, random_state)
+        super().__init__(*args, **kwargs)
 
         self.iters_p_dim = iters_p_dim
 
