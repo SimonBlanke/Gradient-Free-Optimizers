@@ -71,7 +71,7 @@ def test_memory_timeSave_1():
     diff_time1 = time.time() - c_time1
     print("\n diff_time1 ", diff_time1)
 
-    assert diff_time1 < 0.3
+    assert diff_time1 < 0.5
 
 
 def test_memory_warm_start():
