@@ -130,7 +130,66 @@ def test_memory_warm_start_manual():
 
     c_time = time.time()
     opt = RandomSearchOptimizer(search_space)
+    opt.search(objective_function, n_iter=30, memory_warm_start=memory_warm_start)
+    diff_time_2 = time.time() - c_time
+
+    assert diff_time_1 * 0.5 > diff_time_2
+
+
+def test_memory_warm_start_wrong_type():
+    data = load_breast_cancer()
+    X, y = data.data, data.target
+
+    def objective_function(para):
+        dtc = GradientBoostingClassifier(
+            n_estimators=para["n_estimators"],
+        )
+        scores = cross_val_score(dtc, X, y, cv=3)
+
+        return scores.mean()
+
+    search_space = {
+        "n_estimators": np.arange(500, 502),
+    }
+
+    memory_warm_start = pd.DataFrame(
+        [[500, 0.9], [501, 0.91]], columns=["n_estimators", "score"]
+    )
+
+    opt = RandomSearchOptimizer(search_space)
+    opt.search(
+        objective_function, n_iter=10, memory_warm_start=memory_warm_start.values
+    )
+
+
+def test_memory_warm_start_wrong_search_space():
+    data = load_breast_cancer()
+    X, y = data.data, data.target
+
+    def objective_function(para):
+        dtc = GradientBoostingClassifier(
+            n_estimators=para["n_estimators"],
+        )
+        scores = cross_val_score(dtc, X, y, cv=3)
+
+        return scores.mean()
+
+    search_space = {
+        "n_estimators": np.arange(400, 402),
+    }
+
+    c_time_1 = time.time()
+    opt = RandomSearchOptimizer(search_space)
+    opt.search(objective_function, n_iter=1)
+    diff_time_1 = time.time() - c_time_1
+
+    memory_warm_start = pd.DataFrame(
+        [[500, 0.9], [501, 0.91]], columns=["n_estimators", "score"]
+    )
+
+    c_time = time.time()
+    opt = RandomSearchOptimizer(search_space)
     opt.search(objective_function, n_iter=10, memory_warm_start=memory_warm_start)
     diff_time = time.time() - c_time
 
-    assert diff_time_1 > diff_time * 0.3
+    assert (diff_time_1 - diff_time) < diff_time / 10
