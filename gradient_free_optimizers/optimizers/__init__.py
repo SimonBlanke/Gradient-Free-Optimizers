@@ -7,7 +7,6 @@ from .local import (
     StochasticHillClimbingOptimizer,
     RepulsingHillClimbingOptimizer,
     SimulatedAnnealingOptimizer,
-    DownhillSimplexOptimizer,
 )
 
 from .random import (
@@ -27,7 +26,6 @@ from .sequence_model import (
     BayesianOptimizer,
     TreeStructuredParzenEstimators,
     DecisionTreeOptimizer,
-    # PowellsMethod,
     EnsembleOptimizer,
 )
 
@@ -36,7 +34,6 @@ __all__ = [
     "StochasticHillClimbingOptimizer",
     "RepulsingHillClimbingOptimizer",
     "SimulatedAnnealingOptimizer",
-    "DownhillSimplexOptimizer",
     "RandomSearchOptimizer",
     "RandomRestartHillClimbingOptimizer",
     "RandomAnnealingOptimizer",
@@ -46,6 +43,5 @@ __all__ = [
     "BayesianOptimizer",
     "TreeStructuredParzenEstimators",
     "DecisionTreeOptimizer",
-    # "PowellsMethod",
     "EnsembleOptimizer",
 ]
