@@ -7,7 +7,7 @@ import numpy as np
 
 from ..base_optimizer import BaseOptimizer
 from ...search import Search
-from ..local import HillClimbingOptimizer
+from ..local_opt import HillClimbingOptimizer
 
 
 def sort_list_idx(list_):

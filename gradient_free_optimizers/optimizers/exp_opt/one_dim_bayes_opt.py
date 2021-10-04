@@ -7,7 +7,7 @@ import numpy as np
 
 from ..base_optimizer import BaseOptimizer
 from ...search import Search
-from ..sequence_model.bayesian_optimization import BayesianOptimizer
+from ..smb_opt.bayesian_optimization import BayesianOptimizer
 
 
 def sort_list_idx(list_):

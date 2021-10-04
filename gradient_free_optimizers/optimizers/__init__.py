@@ -2,7 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-from .local import (
+from .local_opt import (
     HillClimbingOptimizer,
     StochasticHillClimbingOptimizer,
     RepulsingHillClimbingOptimizer,
@@ -17,19 +17,19 @@ from .global_opt import (
 )
 
 
-from .population import (
+from .pop_opt import (
     ParallelTemperingOptimizer,
     ParticleSwarmOptimizer,
     EvolutionStrategyOptimizer,
 )
 
-from .sequence_model import (
+from .smb_opt import (
     BayesianOptimizer,
     TreeStructuredParzenEstimators,
     DecisionTreeOptimizer,
 )
 
-from .experimental import (
+from .exp_opt import (
     RandomAnnealingOptimizer,
     OneDimensionalBayesianOptimization,
     ParallelAnnealingOptimizer,

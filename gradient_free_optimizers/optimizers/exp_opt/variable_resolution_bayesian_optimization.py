@@ -8,8 +8,8 @@ import numpy as np
 from ..base_optimizer import BaseOptimizer
 from ...search import Search
 from ._sub_search_spaces import SubSearchSpaces
-from ..sequence_model import BayesianOptimizer
-from ..sequence_model.smbo import SMBO
+from ..smb_opt import BayesianOptimizer
+from ..smb_opt.smbo import SMBO
 
 
 class VariableResolutionBayesianOptimizer(SMBO):

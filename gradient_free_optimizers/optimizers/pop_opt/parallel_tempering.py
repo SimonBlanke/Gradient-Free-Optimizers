@@ -9,7 +9,7 @@ import numpy as np
 
 from .base_population_optimizer import BasePopulationOptimizer
 from ...search import Search
-from ..local import SimulatedAnnealingOptimizer
+from ..local_opt import SimulatedAnnealingOptimizer
 
 
 class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):

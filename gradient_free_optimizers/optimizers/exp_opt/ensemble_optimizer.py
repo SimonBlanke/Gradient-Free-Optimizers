@@ -3,8 +3,8 @@
 # License: MIT License
 
 
-from ..sequence_model.exp_imp_based_opt import ExpectedImprovementBasedOptimization
-from ..sequence_model.surrogate_models import EnsembleRegressor
+from ..smb_opt.exp_imp_based_opt import ExpectedImprovementBasedOptimization
+from ..smb_opt.surrogate_models import EnsembleRegressor
 
 
 from sklearn.tree import DecisionTreeRegressor

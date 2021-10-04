@@ -8,7 +8,7 @@ import numpy as np
 from ..base_optimizer import BaseOptimizer
 from ...search import Search
 from ._sub_search_spaces import SubSearchSpaces
-from ..sequence_model import BayesianOptimizer
+from ..smb_opt import BayesianOptimizer
 
 
 class EvoSubSpaceBayesianOptimizer(BaseOptimizer, Search):

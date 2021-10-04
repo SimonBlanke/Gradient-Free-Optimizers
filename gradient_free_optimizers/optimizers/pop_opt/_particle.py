@@ -5,7 +5,7 @@
 import random
 import numpy as np
 
-from ..local import HillClimbingOptimizer
+from ..local_opt import HillClimbingOptimizer
 
 
 class Particle(HillClimbingOptimizer):

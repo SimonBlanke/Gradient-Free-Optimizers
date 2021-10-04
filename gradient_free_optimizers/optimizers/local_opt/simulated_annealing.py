@@ -5,7 +5,7 @@
 
 import numpy as np
 
-from ..local import StochasticHillClimbingOptimizer
+from ..local_opt import StochasticHillClimbingOptimizer
 from ...search import Search
 
 

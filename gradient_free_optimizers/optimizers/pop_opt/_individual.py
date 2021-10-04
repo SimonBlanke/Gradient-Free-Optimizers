@@ -3,7 +3,7 @@
 # License: MIT License
 
 
-from ..local import HillClimbingOptimizer
+from ..local_opt import HillClimbingOptimizer
 
 
 class Individual(HillClimbingOptimizer):

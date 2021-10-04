@@ -7,7 +7,7 @@ import random
 
 import numpy as np
 
-from ..population.base_population_optimizer import BasePopulationOptimizer
+from ..pop_opt.base_population_optimizer import BasePopulationOptimizer
 from ...search import Search
 from . import RandomAnnealingOptimizer
 
