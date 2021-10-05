@@ -648,6 +648,20 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 </details>
 
 
+<details>
+<summary><b>v1.0.0</b> :heavy_check_mark:</summary>
+
+  - [x] Finalize API (1.0.0)
+  - [x] add parallel random annealing to optimizers
+  - [x] add ensemble-optimizer to optimizers
+  - [x] add Bayesian 1D Bayesian-optimization to optimizers
+
+</details>
+
+
+
+
+
 <details open>
 <summary><b>Next Features
 </b></summary>
@@ -655,8 +669,6 @@ Each optimization class needs the "search_space" as an input argument. Optionall
   - [ ] add Downhill-simplex algorithm to optimizers
   - [ ] add other acquisition functions to smbo (Probability of improvement, Entropy search, ...)
   - [ ] Improved sampling for smb-optimizers
-  - [ ] add Bayesian 1D Bayesian-optimization to optimizers
-  - [ ] Finalize API (1.0.0)
   
 </details>
 
