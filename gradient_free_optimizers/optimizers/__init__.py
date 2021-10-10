@@ -12,8 +12,9 @@ from .local_opt import (
 
 from .global_opt import (
     RandomSearchOptimizer,
-    PowellsMethod,
     RandomRestartHillClimbingOptimizer,
+    PowellsMethod,
+    PatternSearch,
 )
 
 
@@ -45,8 +46,9 @@ __all__ = [
     "SimulatedAnnealingOptimizer",
     "DownhillSimplexOptimizer",
     "RandomSearchOptimizer",
-    "PowellsMethod",
     "RandomRestartHillClimbingOptimizer",
+    "PowellsMethod",
+    "PatternSearch",
     "RandomAnnealingOptimizer",
     "ParallelTemperingOptimizer",
     "ParticleSwarmOptimizer",

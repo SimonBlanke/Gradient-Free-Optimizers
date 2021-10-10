@@ -3,11 +3,13 @@
 # License: MIT License
 
 from .random_search import RandomSearchOptimizer
-from .powells_method import PowellsMethod
 from .random_restart_hill_climbing import RandomRestartHillClimbingOptimizer
+from .powells_method import PowellsMethod
+from .pattern_search import PatternSearch
 
 __all__ = [
     "RandomSearchOptimizer",
-    "PowellsMethod",
     "RandomRestartHillClimbingOptimizer",
+    "PowellsMethod",
+    "PatternSearch",
 ]
