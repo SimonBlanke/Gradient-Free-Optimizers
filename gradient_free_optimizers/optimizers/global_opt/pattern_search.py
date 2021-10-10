@@ -63,17 +63,20 @@ class PatternSearch(BaseOptimizer, Search):
 
         return pos_new
 
+    def finish_initialization(self):
+        self.generate_pattern(self.pos_current)
+
     def evaluate(self, score_new):
         BaseOptimizer.evaluate(self, score_new)
         if len(self.scores_valid) == 0:
+
             return
 
-        modZero = self.nth_iter % self.n_positions_ == 0
+        modZero = self.nth_iter % int(self.n_positions_ * 2) == 0
 
-        if modZero or self.nth_iter == 0:
+        if modZero or len(self.pattern_pos_l) == 0:
             self.generate_pattern(self.pos_current)
 
-        if modZero:
             score_new_list_temp = self.scores_valid[-self.n_positions_ :]
             pos_new_list_temp = self.positions_valid[-self.n_positions_ :]
 
