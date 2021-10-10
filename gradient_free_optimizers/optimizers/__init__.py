@@ -32,6 +32,7 @@ from .smb_opt import (
 
 from .exp_opt import (
     RandomAnnealingOptimizer,
+    LocalBayesianOptimizer,
     OneDimensionalBayesianOptimization,
     ParallelAnnealingOptimizer,
     EnsembleOptimizer,
@@ -50,6 +51,7 @@ __all__ = [
     "PowellsMethod",
     "PatternSearch",
     "RandomAnnealingOptimizer",
+    "LocalBayesianOptimizer",
     "ParallelTemperingOptimizer",
     "ParticleSwarmOptimizer",
     "EvolutionStrategyOptimizer",

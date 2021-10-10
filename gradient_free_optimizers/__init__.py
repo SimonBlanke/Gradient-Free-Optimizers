@@ -25,6 +25,7 @@ from .optimizers import (
     OneDimensionalBayesianOptimization,
     ParallelAnnealingOptimizer,
     EnsembleOptimizer,
+    LocalBayesianOptimizer,
     VariableResolutionBayesianOptimizer,
     EvoSubSpaceBayesianOptimizer,
 )
@@ -50,6 +51,7 @@ __all__ = [
     "OneDimensionalBayesianOptimization",
     "ParallelAnnealingOptimizer",
     "EnsembleOptimizer",
+    "LocalBayesianOptimizer",
     "VariableResolutionBayesianOptimizer",
     "EvoSubSpaceBayesianOptimizer",
 ]
