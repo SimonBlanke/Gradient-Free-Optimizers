@@ -2,6 +2,8 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+
+import random
 import numpy as np
 
 from ..base_optimizer import BaseOptimizer
@@ -46,7 +48,7 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
         self.sigma = sigma
         self.rand_rest_p = rand_rest_p
 
-        self.n_simp_positions = len(self.search_space) + 1
+        self.n_simp_positions = len(self.conv.search_space) + 1
         self.simp_positions = []
 
         self.simplex_step = 0
@@ -85,17 +87,17 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
             r_pos = self.center_array + self.alpha * (
                 self.center_array - self.simplex_pos[-1]
             )
-            r_pos = self.conv2pos(r_pos)
-            return r_pos
+            self.r_pos = self.conv2pos(r_pos)
+            return self.r_pos
 
         elif self.simplex_step == 2:
             e_pos = self.center_array + self.gamma * (
                 self.center_array + self.simplex_pos[-1]
             )
-            e_pos = self.conv2pos(e_pos)
+            self.e_pos = self.conv2pos(e_pos)
             self.simplex_step = 1
 
-            return e_pos
+            return self.e_pos
 
         elif self.simplex_step == 3:
             # iter Contraction
@@ -118,7 +120,7 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
             self.prev_pos = self.positions_valid[-1]
 
         if self.simplex_step == 1:
-            self.r_pos = self.prev_pos
+            # self.r_pos = self.prev_pos
             self.r_score = score_new
 
             if self.r_score > self.simplex_scores[0]:
@@ -138,6 +140,16 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
                 self.h_score = self.r_score
 
             self.simplex_step = 3
+
+        elif self.simplex_step == 2:
+            self.e_score = score_new
+
+            if self.e_score > self.r_score:
+                self.simplex_scores[-1] = self.e_pos
+            elif self.r_score > self.e_score:
+                self.simplex_scores[-1] = self.r_pos
+            else:
+                self.simplex_scores[-1] = random.choice([self.e_pos, self.r_pos])[0]
 
         elif self.simplex_step == 3:
             # eval Contraction
