@@ -2,6 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+import scipy
 import random
 import numpy as np
 from .search_tracker import SearchTracker
@@ -94,6 +95,11 @@ class BaseOptimizer(SearchTracker):
         n_zeros = [0] * len(self.conv.max_positions)
         # clip into search space boundaries
         pos = np.clip(r_pos, n_zeros, self.conv.max_positions).astype(int)
+
+        dist = scipy.spatial.distance.cdist(r_pos.reshape(1, -1), pos.reshape(1, -1))
+
+        if dist > self.conv.search_space_size / 1000000:
+            return self.move_random()
 
         return pos
 
