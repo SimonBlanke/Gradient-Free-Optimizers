@@ -37,7 +37,6 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
         gamma=2,
         beta=0.5,
         sigma=0.5,
-        rand_rest_p=0.01,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -46,7 +45,6 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
         self.gamma = gamma
         self.beta = beta
         self.sigma = sigma
-        self.rand_rest_p = rand_rest_p
 
         self.n_simp_positions = len(self.conv.search_space) + 1
         self.simp_positions = []
@@ -92,7 +90,7 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
 
         elif self.simplex_step == 2:
             e_pos = self.center_array + self.gamma * (
-                self.center_array + self.simplex_pos[-1]
+                self.center_array - self.simplex_pos[-1]
             )
             self.e_pos = self.conv2pos(e_pos)
             self.simplex_step = 1
