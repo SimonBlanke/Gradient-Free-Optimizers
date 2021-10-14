@@ -14,7 +14,7 @@ from gradient_free_optimizers import (
     EvolutionStrategyOptimizer,
     BayesianOptimizer,
     TreeStructuredParzenEstimators,
-    DecisionTreeOptimizer,
+    ForestOptimizer,
     EnsembleOptimizer,
 )
 
@@ -33,7 +33,7 @@ optimizer_dict = {
     "EvolutionStrategy": (EvolutionStrategyOptimizer, n_inits),
     "Bayesian": (BayesianOptimizer, 1),
     "TPE": (TreeStructuredParzenEstimators, 1),
-    "DecisionTree": (DecisionTreeOptimizer, 1),
+    "DecisionTree": (ForestOptimizer, 1),
     "Ensemble": (EnsembleOptimizer, 1),
 }
 

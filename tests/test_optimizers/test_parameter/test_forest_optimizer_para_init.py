@@ -7,7 +7,7 @@ import pytest
 import random
 import numpy as np
 
-from gradient_free_optimizers import DecisionTreeOptimizer
+from gradient_free_optimizers import ForestOptimizer
 from ._base_para_test import _base_para_test_func
 from gradient_free_optimizers import RandomSearchOptimizer
 
@@ -109,10 +109,10 @@ pytest_wrapper = ("opt_para", dto_para)
 
 @pytest.mark.parametrize(*pytest_wrapper)
 def test_dto_para(opt_para):
-    _base_para_test_func(opt_para, DecisionTreeOptimizer)
+    _base_para_test_func(opt_para, ForestOptimizer)
 
 
 def test_warm_start_0():
-    opt = DecisionTreeOptimizer(search_space, warm_start_smbo=search_data1)
+    opt = ForestOptimizer(search_space, warm_start_smbo=search_data1)
 
     assert len(opt.X_sample) == 30

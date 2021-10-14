@@ -27,7 +27,7 @@ from .pop_opt import (
 from .smb_opt import (
     BayesianOptimizer,
     TreeStructuredParzenEstimators,
-    DecisionTreeOptimizer,
+    ForestOptimizer,
 )
 
 from .exp_opt import (
@@ -57,7 +57,7 @@ __all__ = [
     "EvolutionStrategyOptimizer",
     "BayesianOptimizer",
     "TreeStructuredParzenEstimators",
-    "DecisionTreeOptimizer",
+    "ForestOptimizer",
     "OneDimensionalBayesianOptimization",
     "ParallelAnnealingOptimizer",
     "EnsembleOptimizer",

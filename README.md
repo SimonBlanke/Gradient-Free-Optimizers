@@ -450,7 +450,7 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 - EvolutionStrategyOptimizer
 - BayesianOptimizer
 - TreeStructuredParzenEstimators
-- DecisionTreeOptimizer
+- ForestOptimizer
 
 
 

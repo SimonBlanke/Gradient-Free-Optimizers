@@ -17,7 +17,7 @@ tree_regressor_dict = {
 }
 
 
-class DecisionTreeOptimizer(ExpectedImprovementBasedOptimization):
+class ForestOptimizer(ExpectedImprovementBasedOptimization):
     """Based on the forest-optimizer in the scikit-optimize package"""
 
     def __init__(
