@@ -17,7 +17,6 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
         population=10,
         mutation_rate=0.7,
         crossover_rate=0.3,
-        rand_rest_p=0.05,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -25,7 +24,6 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
         self.population = population
         self.mutation_rate = mutation_rate
         self.crossover_rate = crossover_rate
-        self.rand_rest_p = rand_rest_p
 
         self.individuals = self._create_population(Individual)
         self.optimizers = self.individuals

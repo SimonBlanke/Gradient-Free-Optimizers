@@ -16,7 +16,6 @@ class RandomAnnealingOptimizer(HillClimbingOptimizer, Search):
         n_neighbours=3,
         annealing_rate=0.98,
         start_temp=10,
-        rand_rest_p=0.03,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -26,7 +25,6 @@ class RandomAnnealingOptimizer(HillClimbingOptimizer, Search):
         self.annealing_rate = annealing_rate
         self.start_temp = start_temp
         self.temp = start_temp
-        self.rand_rest_p = rand_rest_p
 
     @HillClimbingOptimizer.track_nth_iter
     @HillClimbingOptimizer.random_restart

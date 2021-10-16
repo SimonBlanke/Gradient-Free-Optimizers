@@ -25,14 +25,12 @@ class ParallelAnnealingOptimizer(BasePopulationOptimizer, Search):
         *args,
         population=5,
         n_iter_swap=5,
-        rand_rest_p=0.03,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
         self.population = population
         self.n_iter_swap = n_iter_swap
-        self.rand_rest_p = rand_rest_p
 
         self.systems = self._create_population(RandomAnnealingOptimizer)
         for system in self.systems:

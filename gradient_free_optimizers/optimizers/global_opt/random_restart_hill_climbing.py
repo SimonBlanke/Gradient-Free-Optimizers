@@ -15,7 +15,6 @@ class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer, Search):
         distribution="normal",
         n_neighbours=3,
         n_iter_restart=10,
-        rand_rest_p=0,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -23,7 +22,6 @@ class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer, Search):
         self.distribution = distribution
         self.n_neighbours = n_neighbours
         self.n_iter_restart = n_iter_restart
-        self.rand_rest_p = rand_rest_p
 
     @HillClimbingOptimizer.track_nth_iter
     @HillClimbingOptimizer.random_restart

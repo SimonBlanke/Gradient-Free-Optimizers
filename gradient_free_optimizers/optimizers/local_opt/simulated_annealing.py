@@ -15,14 +15,12 @@ class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer, Search):
         *args,
         annealing_rate=0.97,
         start_temp=1,
-        rand_rest_p=0.03,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.annealing_rate = annealing_rate
         self.start_temp = start_temp
         self.temp = start_temp
-        self.rand_rest_p = rand_rest_p
 
     def _accept_default(self):
         return np.exp(-self._score_norm_default() / self.temp)

@@ -57,6 +57,7 @@ class PatternSearch(BaseOptimizer, Search):
         self.pattern_pos_l = list(random.sample(pattern_pos_l, self.n_positions_))
 
     @BaseOptimizer.track_nth_iter
+    @BaseOptimizer.random_restart
     def iterate(self):
         pos_new = self.pattern_pos_l[0]
         self.pattern_pos_l.pop(0)

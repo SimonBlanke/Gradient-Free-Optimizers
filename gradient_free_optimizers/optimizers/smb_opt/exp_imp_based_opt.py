@@ -27,7 +27,6 @@ class ExpectedImprovementBasedOptimization(SMBO):
         warm_start_smbo=None,
         sampling={"random": 1000000},
         warnings=100000000,
-        rand_rest_p=0.03,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -36,7 +35,6 @@ class ExpectedImprovementBasedOptimization(SMBO):
         self.warm_start_smbo = warm_start_smbo
         self.sampling = sampling
         self.warnings = warnings
-        self.rand_rest_p = rand_rest_p
 
     def _expected_improvement(self):
         all_pos_comb = self._all_possible_pos()

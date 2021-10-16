@@ -74,6 +74,7 @@ class PowellsMethod(BaseOptimizer, Search):
         )
 
     @BaseOptimizer.track_nth_iter
+    @BaseOptimizer.random_restart
     def iterate(self):
         self.nth_iter_ += 1
         self.nth_iter_current_dim += 1

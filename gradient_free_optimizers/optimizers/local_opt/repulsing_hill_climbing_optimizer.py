@@ -12,14 +12,12 @@ class RepulsingHillClimbingOptimizer(HillClimbingOptimizer, Search):
         self,
         *args,
         repulsion_factor=5,
-        rand_rest_p=0.03,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
 
         self.tabus = []
         self.repulsion_factor = repulsion_factor
-        self.rand_rest_p = rand_rest_p
         self.epsilon_mod = 1
 
     @HillClimbingOptimizer.track_nth_iter

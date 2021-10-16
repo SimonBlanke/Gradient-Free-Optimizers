@@ -19,7 +19,6 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
         cognitive_weight=0.5,
         social_weight=0.5,
         temp_weight=0.2,
-        rand_rest_p=0.03,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -29,7 +28,6 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
         self.cognitive_weight = cognitive_weight
         self.social_weight = social_weight
         self.temp_weight = temp_weight
-        self.rand_rest_p = rand_rest_p
 
         self.particles = self._create_population(Particle)
         self.optimizers = self.particles

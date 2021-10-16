@@ -15,13 +15,11 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer, Search):
         *args,
         p_accept=0.1,
         norm_factor=1,
-        rand_rest_p=0.03,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.p_accept = p_accept
         self.norm_factor = norm_factor
-        self.rand_rest_p = rand_rest_p
 
         if self.norm_factor == "adaptive":
             self._accept = self._accept_adapt

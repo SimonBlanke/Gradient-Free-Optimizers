@@ -30,14 +30,12 @@ class HillClimbingOptimizer(BaseOptimizer, Search):
         epsilon=0.03,
         distribution="normal",
         n_neighbours=3,
-        rand_rest_p=0.01,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.epsilon = epsilon
         self.distribution = distribution
         self.n_neighbours = n_neighbours
-        self.rand_rest_p = rand_rest_p
 
     def _move_climb(self, pos, epsilon_mod=1):
         sigma = self.conv.max_positions * self.epsilon * epsilon_mod

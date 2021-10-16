@@ -18,7 +18,6 @@ class TreeStructuredParzenEstimators(SMBO):
         max_sample_size=10000000,
         sampling={"random": 1000000},
         warnings=100000000,
-        rand_rest_p=0.03,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
@@ -27,7 +26,6 @@ class TreeStructuredParzenEstimators(SMBO):
         self.max_sample_size = max_sample_size
         self.sampling = sampling
         self.warnings = warnings
-        self.rand_rest_p = rand_rest_p
 
         kde_para = {
             "kernel": "gaussian",

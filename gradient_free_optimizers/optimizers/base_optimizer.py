@@ -43,6 +43,7 @@ class BaseOptimizer(SearchTracker):
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
         random_state=None,
+        rand_rest_p=0,
         nth_process=None,
     ):
         super().__init__()
@@ -50,6 +51,7 @@ class BaseOptimizer(SearchTracker):
         self.results_mang = ResultsManager(self.conv)
         self.initialize = initialize
         self.random_state = random_state
+        self.rand_rest_p = rand_rest_p
         self.nth_process = nth_process
 
         self.optimizers = [self]
