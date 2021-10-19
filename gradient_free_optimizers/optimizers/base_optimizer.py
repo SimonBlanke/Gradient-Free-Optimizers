@@ -54,6 +54,8 @@ class BaseOptimizer(SearchTracker):
         self.rand_rest_p = rand_rest_p
         self.nth_process = nth_process
 
+        self.state = "init"
+
         self.optimizers = [self]
 
         set_random_seed(nth_process, random_state)

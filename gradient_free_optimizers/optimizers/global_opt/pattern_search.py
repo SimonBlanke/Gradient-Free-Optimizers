@@ -37,7 +37,15 @@ class PatternSearch(BaseOptimizer, Search):
     def generate_pattern(self, current_position):
         pattern_pos_l = []
 
-        if self.pos_best not in self.positions_valid[-int(self.n_positions_ * 2) :]:
+        n_valid_pos = len(self.positions_valid)
+        n_pattern_pos = int(self.n_positions_ * 2)
+        n_pos_min = min(n_valid_pos, n_pattern_pos)
+
+        best_in_recent_pos = any(
+            np.array_equal(np.array(self.pos_best), pos)
+            for pos in self.positions_valid[n_pos_min:]
+        )
+        if best_in_recent_pos:
             self.pattern_size_tmp *= self.reduction
         pattern_size = self.pattern_size_tmp
 
@@ -65,6 +73,7 @@ class PatternSearch(BaseOptimizer, Search):
         return pos_new
 
     def finish_initialization(self):
+        self.state = "iter"
         self.generate_pattern(self.pos_current)
 
     def evaluate(self, score_new):
@@ -76,7 +85,8 @@ class PatternSearch(BaseOptimizer, Search):
         modZero = self.nth_iter % int(self.n_positions_ * 2) == 0
 
         if modZero or len(self.pattern_pos_l) == 0:
-            self.generate_pattern(self.pos_current)
+            if self.state == "iter":
+                self.generate_pattern(self.pos_current)
 
             score_new_list_temp = self.scores_valid[-self.n_positions_ :]
             pos_new_list_temp = self.positions_valid[-self.n_positions_ :]
