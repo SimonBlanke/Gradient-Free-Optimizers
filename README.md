@@ -647,17 +647,25 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 
 </details>
 
-
 <details open>
-<summary><b>Next Features
+<summary><b>v1.0.0</b> :heavy_check_mark:</summary>
+
+  - [x] small API changes
+  - [x] add Downhill-simplex algorithm to optimizers
+  - [ ] add Pattern-search to optimizers
+  - [x] add Powell's Method to optimizers
+
+</details>
+
+
+
+<details>
+<summary><b>Upcoming Features
 </b></summary>
 
-  - [ ] add Downhill-simplex algorithm to optimizers
   - [ ] add other acquisition functions to smbo (Probability of improvement, Entropy search, ...)
-  - [ ] Improved sampling for smb-optimizers
   - [ ] add Bayesian 1D Bayesian-optimization to optimizers
-  - [ ] Finalize API (1.0.0)
-  
+
 </details>
 
 
@@ -666,15 +674,16 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 
 ## Gradient Free Optimizers <=> Hyperactive
 
-Gradient-Free-Optimizers was created as the optimization backend of the Hyperactive package. Therefore the algorithms are exactly the same in both packages and deliver the same results. 
+Gradient-Free-Optimizers was created as the optimization backend of the [Hyperactive package](https://github.com/SimonBlanke/Hyperactive). Therefore the algorithms are exactly the same in both packages and deliver the same results. 
 However you can still use Gradient-Free-Optimizers as a standalone package.
 The separation of Gradient-Free-Optimizers from Hyperactive enables multiple advantages:
   - Even easier to use than Hyperactive
-  - Other developers can easily use GFOs as an optimizaton backend if desired
   - Separate and more thorough testing
+  - Other developers can easily use GFOs as an optimizaton backend if desired
   - Better isolation from the complex information flow in Hyperactive. GFOs only uses positions and scores in a N-dimensional search-space. It returns only the new position after each iteration.
   - a smaller and cleaner code base, if you want to explore my implementation of these optimization techniques.
 
+While Gradient-Free-Optimizers is relatively simple, Hyperactive is a more complex project with additional features. The differences between Gradient-Free-Optimizers and Hyperactive are listed in the following table:
 
 <table>
   <tr>
@@ -685,12 +694,12 @@ The separation of Gradient-Free-Optimizers from Hyperactive enables multiple adv
   <tr>
     <td> Search space composition </td>
     <td> only numerical </td>
-    <td> any python object </td>
+    <td> numbers, strings and functions </td>
   </tr>
   <tr>
     <td> Parallel Computing </td>
     <td> not supported </td>
-    <td> yes, via joblib or multiprocessing </td>
+    <td> yes, via multiprocessing or joblib </td>
   </tr>
   <tr>
     <td> Distributed computing </td>
@@ -700,7 +709,7 @@ The separation of Gradient-Free-Optimizers from Hyperactive enables multiple adv
   <tr>
     <td> Visualization </td>
     <td> not supported</td>
-    <td> yes, via progress-board</td>
+    <td> yes, via a streamlit-dashboard</td>
   </tr>
   </tr>
 </table>
