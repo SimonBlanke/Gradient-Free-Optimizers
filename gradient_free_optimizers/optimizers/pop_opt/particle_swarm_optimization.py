@@ -11,6 +11,8 @@ from ._particle import Particle
 
 
 class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
+    name = "Particle Swarm Optimization"
+
     def __init__(
         self,
         *args,

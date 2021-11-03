@@ -8,6 +8,8 @@ from ...search import Search
 
 
 class RepulsingHillClimbingOptimizer(HillClimbingOptimizer, Search):
+    name = "Repulsing Hill Climbing"
+
     def __init__(
         self,
         *args,

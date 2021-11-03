@@ -10,6 +10,8 @@ from ...search import Search
 
 
 class StochasticHillClimbingOptimizer(HillClimbingOptimizer, Search):
+    name = "Stochastic Hill Climbing"
+
     def __init__(
         self,
         *args,

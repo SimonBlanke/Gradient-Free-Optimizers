@@ -8,6 +8,8 @@ from ...search import Search
 
 
 class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer, Search):
+    name = "Random Restart Hill Climbing"
+
     def __init__(
         self,
         *args,

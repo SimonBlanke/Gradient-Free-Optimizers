@@ -10,6 +10,8 @@ from ...search import Search
 
 
 class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer, Search):
+    name = "Simulated Annealing"
+
     def __init__(
         self,
         *args,

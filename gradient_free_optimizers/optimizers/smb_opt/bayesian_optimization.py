@@ -14,6 +14,8 @@ gaussian_process = {"gp_nonlinear": GPR(), "gp_linear": GPR_linear()}
 
 
 class BayesianOptimizer(ExpectedImprovementBasedOptimization):
+    name = "Bayesian Optimization"
+
     def __init__(
         self,
         *args,

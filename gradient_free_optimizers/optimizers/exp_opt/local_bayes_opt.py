@@ -13,6 +13,8 @@ from ..smb_opt import BayesianOptimizer
 
 
 class LocalBayesianOptimizer(BaseOptimizer, Search):
+    name = "Local Bayesian Optimizer"
+
     def __init__(
         self,
         *args,

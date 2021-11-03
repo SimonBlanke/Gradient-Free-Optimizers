@@ -15,6 +15,8 @@ from sklearn.neural_network import MLPRegressor
 
 
 class EnsembleOptimizer(ExpectedImprovementBasedOptimization):
+    name = "Ensemble Optimizer"
+
     def __init__(
         self,
         *args,

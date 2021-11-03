@@ -8,6 +8,8 @@ from ...search import Search
 
 
 class RandomSearchOptimizer(BaseOptimizer, Search):
+    name = "Random Search"
+
     def __init__(
         self,
         *args,

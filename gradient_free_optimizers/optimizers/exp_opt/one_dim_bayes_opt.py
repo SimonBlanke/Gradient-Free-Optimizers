@@ -17,6 +17,8 @@ def sort_list_idx(list_):
 
 
 class OneDimensionalBayesianOptimization(BaseOptimizer, Search):
+    name = "One Dimensional Bayesian Optimizer"
+
     def __init__(
         self,
         *args,

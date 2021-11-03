@@ -30,6 +30,8 @@ def centeroid(array_list):
 
 
 class DownhillSimplexOptimizer(BaseOptimizer, Search):
+    name = "Downhill Simplex Optimizer"
+
     def __init__(
         self,
         *args,

@@ -18,6 +18,7 @@ tree_regressor_dict = {
 
 
 class ForestOptimizer(ExpectedImprovementBasedOptimization):
+    name = "Forest Optimization"
     """Based on the forest-optimizer in the scikit-optimize package"""
 
     def __init__(

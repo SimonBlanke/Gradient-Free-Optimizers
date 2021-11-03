@@ -17,6 +17,8 @@ def sort_list_idx(list_):
 
 
 class PowellsMethod(BaseOptimizer, Search):
+    name = "Powell's Method"
+
     def __init__(
         self,
         *args,

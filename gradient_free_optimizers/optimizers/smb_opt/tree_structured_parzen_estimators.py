@@ -10,6 +10,8 @@ from .smbo import SMBO
 
 
 class TreeStructuredParzenEstimators(SMBO):
+    name = "Tree Structured Parzen Estimators"
+
     def __init__(
         self,
         *args,

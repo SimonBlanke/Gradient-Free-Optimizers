@@ -12,6 +12,8 @@ from ..smb_opt import BayesianOptimizer
 
 
 class EvoSubSpaceBayesianOptimizer(BaseOptimizer, Search):
+    name = "Subspace Bayesian Optimizer"
+
     def __init__(
         self,
         *args,

@@ -13,6 +13,8 @@ from ..smb_opt.smbo import SMBO
 
 
 class VariableResolutionBayesianOptimizer(SMBO):
+    name = "Variable Resolution Bayesian Optimizer"
+
     def __init__(
         self,
         *args,

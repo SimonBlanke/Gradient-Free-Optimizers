@@ -11,6 +11,8 @@ from ._individual import Individual
 
 
 class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
+    name = "Evolution Strategý"
+
     def __init__(
         self,
         *args,

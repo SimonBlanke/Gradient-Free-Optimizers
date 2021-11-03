@@ -20,6 +20,8 @@ def norm_value(v, p):
 
 
 class ParallelAnnealingOptimizer(BasePopulationOptimizer, Search):
+    name = "Parallel Random Annealing"
+
     def __init__(
         self,
         *args,

@@ -13,6 +13,8 @@ from ..local_opt import SimulatedAnnealingOptimizer
 
 
 class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
+    name = "Parallel Tempering"
+
     def __init__(
         self,
         *args,

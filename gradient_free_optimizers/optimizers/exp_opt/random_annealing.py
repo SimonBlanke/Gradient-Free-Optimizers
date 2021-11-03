@@ -8,6 +8,8 @@ from ...search import Search
 
 
 class RandomAnnealingOptimizer(HillClimbingOptimizer, Search):
+    name = "Random Annealing"
+
     def __init__(
         self,
         *args,
