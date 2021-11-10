@@ -148,7 +148,7 @@ class Search(TimesTracker):
         self.best_value = self.conv.position2value(self.p_bar.pos_best)
         self.best_para = self.conv.value2para(self.best_value)
 
-        if memory is not False:
+        if memory not in [False, None]:
             self.memory_dict = mem.memory_dict
         else:
             self.memory_dict = {}
