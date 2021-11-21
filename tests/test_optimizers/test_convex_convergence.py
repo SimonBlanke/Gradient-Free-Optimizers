@@ -16,7 +16,7 @@ def test_convex_convergence_singleOpt(Optimizer):
         return score
 
     search_space = {"x1": np.arange(-100, 101, 1)}
-    initialize = {"vertices": 1}
+    initialize = {"vertices": 2}
 
     n_opts = 33
 
