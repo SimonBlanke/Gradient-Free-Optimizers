@@ -23,7 +23,7 @@ class PatternSearch(BaseOptimizer, Search):
         *args,
         n_positions=4,
         pattern_size=0.25,
-        reduction=0.99,
+        reduction=0.9,
         **kwargs,
     ):
         super().__init__(*args, **kwargs)
