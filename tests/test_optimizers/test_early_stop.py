@@ -3,7 +3,6 @@ import pytest
 import numpy as np
 from sklearn.datasets import load_breast_cancer
 from sklearn.model_selection import cross_val_score
-from sklearn.tree import DecisionTreeClassifier
 
 from ._parametrize import optimizers
 
@@ -26,7 +25,7 @@ def test_early_stop_0(Optimizer):
         "tol_rel": 0.1,
     }
 
-    opt = Optimizer(search_space, initialize={"warm_start": [{"x1": 0}]})
+    opt = Optimizer(search_space, initialize={"warm_start": [{"x1": 0}], "random": 1})
     opt.search(
         objective_function,
         n_iter=1000,
@@ -42,7 +41,7 @@ def test_early_stop_1(Optimizer):
         "tol_rel": 5,
     }
 
-    opt = Optimizer(search_space, initialize={"warm_start": [{"x1": 0}]})
+    opt = Optimizer(search_space, initialize={"warm_start": [{"x1": 0}], "random": 1})
     opt.search(
         objective_function,
         n_iter=1000,
@@ -58,7 +57,7 @@ def test_early_stop_2(Optimizer):
         "tol_rel": None,
     }
 
-    opt = Optimizer(search_space, initialize={"warm_start": [{"x1": 0}]})
+    opt = Optimizer(search_space, initialize={"warm_start": [{"x1": 0}], "random": 1})
     opt.search(
         objective_function,
         n_iter=1000,
@@ -81,7 +80,7 @@ def test_early_stop_3(Optimizer):
         "n_iter_no_change": n_iter_no_change,
     }
 
-    opt = Optimizer(search_space, initialize={"warm_start": [{"x1": 0}]})
+    opt = Optimizer(search_space, initialize={"warm_start": [{"x1": 0}], "random": 1})
     opt.search(
         objective_function,
         n_iter=100000,
@@ -93,7 +92,7 @@ def test_early_stop_3(Optimizer):
     print("\n n_performed_iter \n", n_performed_iter)
     print("\n n_iter_no_change \n", n_iter_no_change)
 
-    assert n_performed_iter == (n_iter_no_change + 1)
+    assert n_performed_iter == (n_iter_no_change + 2)
 
 
 @pytest.mark.parametrize(*optimizers)

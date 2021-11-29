@@ -47,7 +47,7 @@ objective_para = (
 
 @pytest.mark.parametrize(*objective_para)
 @pytest.mark.parametrize(*optimizers)
-def test_best_results_0(Optimizer, objective):
+def test_inf_nan_0(Optimizer, objective):
     objective_function = objective
     initialize = {"random": 20}
 
@@ -61,7 +61,7 @@ def test_best_results_0(Optimizer, objective):
 
 @pytest.mark.parametrize(*objective_para)
 @pytest.mark.parametrize(*optimizers)
-def test_best_results_1(Optimizer, objective):
+def test_inf_nan_1(Optimizer, objective):
     objective_function = objective
     initialize = {"random": 20}
 
