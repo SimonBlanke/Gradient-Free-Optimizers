@@ -17,8 +17,11 @@ class GridSearchOptimizer(BaseOptimizer, Search):
     ):
         super().__init__(search_space, initialize)
         self.initial_position = np.zeros((self.conv.n_dimensions,), dtype=int)
+        # current position mapped in [|0,search_space_size-1|] (1D)
         self.high_dim_pointer = 0
+        # direction is a generator of our search space (prime with search_space_size)
         self.direction = None
+        # step_size describes how many steps of size direction are jumped at each iteration
         self.step_size = step_size
 
     def get_direction(self):
@@ -49,6 +52,9 @@ class GridSearchOptimizer(BaseOptimizer, Search):
         new_pos = []
         dim_sizes = self.conv.dim_sizes
         pointer = self.high_dim_pointer
+        
+        # The coordinate of our new position for each dimension is the quotient of the pointer by the product of remaining dimensions
+        # Describes a bijection from Z/search_space_size*Z -> (Z/dim_1*Z)x...x(Z/dim_n*Z)
         for dim in range(len(dim_sizes) - 1):
             new_pos.append(pointer // np.prod(dim_sizes[dim + 1 :]) % dim_sizes[dim])
             pointer = pointer % np.prod(dim_sizes[dim + 1 :])
@@ -58,14 +64,18 @@ class GridSearchOptimizer(BaseOptimizer, Search):
     @BaseOptimizer.track_nth_iter
     def iterate(self):
         if self.direction is None:
+            # If this is the first iteration, generate the direction and return initial_position attribute
             self.direction = self.get_direction()
             return self.initial_position
         else:
+            # Else, update high_dim_pointer by taking a step of size step_size * direction
+            # Multiple passes are needed in order to observe the entire search space because of the step_size argument
             iter_, pass_ = self.nth_iter, self.high_dim_pointer % self.step_size
+            # If current pass is finished, begin the next one
             if (self.nth_iter+1) * self.step_size // self.conv.search_space_size > self.nth_iter * self.step_size // self.conv.search_space_size:
                 self.high_dim_pointer = pass_ + 1
             else:
-                # Update pointer in Z/(search_space_size*Z) using the prime step self.direction
+                # Else, update pointer in Z/(search_space_size*Z) using the prime step direction and step_size
                 self.high_dim_pointer = (
                     self.high_dim_pointer + self.step_size * self.direction
                 ) % self.conv.search_space_size
