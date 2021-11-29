@@ -12,12 +12,14 @@ class GridSearchOptimizer(BaseOptimizer, Search):
     def __init__(
         self,
         search_space,
+        step_size=3,
         initialize={},
     ):
         super().__init__(search_space, initialize)
         self.initial_position = np.zeros((self.conv.n_dimensions,), dtype=int)
         self.high_dim_pointer = 0
         self.direction = None
+        self.step_size = step_size
 
     def get_direction(self):
         """
@@ -48,7 +50,7 @@ class GridSearchOptimizer(BaseOptimizer, Search):
         dim_sizes = self.conv.dim_sizes
         pointer = self.high_dim_pointer
         for dim in range(len(dim_sizes) - 1):
-            new_pos.append(pointer // np.prod(dim_sizes[dim + 1 :]))
+            new_pos.append(pointer // np.prod(dim_sizes[dim + 1 :]) % dim_sizes[dim])
             pointer = pointer % np.prod(dim_sizes[dim + 1 :])
         new_pos.append(pointer)
         return np.array(new_pos)
@@ -59,9 +61,13 @@ class GridSearchOptimizer(BaseOptimizer, Search):
             self.direction = self.get_direction()
             return self.initial_position
         else:
-            # Update pointer in Z/(search_space_size*Z) using the prime step self.direction
-            self.high_dim_pointer = (
-                self.high_dim_pointer + self.direction
-            ) % self.conv.search_space_size
+            iter_, pass_ = self.nth_iter, self.high_dim_pointer % self.step_size
+            if (self.nth_iter+1) * self.step_size // self.conv.search_space_size > self.nth_iter * self.step_size // self.conv.search_space_size:
+                self.high_dim_pointer = pass_ + 1
+            else:
+                # Update pointer in Z/(search_space_size*Z) using the prime step self.direction
+                self.high_dim_pointer = (
+                    self.high_dim_pointer + self.step_size * self.direction
+                ) % self.conv.search_space_size
             # Compute corresponding position in our search space
             return self.grid_move()
