@@ -114,7 +114,7 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
         elif self.simplex_step == 4:
             # iter Shrink
             pos = self.simplex_pos[self.compress_idx]
-            pos = pos + self.sigma * (self.simplex_scores[0] - pos)
+            pos = pos + self.sigma * (self.simplex_pos[0] - pos)
 
             return self.conv2pos(pos)
 
