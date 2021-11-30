@@ -102,7 +102,7 @@ optimizers = (
         (StochasticHillClimbingOptimizer),
         (RepulsingHillClimbingOptimizer),
         (SimulatedAnnealingOptimizer),
-        (DownhillSimplexOptimizer),
+        # (DownhillSimplexOptimizer),
         (RandomSearchOptimizer),
         (PowellsMethod),
         (PatternSearch),

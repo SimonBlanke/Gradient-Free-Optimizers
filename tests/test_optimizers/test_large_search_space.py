@@ -1,14 +1,14 @@
 import pytest
 import numpy as np
 
-from ._parametrize import optimizers
+from ._parametrize import optimizers_noSBOM
 
 
 def objective_function(para):
     return 1
 
 
-@pytest.mark.parametrize(*optimizers)
+@pytest.mark.parametrize(*optimizers_noSBOM)
 def test_large_search_space_0(Optimizer):
 
     search_space = {
@@ -16,11 +16,11 @@ def test_large_search_space_0(Optimizer):
         "x2": np.arange(0, 1000000),
         "x3": np.arange(0, 1000000),
     }
-    opt = Optimizer(search_space, initialize={"random": 3})
-    opt.search(objective_function, n_iter=5, verbosity=False)
+    opt = Optimizer(search_space, initialize={"random": 10})
+    opt.search(objective_function, n_iter=15, verbosity=False)
 
 
-@pytest.mark.parametrize(*optimizers)
+@pytest.mark.parametrize(*optimizers_noSBOM)
 def test_large_search_space_1(Optimizer):
 
     search_space = {
@@ -29,8 +29,8 @@ def test_large_search_space_1(Optimizer):
         "x3": np.arange(0, 1000, 0.001),
     }
 
-    opt = Optimizer(search_space, initialize={"random": 3})
-    opt.search(objective_function, n_iter=5, verbosity=False)
+    opt = Optimizer(search_space, initialize={"random": 10})
+    opt.search(objective_function, n_iter=15, verbosity=False)
 
 
 """

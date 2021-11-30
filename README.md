@@ -649,6 +649,23 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 </details>
 
 
+<details>
+<summary><b>v0.4.0</b> :heavy_check_mark:</summary>
+
+  - [x] add early stopping parameter
+
+</details>
+
+
+<details>
+<summary><b>v0.5.0</b> :heavy_check_mark:</summary>
+
+  - [x] add grid-search to optimizers
+  - [x] impoved performance testing for optimizers
+
+</details>
+
+
 <details open>
 <summary><b>v1.0.0</b></summary>
 
