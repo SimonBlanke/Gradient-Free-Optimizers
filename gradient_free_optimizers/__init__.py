@@ -20,6 +20,7 @@ from .optimizers import (
     TreeStructuredParzenEstimators,
     DecisionTreeOptimizer,
     EnsembleOptimizer,
+    GridSearchOptimizer,
 )
 
 
@@ -38,4 +39,5 @@ __all__ = [
     "TreeStructuredParzenEstimators",
     "DecisionTreeOptimizer",
     "EnsembleOptimizer",
+    "GridSearchOptimizer",
 ]
