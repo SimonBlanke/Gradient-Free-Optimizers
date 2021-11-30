@@ -12,7 +12,7 @@ class GridSearchOptimizer(BaseOptimizer, Search):
     def __init__(
         self,
         search_space,
-        step_size=3,
+        step_size=1,
         initialize={},
     ):
         super().__init__(search_space, initialize)
@@ -58,9 +58,7 @@ class GridSearchOptimizer(BaseOptimizer, Search):
         # the quotient of the pointer by the product of remaining dimensions
         # Describes a bijection from Z/search_space_size*Z -> (Z/dim_1*Z)x...x(Z/dim_n*Z)
         for dim in range(len(dim_sizes) - 1):
-            new_pos.append(
-                pointer // np.prod(dim_sizes[dim + 1 :]) % dim_sizes[dim]
-            )
+            new_pos.append(pointer // np.prod(dim_sizes[dim + 1 :]) % dim_sizes[dim])
             pointer = pointer % np.prod(dim_sizes[dim + 1 :])
         new_pos.append(pointer)
         return np.array(new_pos)
