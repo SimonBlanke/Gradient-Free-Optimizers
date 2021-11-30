@@ -40,6 +40,10 @@ from .exp_opt import (
     EvoSubSpaceBayesianOptimizer,
 )
 
+from .grid import (
+    GridSearchOptimizer,
+)
+
 __all__ = [
     "HillClimbingOptimizer",
     "StochasticHillClimbingOptimizer",
@@ -47,6 +51,7 @@ __all__ = [
     "SimulatedAnnealingOptimizer",
     "DownhillSimplexOptimizer",
     "RandomSearchOptimizer",
+    "GridSearchOptimizer",
     "RandomRestartHillClimbingOptimizer",
     "PowellsMethod",
     "PatternSearch",

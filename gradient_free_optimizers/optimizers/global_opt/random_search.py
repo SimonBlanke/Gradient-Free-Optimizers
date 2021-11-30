@@ -17,6 +17,7 @@ class RandomSearchOptimizer(BaseOptimizer, Search):
     ):
         super().__init__(*args, **kwargs)
 
+
     @BaseOptimizer.track_nth_iter
     def iterate(self):
         return self.move_random()

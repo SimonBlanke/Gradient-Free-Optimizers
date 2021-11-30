@@ -42,7 +42,10 @@ def test_memory_timeSave_0():
     opt.search(objective_function, n_iter=100, memory=False)
     diff_time2 = time.time() - c_time2
 
-    assert diff_time1 < diff_time2 * 0.8
+    print("\n diff_time1 ", diff_time1)
+    print("\n diff_time2 ", diff_time2)
+
+    assert diff_time1 < diff_time2 * 0.5
 
 
 def test_memory_timeSave_1():
@@ -51,7 +54,7 @@ def test_memory_timeSave_1():
 
     def objective_function(para):
         dtc = DecisionTreeClassifier(max_depth=para["max_depth"])
-        scores = cross_val_score(dtc, X, y, cv=5)
+        scores = cross_val_score(dtc, X, y, cv=10)
 
         return scores.mean()
 
@@ -66,8 +69,9 @@ def test_memory_timeSave_1():
     opt = RandomSearchOptimizer(search_space)
     opt.search(objective_function, n_iter=300, memory_warm_start=results)
     diff_time1 = time.time() - c_time1
+    print("\n diff_time1 ", diff_time1)
 
-    assert diff_time1 < 1
+    assert diff_time1 < 0.5
 
 
 def test_memory_warm_start():
@@ -98,7 +102,8 @@ def test_memory_warm_start():
     opt1.search(objective_function, n_iter=300, memory_warm_start=opt0.search_data)
     diff_time2 = time.time() - c_time2
 
-    print("\n opt0.search_data \n", opt0.search_data)
+    print("\n diff_time1 ", diff_time1)
+    print("\n diff_time2 ", diff_time2)
 
     assert diff_time2 < diff_time1 * 0.5
 
@@ -132,6 +137,9 @@ def test_memory_warm_start_manual():
     opt = RandomSearchOptimizer(search_space)
     opt.search(objective_function, n_iter=30, memory_warm_start=memory_warm_start)
     diff_time_2 = time.time() - c_time
+
+    print("\n diff_time1 ", diff_time_1)
+    print("\n diff_time2 ", diff_time_2)
 
     assert diff_time_1 * 0.5 > diff_time_2
 
