@@ -29,6 +29,10 @@ from .sequence_model import (
     EnsembleOptimizer,
 )
 
+from .grid import (
+    GridSearchOptimizer,
+)
+
 __all__ = [
     "HillClimbingOptimizer",
     "StochasticHillClimbingOptimizer",
@@ -44,4 +48,5 @@ __all__ = [
     "TreeStructuredParzenEstimators",
     "DecisionTreeOptimizer",
     "EnsembleOptimizer",
+    "GridSearchOptimizer",
 ]
