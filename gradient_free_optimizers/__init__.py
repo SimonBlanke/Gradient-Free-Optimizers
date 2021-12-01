@@ -2,7 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-__version__ = "0.5.0"
+__version__ = "1.0.0"
 __license__ = "MIT"
 
 from .optimizers import (
