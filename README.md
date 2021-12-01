@@ -435,6 +435,12 @@ The following arguments can be passed to each optimization class:
       - List of parameter dictionaries that marks additional start points for the optimization run.
 
 
+- random_state=None
+    - (int, None)
+    - Random state for random processes in the random, numpy and scipy module.
+
+
+
 ### Optimizer Classes
 
 Each optimization class needs the "search_space" as an input argument. Optionally "initialize" and optimizer-specific parameters can be passed as well. You can read more about each optimization-strategy and its parameters in the [Optimization Tutorial](https://github.com/SimonBlanke/optimization-tutorial).
@@ -556,9 +562,6 @@ Each optimization class needs the "search_space" as an input argument. Optionall
   - (list, False)
   - The verbosity list determines what part of the optimization information will be printed in the command line.
 
-- random_state=None
-    - (int, None)
-    - Random state for random processes in the random, numpy and scipy module.
 
 </details>
 
