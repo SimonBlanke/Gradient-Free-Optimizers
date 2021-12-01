@@ -2,8 +2,8 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-
 import numpy as np
+from collections import OrderedDict
 
 from ..base_optimizer import BaseOptimizer
 from ...search import Search
@@ -46,7 +46,7 @@ class PowellsMethod(BaseOptimizer, Search):
         max_pos = []
         center_pos = []
 
-        search_space_1D = {}
+        search_space_1D = OrderedDict()
         for idx, para_name in enumerate(self.conv.para_names):
             if self.current_search_dim == idx:
                 # fill with range of values
@@ -86,7 +86,6 @@ class PowellsMethod(BaseOptimizer, Search):
             pos_new = self.hill_climb.init_pos(
                 self.hill_climb.init_positions[self.nth_iter_current_dim]
             )
-
         else:
             pos_new = self.hill_climb.iterate()
             pos_new = self.hill_climb.conv.position2value(pos_new)
