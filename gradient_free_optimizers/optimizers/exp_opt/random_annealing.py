@@ -18,7 +18,7 @@ class RandomAnnealingOptimizer(HillClimbingOptimizer, Search):
         n_neighbours=3,
         annealing_rate=0.98,
         start_temp=10,
-        **kwargs,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
         self.epsilon = epsilon

@@ -84,17 +84,17 @@ class TreeEnsembleBase:
 
 class RandomForestRegressor(TreeEnsembleBase, _RandomForestRegressor_):
     def __init__(self, min_variance=0.0, **kwargs):
-        super().__init__(**kwargs, min_variance=min_variance)
+        super().__init__(min_variance=min_variance, **kwargs)
 
 
 class ExtraTreesRegressor(TreeEnsembleBase, _ExtraTreesRegressor_):
     def __init__(self, min_variance=0.0, **kwargs):
-        super().__init__(**kwargs, min_variance=min_variance)
+        super().__init__(min_variance=min_variance, **kwargs)
 
 
 class GradientBoostingRegressor(TreeEnsembleBase, _GradientBoostingRegressor_):
     def __init__(self, min_variance=0.0, **kwargs):
-        super().__init__(**kwargs, min_variance=min_variance)
+        super().__init__(min_variance=min_variance, **kwargs)
 
 
 class GPR:

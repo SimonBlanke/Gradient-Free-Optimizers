@@ -12,13 +12,7 @@ from ...search import Search
 class StochasticHillClimbingOptimizer(HillClimbingOptimizer, Search):
     name = "Stochastic Hill Climbing"
 
-    def __init__(
-        self,
-        *args,
-        p_accept=0.1,
-        norm_factor=1,
-        **kwargs,
-    ):
+    def __init__(self, *args, p_accept=0.1, norm_factor=1, **kwargs):
         super().__init__(*args, **kwargs)
         self.p_accept = p_accept
         self.norm_factor = norm_factor

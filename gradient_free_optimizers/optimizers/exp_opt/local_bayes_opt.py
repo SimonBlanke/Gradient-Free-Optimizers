@@ -16,12 +16,7 @@ class LocalBayesianOptimizer(BaseOptimizer, Search):
     name = "Local Bayesian Optimizer"
 
     def __init__(
-        self,
-        *args,
-        max_size=300000,
-        n_positions=20,
-        local_range=100,
-        **kwargs,
+        self, *args, max_size=300000, n_positions=20, local_range=100, **kwargs
     ):
         super().__init__(*args, **kwargs)
 

@@ -21,7 +21,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
         cognitive_weight=0.5,
         social_weight=0.5,
         temp_weight=0.2,
-        **kwargs,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
 

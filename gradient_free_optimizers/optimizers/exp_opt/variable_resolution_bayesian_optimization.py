@@ -15,13 +15,7 @@ from ..smb_opt.smbo import SMBO
 class VariableResolutionBayesianOptimizer(SMBO):
     name = "Variable Resolution Bayesian Optimizer"
 
-    def __init__(
-        self,
-        *args,
-        n_best_pos=5,
-        n_iter_reso=10,
-        **kwargs,
-    ):
+    def __init__(self, *args, n_best_pos=5, n_iter_reso=10, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.n_best_pos = n_best_pos

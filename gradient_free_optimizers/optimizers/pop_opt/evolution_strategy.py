@@ -14,12 +14,7 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
     name = "Evolution Strategý"
 
     def __init__(
-        self,
-        *args,
-        population=10,
-        mutation_rate=0.7,
-        crossover_rate=0.3,
-        **kwargs,
+        self, *args, population=10, mutation_rate=0.7, crossover_rate=0.3, **kwargs
     ):
         super().__init__(*args, **kwargs)
 

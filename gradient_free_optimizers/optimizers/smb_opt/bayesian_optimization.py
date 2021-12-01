@@ -25,7 +25,7 @@ class BayesianOptimizer(ExpectedImprovementBasedOptimization):
         max_sample_size=10000000,
         sampling={"random": 1000000},
         warnings=100000000,
-        **kwargs,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
         self.gpr = gpr

@@ -14,13 +14,7 @@ from ..smb_opt import BayesianOptimizer
 class EvoSubSpaceBayesianOptimizer(BaseOptimizer, Search):
     name = "Subspace Bayesian Optimizer"
 
-    def __init__(
-        self,
-        *args,
-        max_size=300000,
-        n_ss_min=1,
-        **kwargs,
-    ):
+    def __init__(self, *args, max_size=300000, n_ss_min=1, **kwargs):
         super().__init__(*args, **kwargs)
         self.n_ss_min = n_ss_min
 

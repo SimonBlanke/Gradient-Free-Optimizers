@@ -10,12 +10,7 @@ from ...search import Search
 class RepulsingHillClimbingOptimizer(HillClimbingOptimizer, Search):
     name = "Repulsing Hill Climbing"
 
-    def __init__(
-        self,
-        *args,
-        repulsion_factor=5,
-        **kwargs,
-    ):
+    def __init__(self, *args, repulsion_factor=5, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.tabus = []

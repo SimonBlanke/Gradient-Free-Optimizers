@@ -9,12 +9,7 @@ from ...search import Search
 
 
 class GridSearchOptimizer(BaseOptimizer, Search):
-    def __init__(
-        self,
-        *args,
-        step_size=1,
-        **kwargs,
-    ):
+    def __init__(self, *args, step_size=1, **kwargs):
         super().__init__(*args, **kwargs)
         self.initial_position = np.zeros((self.conv.n_dimensions,), dtype=int)
         # current position mapped in [|0,search_space_size-1|] (1D)

@@ -32,15 +32,7 @@ def centeroid(array_list):
 class DownhillSimplexOptimizer(BaseOptimizer, Search):
     name = "Downhill Simplex Optimizer"
 
-    def __init__(
-        self,
-        *args,
-        alpha=1,
-        gamma=2,
-        beta=0.5,
-        sigma=0.5,
-        **kwargs,
-    ):
+    def __init__(self, *args, alpha=1, gamma=2, beta=0.5, sigma=0.5, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.alpha = alpha

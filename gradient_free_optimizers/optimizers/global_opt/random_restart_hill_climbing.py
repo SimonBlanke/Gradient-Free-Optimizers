@@ -17,7 +17,7 @@ class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer, Search):
         distribution="normal",
         n_neighbours=3,
         n_iter_restart=10,
-        **kwargs,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
         self.epsilon = epsilon

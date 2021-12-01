@@ -20,7 +20,7 @@ class SMBO(BaseOptimizer, Search):
         max_sample_size=10000000,
         sampling={"random": 1000000},
         # warnings={"training": 100000, "prediction": 100000000},
-        **kwargs,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
         self.warm_start_smbo = warm_start_smbo

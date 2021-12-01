@@ -19,12 +19,7 @@ def sort_list_idx(list_):
 class PowellsMethod(BaseOptimizer, Search):
     name = "Powell's Method"
 
-    def __init__(
-        self,
-        *args,
-        iters_p_dim=10,
-        **kwargs,
-    ):
+    def __init__(self, *args, iters_p_dim=10, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.iters_p_dim = iters_p_dim

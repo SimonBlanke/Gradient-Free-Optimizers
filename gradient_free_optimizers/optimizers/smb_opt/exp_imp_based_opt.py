@@ -27,7 +27,7 @@ class ExpectedImprovementBasedOptimization(SMBO):
         warm_start_smbo=None,
         sampling={"random": 1000000},
         warnings=100000000,
-        **kwargs,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
         self.new_positions = []

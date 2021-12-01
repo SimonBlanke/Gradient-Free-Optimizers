@@ -10,13 +10,8 @@ from ...search import Search
 class RandomSearchOptimizer(BaseOptimizer, Search):
     name = "Random Search"
 
-    def __init__(
-        self,
-        *args,
-        **kwargs,
-    ):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-
 
     @BaseOptimizer.track_nth_iter
     def iterate(self):

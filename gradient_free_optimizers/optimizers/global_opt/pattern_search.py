@@ -19,12 +19,7 @@ class PatternSearch(BaseOptimizer, Search):
     name = "Pattern Search"
 
     def __init__(
-        self,
-        *args,
-        n_positions=4,
-        pattern_size=0.25,
-        reduction=0.9,
-        **kwargs,
+        self, *args, n_positions=4, pattern_size=0.25, reduction=0.9, **kwargs
     ):
         super().__init__(*args, **kwargs)
 
