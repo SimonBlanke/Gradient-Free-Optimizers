@@ -442,10 +442,13 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 - HillClimbingOptimizer
 - RepulsingHillClimbingOptimizer
 - SimulatedAnnealingOptimizer
+- DownhillSimplexOptimizer
 - RandomSearchOptimizer
 - GridSearchOptimizer
 - RandomRestartHillClimbingOptimizer
 - RandomAnnealingOptimizer
+- PowellsMethod
+- PatternSearch
 - ParallelTemperingOptimizer
 - ParticleSwarmOptimizer
 - EvolutionStrategyOptimizer
