@@ -17,7 +17,6 @@ from gradient_free_optimizers import (
     BayesianOptimizer,
     TreeStructuredParzenEstimators,
     ForestOptimizer,
-    OneDimensionalBayesianOptimization,
     EnsembleOptimizer,
 )
 
@@ -73,7 +72,6 @@ optimizers_SBOM = (
     "Optimizer",
     [
         (BayesianOptimizer),
-        (OneDimensionalBayesianOptimization),
         (TreeStructuredParzenEstimators),
         (ForestOptimizer),
         (EnsembleOptimizer),
@@ -117,6 +115,5 @@ optimizers = (
         (TreeStructuredParzenEstimators),
         (ForestOptimizer),
         (EnsembleOptimizer),
-        (OneDimensionalBayesianOptimization),
     ],
 )
