@@ -67,7 +67,7 @@ class PowellsMethod(BaseOptimizer, Search):
         self.init_positions_ = [min_pos, center_pos, max_pos]
 
         self.hill_climb = HillClimbingOptimizer(
-            search_space=search_space_1D, initialize={"vertices": 2, "random": 3}
+            search_space=search_space_1D, initialize={"random": 5}
         )
 
     @BaseOptimizer.track_nth_iter
@@ -86,6 +86,8 @@ class PowellsMethod(BaseOptimizer, Search):
             pos_new = self.hill_climb.init_pos(
                 self.hill_climb.init_positions[self.nth_iter_current_dim]
             )
+            pos_new = self.hill_climb.conv.position2value(pos_new)
+
         else:
             pos_new = self.hill_climb.iterate()
             pos_new = self.hill_climb.conv.position2value(pos_new)
