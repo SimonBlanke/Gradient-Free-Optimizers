@@ -53,7 +53,7 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
         n_inits = len(self.positions_valid)
         if n_inits < self.n_simp_positions:
             print("\n Error: Not enough initial positions to form simplex")
-            raise ValueError("Increase number of initial positions")
+            print("\n Increase number of initial positions")
 
         self.simplex_step = 1
 
