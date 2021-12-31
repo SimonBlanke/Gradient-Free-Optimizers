@@ -11,14 +11,15 @@ from ..local_opt import HillClimbingOptimizer
 class Particle(HillClimbingOptimizer):
     def __init__(
         self,
-        search_space,
+        *args,
         inertia=0.5,
         cognitive_weight=0.5,
         social_weight=0.5,
         temp_weight=0.2,
         rand_rest_p=0.03,
+        **kwargs,
     ):
-        super().__init__(search_space)
+        super().__init__(*args, **kwargs)
         self.global_pos_best = None
 
         self.inertia = inertia

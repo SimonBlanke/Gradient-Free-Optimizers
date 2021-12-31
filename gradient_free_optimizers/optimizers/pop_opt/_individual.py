@@ -7,6 +7,6 @@ from ..local_opt import HillClimbingOptimizer
 
 
 class Individual(HillClimbingOptimizer):
-    def __init__(self, search_space, rand_rest_p=0.03):
-        super().__init__(search_space)
+    def __init__(self, *args, rand_rest_p=0.03, **kwargs):
+        super().__init__(*args, **kwargs)
         self.rand_rest_p = rand_rest_p

@@ -66,7 +66,11 @@ class BasePopulationOptimizer:
             population = []
             for pop_ in range(self.population):
                 population.append(
-                    Optimizer(self.conv.search_space, rand_rest_p=self.rand_rest_p)
+                    Optimizer(
+                        self.conv.search_space,
+                        rand_rest_p=self.rand_rest_p,
+                        initialize={"random": 1},
+                    )
                 )
         else:
             population = self.population
