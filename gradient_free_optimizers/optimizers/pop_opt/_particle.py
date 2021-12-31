@@ -17,7 +17,7 @@ class Particle(HillClimbingOptimizer):
         social_weight=0.5,
         temp_weight=0.2,
         rand_rest_p=0.03,
-        **kwargs,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
         self.global_pos_best = None
