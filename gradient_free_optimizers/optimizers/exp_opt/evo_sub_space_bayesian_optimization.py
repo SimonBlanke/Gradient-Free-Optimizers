@@ -18,7 +18,7 @@ class EvoSubSpaceBayesianOptimizer(BaseOptimizer, Search):
         super().__init__(*args, **kwargs)
         self.n_ss_min = n_ss_min
 
-        sub_search_spaces = SubSearchSpaces(self.search_space, max_size=max_size)
+        sub_search_spaces = SubSearchSpaces(self.conv.search_space, max_size=max_size)
         sub_search_spaces_l = sub_search_spaces.slice()
 
         self.sss_ids = list(range(len(sub_search_spaces_l)))

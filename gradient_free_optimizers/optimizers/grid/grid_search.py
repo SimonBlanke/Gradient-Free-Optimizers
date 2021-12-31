@@ -87,4 +87,7 @@ class GridSearchOptimizer(BaseOptimizer, Search):
             ) % self.conv.search_space_size
 
         # Compute corresponding position in our search space.
-        return self.grid_move()
+
+        pos_new = self.grid_move()
+        pos_new = self.conv2pos(pos_new)
+        return pos_new

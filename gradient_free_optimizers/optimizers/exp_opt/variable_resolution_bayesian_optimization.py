@@ -22,8 +22,8 @@ class VariableResolutionBayesianOptimizer(SMBO):
         self.n_iter_reso = n_iter_reso
 
         self.score_para_d = {}
-        self.search_space_reso = self.search_space
-        self.bayes = BayesianOptimizer(self.search_space)
+        self.search_space_reso = self.conv.search_space
+        self.bayes = BayesianOptimizer(self.conv.search_space)
 
     @SMBO.track_nth_iter
     @SMBO.track_X_sample
@@ -32,7 +32,7 @@ class VariableResolutionBayesianOptimizer(SMBO):
 
         if modZero or self.nth_iter == 0:
             self.search_space_reso = self.decrease_ss_reso(
-                self.search_space, para_list=list(self.score_para_d.values())
+                self.conv.search_space, para_list=list(self.score_para_d.values())
             )
             self.bayes = BayesianOptimizer(self.search_space_reso, initialize={})
             self.bayes.X_sample = self.X_sample

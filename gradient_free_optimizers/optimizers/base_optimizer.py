@@ -10,6 +10,8 @@ from ..converter import Converter
 from ..results_manager import ResultsManager
 from ..init_positions import Initializer
 
+from ..utils import set_random_seed, move_random
+
 
 def set_random_seed(nth_process, random_state):
     """
@@ -67,12 +69,7 @@ class BaseOptimizer(SearchTracker):
         self.n_inits = get_n_inits(initialize)
 
     def move_random(self):
-        position = []
-        for search_space_pos in self.conv.search_space_positions:
-            pos_ = random.choice(search_space_pos)
-            position.append(pos_)
-
-        return np.array(position)
+        return move_random(self.conv.search_space_positions)
 
     def track_nth_iter(func):
         def wrapper(self, *args, **kwargs):
