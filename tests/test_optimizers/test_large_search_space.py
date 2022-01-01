@@ -33,8 +33,7 @@ def test_large_search_space_1(Optimizer):
     opt.search(objective_function, n_iter=15, verbosity=False)
 
 
-"""
-@pytest.mark.parametrize(*optimizers)
+@pytest.mark.parametrize(*optimizers_noSBOM)
 def test_large_search_space_2(Optimizer):
 
     search_space = {
@@ -71,8 +70,14 @@ def test_large_search_space_2(Optimizer):
         "x31": np.arange(0, 3),
         "x32": np.arange(0, 3),
         "x33": np.arange(0, 3),
+        "x34": np.arange(0, 3),
+        "x35": np.arange(0, 3),
+        "x36": np.arange(0, 3),
+        "x37": np.arange(0, 3),
+        "x38": np.arange(0, 3),
+        "x39": np.arange(0, 3),
+        "x40": np.arange(0, 3),
     }
 
     opt = Optimizer(search_space, initialize={"random": 3})
     opt.search(objective_function, n_iter=5, verbosity=False)
-"""
