@@ -3,6 +3,7 @@
 # License: MIT License
 
 import numpy as np
+from fractions import gcd
 
 from ..base_optimizer import BaseOptimizer
 from ...search import Search
@@ -33,7 +34,7 @@ class GridSearchOptimizer(BaseOptimizer, Search):
         is_prime = False
 
         while not is_prime:
-            if np.gcd(int(search_space_size), int(dim_root)) == 1:
+            if gcd(int(search_space_size), int(dim_root)) == 1:
                 is_prime = True
             else:
                 dim_root += -1
