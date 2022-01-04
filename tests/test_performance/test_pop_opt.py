@@ -38,10 +38,10 @@ def test_pop_perf_0(Optimizer, objective_function):
         "x0": np.arange(-100, 101, 0.1),
         "x1": np.arange(-100, 101, 0.1),
     }
-    initialize = {"vertices": 4, "random": 6}
+    initialize = {"vertices": 4, "random": 11}
 
     n_opts = 10
-    n_iter = 1000
+    n_iter = 1200
 
     scores = []
     scores_rnd = []
@@ -76,4 +76,4 @@ def test_pop_perf_0(Optimizer, objective_function):
     score_norm = (score_mean_rnd - score_mean) / (score_mean_rnd + score_mean)
     print("\n score_norm", score_norm)
 
-    assert score_norm > 0.25
+    assert score_norm > 0.20
