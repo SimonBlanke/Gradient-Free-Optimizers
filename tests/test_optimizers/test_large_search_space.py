@@ -79,5 +79,5 @@ def test_large_search_space_2(Optimizer):
         "x40": np.arange(0, 3),
     }
 
-    opt = Optimizer(search_space, initialize={"random": 3})
-    opt.search(objective_function, n_iter=5, verbosity=False)
+    opt = Optimizer(search_space, initialize={"random": 3, "vertices": 3})
+    opt.search(objective_function, n_iter=10, verbosity=False)
