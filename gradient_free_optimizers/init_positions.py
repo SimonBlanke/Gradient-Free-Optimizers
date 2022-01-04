@@ -82,25 +82,28 @@ class Initializer:
 
         return positions
 
+    def _get_random_vertex(self):
+        vertex = []
+        for dim_positions in self.conv.search_space_positions:
+            rnd = random.randint(0, 1)
+
+            if rnd == 0:
+                dim_pos = min(dim_positions)
+            elif rnd == 1:
+                dim_pos = max(dim_positions)
+
+            vertex.append(dim_pos)
+        return np.array(vertex)
+
     def _init_vertices(self, n_pos):
         positions = []
+        for _ in range(n_pos):
+            vertex = self._get_random_vertex()
 
-        if n_pos == 0:
-            return positions
-
-        # zero_array = np.zeros(self.conv.max_positions.shape)
-        sub_arrays = []
-
-        for dim in self.conv.max_positions:
-            sub_array = np.array([0, dim])
-            sub_arrays.append(sub_array)
-
-        n_dims = len(self.conv.max_positions)
-        pos_comb_np = list(np.array(np.meshgrid(*sub_arrays)).T.reshape(-1, n_dims))
-        k = min(len(pos_comb_np), n_pos)
-
-        positions = random.sample(pos_comb_np, k)
-
-        positions = self._fill_rest_random(n_pos, positions)
-
+            vert_in_list = any((vertex == pos).all() for pos in positions)
+            if not vert_in_list:
+                positions.append(vertex)
+            else:
+                pos = move_random(self.conv.search_space_positions)
+                positions.append(pos)
         return positions
