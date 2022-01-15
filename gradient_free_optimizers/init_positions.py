@@ -67,19 +67,21 @@ class Initializer:
             return positions
 
         n_dim = len(self.conv.max_positions)
-        p_per_dim = int(np.power(n_pos, 1 / n_dim))
+        if n_dim > 30:
+            positions = []
+        else:
+            p_per_dim = int(np.power(n_pos, 1 / n_dim))
 
-        for dim in self.conv.max_positions:
-            dim_dist = int(dim / (p_per_dim + 1))
-            n_points = [n * dim_dist for n in range(1, p_per_dim + 1)]
+            for dim in self.conv.max_positions:
+                dim_dist = int(dim / (p_per_dim + 1))
+                n_points = [n * dim_dist for n in range(1, p_per_dim + 1)]
 
-            positions.append(n_points)
+                positions.append(n_points)
 
-        pos_mesh = np.array(np.meshgrid(*positions))
-        positions = list(pos_mesh.T.reshape(-1, n_dim))
+            pos_mesh = np.array(np.meshgrid(*positions))
+            positions = list(pos_mesh.T.reshape(-1, n_dim))
 
         positions = self._fill_rest_random(n_pos, positions)
-
         return positions
 
     def _get_random_vertex(self):
