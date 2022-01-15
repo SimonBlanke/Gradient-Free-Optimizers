@@ -39,7 +39,7 @@ def test_large_search_space_2(Optimizer):
     search_space = {}
     for i in range(100):
         key = "x" + str(i)
-        search_space[key] = np.arange(0, 3)
+        search_space[key] = np.arange(0, 100)
 
     opt = Optimizer(search_space, initialize={"random": 3, "vertices": 3, "grid": 3})
-    opt.search(objective_function, n_iter=10, verbosity=False)
+    opt.search(objective_function, n_iter=1000, verbosity=False)
