@@ -36,48 +36,10 @@ def test_large_search_space_1(Optimizer):
 @pytest.mark.parametrize(*optimizers_noSBOM)
 def test_large_search_space_2(Optimizer):
 
-    search_space = {
-        "x1": np.arange(0, 3),
-        "x2": np.arange(0, 3),
-        "x3": np.arange(0, 3),
-        "x4": np.arange(0, 3),
-        "x5": np.arange(0, 3),
-        "x6": np.arange(0, 3),
-        "x7": np.arange(0, 3),
-        "x8": np.arange(0, 3),
-        "x9": np.arange(0, 3),
-        "x10": np.arange(0, 3),
-        "x11": np.arange(0, 3),
-        "x12": np.arange(0, 3),
-        "x13": np.arange(0, 3),
-        "x14": np.arange(0, 3),
-        "x15": np.arange(0, 3),
-        "x16": np.arange(0, 3),
-        "x17": np.arange(0, 3),
-        "x18": np.arange(0, 3),
-        "x19": np.arange(0, 3),
-        "x20": np.arange(0, 3),
-        "x21": np.arange(0, 3),
-        "x22": np.arange(0, 3),
-        "x23": np.arange(0, 3),
-        "x24": np.arange(0, 3),
-        "x25": np.arange(0, 3),
-        "x26": np.arange(0, 3),
-        "x27": np.arange(0, 3),
-        "x28": np.arange(0, 3),
-        "x29": np.arange(0, 3),
-        "x30": np.arange(0, 3),
-        "x31": np.arange(0, 3),
-        "x32": np.arange(0, 3),
-        "x33": np.arange(0, 3),
-        "x34": np.arange(0, 3),
-        "x35": np.arange(0, 3),
-        "x36": np.arange(0, 3),
-        "x37": np.arange(0, 3),
-        "x38": np.arange(0, 3),
-        "x39": np.arange(0, 3),
-        "x40": np.arange(0, 3),
-    }
+    search_space = {}
+    for i in range(100):
+        key = "x" + str(i)
+        search_space[key] = np.arange(0, 3)
 
-    opt = Optimizer(search_space, initialize={"random": 3, "vertices": 3})
+    opt = Optimizer(search_space, initialize={"random": 3, "vertices": 3, "grid": 3})
     opt.search(objective_function, n_iter=10, verbosity=False)
