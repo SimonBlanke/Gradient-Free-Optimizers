@@ -3,7 +3,11 @@
 # License: MIT License
 
 import numpy as np
-from fractions import gcd
+
+try:
+    from fractions import gcd
+except:
+    from math import gcd
 
 from ..base_optimizer import BaseOptimizer
 from ...search import Search
