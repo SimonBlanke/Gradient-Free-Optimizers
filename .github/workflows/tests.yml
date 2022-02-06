@@ -17,10 +17,11 @@ on:
 jobs:
   build:
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         python-version: [3.5, 3.6, 3.7, 3.8, 3.9]
+        os: [ubuntu-latest, macOS-latest, windows-latest]
 
     steps:
     - uses: actions/checkout@master
@@ -46,9 +47,6 @@ jobs:
     - name: Test with pytest
       run: |
         python -m pytest tests --cov=gradient_free_optimizers --cov-report=term-missing --cov-report=xml -p no:warnings
-        
-    - name: Adjust coverage file for Codecov
-      run: bash <(sed -i 's/filename=\"/filename=\"gradient_free_optimizers\//g' coverage.xml)
         
     - name: Upload coverage to Codecov  
       uses: codecov/codecov-action@v1
