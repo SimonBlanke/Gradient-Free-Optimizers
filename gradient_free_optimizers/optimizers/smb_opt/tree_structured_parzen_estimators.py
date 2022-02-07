@@ -11,6 +11,7 @@ from .smbo import SMBO
 
 class TreeStructuredParzenEstimators(SMBO):
     name = "Tree Structured Parzen Estimators"
+    _name_ = "tree_structured_parzen_estimators"
 
     def __init__(
         self,

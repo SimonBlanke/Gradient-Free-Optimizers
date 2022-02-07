@@ -9,6 +9,7 @@ from ...search import Search
 
 class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer, Search):
     name = "Random Restart Hill Climbing"
+    _name_ = "random_restart_hill_climbing"
 
     def __init__(
         self,

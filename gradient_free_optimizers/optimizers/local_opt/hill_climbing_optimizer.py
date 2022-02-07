@@ -25,6 +25,7 @@ def max_list_idx(list_):
 
 class HillClimbingOptimizer(BaseOptimizer, Search):
     name = "Hill Climbing"
+    _name_ = "hill_climbing"
 
     def __init__(
         self, *args, epsilon=0.03, distribution="normal", n_neighbours=3, **kwargs

@@ -11,6 +11,7 @@ from ...search import Search
 
 class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer, Search):
     name = "Simulated Annealing"
+    _name_ = "simulated_annealing"
 
     def __init__(self, *args, annealing_rate=0.97, start_temp=1, **kwargs):
         super().__init__(*args, **kwargs)

@@ -9,6 +9,7 @@ from ...search import Search
 
 class RandomSearchOptimizer(BaseOptimizer, Search):
     name = "Random Search"
+    _name_ = "random_search"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

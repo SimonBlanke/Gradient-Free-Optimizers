@@ -9,6 +9,7 @@ from ...search import Search
 
 class RepulsingHillClimbingOptimizer(HillClimbingOptimizer, Search):
     name = "Repulsing Hill Climbing"
+    _name_ = "repulsing_hill_climbing"
 
     def __init__(self, *args, repulsion_factor=5, **kwargs):
         super().__init__(*args, **kwargs)

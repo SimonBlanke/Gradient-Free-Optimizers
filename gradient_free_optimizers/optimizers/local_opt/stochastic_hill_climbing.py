@@ -11,6 +11,7 @@ from ...search import Search
 
 class StochasticHillClimbingOptimizer(HillClimbingOptimizer, Search):
     name = "Stochastic Hill Climbing"
+    _name_ = "stochastic_hill_climbing"
 
     def __init__(self, *args, p_accept=0.1, norm_factor=1, **kwargs):
         super().__init__(*args, **kwargs)

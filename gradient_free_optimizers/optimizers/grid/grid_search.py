@@ -14,6 +14,9 @@ from ...search import Search
 
 
 class GridSearchOptimizer(BaseOptimizer, Search):
+    name = "Grid Search"
+    _name_ = "grid_search"
+
     def __init__(self, *args, step_size=1, **kwargs):
         super().__init__(*args, **kwargs)
         self.initial_position = np.zeros((self.conv.n_dimensions,), dtype=int)

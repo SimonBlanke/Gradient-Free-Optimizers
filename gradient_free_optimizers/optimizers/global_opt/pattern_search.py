@@ -17,6 +17,7 @@ def max_list_idx(list_):
 
 class PatternSearch(BaseOptimizer, Search):
     name = "Pattern Search"
+    _name_ = "pattern_search"
 
     def __init__(
         self, *args, n_positions=4, pattern_size=0.25, reduction=0.9, **kwargs
