@@ -100,12 +100,15 @@ class Initializer:
     def _init_vertices(self, n_pos):
         positions = []
         for _ in range(n_pos):
-            vertex = self._get_random_vertex()
+            for _ in range(100):
+                vertex = self._get_random_vertex()
 
-            vert_in_list = any((vertex == pos).all() for pos in positions)
-            if not vert_in_list:
-                positions.append(vertex)
+                vert_in_list = any((vertex == pos).all() for pos in positions)
+                if not vert_in_list:
+                    positions.append(vertex)
+                    break
             else:
                 pos = move_random(self.conv.search_space_positions)
                 positions.append(pos)
+
         return positions
