@@ -9,6 +9,7 @@ from ...search import Search
 
 class RandomAnnealingOptimizer(HillClimbingOptimizer, Search):
     name = "Random Annealing"
+    _name_ = "random_annealing"
 
     def __init__(
         self,
