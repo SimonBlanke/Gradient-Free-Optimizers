@@ -98,8 +98,9 @@ class BaseOptimizer(SearchTracker):
         pos = np.clip(r_pos, n_zeros, self.conv.max_positions).astype(int)
 
         dist = scipy.spatial.distance.cdist(r_pos.reshape(1, -1), pos.reshape(1, -1))
+        threshold = self.conv.search_space_size / (100 ** self.conv.n_dimensions)
 
-        if dist > self.conv.search_space_size / 1000000:
+        if dist > threshold:
             return self.move_random()
 
         return pos
