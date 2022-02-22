@@ -90,9 +90,9 @@ class Initializer:
             rnd = random.randint(0, 1)
 
             if rnd == 0:
-                dim_pos = min(dim_positions)
+                dim_pos = dim_positions[0]
             elif rnd == 1:
-                dim_pos = max(dim_positions)
+                dim_pos = dim_positions[-1]
 
             vertex.append(dim_pos)
         return np.array(vertex)
