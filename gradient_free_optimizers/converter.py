@@ -23,7 +23,7 @@ class Converter:
         self.max_dim = np.amax(self.dim_sizes)
 
         self.search_space_positions = [
-            range(len(array)) for array in search_space.values()
+            list(range(len(array))) for array in search_space.values()
         ]
 
         self.max_positions = self.dim_sizes - 1
