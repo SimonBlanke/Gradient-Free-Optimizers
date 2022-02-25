@@ -14,7 +14,7 @@ def objective_function(para):
 
 
 search_space = {
-    "x1": np.arange(0, 10, 1),
+    "x1": np.arange(0, 100, 1),  # small search space because of smbo
 }
 
 
