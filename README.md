@@ -572,7 +572,7 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 
 
 - .search_data
-  - Dataframe, that contains information about the score, the value of each parameter and the evaluation and iteration time. Each row shows the information of one optimization iteration.
+  - Dataframe containing information about the score and the value of each parameter. Each row shows the information of one optimization iteration.
 
     example:
 
@@ -583,8 +583,6 @@ Each optimization class needs the "search_space" as an input argument. Optionall
           <td class="cell">x1</td>
           <td class="cell">x2</td>
           <td class="cell">x...</td>
-          <td class="cell">eval_time</td>
-          <td class="cell">iter_time</td>
         </tr>
       </thead>
       <tbody class="table-body">
@@ -593,28 +591,20 @@ Each optimization class needs the "search_space" as an input argument. Optionall
           <td class="cell">0.1</td>
           <td class="cell">0.2</td>
           <td class="cell">...</td>
-          <td class="cell">0.000016</td>
-          <td class="cell">0.0.000034</td>
         </tr>
         <tr class="row">
           <td class="cell">0.823</td>
           <td class="cell">0.3</td>
           <td class="cell">0.1</td>
           <td class="cell">...</td>
-          <td class="cell">0.000017</td>
-          <td class="cell">0.0.000032</td>
         </tr>
         <tr class="row">
           <td class="cell">...</td>
           <td class="cell">...</td>
           <td class="cell">...</td>
           <td class="cell">...</td>
-          <td class="cell">...</td>
-          <td class="cell">...</td>
         </tr>
         <tr class="row">
-          <td class="cell">...</td>
-          <td class="cell">...</td>
           <td class="cell">...</td>
           <td class="cell">...</td>
           <td class="cell">...</td>
@@ -637,6 +627,14 @@ Each optimization class needs the "search_space" as an input argument. Optionall
     }
     ```
       
+- .eval_times
+  - List of evaluation times (time of objective function evaluation) collected during the optimization run.
+
+- .iter_times
+  - List of iteration times (evaluation + optimization) collected during the optimization run.
+
+
+
 </details>
 
 
