@@ -81,11 +81,8 @@ class TreeStructuredParzenEstimators(SMBO):
     def propose_location(self):
         best_samples, worst_samples = self._get_samples()
 
-        try:
-            self.kd_best.fit(best_samples)
-            self.kd_worst.fit(worst_samples)
-        except ValueError:
-            print("Error: Surrogate model cannot fit to samples")
+        self.kd_best.fit(best_samples)
+        self.kd_worst.fit(worst_samples)
 
         exp_imp = self.expected_improvement()
         index_best = list(exp_imp.argsort()[::-1])
