@@ -38,7 +38,7 @@ def test_pop_perf_0(Optimizer, objective_function):
         "x0": np.arange(-100, 101, 0.1),
         "x1": np.arange(-100, 101, 0.1),
     }
-    initialize = {"vertices": 4, "random": 11}
+    initialize = {"vertices": 4, "random": 6}
 
     n_opts = 10
     n_iter = 1200
