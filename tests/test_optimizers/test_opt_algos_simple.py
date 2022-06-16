@@ -19,12 +19,6 @@ from gradient_free_optimizers import (
     BayesianOptimizer,
     TreeStructuredParzenEstimators,
     ForestOptimizer,
-    OneDimensionalBayesianOptimization,
-    ParallelAnnealingOptimizer,
-    EnsembleOptimizer,
-    LocalBayesianOptimizer,
-    VariableResolutionBayesianOptimizer,
-    EvoSubSpaceBayesianOptimizer,
 )
 
 from surfaces.test_functions import SphereFunction
@@ -49,12 +43,6 @@ optimizers = (
         (BayesianOptimizer),
         (TreeStructuredParzenEstimators),
         (ForestOptimizer),
-        (OneDimensionalBayesianOptimization),
-        (ParallelAnnealingOptimizer),
-        (EnsembleOptimizer),
-        (LocalBayesianOptimizer),
-        (VariableResolutionBayesianOptimizer),
-        (EvoSubSpaceBayesianOptimizer),
     ],
 )
 
