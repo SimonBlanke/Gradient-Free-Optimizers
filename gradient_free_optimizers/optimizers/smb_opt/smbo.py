@@ -121,3 +121,25 @@ class SMBO(BaseOptimizer, Search):
     @track_X_sample
     def init_pos(self, pos):
         return super().init_pos(pos)
+
+    @BaseOptimizer.track_nth_iter
+    @track_X_sample
+    def iterate(self):
+        return self._propose_location()
+
+    @track_y_sample
+    def evaluate(self, score_new):
+        self.score_new = score_new
+
+        self._evaluate_new2current(score_new)
+        self._evaluate_current2best()
+
+    def _propose_location(self):
+        self._training()
+        exp_imp = self._expected_improvement()
+
+        index_best = list(exp_imp.argsort()[::-1])
+        all_pos_comb_sorted = self.pos_comb[index_best]
+        pos_best = all_pos_comb_sorted[0]
+
+        return pos_best
