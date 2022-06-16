@@ -12,6 +12,7 @@ from .surrogate_models import (
     ExtraTreesRegressor,
     GradientBoostingRegressor,
 )
+from .acquisition_function import ExpectedImprovement
 
 
 tree_regressor_dict = {
@@ -64,24 +65,8 @@ class ForestOptimizer(SMBO):
         all_pos_comb = self._all_possible_pos()
         self.pos_comb = self._sampling(all_pos_comb)
 
-        mu, sigma = self.regr.predict(self.pos_comb, return_std=True)
-        # TODO mu_sample = self.regr.predict(self.X_sample)
-        mu = mu.reshape(-1, 1)
-        sigma = sigma.reshape(-1, 1)
-
-        # with normalization this is always 1
-        Y_sample = normalize(np.array(self.Y_sample)).reshape(-1, 1)
-
-        imp = mu - np.max(Y_sample) - self.xi
-        Z = np.divide(imp, sigma, out=np.zeros_like(sigma), where=sigma != 0)
-
-        exploit = imp * norm.cdf(Z)
-        explore = sigma * norm.pdf(Z)
-
-        exp_imp = exploit + explore
-        exp_imp[sigma == 0.0] = 0.0
-
-        return exp_imp[:, 0]
+        acqu_func = ExpectedImprovement(self.regr, self.pos_comb, self.xi)
+        return acqu_func.calculate(self.X_sample, self.Y_sample)
 
     def _training(self):
         X_sample = np.array(self.X_sample)
