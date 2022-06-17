@@ -2,13 +2,18 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+import numpy as np
+from scipy.stats import norm
 
-from .exp_imp_based_opt import ExpectedImprovementBasedOptimization
+
+from .smbo import SMBO
 from .surrogate_models import (
     RandomForestRegressor,
     ExtraTreesRegressor,
     GradientBoostingRegressor,
 )
+from .acquisition_function import ExpectedImprovement
+
 
 tree_regressor_dict = {
     "random_forest": RandomForestRegressor,
@@ -17,7 +22,17 @@ tree_regressor_dict = {
 }
 
 
-class ForestOptimizer(ExpectedImprovementBasedOptimization):
+def normalize(array):
+    num = array - array.min()
+    den = array.max() - array.min()
+
+    if den == 0:
+        return np.random.random_sample(array.shape)
+    else:
+        return ((num / den) + 0) / 1
+
+
+class ForestOptimizer(SMBO):
     name = "Forest Optimization"
     _name_ = "forest_optimization"
     """Based on the forest-optimizer in the scikit-optimize package"""
@@ -45,3 +60,20 @@ class ForestOptimizer(ExpectedImprovementBasedOptimization):
         self.warnings = warnings
 
         self.init_warm_start_smbo()
+
+    def _expected_improvement(self):
+        all_pos_comb = self._all_possible_pos()
+        self.pos_comb = self._sampling(all_pos_comb)
+
+        acqu_func = ExpectedImprovement(self.regr, self.pos_comb, self.xi)
+        return acqu_func.calculate(self.X_sample, self.Y_sample)
+
+    def _training(self):
+        X_sample = np.array(self.X_sample)
+        Y_sample = np.array(self.Y_sample)
+
+        if len(Y_sample) == 0:
+            return self.move_random()
+
+        Y_sample = normalize(Y_sample).reshape(-1, 1)
+        self.regr.fit(X_sample, Y_sample)

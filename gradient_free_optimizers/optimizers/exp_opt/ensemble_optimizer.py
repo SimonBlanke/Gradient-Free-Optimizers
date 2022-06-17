@@ -2,9 +2,12 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+import numpy as np
+from scipy.stats import norm
 
-from ..smb_opt.exp_imp_based_opt import ExpectedImprovementBasedOptimization
+from ..smb_opt.smbo import SMBO
 from ..smb_opt.surrogate_models import EnsembleRegressor
+from ..smb_opt.acquisition_function import ExpectedImprovement
 
 
 from sklearn.tree import DecisionTreeRegressor
@@ -14,7 +17,17 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.neural_network import MLPRegressor
 
 
-class EnsembleOptimizer(ExpectedImprovementBasedOptimization):
+def normalize(array):
+    num = array - array.min()
+    den = array.max() - array.min()
+
+    if den == 0:
+        return np.random.random_sample(array.shape)
+    else:
+        return ((num / den) + 0) / 1
+
+
+class EnsembleOptimizer(SMBO):
     name = "Ensemble Optimizer"
 
     def __init__(
@@ -43,3 +56,20 @@ class EnsembleOptimizer(ExpectedImprovementBasedOptimization):
         self.warnings = warnings
 
         self.init_warm_start_smbo()
+
+    def _expected_improvement(self):
+        all_pos_comb = self._all_possible_pos()
+        self.pos_comb = self._sampling(all_pos_comb)
+
+        acqu_func = ExpectedImprovement(self.regr, self.pos_comb, self.xi)
+        return acqu_func.calculate(self.X_sample, self.Y_sample)
+
+    def _training(self):
+        X_sample = np.array(self.X_sample)
+        Y_sample = np.array(self.Y_sample)
+
+        if len(Y_sample) == 0:
+            return self.move_random()
+
+        Y_sample = normalize(Y_sample).reshape(-1, 1)
+        self.regr.fit(X_sample, Y_sample)

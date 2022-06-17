@@ -23,12 +23,7 @@ from .optimizers import (
     BayesianOptimizer,
     TreeStructuredParzenEstimators,
     ForestOptimizer,
-    OneDimensionalBayesianOptimization,
-    ParallelAnnealingOptimizer,
     EnsembleOptimizer,
-    LocalBayesianOptimizer,
-    VariableResolutionBayesianOptimizer,
-    EvoSubSpaceBayesianOptimizer,
 )
 
 
@@ -50,10 +45,5 @@ __all__ = [
     "BayesianOptimizer",
     "TreeStructuredParzenEstimators",
     "ForestOptimizer",
-    "OneDimensionalBayesianOptimization",
-    "ParallelAnnealingOptimizer",
     "EnsembleOptimizer",
-    "LocalBayesianOptimizer",
-    "VariableResolutionBayesianOptimizer",
-    "EvoSubSpaceBayesianOptimizer",
 ]

@@ -32,12 +32,7 @@ from .smb_opt import (
 
 from .exp_opt import (
     RandomAnnealingOptimizer,
-    LocalBayesianOptimizer,
-    OneDimensionalBayesianOptimization,
-    ParallelAnnealingOptimizer,
     EnsembleOptimizer,
-    VariableResolutionBayesianOptimizer,
-    EvoSubSpaceBayesianOptimizer,
 )
 
 from .grid import (
@@ -63,9 +58,5 @@ __all__ = [
     "BayesianOptimizer",
     "TreeStructuredParzenEstimators",
     "ForestOptimizer",
-    "OneDimensionalBayesianOptimization",
-    "ParallelAnnealingOptimizer",
     "EnsembleOptimizer",
-    "VariableResolutionBayesianOptimizer",
-    "EvoSubSpaceBayesianOptimizer",
 ]
