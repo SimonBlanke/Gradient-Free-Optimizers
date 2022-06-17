@@ -32,6 +32,7 @@ from .smb_opt import (
 
 from .exp_opt import (
     RandomAnnealingOptimizer,
+    EnsembleOptimizer,
 )
 
 from .grid import (
@@ -57,4 +58,5 @@ __all__ = [
     "BayesianOptimizer",
     "TreeStructuredParzenEstimators",
     "ForestOptimizer",
+    "EnsembleOptimizer",
 ]
