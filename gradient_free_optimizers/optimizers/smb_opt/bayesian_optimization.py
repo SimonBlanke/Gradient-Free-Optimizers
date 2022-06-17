@@ -57,7 +57,7 @@ class BayesianOptimizer(SMBO):
         all_pos_comb = self._all_possible_pos()
         self.pos_comb = self._sampling(all_pos_comb)
 
-        acqu_func = ExpectedImprovement(self.gpr, self.pos_comb, self.xi)
+        acqu_func = ExpectedImprovement(self.regr, self.pos_comb, self.xi)
         return acqu_func.calculate(self.X_sample, self.Y_sample)
 
     def _training(self):
