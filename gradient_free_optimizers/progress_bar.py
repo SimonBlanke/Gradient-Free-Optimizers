@@ -83,6 +83,7 @@ class ProgressBarLVL1(ProgressBarBase):
 
     def close(self):
         self._tqdm.close()
+        del self._tqdm
 
     def _tqdm_dict(self, nth_process, n_iter, objective_function):
         """
