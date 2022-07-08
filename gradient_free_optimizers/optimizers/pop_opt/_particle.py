@@ -4,8 +4,16 @@
 
 import random
 import numpy as np
+from scipy.spatial.transform import Rotation as R
 
 from ..local_opt import HillClimbingOptimizer
+
+
+def roation(n_dim, vector):
+    I = np.identity(n_dim - 1)
+    R = np.pad(I, ((1, 0), (0, 1)), "minimum")
+    R[0, n_dim - 1] = -1
+    return np.matmul(R, vector)
 
 
 class Particle(HillClimbingOptimizer):
@@ -35,7 +43,9 @@ class Particle(HillClimbingOptimizer):
 
         return np.clip(pos_new, n_zeros, self.conv.max_positions)
 
-    def _move_positioner(self):
+    @HillClimbingOptimizer.track_nth_iter
+    @HillClimbingOptimizer.random_restart
+    def move_linear(self):
         r1, r2 = random.random(), random.random()
 
         A = self.inertia * self.velo
@@ -51,8 +61,17 @@ class Particle(HillClimbingOptimizer):
 
     @HillClimbingOptimizer.track_nth_iter
     @HillClimbingOptimizer.random_restart
-    def iterate(self):
-        return self._move_positioner()
+    def move_spiral(self, center_pos):
+        step_rate = 0.25
+
+        A = center_pos
+        B = np.subtract(self.pos_current, center_pos)
+        C = step_rate * roation(len(center_pos), B)
+
+        new_pos = A + C
+
+        n_zeros = [0] * len(self.conv.max_positions)
+        return np.clip(new_pos, n_zeros, self.conv.max_positions).astype(int)
 
     def evaluate(self, score_new):
         HillClimbingOptimizer.evaluate(self, score_new)

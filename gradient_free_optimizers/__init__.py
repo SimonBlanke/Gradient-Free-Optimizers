@@ -2,7 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-__version__ = "1.0.7"
+__version__ = "1.1.0"
 __license__ = "MIT"
 
 from .optimizers import (
@@ -19,6 +19,7 @@ from .optimizers import (
     RandomAnnealingOptimizer,
     ParallelTemperingOptimizer,
     ParticleSwarmOptimizer,
+    SpiralOptimization,
     EvolutionStrategyOptimizer,
     BayesianOptimizer,
     TreeStructuredParzenEstimators,
@@ -41,6 +42,7 @@ __all__ = [
     "RandomAnnealingOptimizer",
     "ParallelTemperingOptimizer",
     "ParticleSwarmOptimizer",
+    "SpiralOptimization",
     "EvolutionStrategyOptimizer",
     "BayesianOptimizer",
     "TreeStructuredParzenEstimators",

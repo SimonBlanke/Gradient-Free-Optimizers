@@ -10,7 +10,20 @@ from ...search import Search
 from ._particle import Particle
 
 
-class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
+def centeroid(array_list):
+    centeroid = []
+    for idx in range(array_list[0].shape[0]):
+        center_dim_pos = []
+        for array in array_list:
+            center_dim_pos.append(array[idx])
+
+        center_dim_mean = np.array(center_dim_pos).mean()
+        centeroid.append(center_dim_mean)
+
+    return centeroid
+
+
+class SpiralOptimization(BasePopulationOptimizer, Search):
     name = "Particle Swarm Optimization"
     _name_ = "particle_swarm_optimization"
 
@@ -59,17 +72,34 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
 
         self.p_current.velo = np.zeros(len(self.conv.max_positions))
 
+    def finish_initialization(self):
+        self._sort_best()
+        self.center_pos = self.p_sorted[0].pos_best
+        self.center_score = self.p_sorted[0].score_best
+
+        self.initialization_finished = True
+
     def iterate(self):
+        print("")
         n_iter = self._iterations(self.particles)
         self.p_current = self.particles[n_iter % len(self.particles)]
 
         self._sort_best()
         self.p_current.global_pos_best = self.p_sorted[0].pos_best
 
-        pos_new = self.p_current.move_linear()
+        pos_current_l = [particle.pos_current for particle in self.particles]
+
+        pos_new = self.p_current.move_spiral(self.center_pos)
         print("new_pos ", pos_new)
 
         return pos_new
 
     def evaluate(self, score_new):
+        if (
+            self.initialization_finished
+            and self.p_sorted[0].score_best > self.center_score
+        ):
+            self.center_pos = self.p_sorted[0].pos_best
+            self.center_score = self.p_sorted[0].score_best
+
         self.p_current.evaluate(score_new)

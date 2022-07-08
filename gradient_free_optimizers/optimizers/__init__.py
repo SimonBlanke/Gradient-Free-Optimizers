@@ -21,6 +21,7 @@ from .global_opt import (
 from .pop_opt import (
     ParallelTemperingOptimizer,
     ParticleSwarmOptimizer,
+    SpiralOptimization,
     EvolutionStrategyOptimizer,
 )
 
@@ -54,6 +55,7 @@ __all__ = [
     "LocalBayesianOptimizer",
     "ParallelTemperingOptimizer",
     "ParticleSwarmOptimizer",
+    "SpiralOptimization",
     "EvolutionStrategyOptimizer",
     "BayesianOptimizer",
     "TreeStructuredParzenEstimators",
