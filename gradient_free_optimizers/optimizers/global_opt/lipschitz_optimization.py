@@ -50,7 +50,7 @@ class LipschitzFunction:
 
     def calculate(self, X_sample, Y_sample, score_best):
         self.lip_c = self.find_best_slope(X_sample, Y_sample)
-        print("\n self.lip_c ", self.lip_c, "\n")
+        # print("\n self.lip_c ", self.lip_c, "\n")
         upper_bound_l = []
 
         M_A = np.array(self.position_l)
@@ -111,9 +111,9 @@ class LipschitzFunction:
         return upper_bound_l
 
 
-class Lipo(SMBO, Search):
-    name = "LIPO"
-    _name_ = "lipo"
+class LipschitzOptimizer(SMBO, Search):
+    name = "Lipschitz Optimizer"
+    _name_ = "lipschitz_optimizer"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -139,5 +139,5 @@ class Lipo(SMBO, Search):
         all_pos_comb_sorted = self.pos_comb[index_best]
         pos_best = all_pos_comb_sorted[0]
 
-        print("New pos", pos_best)
+        # print("New pos", pos_best)
         return pos_best

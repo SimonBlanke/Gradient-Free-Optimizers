@@ -15,7 +15,7 @@ from .global_opt import (
     RandomRestartHillClimbingOptimizer,
     PowellsMethod,
     PatternSearch,
-    Lipo,
+    LipschitzOptimizer,
 )
 
 
@@ -52,7 +52,7 @@ __all__ = [
     "RandomRestartHillClimbingOptimizer",
     "PowellsMethod",
     "PatternSearch",
-    "Lipo",
+    "LipschitzOptimizer",
     "RandomAnnealingOptimizer",
     "LocalBayesianOptimizer",
     "ParallelTemperingOptimizer",

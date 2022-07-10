@@ -6,12 +6,12 @@ from .random_search import RandomSearchOptimizer
 from .random_restart_hill_climbing import RandomRestartHillClimbingOptimizer
 from .powells_method import PowellsMethod
 from .pattern_search import PatternSearch
-from .lipo import Lipo
+from .lipschitz_optimization import LipschitzOptimizer
 
 __all__ = [
     "RandomSearchOptimizer",
     "RandomRestartHillClimbingOptimizer",
     "PowellsMethod",
     "PatternSearch",
-    "Lipo",
+    "LipschitzOptimizer",
 ]
