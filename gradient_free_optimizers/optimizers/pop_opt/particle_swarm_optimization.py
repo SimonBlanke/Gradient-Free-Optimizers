@@ -67,8 +67,6 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
         self.p_current.global_pos_best = self.p_sorted[0].pos_best
 
         pos_new = self.p_current.move_linear()
-        print("new_pos ", pos_new)
-
         return pos_new
 
     def evaluate(self, score_new):

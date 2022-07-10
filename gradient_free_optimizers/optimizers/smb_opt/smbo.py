@@ -100,7 +100,6 @@ class SMBO(BaseOptimizer, Search):
 
     def _all_possible_pos(self):
         pos_space = self.sampler.get_pos_space()
-        # print("pos_space", pos_space)
         n_dim = len(pos_space)
         return np.array(np.meshgrid(*pos_space)).T.reshape(-1, n_dim)
 
