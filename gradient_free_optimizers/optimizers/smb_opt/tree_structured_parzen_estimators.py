@@ -43,8 +43,7 @@ class TreeStructuredParzenEstimators(SMBO):
 
     def _get_samples(self):
         n_samples = len(self.X_sample)
-
-        n_best = int(n_samples * self.gamma_tpe)
+        n_best = max(round(n_samples * self.gamma_tpe), 1)
 
         Y_sample = np.array(self.Y_sample)
         index_best = Y_sample.argsort()[-n_best:]
