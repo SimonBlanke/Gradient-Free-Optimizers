@@ -61,14 +61,19 @@ class Particle(HillClimbingOptimizer):
 
     @HillClimbingOptimizer.track_nth_iter
     @HillClimbingOptimizer.random_restart
-    def move_spiral(self, center_pos):
-        step_rate = 0.25
+    def move_spiral(self, center_pos, temp):
+        step_rate = (
+            (random.random() ** 1 / 3) * np.power(self.conv.dim_sizes, 1 / 3) * temp
+        )
+
+        # print("step_rate", step_rate)
 
         A = center_pos
-        B = np.subtract(self.pos_current, center_pos)
-        C = step_rate * roation(len(center_pos), B)
+        B = step_rate * roation(
+            len(center_pos), np.subtract(self.pos_current, center_pos)
+        )
 
-        new_pos = A + C
+        new_pos = A + B
 
         n_zeros = [0] * len(self.conv.max_positions)
         return np.clip(new_pos, n_zeros, self.conv.max_positions).astype(int)
