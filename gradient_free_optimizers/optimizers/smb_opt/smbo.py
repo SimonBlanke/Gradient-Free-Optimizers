@@ -134,7 +134,14 @@ class SMBO(BaseOptimizer, Search):
         self._evaluate_current2best()
 
     def _propose_location(self):
-        self._training()
+        try:
+            self._training()
+        except ValueError:
+            print(
+                "Warning: training sequential model failed. Performing random iteration instead."
+            )
+            return self.move_random()
+
         exp_imp = self._expected_improvement()
 
         index_best = list(exp_imp.argsort()[::-1])
