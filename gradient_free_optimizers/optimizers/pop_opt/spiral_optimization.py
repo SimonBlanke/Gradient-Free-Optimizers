@@ -77,28 +77,19 @@ class SpiralOptimization(BasePopulationOptimizer, Search):
         self.center_pos = self.p_sorted[0].pos_best
         self.center_score = self.p_sorted[0].score_best
 
-        self.initialization_finished = True
+        self.init_done = True
 
     def iterate(self):
-        print("")
         n_iter = self._iterations(self.particles)
         self.p_current = self.particles[n_iter % len(self.particles)]
 
         self._sort_best()
         self.p_current.global_pos_best = self.p_sorted[0].pos_best
 
-        pos_current_l = [particle.pos_current for particle in self.particles]
-
-        pos_new = self.p_current.move_spiral(self.center_pos)
-        print("new_pos ", pos_new)
-
-        return pos_new
+        return self.p_current.move_spiral(self.center_pos)
 
     def evaluate(self, score_new):
-        if (
-            self.initialization_finished
-            and self.p_sorted[0].score_best > self.center_score
-        ):
+        if self.init_done and self.p_sorted[0].score_best > self.center_score:
             self.center_pos = self.p_sorted[0].pos_best
             self.center_score = self.p_sorted[0].score_best
 

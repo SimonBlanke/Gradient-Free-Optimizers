@@ -61,10 +61,8 @@ class Particle(HillClimbingOptimizer):
 
     @HillClimbingOptimizer.track_nth_iter
     @HillClimbingOptimizer.random_restart
-    def move_spiral(self, center_pos, temp):
-        step_rate = (
-            (random.random() ** 1 / 3) * np.power(self.conv.dim_sizes, 1 / 3) * temp
-        )
+    def move_spiral(self, center_pos):
+        step_rate = (random.random() ** 1 / 3) * np.power(self.conv.dim_sizes, 1 / 3)
 
         # print("step_rate", step_rate)
 

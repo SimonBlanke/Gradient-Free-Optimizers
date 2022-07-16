@@ -41,7 +41,7 @@ class BasePopulationOptimizer:
         init = Initializer(self.conv)
         self.init_positions = init.set_pos(self.initialize)
 
-        self.initialization_finished = False
+        self.init_done = False
 
     def _iterations(self, positioners):
         nth_iter = 0
@@ -74,4 +74,4 @@ class BasePopulationOptimizer:
         return population
 
     def finish_initialization(self):
-        self.initialization_finished = True
+        self.init_done = True
