@@ -72,11 +72,10 @@ class BaseOptimizer(SearchTracker):
         return move_random(self.conv.search_space_positions)
 
     def track_nth_iter(func):
+        # TODO remove this! makes no sense
         def wrapper(self, *args, **kwargs):
-            self.nth_iter = len(self.pos_new_list)
-            pos = func(self, *args, **kwargs)
-            self.pos_new = pos
-            return pos
+            self.pos_new = func(self, *args, **kwargs)
+            return self.pos_new
 
         return wrapper
 
@@ -107,7 +106,6 @@ class BaseOptimizer(SearchTracker):
 
     def init_pos(self, pos):
         self.pos_new = pos
-        self.nth_iter = len(self.pos_new_list)
         return pos
 
     def finish_initialization(self):
