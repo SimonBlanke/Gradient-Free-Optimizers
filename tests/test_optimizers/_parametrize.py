@@ -12,7 +12,9 @@ from gradient_free_optimizers import (
     PatternSearch,
     ParallelTemperingOptimizer,
     ParticleSwarmOptimizer,
+    SpiralOptimization,
     EvolutionStrategyOptimizer,
+    LipschitzOptimizer,
     BayesianOptimizer,
     TreeStructuredParzenEstimators,
     ForestOptimizer,
@@ -40,6 +42,7 @@ optimizers_PopBased = (
     [
         (ParallelTemperingOptimizer),
         (ParticleSwarmOptimizer),
+        (SpiralOptimization),
         (EvolutionStrategyOptimizer),
     ],
 )
@@ -59,6 +62,7 @@ optimizers_noSBOM = (
         (SimulatedAnnealingOptimizer),
         (ParallelTemperingOptimizer),
         (ParticleSwarmOptimizer),
+        (SpiralOptimization),
         (EvolutionStrategyOptimizer),
         (DownhillSimplexOptimizer),
     ],
@@ -67,6 +71,7 @@ optimizers_noSBOM = (
 optimizers_SBOM = (
     "Optimizer",
     [
+        (LipschitzOptimizer),
         (BayesianOptimizer),
         (TreeStructuredParzenEstimators),
         (ForestOptimizer),
@@ -104,7 +109,9 @@ optimizers = (
         (RandomAnnealingOptimizer),
         (ParallelTemperingOptimizer),
         (ParticleSwarmOptimizer),
+        (SpiralOptimization),
         (EvolutionStrategyOptimizer),
+        (LipschitzOptimizer),
         (BayesianOptimizer),
         (TreeStructuredParzenEstimators),
         (ForestOptimizer),
