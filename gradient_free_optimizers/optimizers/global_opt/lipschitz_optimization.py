@@ -23,6 +23,8 @@ class LipschitzFunction:
             if np.prod((x_sample1 - x_sample2)) != 0
         ]
 
+        if len(slopes) == 0:
+            return 1
         return np.max(slopes)
 
     def calculate(self, X_sample, Y_sample, score_best):
