@@ -83,7 +83,7 @@ Gradient-Free-Optimizers is the optimization backend of <a href="https://github.
 
 <div align="center"><a name="menu"></a>
   <h3>
-    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#optimization-strategies">Optimization strategies</a> •
+    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#optimization-algorithms">Optimization algorithms</a> •
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#installation">Installation</a> •
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#examples">Examples</a> •
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#basic-api-reference">API reference</a> •
@@ -206,84 +206,305 @@ Gradient-Free-Optimizers is the optimization backend of <a href="https://github.
 
 <br>
 
-## Optimization strategies:
+## Optimization algorithms:
 
 Gradient-Free-Optimizers supports a variety of optimization algorithms, which can make choosing the right algorithm a tedious endeavor. The gifs in this section give a visual representation how the different optimization algorithms explore the search space and exploit the collected information about the search space for a convex and non-convex objective function. 
 
+
+
+<br>
+
+### Local Optimization
+
+<details>
+<summary><b>Hill Climbing</b></summary>
+
+<br>
+
+Evaluates the score of n neighbours in an epsilon environment and moves to the best one.
+
+<br>
+
 <table style="width:100%">
   <tr>
-    <th> <b>Optimization Strategy</b> </th>
     <th> <b>Convex Function</b> </th> 
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
-    <th> <ins>Hill Climbing</ins> <br><br> Evaluates the score of n neighbours in an epsilon environment and moves to the best one. </th>
     <td> <img src="./docs/gifs/hill_climbing_convex.gif" width="100%"> </td>
     <td> <img src="./docs/gifs/hill_climbing_nonconvex.gif" width="100%"> </td>
   </tr>
+</table>
+
+</details>
+
+
+<details>
+<summary><b>Repulsing Hill Climbing</b></summary>
+
+<br>
+
+Hill climbing iteration + increases epsilon by a factor if no better neighbour was found.
+
+<br>
+
+<table style="width:100%">
   <tr>
-    <th> <ins>Repulsing Hill Climbing</ins> <br><br> Hill climbing iteration + increases epsilon by a factor if no better neighbour was found. </th>
+    <th> <b>Convex Function</b> </th> 
+    <th> <b>Non-convex Function</b> </th>
+  </tr>
+  <tr>
     <td> <img src="./docs/gifs/tabu_convex.gif" width="100%"> </td>
     <td> <img src="./docs/gifs/tabu_nonconvex.gif" width="100%"> </td>
   </tr>
+</table>
+
+</details>
+
+
+<details>
+<summary><b>Simulated Annealing</b></summary>
+
+<br>
+
+Hill climbing iteration + accepts moving to worse positions with decreasing probability over time (transition probability).
+
+<br>
+
+<table style="width:100%">
   <tr>
-    <th> <ins>Simulated Annealing</ins> <br><br> Hill climbing iteration + accepts moving to worse positions with decreasing probability over time (transition probability). </th>
+    <th> <b>Convex Function</b> </th> 
+    <th> <b>Non-convex Function</b> </th>
+  </tr>
+  <tr>
     <td> <img src="./docs/gifs/sim_ann_convex.gif" width="100%"> </td>
     <td> <img src="./docs/gifs/sim_ann_nonconvex.gif" width="100%"> </td>
   </tr>
+</table>
+
+</details>
+
+
+<br>
+
+### Global Optimization
+
+<details>
+<summary><b>Random Search</b></summary>
+
+<br>
+
+Moves to random positions in each iteration.
+
+<br>
+
+<table style="width:100%">
   <tr>
-    <th> <ins>Random Search</ins> <br><br> Moves to random positions in each iteration. </th>
+    <th> <b>Convex Function</b> </th> 
+    <th> <b>Non-convex Function</b> </th>
+  </tr>
+  <tr>
     <td> <img src="./docs/gifs/random_convex.gif" width="100%"> </td>
     <td> <img src="./docs/gifs/random_nonconvex.gif" width="100%"> </td>
   </tr>
+</table>
+
+</details>
+
+
+<details>
+<summary><b>Random Restart Hill Climbing</b></summary>
+
+<br>
+
+Hill climbing + moves to a random position after n iterations.
+
+<br>
+
+<table style="width:100%">
   <tr>
-    <th> <ins>Random Restart Hill Climbing</ins> <br><br> Hill climbing + moves to a random position after n iterations. </th>
+    <th> <b>Convex Function</b> </th> 
+    <th> <b>Non-convex Function</b> </th>
+  </tr>
+  <tr>
     <td> <img src="./docs/gifs/rrhc_convex.gif" width="100%"> </td>
     <td> <img src="./docs/gifs/rrhc_nonconvex.gif" width="100%"> </td>
   </tr>
+</table>
+
+</details>
+
+
+<details>
+<summary><b>Random Annealing</b></summary>
+
+<br>
+
+Hill Climbing + large epsilon that decreases over time.
+
+<br>
+
+<table style="width:100%">
   <tr>
-    <th> <ins>Random Annealing</ins> <br><br> Hill Climbing + large epsilon that decreases over time. </th>
+    <th> <b>Convex Function</b> </th> 
+    <th> <b>Non-convex Function</b> </th>
+  </tr>
+  <tr>
     <td> <img src="./docs/gifs/random_ann_convex.gif" width="100%"> </td>
     <td> <img src="./docs/gifs/random_ann_nonconvex.gif" width="100%"> </td>
   </tr>
+</table>
+
+</details>
+
+
+<br>
+
+### Population-Based Optimization
+
+<details>
+<summary><b>Parallel Tempering</b></summary>
+
+<br>
+
+Population of n simulated annealers, which occasionally swap transition probabilities.
+
+<br>
+
+<table style="width:100%">
   <tr>
-    <th> <ins>Parallel Tempering</ins> <br><br> Population of n simulated annealers, which occasionally swap transition probabilities. </th>
+    <th> <b>Convex Function</b> </th> 
+    <th> <b>Non-convex Function</b> </th>
+  </tr>
+  <tr>
     <td> <img src="./docs/gifs/par_temp_convex.gif" width="100%"> </td>
     <td> <img src="./docs/gifs/par_temp_nonconvex.gif" width="100%"> </td>
   </tr>
+</table>
+
+</details>
+
+
+<details>
+<summary><b>Particle Swarm Optimization</b></summary>
+
+<br>
+
+Population of n particles attracting each other and moving towards the best particle.
+
+<br>
+
+<table style="width:100%">
   <tr>
-    <th> <ins>Particle Swarm Optimization</ins> <br><br> Population of n particles attracting each other and moving towards the best particle. </th>
+    <th> <b>Convex Function</b> </th> 
+    <th> <b>Non-convex Function</b> </th>
+  </tr>
+  <tr>
     <td> <img src="./docs/gifs/particle_swarm_convex.gif" width="100%"> </td>
     <td> <img src="./docs/gifs/particle_swarm_nonconvex.gif" width="100%"> </td>
   </tr>
+</table>
+
+</details>
+
+
+<details>
+<summary><b>Evolution Strategy</b></summary>
+
+<br>
+
+Population of n hill climbers occasionally mixing positional information.
+
+<br>
+
+<table style="width:100%">
   <tr>
-    <th> <ins>Evolution Strategy</ins> <br><br> Population of n hill climbers occasionally mixing positional information. </th>
+    <th> <b>Convex Function</b> </th> 
+    <th> <b>Non-convex Function</b> </th>
+  </tr>
+  <tr>
     <td> <img src="./docs/gifs/evo_strat_convex.gif" width="100%"> </td>
     <td> <img src="./docs/gifs/evo_strat_nonconvex.gif" width="100%"> </td>
   </tr>
+</table>
+
+</details>
+
+
+<br>
+
+### Sequential Model-Based Optimization
+
+<details>
+<summary><b>Bayesian Optimization</b></summary>
+
+<br>
+
+Gaussian process fitting to explored positions and predicting promising new positions.
+
+<br>
+
+<table style="width:100%">
   <tr>
-    <th> <ins>Bayesian Optimization</ins> <br><br> Gaussian process fitting to explored positions and predicting promising new positions. </th>
+    <th> <b>Convex Function</b> </th> 
+    <th> <b>Non-convex Function</b> </th>
+  </tr>
+  <tr>
     <td> <img src="./docs/gifs/bayes_convex.gif" width="100%"> </td>
     <td> <img src="./docs/gifs/bayes_nonconvex.gif" width="100%"> </td>
   </tr>
+</table>
+
+</details>
+
+
+<details>
+<summary><b>Tree of Parzen Estimators</b></summary>
+
+<br>
+
+Kernel density estimators fitting to good and bad explored positions and predicting promising new positions.
+
+<br>
+
+<table style="width:100%">
   <tr>
-    <th> <ins>Tree of Parzen Estimators</ins> <br><br> Kernel density estimators fitting to good and bad explored positions and predicting promising new positions. </th>
+    <th> <b>Convex Function</b> </th> 
+    <th> <b>Non-convex Function</b> </th>
+  </tr>
+  <tr>
     <td> <img src="./docs/gifs/tpe_convex.gif" width="100%"> </td>
     <td> <img src="./docs/gifs/tpe_nonconvex.gif" width="100%"> </td>
   </tr>
+</table>
+
+</details>
+
+
+<details>
+<summary><b>Decision Tree Optimizer</b></summary>
+
+<br>
+
+Ensemble of decision trees fitting to explored positions and predicting promising new positions.
+
+<br>
+
+<table style="width:100%">
   <tr>
-    <th> <ins>Decision Tree Optimizer</ins> <br><br> Ensemble of decision trees fitting to explored positions and predicting promising new positions. </th>
+    <th> <b>Convex Function</b> </th> 
+    <th> <b>Non-convex Function</b> </th>
+  </tr>
+  <tr>
     <td> <img src="./docs/gifs/dto_convex.gif" width="100%"> </td>
     <td> <img src="./docs/gifs/dto_nonconvex.gif" width="100%"> </td>
   </tr>
 </table>
 
-</body>
-</html>
+</details>
 
 
 <br>
-
 
 ## Installation
 
@@ -443,7 +664,7 @@ The following arguments can be passed to each optimization class:
 
 ### Optimizer Classes
 
-Each optimization class needs the "search_space" as an input argument. Optionally "initialize" and optimizer-specific parameters can be passed as well. You can read more about each optimization-strategy and its parameters in the [Optimization Tutorial](https://github.com/SimonBlanke/optimization-tutorial).
+Each optimization class needs the "search_space" as an input argument. Optionally "initialize" and optimizer-specific parameters can be passed as well. You can read more about each optimization-algorithm and its parameters in the [Optimization Tutorial](https://github.com/SimonBlanke/optimization-tutorial).
 
 - HillClimbingOptimizer
 - RepulsingHillClimbingOptimizer
