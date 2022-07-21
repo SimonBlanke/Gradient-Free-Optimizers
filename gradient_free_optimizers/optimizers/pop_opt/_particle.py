@@ -10,9 +10,13 @@ from ..local_opt import HillClimbingOptimizer
 
 
 def roation(n_dim, vector):
+    if n_dim == 1:
+        return -1  # not sure about that
+
     I = np.identity(n_dim - 1)
     R = np.pad(I, ((1, 0), (0, 1)), "minimum")
     R[0, n_dim - 1] = -1
+
     return np.matmul(R, vector)
 
 
