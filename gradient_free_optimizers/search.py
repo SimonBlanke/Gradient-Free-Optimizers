@@ -42,6 +42,7 @@ class Search(TimesTracker):
 
         self.score_l = []
         self.pos_l = []
+        self.nth_iter = 0
 
     @TimesTracker.eval_time
     def _score(self, pos):
