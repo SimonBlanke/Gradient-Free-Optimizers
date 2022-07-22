@@ -911,6 +911,7 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 
   - [x] add Spiral Optimization
   - [x] add Lipschitz Optimizer
+  - [x] print the random seed for reproducibility
 
 </details>
 
