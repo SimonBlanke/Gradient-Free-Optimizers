@@ -13,21 +13,6 @@ from ..init_positions import Initializer
 from ..utils import set_random_seed, move_random
 
 
-def set_random_seed(nth_process, random_state):
-    """
-    Sets the random seed separately for each thread
-    (to avoid getting the same results in each thread)
-    """
-    if nth_process is None:
-        nth_process = 0
-
-    if random_state is None:
-        random_state = np.random.randint(0, high=2 ** 31 - 2, dtype=np.int64)
-
-    random.seed(random_state + nth_process)
-    np.random.seed(random_state + nth_process)
-
-
 def get_n_inits(initialize):
     n_inits = 0
     for key_ in initialize.keys():
@@ -60,7 +45,7 @@ class BaseOptimizer(SearchTracker):
 
         self.optimizers = [self]
 
-        set_random_seed(nth_process, random_state)
+        self.random_seed = set_random_seed(nth_process, random_state)
 
         # get init positions
         init = Initializer(self.conv)

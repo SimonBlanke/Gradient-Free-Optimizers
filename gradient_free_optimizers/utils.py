@@ -20,6 +20,8 @@ def set_random_seed(nth_process, random_state):
     random.seed(random_state + nth_process)
     np.random.seed(random_state + nth_process)
 
+    return random_state
+
 
 def move_random(ss_positions):
     position = []

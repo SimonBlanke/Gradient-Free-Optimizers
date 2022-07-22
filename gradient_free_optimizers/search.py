@@ -17,21 +17,6 @@ from .print_info import print_info
 from .stop_run import StopRun
 
 
-def set_random_seed(nth_process, random_state):
-    """
-    Sets the random seed separately for each thread
-    (to avoid getting the same results in each thread)
-    """
-    if nth_process is None:
-        nth_process = 0
-
-    if random_state is None:
-        random_state = np.random.randint(0, high=2 ** 31 - 2, dtype=np.int64)
-
-    random.seed(random_state + nth_process)
-    np.random.seed(random_state + nth_process)
-
-
 class Search(TimesTracker):
     def __init__(self):
         super().__init__()
@@ -43,6 +28,7 @@ class Search(TimesTracker):
         self.score_l = []
         self.pos_l = []
         self.nth_iter = 0
+        self.random_seed = None
 
     @TimesTracker.eval_time
     def _score(self, pos):
@@ -164,4 +150,5 @@ class Search(TimesTracker):
             self.eval_times,
             self.iter_times,
             self.n_iter,
+            self.random_seed,
         )

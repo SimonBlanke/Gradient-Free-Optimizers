@@ -62,7 +62,7 @@ def align_para_names(para_names):
     return para_names_align
 
 
-def _print_results(objective_function, score_best, para_best):
+def _print_results(objective_function, score_best, para_best, random_seed):
     print("\nResults: '{}'".format(objective_function.__name__), " ")
     if para_best is None:
         print(indent, "Best score:", score_best, " ")
@@ -84,6 +84,8 @@ def _print_results(objective_function, score_best, para_best):
                 " ",
             )
     print(" ")
+    print(indent, "Random seed:", random_seed, " ")
+    print(" ")
 
 
 def print_info(
@@ -94,13 +96,14 @@ def print_info(
     eval_times,
     iter_times,
     n_iter,
+    random_seed,
 ):
 
     eval_time = np.array(eval_times).sum()
     iter_time = np.array(iter_times).sum()
 
     if "print_results" in verbosity:
-        _print_results(objective_function, score_best, para_best)
+        _print_results(objective_function, score_best, para_best, random_seed)
 
     if "print_times" in verbosity:
         _print_times(eval_time, iter_time, n_iter)

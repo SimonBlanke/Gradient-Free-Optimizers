@@ -35,7 +35,7 @@ class BasePopulationOptimizer:
         self.eval_times = []
         self.iter_times = []
 
-        set_random_seed(nth_process, random_state)
+        self.random_seed = set_random_seed(nth_process, random_state)
 
         # get init positions
         init = Initializer(self.conv)
