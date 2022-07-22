@@ -521,7 +521,7 @@ pip install gradient-free-optimizers
 
 ## Examples
 
-<details open>
+<details>
 <summary><b>Convex function</b></summary>
 
 ```python
@@ -678,7 +678,9 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 - PatternSearch
 - ParallelTemperingOptimizer
 - ParticleSwarmOptimizer
+- SpiralOptimization
 - EvolutionStrategyOptimizer
+- LipschitzOptimizer
 - BayesianOptimizer
 - TreeStructuredParzenEstimators
 - ForestOptimizer
@@ -891,8 +893,8 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 </details>
 
 
-<details open>
-<summary><b>v1.0.0</b></summary>
+<details>
+<summary><b>v1.0.0</b> :heavy_check_mark:</summary>
 
   - [x] Finalize API (1.0.0)
   - [x] add Downhill-simplex algorithm to optimizers
@@ -904,14 +906,30 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 </details>
 
 
-<details>
-<summary><b>Upcoming Features
-</b></summary>
+<details open>
+<summary><b>v1.1.0</b> :heavy_check_mark:</summary>
 
-  - [ ] add Bayesian 1D Bayesian-optimization to optimizers
+  - [x] add Spiral Optimization
+  - [x] add Lipschitz Optimizer
+
+</details>
+
+
+<details>
+<summary><b>v1.2.0</b> :heavy_check_mark:</summary>
+
+  - [ ] add DIRECT algorithm
+  - [ ] ...
+
+</details>
+
+
+<details>
+<summary><b>v2.0.0</b> :heavy_check_mark:</summary>
+
   - [ ] add other acquisition functions to smbo (Probability of improvement, Entropy search, ...)
-  - [ ] Improved sampling for smb-optimizers
-  
+  - [ ] ...
+
 </details>
 
 
