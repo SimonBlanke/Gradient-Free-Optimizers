@@ -11,7 +11,7 @@ def objective_function(para):
 
 
 search_space = {
-    "x1": np.arange(0, 100, 1),
+    "x1": np.arange(-100, 100, 0.1),
 }
 
 
@@ -45,3 +45,22 @@ def test_name_3(Optimizer):
     opt = Optimizer(search_space, random_state=random_state)
 
     assert opt.random_seed == random_state
+
+
+@pytest.mark.parametrize(*optimizers)
+def test_name_4(Optimizer):
+    n_iter = 10
+
+    opt1 = Optimizer(search_space, initialize={"random": 3})
+    opt1.search(objective_function, n_iter=n_iter)
+
+    best_score1 = opt1.best_score
+
+    opt2 = Optimizer(
+        search_space, initialize={"random": 3}, random_state=opt1.random_seed
+    )
+    opt2.search(objective_function, n_iter=n_iter)
+
+    best_score2 = opt2.best_score
+
+    assert best_score1 == best_score2
