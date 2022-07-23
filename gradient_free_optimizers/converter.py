@@ -25,6 +25,12 @@ class Converter:
         self.search_space_positions = [
             list(range(len(array))) for array in search_space.values()
         ]
+        self.pos_space = dict(
+            zip(
+                self.para_names,
+                [np.arange(len(array)) for array in search_space.values()],
+            )
+        )
 
         self.max_positions = self.dim_sizes - 1
         self.search_space_values = list(search_space.values())

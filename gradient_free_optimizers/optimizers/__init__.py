@@ -16,6 +16,7 @@ from .global_opt import (
     PowellsMethod,
     PatternSearch,
     LipschitzOptimizer,
+    DirectAlgorithm,
 )
 
 
@@ -53,6 +54,7 @@ __all__ = [
     "PowellsMethod",
     "PatternSearch",
     "LipschitzOptimizer",
+    "DirectAlgorithm",
     "RandomAnnealingOptimizer",
     "LocalBayesianOptimizer",
     "ParallelTemperingOptimizer",
