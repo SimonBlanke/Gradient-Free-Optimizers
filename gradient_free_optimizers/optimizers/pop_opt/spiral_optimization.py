@@ -7,7 +7,7 @@ import numpy as np
 
 from .base_population_optimizer import BasePopulationOptimizer
 from ...search import Search
-from ._particle import Particle
+from ._spiral import Spiral
 
 
 def centeroid(array_list):
@@ -27,25 +27,13 @@ class SpiralOptimization(BasePopulationOptimizer, Search):
     name = "Particle Swarm Optimization"
     _name_ = "particle_swarm_optimization"
 
-    def __init__(
-        self,
-        *args,
-        population=10,
-        inertia=0.5,
-        cognitive_weight=0.5,
-        social_weight=0.5,
-        temp_weight=0.2,
-        **kwargs
-    ):
+    def __init__(self, *args, population=10, decay_rate=0.9, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.population = population
-        self.inertia = inertia
-        self.cognitive_weight = cognitive_weight
-        self.social_weight = social_weight
-        self.temp_weight = temp_weight
+        self.decay_rate = decay_rate
 
-        self.particles = self._create_population(Particle)
+        self.particles = self._create_population(Spiral)
         self.optimizers = self.particles
 
     def _sort_best(self):
@@ -64,13 +52,7 @@ class SpiralOptimization(BasePopulationOptimizer, Search):
         self.p_current = self.particles[nth_pop]
         self.p_current.init_pos(pos)
 
-        self.p_current.inertia = self.inertia
-        self.p_current.cognitive_weight = self.cognitive_weight
-        self.p_current.social_weight = self.social_weight
-        self.p_current.temp_weight = self.temp_weight
-        self.p_current.rand_rest_p = self.rand_rest_p
-
-        self.p_current.velo = np.zeros(len(self.conv.max_positions))
+        self.p_current.decay_rate = self.decay_rate
 
     def finish_initialization(self):
         self._sort_best()
