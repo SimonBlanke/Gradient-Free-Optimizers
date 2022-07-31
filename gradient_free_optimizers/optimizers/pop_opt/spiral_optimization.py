@@ -24,8 +24,8 @@ def centeroid(array_list):
 
 
 class SpiralOptimization(BasePopulationOptimizer, Search):
-    name = "Particle Swarm Optimization"
-    _name_ = "particle_swarm_optimization"
+    name = "Spiral Optimization"
+    _name_ = "spiral_optimization"
 
     def __init__(self, *args, population=10, decay_rate=0.9, **kwargs):
         super().__init__(*args, **kwargs)
