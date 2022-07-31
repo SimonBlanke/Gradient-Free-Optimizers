@@ -681,6 +681,7 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 - SpiralOptimization
 - EvolutionStrategyOptimizer
 - LipschitzOptimizer
+- DirectAlgorithm
 - BayesianOptimizer
 - TreeStructuredParzenEstimators
 - ForestOptimizer
