@@ -5,6 +5,7 @@
 import random
 import numpy as np
 from scipy.spatial.transform import Rotation as R
+from scipy.spatial.distance import cdist
 
 from ..local_opt import HillClimbingOptimizer
 
@@ -21,12 +22,12 @@ def roation(n_dim, vector):
 
 
 class Spiral(HillClimbingOptimizer):
-    def __init__(self, *args, decay_rate=0.99, **kwargs):
+    def __init__(self, *args, decay_rate=1.2, **kwargs):
         super().__init__(*args, **kwargs)
         self.global_pos_best = None
 
         self.decay_rate = decay_rate
-        self.decay_factor = 1
+        self.decay_factor = 3
 
     def _move_part(self, pos, velo):
         pos_new = (pos + velo).astype(int)
@@ -39,24 +40,41 @@ class Spiral(HillClimbingOptimizer):
     @HillClimbingOptimizer.random_restart
     def move_spiral(self, center_pos):
         self.decay_factor *= self.decay_rate
+        # TODO step rate in N dimensions!
+        step_rate = self.decay_factor * self.conv.max_positions / 1000
+        """
         step_rate = (
             self.decay_factor * (random.random() ** 1 / 3)
-            + np.power(self.conv.dim_sizes, 1 / 10) / 2
+            + np.power(self.conv.dim_sizes, 1 / 10) / 5
         )
-
-        print("self.decay_factor", self.decay_factor)
-
-        print("\n  step_rate", step_rate)
-        print(
-            "  roation",
-            roation(len(center_pos), np.subtract(self.pos_current, center_pos)),
-        )
+        """
 
         A = center_pos
-        B = step_rate * roation(
-            len(center_pos), np.subtract(self.pos_current, center_pos)
-        )
+        rot = roation(len(center_pos), np.subtract(self.pos_current, center_pos))
+
+        dist_ = cdist(self.pos_current.reshape(1, -1), center_pos.reshape(1, -1))
+
+        if dist_ < 1:
+            pos = self.move_random()
+            self.pos_current = pos
+            return pos
+
+        # rot = np.maximum()
+
+        B = np.multiply(step_rate, rot)
+        print("\n  A", A)
         print("  B", B)
+        print("  rot", rot)
+        print("  self.pos_current", self.pos_current)
+        print("  center_pos", center_pos)
+
+        print(
+            "  np.subtract(self.pos_current, center_pos)",
+            np.subtract(self.pos_current, center_pos),
+        )
+        print("  dist_", dist_)
+
+        print("  step_rate", step_rate)
 
         new_pos = A + B
 
