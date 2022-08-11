@@ -15,8 +15,12 @@ def roation(n_dim, vector):
         return -1  # not sure about that
 
     I = np.identity(n_dim - 1)
-    R = np.pad(I, ((1, 0), (0, 1)), "minimum")
+    print("  I", I)
+
+    R = np.pad(I, ((1, 0), (0, 1)), constant_values=(0, 0))
     R[0, n_dim - 1] = -1
+
+    print("  R", R)
 
     return np.matmul(R, vector)
 
@@ -54,11 +58,12 @@ class Spiral(HillClimbingOptimizer):
 
         dist_ = cdist(self.pos_current.reshape(1, -1), center_pos.reshape(1, -1))
 
+        """
         if dist_ < 1:
             pos = self.move_random()
             self.pos_current = pos
             return pos
-
+        """
         # rot = np.maximum()
 
         B = np.multiply(step_rate, rot)
@@ -72,14 +77,19 @@ class Spiral(HillClimbingOptimizer):
             "  np.subtract(self.pos_current, center_pos)",
             np.subtract(self.pos_current, center_pos),
         )
-        print("  dist_", dist_)
 
         print("  step_rate", step_rate)
 
         new_pos = A + B
 
         n_zeros = [0] * len(self.conv.max_positions)
-        return np.clip(new_pos, n_zeros, self.conv.max_positions).astype(int)
+        pos_new = np.clip(new_pos, n_zeros, self.conv.max_positions).astype(int)
+        print("  pos_new", pos_new)
+
+        return pos_new
 
     def evaluate(self, score_new):
-        HillClimbingOptimizer.evaluate(self, score_new)
+        self.score_new = score_new
+
+        self._new2current()
+        self._evaluate_current2best()
