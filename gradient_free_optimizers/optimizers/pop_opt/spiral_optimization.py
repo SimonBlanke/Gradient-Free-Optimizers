@@ -35,16 +35,6 @@ class SpiralOptimization(BasePopulationOptimizer, Search):
         self.particles = self._create_population(Spiral)
         self.optimizers = self.particles
 
-    def _sort_best(self):
-        scores_list = []
-        for _p_ in self.particles:
-            scores_list.append(_p_.score_current)
-
-        scores_np = np.array(scores_list)
-        idx_sorted_ind = list(scores_np.argsort()[::-1])
-
-        self.p_sorted = [self.particles[i] for i in idx_sorted_ind]
-
     def init_pos(self, pos):
         nth_pop = self.nth_iter % len(self.particles)
 
@@ -54,9 +44,9 @@ class SpiralOptimization(BasePopulationOptimizer, Search):
         self.p_current.decay_rate = self.decay_rate
 
     def finish_initialization(self):
-        self._sort_best()
-        self.center_pos = self.p_sorted[0].pos_current
-        self.center_score = self.p_sorted[0].score_current
+        self.sort_pop_best_score()
+        self.center_pos = self.pop_sorted[0].pos_current
+        self.center_score = self.pop_sorted[0].score_current
 
         self.init_done = True
 
@@ -64,15 +54,15 @@ class SpiralOptimization(BasePopulationOptimizer, Search):
         n_iter = self._iterations(self.particles)
         self.p_current = self.particles[n_iter % len(self.particles)]
 
-        self._sort_best()
-        self.p_current.global_pos_best = self.p_sorted[0].pos_current
+        self.sort_pop_best_score()
+        self.p_current.global_pos_best = self.pop_sorted[0].pos_current
 
         return self.p_current.move_spiral(self.center_pos)
 
     def evaluate(self, score_new):
         if self.init_done:
-            if self.p_sorted[0].score_current > self.center_score:
-                self.center_pos = self.p_sorted[0].pos_current
-                self.center_score = self.p_sorted[0].score_current
+            if self.pop_sorted[0].score_current > self.center_score:
+                self.center_pos = self.pop_sorted[0].pos_current
+                self.center_score = self.pop_sorted[0].score_current
 
         self.p_current.evaluate(score_new)

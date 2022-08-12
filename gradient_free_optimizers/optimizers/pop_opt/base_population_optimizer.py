@@ -50,10 +50,20 @@ class BasePopulationOptimizer:
 
         return nth_iter
 
+    def sort_pop_best_score(self):
+        scores_list = []
+        for _p_ in self.optimizers:
+            scores_list.append(_p_.score_current)
+
+        scores_np = np.array(scores_list)
+        idx_sorted_ind = list(scores_np.argsort()[::-1])
+
+        self.pop_sorted = [self.optimizers[i] for i in idx_sorted_ind]
+
     def _create_population(self, Optimizer):
         if isinstance(self.population, int):
             population = []
-            for pop_ in range(self.population):
+            for _ in range(self.population):
                 population.append(
                     Optimizer(
                         self.conv.search_space,

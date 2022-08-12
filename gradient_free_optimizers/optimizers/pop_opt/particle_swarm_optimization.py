@@ -35,16 +35,6 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
         self.particles = self._create_population(Particle)
         self.optimizers = self.particles
 
-    def _sort_best(self):
-        scores_list = []
-        for _p_ in self.particles:
-            scores_list.append(_p_.score_current)
-
-        scores_np = np.array(scores_list)
-        idx_sorted_ind = list(scores_np.argsort()[::-1])
-
-        self.p_sorted = [self.particles[i] for i in idx_sorted_ind]
-
     def init_pos(self, pos):
         nth_pop = self.nth_iter % len(self.particles)
 
@@ -63,8 +53,8 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
         n_iter = self._iterations(self.particles)
         self.p_current = self.particles[n_iter % len(self.particles)]
 
-        self._sort_best()
-        self.p_current.global_pos_best = self.p_sorted[0].pos_best
+        self.sort_pop_best_score()
+        self.p_current.global_pos_best = self.pop_sorted[0].pos_best
 
         pos_new = self.p_current.move_linear()
         return pos_new
