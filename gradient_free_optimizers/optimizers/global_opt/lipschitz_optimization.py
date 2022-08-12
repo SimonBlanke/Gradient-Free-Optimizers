@@ -52,7 +52,7 @@ class LipschitzOptimizer(SMBO, Search):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    @SMBO.track_nth_iter
+    @SMBO.track_new_pos
     @SMBO.track_X_sample
     def iterate(self):
         all_pos_comb = self._all_possible_pos()

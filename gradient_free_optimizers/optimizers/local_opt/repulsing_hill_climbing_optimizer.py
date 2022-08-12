@@ -18,8 +18,7 @@ class RepulsingHillClimbingOptimizer(HillClimbingOptimizer, Search):
         self.repulsion_factor = repulsion_factor
         self.epsilon_mod = 1
 
-    @HillClimbingOptimizer.track_nth_iter
-    @HillClimbingOptimizer.random_restart
+    @HillClimbingOptimizer.track_new_pos
     def iterate(self):
         return self._move_climb(self.pos_current, epsilon_mod=self.epsilon_mod)
 

@@ -36,8 +36,8 @@ class Particle(HillClimbingOptimizer):
 
         return np.clip(pos_new, n_zeros, self.conv.max_positions)
 
-    @HillClimbingOptimizer.track_nth_iter
-    @HillClimbingOptimizer.random_restart
+    @HillClimbingOptimizer.track_new_pos
+    @HillClimbingOptimizer.random_iteration
     def move_linear(self):
         r1, r2 = random.random(), random.random()
 

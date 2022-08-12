@@ -62,8 +62,8 @@ class PatternSearch(BaseOptimizer, Search):
 
         self.pattern_pos_l = list(random.sample(pattern_pos_l, self.n_positions_))
 
-    @BaseOptimizer.track_nth_iter
-    @BaseOptimizer.random_restart
+    @BaseOptimizer.track_new_pos
+    @BaseOptimizer.random_iteration
     def iterate(self):
         pos_new = self.pattern_pos_l[0]
         self.pattern_pos_l.pop(0)
@@ -74,6 +74,7 @@ class PatternSearch(BaseOptimizer, Search):
         self.state = "iter"
         self.generate_pattern(self.pos_current)
 
+    @BaseOptimizer.track_new_score
     def evaluate(self, score_new):
         BaseOptimizer.evaluate(self, score_new)
         if len(self.scores_valid) == 0:

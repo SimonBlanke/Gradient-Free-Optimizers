@@ -31,6 +31,22 @@ class SearchTracker:
         self.positions_valid = []
         self.scores_valid = []
 
+    ##################### track new #####################
+
+    def track_new_pos(func):
+        def wrapper(self, *args, **kwargs):
+            self.pos_new = func(self, *args, **kwargs)
+            return self.pos_new
+
+        return wrapper
+
+    def track_new_score(func):
+        def wrapper(self, score):
+            self.score_new = score
+            return func(self, score)
+
+        return wrapper
+
     ##################### evaluate #####################
 
     def _eval2current(self, pos, score):

@@ -56,15 +56,7 @@ class BaseOptimizer(SearchTracker):
     def move_random(self):
         return move_random(self.conv.search_space_positions)
 
-    def track_nth_iter(func):
-        # TODO remove this! makes no sense
-        def wrapper(self, *args, **kwargs):
-            self.pos_new = func(self, *args, **kwargs)
-            return self.pos_new
-
-        return wrapper
-
-    def random_restart(func):
+    def random_iteration(func):
         def wrapper(self, *args, **kwargs):
             if self.rand_rest_p > random.uniform(0, 1):
                 return self.move_random()
@@ -97,8 +89,6 @@ class BaseOptimizer(SearchTracker):
         pass
 
     def evaluate(self, score_new):
-        self.score_new = score_new
-
         if self.pos_best is None:
             self.pos_best = self.pos_new
             self.pos_current = self.pos_new

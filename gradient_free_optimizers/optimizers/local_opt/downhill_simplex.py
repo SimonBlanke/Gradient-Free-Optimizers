@@ -62,7 +62,7 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
         self.i_x_N_1 = -2
         self.i_x_N = -1
 
-    @BaseOptimizer.track_nth_iter
+    @BaseOptimizer.track_new_pos
     def iterate(self):
         simplex_stale = all(
             [np.array_equal(self.simplex_pos[0], array) for array in self.simplex_pos]
@@ -111,6 +111,7 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
 
             return self.conv2pos(pos)
 
+    @BaseOptimizer.track_new_score
     def evaluate(self, score_new):
         self.score_new = score_new
 

@@ -33,8 +33,8 @@ class Spiral(HillClimbingOptimizer):
 
         return np.clip(pos_new, n_zeros, self.conv.max_positions)
 
-    @HillClimbingOptimizer.track_nth_iter
-    @HillClimbingOptimizer.random_restart
+    @HillClimbingOptimizer.track_new_pos
+    @HillClimbingOptimizer.random_iteration
     def move_spiral(self, center_pos):
         self.decay_factor *= self.decay_rate
         step_rate = self.decay_factor * self.conv.max_positions / 1000
@@ -49,8 +49,7 @@ class Spiral(HillClimbingOptimizer):
         pos_new = np.clip(new_pos, n_zeros, self.conv.max_positions).astype(int)
         return pos_new
 
+    @HillClimbingOptimizer.track_new_score
     def evaluate(self, score_new):
-        self.score_new = score_new
-
         self._new2current()
         self._evaluate_current2best()

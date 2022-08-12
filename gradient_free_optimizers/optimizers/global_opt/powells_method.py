@@ -38,6 +38,12 @@ class PowellsMethod(BaseOptimizer, Search):
             self.current_search_dim = 0
 
         idx_sorted = sort_list_idx(self.scores_valid)
+
+        print("self.positions_valid", self.positions_valid)
+        print("self.scores_valid", self.scores_valid)
+        print("idx_sorted", idx_sorted)
+        print("self.score_new_list", self.score_new_list)
+
         self.powells_pos = [self.positions_valid[idx] for idx in idx_sorted][0]
         self.powells_scores = [self.scores_valid[idx] for idx in idx_sorted][0]
 
@@ -71,8 +77,8 @@ class PowellsMethod(BaseOptimizer, Search):
             search_space=search_space_1D, initialize={"random": 5}
         )
 
-    @BaseOptimizer.track_nth_iter
-    @BaseOptimizer.random_restart
+    @BaseOptimizer.track_new_pos
+    @BaseOptimizer.random_iteration
     def iterate(self):
         self.nth_iter_ += 1
         self.nth_iter_current_dim += 1
@@ -95,9 +101,10 @@ class PowellsMethod(BaseOptimizer, Search):
 
         return pos_new
 
+    @BaseOptimizer.track_new_score
     def evaluate(self, score_new):
         if self.current_search_dim == -1:
             BaseOptimizer.evaluate(self, score_new)
         else:
-            self.score_new = score_new
             self.hill_climb.evaluate(score_new)
+            BaseOptimizer.evaluate(self, score_new)
