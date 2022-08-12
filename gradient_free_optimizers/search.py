@@ -3,9 +3,6 @@
 # License: MIT License
 
 import time
-import random
-
-import numpy as np
 import pandas as pd
 
 from multiprocessing.managers import DictProxy
@@ -74,9 +71,6 @@ class Search(TimesTracker):
                 self.nth_process, self.n_iter, self.objective_function
             )
 
-    def print_info(self, *args):
-        print_info(*args)
-
     def search(
         self,
         objective_function,
@@ -142,7 +136,7 @@ class Search(TimesTracker):
 
         self.p_bar.close()
 
-        self.print_info(
+        print_info(
             verbosity,
             self.objective_function,
             self.best_score,
