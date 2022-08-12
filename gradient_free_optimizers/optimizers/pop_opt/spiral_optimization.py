@@ -2,7 +2,6 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-
 import numpy as np
 
 from .base_population_optimizer import BasePopulationOptimizer
@@ -27,7 +26,7 @@ class SpiralOptimization(BasePopulationOptimizer, Search):
     name = "Spiral Optimization"
     _name_ = "spiral_optimization"
 
-    def __init__(self, *args, population=10, decay_rate=0.9, **kwargs):
+    def __init__(self, *args, population=10, decay_rate=1.1, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.population = population
@@ -56,8 +55,8 @@ class SpiralOptimization(BasePopulationOptimizer, Search):
 
     def finish_initialization(self):
         self._sort_best()
-        self.center_pos = self.p_sorted[0].pos_best
-        self.center_score = self.p_sorted[0].score_best
+        self.center_pos = self.p_sorted[0].pos_current
+        self.center_score = self.p_sorted[0].score_current
 
         self.init_done = True
 
@@ -66,13 +65,14 @@ class SpiralOptimization(BasePopulationOptimizer, Search):
         self.p_current = self.particles[n_iter % len(self.particles)]
 
         self._sort_best()
-        self.p_current.global_pos_best = self.p_sorted[0].pos_best
+        self.p_current.global_pos_best = self.p_sorted[0].pos_current
 
         return self.p_current.move_spiral(self.center_pos)
 
     def evaluate(self, score_new):
-        if self.init_done and self.p_sorted[0].score_best > self.center_score:
-            self.center_pos = self.p_sorted[0].pos_best
-            self.center_score = self.p_sorted[0].score_best
+        if self.init_done:
+            if self.p_sorted[0].score_current > self.center_score:
+                self.center_pos = self.p_sorted[0].pos_current
+                self.center_score = self.p_sorted[0].score_current
 
         self.p_current.evaluate(score_new)
