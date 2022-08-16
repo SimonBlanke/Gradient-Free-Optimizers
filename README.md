@@ -358,6 +358,19 @@ Hill Climbing + large epsilon that decreases over time.
 </details>
 
 
+<details>
+<summary><b>Spiral Optimization</b></summary>
+
+<br>
+
+...
+
+<br>
+
+</details>
+
+
+
 <br>
 
 ### Population-Based Optimization
@@ -404,6 +417,18 @@ Population of n particles attracting each other and moving towards the best part
     <td> <img src="./docs/gifs/particle_swarm_nonconvex.gif" width="100%"> </td>
   </tr>
 </table>
+
+</details>
+
+
+<details>
+<summary><b>Lipschitz Optimization</b></summary>
+
+<br>
+
+...
+
+<br>
 
 </details>
 
@@ -906,7 +931,7 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 </details>
 
 
-<details open>
+<details>
 <summary><b>v1.1.0</b> :heavy_check_mark:</summary>
 
   - [x] add Spiral Optimization
@@ -917,7 +942,7 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 
 
 <details>
-<summary><b>v1.2.0</b> :heavy_check_mark:</summary>
+<summary><b>v1.2.0</b> </summary>
 
   - [ ] add DIRECT algorithm
   - [ ] ...
@@ -926,7 +951,7 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 
 
 <details>
-<summary><b>v2.0.0</b> :heavy_check_mark:</summary>
+<summary><b>v2.0.0</b> </summary>
 
   - [ ] add other acquisition functions to smbo (Probability of improvement, Entropy search, ...)
   - [ ] ...
