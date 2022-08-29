@@ -358,19 +358,6 @@ Hill Climbing + large epsilon that decreases over time.
 </details>
 
 
-<details>
-<summary><b>Spiral Optimization</b></summary>
-
-<br>
-
-...
-
-<br>
-
-</details>
-
-
-
 <br>
 
 ### Population-Based Optimization
@@ -422,11 +409,12 @@ Population of n particles attracting each other and moving towards the best part
 
 
 <details>
-<summary><b>Lipschitz Optimization</b></summary>
+<summary><b>Spiral Optimization</b></summary>
 
 <br>
 
-...
+Population of n particles moving in a spiral pattern around the best position.
+
 
 <br>
 
@@ -479,6 +467,18 @@ Gaussian process fitting to explored positions and predicting promising new posi
     <td> <img src="./docs/gifs/bayes_nonconvex.gif" width="100%"> </td>
   </tr>
 </table>
+
+</details>
+
+
+<details>
+<summary><b>Lipschitz Optimization</b></summary>
+
+<br>
+
+Calculates an upper bound from the distances of the previously explored positions to find new promising positions.
+
+<br>
 
 </details>
 
