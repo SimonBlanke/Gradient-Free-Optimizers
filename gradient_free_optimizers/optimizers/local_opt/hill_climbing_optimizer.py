@@ -41,11 +41,12 @@ class HillClimbingOptimizer(BaseOptimizer, Search):
 
         return self.conv2pos(pos_normal)
 
-    @BaseOptimizer.track_nth_iter
-    @BaseOptimizer.random_restart
+    @BaseOptimizer.track_new_pos
+    @BaseOptimizer.random_iteration
     def iterate(self):
         return self._move_climb(self.pos_current)
 
+    @BaseOptimizer.track_new_score
     def evaluate(self, score_new):
         BaseOptimizer.evaluate(self, score_new)
         if len(self.scores_valid) == 0:

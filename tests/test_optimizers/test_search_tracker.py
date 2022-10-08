@@ -1,11 +1,10 @@
 import pytest
-from tqdm import tqdm
 import numpy as np
 
 from ._parametrize import optimizers
 
 
-n_iter_para = ("n_iter", [(10), (20), (30)])
+n_iter_para = ("n_iter", [(10), (20), (30), (50), (100)])
 
 
 @pytest.mark.parametrize(*n_iter_para)
@@ -15,7 +14,7 @@ def test_search_tracker(Optimizer, n_iter):
         score = -para["x1"] * para["x1"]
         return score
 
-    search_space = {"x1": np.arange(-10, 11, 1)}
+    search_space = {"x1": np.arange(-15, 15, 1)}
     initialize = {"vertices": 1}
 
     opt = Optimizer(search_space, initialize=initialize)
@@ -35,8 +34,7 @@ def test_search_tracker(Optimizer, n_iter):
     n_best_positions = 0
     n_best_scores = 0
 
-    optimizers = opt.optimizers
-    for optimizer in optimizers:
+    for optimizer in opt.optimizers:
         n_new_positions = n_new_positions + len(optimizer.pos_new_list)
         n_new_scores = n_new_scores + len(optimizer.score_new_list)
 
@@ -54,3 +52,5 @@ def test_search_tracker(Optimizer, n_iter):
 
     assert n_best_positions == n_best_scores
     assert n_best_positions <= n_new_positions
+
+    assert n_new_positions == n_new_scores

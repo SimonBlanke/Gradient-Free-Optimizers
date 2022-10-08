@@ -66,7 +66,7 @@ class GridSearchOptimizer(BaseOptimizer, Search):
         new_pos.append(pointer)
         return np.array(new_pos)
 
-    @BaseOptimizer.track_nth_iter
+    @BaseOptimizer.track_new_pos
     def iterate(self):
         # If this is the first iteration:
         # Generate the direction and return initial_position

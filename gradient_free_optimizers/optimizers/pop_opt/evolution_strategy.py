@@ -38,16 +38,6 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
         cross_array = np.choose(choice, array_list)
         return cross_array
 
-    def _sort_best(self):
-        scores_list = []
-        for ind in self.individuals:
-            scores_list.append(ind.score_current)
-
-        scores_np = np.array(scores_list)
-        idx_sorted_ind = list(scores_np.argsort()[::-1])
-
-        return [self.individuals[idx] for idx in idx_sorted_ind]
-
     def _cross(self):
         if len(self.individuals) > 2:
             rnd_int2 = random.choice(
@@ -58,8 +48,8 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
                 [i for i in range(0, self.n_ind) if i not in [self.rnd_int]]
             )
 
-        p_sec = self.ind_sorted[rnd_int2]
-        p_worst = self.ind_sorted[-1]
+        p_sec = self.pop_sorted[rnd_int2]
+        p_worst = self.pop_sorted[-1]
 
         two_best_pos = [self.p_current.pos_current, p_sec.pos_current]
         pos_new = self._random_cross(two_best_pos)
@@ -82,9 +72,9 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
             self.p_current = self.individuals[0]
             return self.p_current.iterate()
 
-        self.ind_sorted = self._sort_best()
-        self.rnd_int = random.randint(0, len(self.ind_sorted) - 1)
-        self.p_current = self.ind_sorted[self.rnd_int]
+        self.sort_pop_best_score()
+        self.rnd_int = random.randint(0, len(self.pop_sorted) - 1)
+        self.p_current = self.pop_sorted[self.rnd_int]
 
         total_rate = self.mutation_rate + self.crossover_rate
         rand = np.random.uniform(low=0, high=total_rate)

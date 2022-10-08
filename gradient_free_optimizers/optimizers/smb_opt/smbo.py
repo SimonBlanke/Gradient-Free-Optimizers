@@ -121,15 +121,14 @@ class SMBO(BaseOptimizer, Search):
     def init_pos(self, pos):
         return super().init_pos(pos)
 
-    @BaseOptimizer.track_nth_iter
+    @BaseOptimizer.track_new_pos
     @track_X_sample
     def iterate(self):
         return self._propose_location()
 
+    @BaseOptimizer.track_new_score
     @track_y_sample
     def evaluate(self, score_new):
-        self.score_new = score_new
-
         self._evaluate_new2current(score_new)
         self._evaluate_current2best()
 

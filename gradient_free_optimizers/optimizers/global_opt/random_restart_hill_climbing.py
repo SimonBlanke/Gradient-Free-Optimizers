@@ -26,8 +26,8 @@ class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer, Search):
         self.n_neighbours = n_neighbours
         self.n_iter_restart = n_iter_restart
 
-    @HillClimbingOptimizer.track_nth_iter
-    @HillClimbingOptimizer.random_restart
+    @HillClimbingOptimizer.track_new_pos
+    @HillClimbingOptimizer.random_iteration
     def iterate(self):
         notZero = self.nth_iter != 0
         modZero = self.nth_iter % self.n_iter_restart == 0
