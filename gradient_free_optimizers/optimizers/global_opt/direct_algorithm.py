@@ -114,7 +114,7 @@ class DirectAlgorithm(SMBO, Search):
         subspace = SubSpace(self.conv.pos_space)
         self.subspace_l.append(subspace)
 
-    @SMBO.track_nth_iter
+    @SMBO.track_new_pos
     @SMBO.track_X_sample
     def iterate(self):
         self.current_subspace = self.select_next_subspace()
@@ -129,6 +129,7 @@ class DirectAlgorithm(SMBO, Search):
 
             return self.subspace_l[-1].center_pos
 
+    @SMBO.track_new_score
     def evaluate(self, score_new):
         self.score_new = score_new
 
