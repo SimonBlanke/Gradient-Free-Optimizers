@@ -3,43 +3,28 @@
 # License: MIT License
 
 
-import random
 import numpy as np
 
-from ..search_tracker import SearchTracker
-from ...converter import Converter
-from ...results_manager import ResultsManager
-from ...optimizers.base_optimizer import get_n_inits
-from ...init_positions import Initializer
-
-from ...utils import set_random_seed
+from ..core_optimizer import CoreOptimizer
 
 
-class BasePopulationOptimizer:
-    def __init__(
-        self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        random_state=None,
-        rand_rest_p=0,
-        nth_process=None,
-    ):
-        super().__init__()
-        self.conv = Converter(search_space)
-        self.results_mang = ResultsManager(self.conv)
-        self.initialize = initialize
-        self.random_state = random_state
-        self.rand_rest_p = rand_rest_p
-        self.nth_process = nth_process
+def get_n_inits(initialize):
+    n_inits = 0
+    for key_ in initialize.keys():
+        init_value = initialize[key_]
+        if isinstance(init_value, int):
+            n_inits += init_value
+        else:
+            n_inits += len(init_value)
+    return n_inits
+
+
+class BasePopulationOptimizer(CoreOptimizer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         self.eval_times = []
         self.iter_times = []
-
-        self.random_seed = set_random_seed(nth_process, random_state)
-
-        # get init positions
-        init = Initializer(self.conv)
-        self.init_positions = init.set_pos(self.initialize)
 
         self.init_done = False
 
@@ -75,11 +60,10 @@ class BasePopulationOptimizer:
             population = self.population
 
         n_inits = get_n_inits(self.initialize)
+        diff_init = len(population) - n_inits
 
-        if n_inits < len(population):
-            print("\n Warning: Not enough initial positions for population size")
-            print(" Population size is reduced to", n_inits)
-            population = population[:n_inits]
+        if diff_init > 0:
+            self.add_n_random_init_pos(diff_init)
 
         return population
 
