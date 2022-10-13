@@ -4,9 +4,9 @@ import numpy as np
 import pandas as pd
 
 
-from ._parametrize import optimizers
+from ._parametrize import optimizers_non_deterministic as optimizers
 from surfaces.test_functions import AckleyFunction
-
+from gradient_free_optimizers import DirectAlgorithm
 
 ackkley_function = AckleyFunction()
 
@@ -93,6 +93,32 @@ def test_random_state_2(Optimizer):
     n_last_scores1 = list(opt1.search_data["score"].values)[-n_last:]
 
     assert abs(np.sum(n_last_scores0) - np.sum(n_last_scores1)) > err
+
+
+def test_random_state_direct():
+    opt0 = DirectAlgorithm(
+        search_space, initialize={"random": n_random}, random_state=1
+    )
+    opt0.search(
+        ackkley_function,
+        n_iter=n_iter,
+    )
+
+    opt1 = DirectAlgorithm(
+        search_space, initialize={"random": n_random}, random_state=10
+    )
+    opt1.search(
+        ackkley_function,
+        n_iter=n_iter,
+    )
+
+    print("\n opt0.search_data \n", opt0.search_data)
+    print("\n opt1.search_data \n", opt1.search_data)
+
+    n_last_scores0 = list(opt0.search_data["score"].values)[-n_last:]
+    n_last_scores1 = list(opt1.search_data["score"].values)[-n_last:]
+
+    assert abs(np.sum(n_last_scores0) - np.sum(n_last_scores1)) < err
 
 
 @pytest.mark.parametrize(*optimizers)

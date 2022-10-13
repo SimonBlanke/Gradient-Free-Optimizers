@@ -10,6 +10,7 @@ from gradient_free_optimizers import (
     RandomRestartHillClimbingOptimizer,
     RandomAnnealingOptimizer,
     PatternSearch,
+    DirectAlgorithm,
     ParallelTemperingOptimizer,
     ParticleSwarmOptimizer,
     SpiralOptimization,
@@ -29,6 +30,7 @@ optimizers_singleOpt = (
         (RandomSearchOptimizer),
         (PowellsMethod),
         (PatternSearch),
+        (DirectAlgorithm),
         (GridSearchOptimizer),
         (RandomRestartHillClimbingOptimizer),
         (RandomAnnealingOptimizer),
@@ -56,6 +58,7 @@ optimizers_noSBOM = (
         (RandomSearchOptimizer),
         (PowellsMethod),
         (PatternSearch),
+        (DirectAlgorithm),
         (GridSearchOptimizer),
         (RandomRestartHillClimbingOptimizer),
         (RandomAnnealingOptimizer),
@@ -94,6 +97,33 @@ optimizers_local = (
 
 
 optimizers = (
+    "Optimizer",
+    [
+        (HillClimbingOptimizer),
+        (StochasticHillClimbingOptimizer),
+        (RepulsingHillClimbingOptimizer),
+        (SimulatedAnnealingOptimizer),
+        # (DownhillSimplexOptimizer),
+        (RandomSearchOptimizer),
+        (PowellsMethod),
+        (PatternSearch),
+        (DirectAlgorithm),
+        # (GridSearchOptimizer),
+        (RandomRestartHillClimbingOptimizer),
+        (RandomAnnealingOptimizer),
+        (ParallelTemperingOptimizer),
+        (ParticleSwarmOptimizer),
+        (SpiralOptimization),
+        (EvolutionStrategyOptimizer),
+        (LipschitzOptimizer),
+        (BayesianOptimizer),
+        (TreeStructuredParzenEstimators),
+        (ForestOptimizer),
+    ],
+)
+
+
+optimizers_non_deterministic = (
     "Optimizer",
     [
         (HillClimbingOptimizer),
