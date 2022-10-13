@@ -27,6 +27,8 @@ class Search(TimesTracker):
         self.nth_iter = 0
         self.random_seed = None
 
+        self.search_state = "init"
+
     @TimesTracker.eval_time
     def _score(self, pos):
         return self.score(pos)
@@ -108,6 +110,9 @@ class Search(TimesTracker):
             self.score = self.results_mang.score(mem.memory(objective_function))
         else:
             self.score = self.results_mang.score(objective_function)
+
+        if self.search_state == "iter":
+            self.init_positions = []
 
         # loop to initialize N positions
         for init_pos, nth_iter in zip(self.init_positions, range(n_iter)):

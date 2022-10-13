@@ -70,8 +70,6 @@ class DirectAlgorithm(SMBO, Search):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.init_positions = []
-
         self.subspace_l = []
 
     def select_next_subspace(self):
@@ -108,31 +106,33 @@ class DirectAlgorithm(SMBO, Search):
             if subspace.lipschitz_bound > lipschitz_bound_max:
                 lipschitz_bound_max = subspace.lipschitz_bound
                 next_subspace = subspace
+
+        # if lipschitz_bound is nan or -inf
+        if next_subspace is None:
+            next_subspace = self.subspace_l[0]
+
         return next_subspace
 
     def finish_initialization(self):
         subspace = SubSpace(self.conv.pos_space)
         self.subspace_l.append(subspace)
+        self.search_state = "iter"
 
     @SMBO.track_new_pos
     @SMBO.track_X_sample
     def iterate(self):
         self.current_subspace = self.select_next_subspace()
         if self.current_subspace:
-            print(self.current_subspace.center_pos)
             return self.current_subspace.center_pos
 
         else:
             self.current_subspace = self.select_subspace()
-
             self.split_dim_into_n(self.current_subspace)
 
             return self.subspace_l[-1].center_pos
 
     @SMBO.track_new_score
     def evaluate(self, score_new):
-        self.score_new = score_new
-
         if self.pos_best is None:
             self.pos_best = self.pos_new
             self.pos_current = self.pos_new
@@ -140,4 +140,5 @@ class DirectAlgorithm(SMBO, Search):
             self.score_best = score_new
             self.score_current = score_new
 
-        self.current_subspace.lipschitz_bound_(score_new)
+        if self.search_state == "iter":
+            self.current_subspace.lipschitz_bound_(score_new)
