@@ -41,7 +41,6 @@ class Search(TimesTracker):
         self.best_score = self.p_bar.score_best
 
         init_pos = self.init.init_positions_l[nth_iter]
-        print("\n init_pos", init_pos)
         self.init_pos(init_pos)
 
         score_new = self._score(init_pos)
@@ -124,12 +123,9 @@ class Search(TimesTracker):
         else:
             self.score = self.results_mang.score(objective_function)
 
-        print("\n self.search_state", self.search_state)
-
         if self.search_state == "init":
             # loop to initialize N positions
             for nth_iter, _ in zip(range(self.init.n_inits), range(n_iter)):
-                print("\n 1 nth_iter", nth_iter)
                 if self.stop.check(
                     self.start_time, self.p_bar.score_best, self.score_l
                 ):
@@ -138,19 +134,13 @@ class Search(TimesTracker):
 
         self.finish_initialization()
 
-        print("\n self.init.n_inits", self.init.n_inits)
-        print("\n n_iter", n_iter)
-        print("\n self.n_init_search", self.n_init_search)
-
         # loop to do the iterations
         for nth_iter in range(self.n_init_search, n_iter):
-            print("\n 2 nth_iter", nth_iter)
-
             if self.stop.check(self.start_time, self.p_bar.score_best, self.score_l):
                 break
             self._iteration(nth_iter)
 
-        self.search_data = pd.DataFrame(self.results_mang.results_list)
+        self.search_data = self.results_mang.search_data
 
         self.best_score = self.p_bar.score_best
         self.best_value = self.conv.position2value(self.p_bar.pos_best)

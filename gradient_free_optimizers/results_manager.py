@@ -2,6 +2,8 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+import pandas as pd
+
 
 class ResultsManager:
     def __init__(self, conv):
@@ -36,3 +38,6 @@ class ResultsManager:
 
         return _wrapper
 
+    @property
+    def search_data(self):
+        return pd.DataFrame(self.results_list)
