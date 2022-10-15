@@ -28,16 +28,20 @@ class Search(TimesTracker):
         self.random_seed = None
 
         self.search_state = "init"
+        self.n_init_total = 0
+        self.n_iter_total = 0
 
     @TimesTracker.eval_time
     def _score(self, pos):
         return self.score(pos)
 
     @TimesTracker.iter_time
-    def _initialization(self, init_pos, nth_iter):
+    def _initialization(self, nth_iter):
         self.nth_iter = nth_iter
         self.best_score = self.p_bar.score_best
 
+        init_pos = self.init.init_positions_l[nth_iter]
+        print("\n init_pos", init_pos)
         self.init_pos(init_pos)
 
         score_new = self._score(init_pos)
@@ -47,6 +51,9 @@ class Search(TimesTracker):
         self.score_l.append(score_new)
 
         self.p_bar.update(score_new, init_pos, nth_iter)
+
+        self.n_init_total += 1
+        self.n_init_search += 1
 
     @TimesTracker.iter_time
     def _iteration(self, nth_iter):
@@ -62,6 +69,9 @@ class Search(TimesTracker):
         self.score_l.append(score_new)
 
         self.p_bar.update(score_new, pos_new, nth_iter)
+
+        self.n_iter_total += 1
+        self.n_iter_search += 1
 
     def _init_search(self):
         if "progress_bar" in self.verbosity:
@@ -85,6 +95,9 @@ class Search(TimesTracker):
         verbosity=["progress_bar", "print_results", "print_times"],
     ):
         self.start_time = time.time()
+
+        self.n_init_search = 0
+        self.n_iter_search = 0
 
         if verbosity is False:
             verbosity = []
@@ -111,19 +124,28 @@ class Search(TimesTracker):
         else:
             self.score = self.results_mang.score(objective_function)
 
-        if self.search_state == "iter":
-            self.init_positions = []
+        print("\n self.search_state", self.search_state)
 
-        # loop to initialize N positions
-        for init_pos, nth_iter in zip(self.init_positions, range(n_iter)):
-            if self.stop.check(self.start_time, self.p_bar.score_best, self.score_l):
-                break
-            self._initialization(init_pos, nth_iter)
+        if self.search_state == "init":
+            # loop to initialize N positions
+            for nth_iter, _ in zip(range(self.init.n_inits), range(n_iter)):
+                print("\n 1 nth_iter", nth_iter)
+                if self.stop.check(
+                    self.start_time, self.p_bar.score_best, self.score_l
+                ):
+                    break
+                self._initialization(nth_iter)
 
         self.finish_initialization()
 
+        print("\n self.init.n_inits", self.init.n_inits)
+        print("\n n_iter", n_iter)
+        print("\n self.n_init_search", self.n_init_search)
+
         # loop to do the iterations
-        for nth_iter in range(len(self.init_positions), n_iter):
+        for nth_iter in range(self.n_init_search, n_iter):
+            print("\n 2 nth_iter", nth_iter)
+
             if self.stop.check(self.start_time, self.p_bar.score_best, self.score_l):
                 break
             self._iteration(nth_iter)

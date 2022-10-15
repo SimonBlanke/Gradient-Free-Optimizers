@@ -10,17 +10,6 @@ from ..init_positions import Initializer
 from ..utils import set_random_seed, move_random
 
 
-def get_n_inits(initialize):
-    n_inits = 0
-    for key_ in initialize.keys():
-        init_value = initialize[key_]
-        if isinstance(init_value, int):
-            n_inits += init_value
-        else:
-            n_inits += len(init_value)
-    return n_inits
-
-
 class CoreOptimizer(SearchTracker):
     def __init__(
         self,
@@ -40,9 +29,7 @@ class CoreOptimizer(SearchTracker):
 
         self.random_seed = set_random_seed(nth_process, random_state)
 
-        init = Initializer(self.conv)
-        self.init_positions = init.set_pos(self.initialize)
-        self.n_inits = get_n_inits(initialize)
+        self.init = Initializer(self.conv, initialize)
 
     def random_iteration(func):
         def wrapper(self, *args, **kwargs):
@@ -71,10 +58,6 @@ class CoreOptimizer(SearchTracker):
 
     def move_random(self):
         return move_random(self.conv.search_space_positions)
-
-    def add_n_random_init_pos(self, n):
-        for _ in range(n):
-            self.init_positions.append(self.move_random())
 
     def init_pos(self, pos):
         raise NotImplementedError

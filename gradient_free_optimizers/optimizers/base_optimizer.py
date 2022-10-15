@@ -19,7 +19,7 @@ class BaseOptimizer(CoreOptimizer):
         return pos
 
     def finish_initialization(self):
-        pass
+        self.search_state = "iter"
 
     def evaluate(self, score_new):
         if self.pos_best is None:

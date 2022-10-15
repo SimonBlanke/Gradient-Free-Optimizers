@@ -51,17 +51,17 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
         self.simplex_pos = [self.positions_valid[idx] for idx in idx_sorted]
         self.simplex_scores = [self.scores_valid[idx] for idx in idx_sorted]
 
-        n_inits = len(self.positions_valid)
-
-        diff_init = self.n_simp_positions - n_inits
+        diff_init = self.n_simp_positions - self.init.n_inits
         if diff_init > 0:
-            self.add_n_random_init_pos(diff_init)
+            self.init.add_n_random_init_pos(diff_init)
 
         self.simplex_step = 1
 
         self.i_x_0 = 0
         self.i_x_N_1 = -2
         self.i_x_N = -1
+
+        self.search_state = "iter"
 
     @BaseOptimizer.track_new_pos
     def iterate(self):

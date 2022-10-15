@@ -9,26 +9,53 @@ from .utils import move_random
 
 
 class Initializer:
-    def __init__(self, conv):
+    def __init__(self, conv, initialize):
         self.conv = conv
+        self.initialize = initialize
 
-    def set_pos(self, initialize):
-        init_positions_list = []
+        self.init_positions_l = None
 
-        if "random" in initialize:
-            positions = self._init_random_search(initialize["random"])
-            init_positions_list.append(positions)
-        if "grid" in initialize:
-            positions = self._init_grid_search(initialize["grid"])
-            init_positions_list.append(positions)
-        if "vertices" in initialize:
-            positions = self._init_vertices(initialize["vertices"])
-            init_positions_list.append(positions)
-        if "warm_start" in initialize:
-            positions = self._init_warm_start(initialize["warm_start"])
-            init_positions_list.append(positions)
+        self.set_pos()
 
-        return [item for sublist in init_positions_list for item in sublist]
+    def move_random(self):
+        return move_random(self.conv.search_space_positions)
+
+    def add_n_random_init_pos(self, n):
+        for _ in range(n):
+            self.init_positions_l.append(self.move_random())
+
+        self.n_inits = len(self.init_positions_l)
+
+    def get_n_inits(initialize):
+        n_inits = 0
+        for key_ in initialize.keys():
+            init_value = initialize[key_]
+            if isinstance(init_value, int):
+                n_inits += init_value
+            else:
+                n_inits += len(init_value)
+        return n_inits
+
+    def set_pos(self):
+        init_positions_ll = []
+
+        if "random" in self.initialize:
+            positions = self._init_random_search(self.initialize["random"])
+            init_positions_ll.append(positions)
+        if "grid" in self.initialize:
+            positions = self._init_grid_search(self.initialize["grid"])
+            init_positions_ll.append(positions)
+        if "vertices" in self.initialize:
+            positions = self._init_vertices(self.initialize["vertices"])
+            init_positions_ll.append(positions)
+        if "warm_start" in self.initialize:
+            positions = self._init_warm_start(self.initialize["warm_start"])
+            init_positions_ll.append(positions)
+
+        self.init_positions_l = [
+            item for sublist in init_positions_ll for item in sublist
+        ]
+        self.n_inits = len(self.init_positions_l)
 
     def _init_warm_start(self, value_list):
         positions = []

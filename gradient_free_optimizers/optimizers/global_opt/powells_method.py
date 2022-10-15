@@ -91,7 +91,7 @@ class PowellsMethod(BaseOptimizer, Search):
 
         if self.nth_iter_current_dim < 5:
             pos_new = self.hill_climb.init_pos(
-                self.hill_climb.init_positions[self.nth_iter_current_dim]
+                self.hill_climb.init.init_positions_l[self.nth_iter_current_dim]
             )
             pos_new = self.hill_climb.conv.position2value(pos_new)
 
