@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from gradient_free_optimizers.converter import Converter
+from gradient_free_optimizers.optimizers.core_optimizer import Converter
 
 
 def equal_arraysInList(list1, list2):

@@ -3,11 +3,11 @@ import random
 import numpy as np
 
 from .search_tracker import SearchTracker
-from ..converter import Converter
-from ..results_manager import ResultsManager
-from ..init_positions import Initializer
+from .converter import Converter
+from ...results_manager import ResultsManager
+from ...init_positions import Initializer
 
-from ..utils import set_random_seed, move_random
+from ...utils import set_random_seed, move_random
 
 
 class CoreOptimizer(SearchTracker):
@@ -18,14 +18,18 @@ class CoreOptimizer(SearchTracker):
         random_state=None,
         rand_rest_p=0,
         nth_process=None,
+        debug_log=False,
     ):
         super().__init__()
+
         self.conv = Converter(search_space)
         self.results_mang = ResultsManager(self.conv)
+
         self.initialize = initialize
         self.random_state = random_state
         self.rand_rest_p = rand_rest_p
         self.nth_process = nth_process
+        self.debug_log = debug_log
 
         self.random_seed = set_random_seed(nth_process, random_state)
 
@@ -65,5 +69,8 @@ class CoreOptimizer(SearchTracker):
     def finish_initialization(self):
         raise NotImplementedError
 
-    def evaluate(self, score_new):
+    def evaluate_iter(self, score_new):
+        raise NotImplementedError
+
+    def evaluate_init(self, score_new):
         raise NotImplementedError

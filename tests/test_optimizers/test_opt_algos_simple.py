@@ -1,4 +1,4 @@
-from gradient_free_optimizers.optimizers import search_tracker
+from gradient_free_optimizers.optimizers.core_optimizer import search_tracker
 import pytest
 
 from gradient_free_optimizers import (
