@@ -35,13 +35,13 @@ optimizers_singleOpt = (
         (RandomRestartHillClimbingOptimizer),
         (RandomAnnealingOptimizer),
         (SimulatedAnnealingOptimizer),
-        (DownhillSimplexOptimizer),
     ],
 )
 
 optimizers_PopBased = (
     "Optimizer",
     [
+        (DownhillSimplexOptimizer),
         (ParallelTemperingOptimizer),
         (ParticleSwarmOptimizer),
         (SpiralOptimization),
