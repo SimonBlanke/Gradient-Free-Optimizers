@@ -35,24 +35,33 @@ class BasePopulationOptimizer(CoreOptimizer):
         self.pop_sorted = [self.optimizers[i] for i in idx_sorted_ind]
 
     def _create_population(self, Optimizer):
+        diff_init = self.population - self.init.n_inits
+        if diff_init > 0:
+            self.init.add_n_random_init_pos(diff_init)
+
         if isinstance(self.population, int):
             population = []
-            for _ in range(self.population):
+            for init_position in self.init.init_positions_l:
+                init_value = self.conv.position2value(init_position)
+                init_para = self.conv.value2para(init_value)
+
                 population.append(
                     Optimizer(
                         self.conv.search_space,
                         rand_rest_p=self.rand_rest_p,
-                        initialize={"random": 1},
+                        initialize={"warm_start": [init_para]},
                     )
                 )
         else:
             population = self.population
 
-        diff_init = len(population) - self.init.n_inits
-        if diff_init > 0:
-            self.init.add_n_random_init_pos(diff_init)
+        print("\n init_positions_l \n", self.init.init_positions_l, "\n")
 
         return population
 
+    @CoreOptimizer.track_new_score
+    def evaluate_init(self, score_new):
+        self.p_current.evaluate_init(score_new)
+
     def finish_initialization(self):
-        self.init_done = True
+        self.search_state = "iter"

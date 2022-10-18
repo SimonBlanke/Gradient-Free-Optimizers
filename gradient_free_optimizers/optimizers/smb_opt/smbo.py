@@ -118,8 +118,8 @@ class SMBO(BaseOptimizer, Search):
             print(warning_message0 + warning_message1 + warning_message3)
 
     @track_X_sample
-    def init_pos(self, pos):
-        return super().init_pos(pos)
+    def init_pos(self):
+        return super().init_pos()
 
     @BaseOptimizer.track_new_pos
     @track_X_sample
@@ -129,6 +129,12 @@ class SMBO(BaseOptimizer, Search):
     @BaseOptimizer.track_new_score
     @track_y_sample
     def evaluate(self, score_new):
+        self._evaluate_new2current(score_new)
+        self._evaluate_current2best()
+
+    @BaseOptimizer.track_new_score
+    @track_y_sample
+    def evaluate_init(self, score_new):
         self._evaluate_new2current(score_new)
         self._evaluate_current2best()
 

@@ -53,18 +53,23 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
             temp = (1 / _p1_.temp) - (1 / _p2_.temp)
             return np.exp(score_diff_norm * temp) * 100
 
-    def init_pos(self, pos):
+    @BasePopulationOptimizer.track_new_pos
+    def init_pos(self):
         nth_pop = self.nth_iter % len(self.systems)
 
-        self.p_current = self.systems[nth_pop]
-        self.p_current.init_pos(pos)
+        print("nth_pop", nth_pop)
 
+        self.p_current = self.systems[nth_pop]
+        return self.p_current.init_pos()
+
+    @BasePopulationOptimizer.track_new_pos
     def iterate(self):
         nth_iter = self._iterations(self.systems)
         self.p_current = self.systems[nth_iter % len(self.systems)]
 
         return self.p_current.iterate()
 
+    @BasePopulationOptimizer.track_new_score
     def evaluate(self, score_new):
         nth_iter = self._iterations(self.systems)
 

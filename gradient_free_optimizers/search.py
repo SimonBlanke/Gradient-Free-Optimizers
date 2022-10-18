@@ -3,7 +3,6 @@
 # License: MIT License
 
 import time
-import pandas as pd
 
 from multiprocessing.managers import DictProxy
 
@@ -12,6 +11,8 @@ from .times_tracker import TimesTracker
 from .memory import Memory
 from .print_info import print_info
 from .stop_run import StopRun
+
+from .results_manager import ResultsManager
 
 
 class Search(TimesTracker):
@@ -40,11 +41,12 @@ class Search(TimesTracker):
         self.nth_iter = nth_iter
         self.best_score = self.p_bar.score_best
 
-        init_pos = self.init.init_positions_l[nth_iter]
-        self.init_pos(init_pos)
+        init_pos = self.init_pos()
+        print("\n init_pos ", init_pos)
 
         score_new = self._score(init_pos)
-        self.evaluate(score_new)
+        self.evaluate_init(score_new)
+        print("\n score_new ", score_new)
 
         self.pos_l.append(init_pos)
         self.score_l.append(score_new)
@@ -95,6 +97,8 @@ class Search(TimesTracker):
     ):
         self.start_time = time.time()
 
+        self.results_mang = ResultsManager(self.conv)
+
         self.n_init_search = 0
         self.n_iter_search = 0
 
@@ -123,19 +127,34 @@ class Search(TimesTracker):
         else:
             self.score = self.results_mang.score(objective_function)
 
-        if self.search_state == "init":
-            # loop to initialize N positions
-            for nth_iter, _ in zip(range(self.init.n_inits), range(n_iter)):
-                if self.stop.check(
-                    self.start_time, self.p_bar.score_best, self.score_l
-                ):
-                    break
-                self._initialization(nth_iter)
+        print(
+            "\n search init_positions_l \n",
+            self.init.init_positions_l,
+            "\n",
+        )
+
+        n_inits_norm = min(self.init.n_inits, n_iter)
+        print("\n n_inits_norm", n_inits_norm)
+
+        # if self.search_state == "init":
+        # loop to initialize N positions
+        for nth_iter in range(n_inits_norm):
+            print("\n init!")
+            if self.stop.check(self.start_time, self.p_bar.score_best, self.score_l):
+                break
+            self._initialization(nth_iter)
+
+            print("pos_new_list", self.pos_new_list)
 
         self.finish_initialization()
 
+        print("\n self.n_init_search", self.n_init_search)
+        print("\n self.n_init_total", self.n_init_total)
+
         # loop to do the iterations
         for nth_iter in range(self.n_init_search, n_iter):
+            print("\n iter!")
+
             if self.stop.check(self.start_time, self.p_bar.score_best, self.score_l):
                 break
             self._iteration(nth_iter)

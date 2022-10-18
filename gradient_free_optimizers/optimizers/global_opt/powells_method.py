@@ -30,6 +30,7 @@ class PowellsMethod(BaseOptimizer, Search):
     def finish_initialization(self):
         self.nth_iter_ = -1
         self.nth_iter_current_dim = 0
+        self.search_state = "iter"
 
     def new_dim(self):
         self.current_search_dim += 1
@@ -90,9 +91,7 @@ class PowellsMethod(BaseOptimizer, Search):
             self.new_dim()
 
         if self.nth_iter_current_dim < 5:
-            pos_new = self.hill_climb.init_pos(
-                self.hill_climb.init.init_positions_l[self.nth_iter_current_dim]
-            )
+            pos_new = self.hill_climb.init_pos()
             pos_new = self.hill_climb.conv.position2value(pos_new)
 
         else:

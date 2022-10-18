@@ -59,11 +59,11 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
 
         return pos_new
 
-    def init_pos(self, pos):
+    def init_pos(self):
         nth_pop = self.nth_iter % len(self.individuals)
 
         self.p_current = self.individuals[nth_pop]
-        self.p_current.init_pos(pos)
+        return self.p_current.init_pos()
 
     def iterate(self):
         self.n_ind = len(self.individuals)

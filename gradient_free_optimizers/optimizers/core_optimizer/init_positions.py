@@ -5,7 +5,7 @@
 import random
 import numpy as np
 
-from .utils import move_random
+from ...utils import move_random
 
 
 class Initializer:

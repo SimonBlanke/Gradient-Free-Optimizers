@@ -4,8 +4,7 @@ import numpy as np
 
 from .search_tracker import SearchTracker
 from .converter import Converter
-from ...results_manager import ResultsManager
-from ...init_positions import Initializer
+from .init_positions import Initializer
 
 from ...utils import set_random_seed, move_random
 
@@ -23,7 +22,7 @@ class CoreOptimizer(SearchTracker):
         super().__init__()
 
         self.conv = Converter(search_space)
-        self.results_mang = ResultsManager(self.conv)
+        self.init = Initializer(self.conv, initialize)
 
         self.initialize = initialize
         self.random_state = random_state
@@ -32,8 +31,6 @@ class CoreOptimizer(SearchTracker):
         self.debug_log = debug_log
 
         self.random_seed = set_random_seed(nth_process, random_state)
-
-        self.init = Initializer(self.conv, initialize)
 
     def random_iteration(func):
         def wrapper(self, *args, **kwargs):
@@ -63,8 +60,13 @@ class CoreOptimizer(SearchTracker):
     def move_random(self):
         return move_random(self.conv.search_space_positions)
 
-    def init_pos(self, pos):
-        raise NotImplementedError
+    @SearchTracker.track_new_pos
+    def init_pos(self):
+        print("\n 11111 self.init.init_positions_l", self.init.init_positions_l)
+        print(" self.nth_trial", self.nth_trial)
+
+        init_pos = self.init.init_positions_l[self.nth_trial]
+        return init_pos
 
     def finish_initialization(self):
         raise NotImplementedError
@@ -72,5 +74,11 @@ class CoreOptimizer(SearchTracker):
     def evaluate_iter(self, score_new):
         raise NotImplementedError
 
+    @SearchTracker.track_new_score
     def evaluate_init(self, score_new):
-        raise NotImplementedError
+        if self.pos_best is None:
+            self.pos_best = self.pos_new
+            self.pos_current = self.pos_new
+
+            self.score_best = score_new
+            self.score_current = score_new

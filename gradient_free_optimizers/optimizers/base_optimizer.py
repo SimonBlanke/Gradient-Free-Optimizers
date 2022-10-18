@@ -14,10 +14,6 @@ class BaseOptimizer(CoreOptimizer):
 
         self.optimizers = [self]
 
-    def init_pos(self, pos):
-        self.pos_new = pos
-        return pos
-
     def finish_initialization(self):
         self.search_state = "iter"
 

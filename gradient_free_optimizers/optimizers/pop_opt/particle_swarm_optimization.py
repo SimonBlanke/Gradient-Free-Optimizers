@@ -35,11 +35,10 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
         self.particles = self._create_population(Particle)
         self.optimizers = self.particles
 
-    def init_pos(self, pos):
+    def init_pos(self):
         nth_pop = self.nth_iter % len(self.particles)
 
         self.p_current = self.particles[nth_pop]
-        self.p_current.init_pos(pos)
 
         self.p_current.inertia = self.inertia
         self.p_current.cognitive_weight = self.cognitive_weight
@@ -48,6 +47,8 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
         self.p_current.rand_rest_p = self.rand_rest_p
 
         self.p_current.velo = np.zeros(len(self.conv.max_positions))
+
+        return self.p_current.init_pos()
 
     def iterate(self):
         n_iter = self._iterations(self.particles)

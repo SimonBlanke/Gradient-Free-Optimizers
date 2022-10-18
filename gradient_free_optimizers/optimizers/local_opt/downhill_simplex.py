@@ -46,14 +46,16 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
 
         self.simplex_step = 0
 
+        diff_init = self.n_simp_positions - self.init.n_inits
+        if diff_init > 0:
+            self.init.add_n_random_init_pos(diff_init)
+
+        print("\n DownhillSimplexOptimizer init_positions_l \n", self.init.init_positions_l, "\n")
+
     def finish_initialization(self):
         idx_sorted = sort_list_idx(self.scores_valid)
         self.simplex_pos = [self.positions_valid[idx] for idx in idx_sorted]
         self.simplex_scores = [self.scores_valid[idx] for idx in idx_sorted]
-
-        diff_init = self.n_simp_positions - self.init.n_inits
-        if diff_init > 0:
-            self.init.add_n_random_init_pos(diff_init)
 
         self.simplex_step = 1
 
@@ -114,7 +116,7 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
 
     @BaseOptimizer.track_new_score
     def evaluate(self, score_new):
-        self.score_new = score_new
+        print("\n self.simplex_step", self.simplex_step)
 
         if self.simplex_step != 0:
             self.prev_pos = self.positions_valid[-1]

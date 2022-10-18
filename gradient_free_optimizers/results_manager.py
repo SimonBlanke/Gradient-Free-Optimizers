@@ -33,6 +33,7 @@ class ResultsManager:
             results_dict = self._obj_func_results(objective_function, para)
 
             self.results_list.append({**results_dict, **para})
+            print("score self.results_list", self.results_list)
 
             return results_dict["score"]
 
@@ -40,4 +41,6 @@ class ResultsManager:
 
     @property
     def search_data(self):
+        print("self.results_list", self.results_list)
+
         return pd.DataFrame(self.results_list)

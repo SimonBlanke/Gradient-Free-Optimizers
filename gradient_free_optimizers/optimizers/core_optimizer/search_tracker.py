@@ -31,11 +31,14 @@ class SearchTracker:
         self.positions_valid = []
         self.scores_valid = []
 
+        self.nth_trial = 0
+
     ##################### track new #####################
 
     def track_new_pos(func):
         def wrapper(self, *args, **kwargs):
             self.pos_new = func(self, *args, **kwargs)
+            self.nth_trial += 1
             return self.pos_new
 
         return wrapper
