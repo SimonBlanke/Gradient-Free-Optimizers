@@ -8,6 +8,7 @@ from multiprocessing.managers import DictProxy
 
 from .progress_bar import ProgressBarLVL0, ProgressBarLVL1
 from .times_tracker import TimesTracker
+from .search_statistics import SearchStatistics
 from .memory import Memory
 from .print_info import print_info
 from .stop_run import StopRun
@@ -15,7 +16,7 @@ from .stop_run import StopRun
 from .results_manager import ResultsManager
 
 
-class Search(TimesTracker):
+class Search(TimesTracker, SearchStatistics):
     def __init__(self):
         super().__init__()
 
@@ -25,12 +26,11 @@ class Search(TimesTracker):
 
         self.score_l = []
         self.pos_l = []
-        self.nth_iter = 0
         self.random_seed = None
 
         self.search_state = "init"
-        self.n_init_total = 0
-        self.n_iter_total = 0
+
+        self.results_mang = ResultsManager()
 
     @TimesTracker.eval_time
     def _score(self, pos):
@@ -42,11 +42,9 @@ class Search(TimesTracker):
         self.best_score = self.p_bar.score_best
 
         init_pos = self.init_pos()
-        print("\n init_pos ", init_pos)
 
         score_new = self._score(init_pos)
         self.evaluate_init(score_new)
-        print("\n score_new ", score_new)
 
         self.pos_l.append(init_pos)
         self.score_l.append(score_new)
@@ -84,6 +82,7 @@ class Search(TimesTracker):
                 self.nth_process, self.n_iter, self.objective_function
             )
 
+    @SearchStatistics.init_stats
     def search(
         self,
         objective_function,
@@ -97,10 +96,7 @@ class Search(TimesTracker):
     ):
         self.start_time = time.time()
 
-        self.results_mang = ResultsManager(self.conv)
-
-        self.n_init_search = 0
-        self.n_iter_search = 0
+        self.results_mang.conv = self.conv
 
         if verbosity is False:
             verbosity = []
@@ -127,34 +123,19 @@ class Search(TimesTracker):
         else:
             self.score = self.results_mang.score(objective_function)
 
-        print(
-            "\n search init_positions_l \n",
-            self.init.init_positions_l,
-            "\n",
-        )
-
-        n_inits_norm = min(self.init.n_inits, n_iter)
-        print("\n n_inits_norm", n_inits_norm)
+        n_inits_norm = min((self.init.n_inits - self.n_init_total), n_iter)
 
         # if self.search_state == "init":
         # loop to initialize N positions
         for nth_iter in range(n_inits_norm):
-            print("\n init!")
             if self.stop.check(self.start_time, self.p_bar.score_best, self.score_l):
                 break
             self._initialization(nth_iter)
 
-            print("pos_new_list", self.pos_new_list)
-
         self.finish_initialization()
-
-        print("\n self.n_init_search", self.n_init_search)
-        print("\n self.n_init_total", self.n_init_total)
 
         # loop to do the iterations
         for nth_iter in range(self.n_init_search, n_iter):
-            print("\n iter!")
-
             if self.stop.check(self.start_time, self.p_bar.score_best, self.score_l):
                 break
             self._iteration(nth_iter)

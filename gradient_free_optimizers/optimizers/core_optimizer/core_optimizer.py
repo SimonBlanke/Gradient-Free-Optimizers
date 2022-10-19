@@ -21,6 +21,8 @@ class CoreOptimizer(SearchTracker):
     ):
         super().__init__()
 
+        self.random_seed = set_random_seed(nth_process, random_state)
+
         self.conv = Converter(search_space)
         self.init = Initializer(self.conv, initialize)
 
@@ -29,8 +31,6 @@ class CoreOptimizer(SearchTracker):
         self.rand_rest_p = rand_rest_p
         self.nth_process = nth_process
         self.debug_log = debug_log
-
-        self.random_seed = set_random_seed(nth_process, random_state)
 
     def random_iteration(func):
         def wrapper(self, *args, **kwargs):
@@ -62,10 +62,7 @@ class CoreOptimizer(SearchTracker):
 
     @SearchTracker.track_new_pos
     def init_pos(self):
-        print("\n 11111 self.init.init_positions_l", self.init.init_positions_l)
-        print(" self.nth_trial", self.nth_trial)
-
-        init_pos = self.init.init_positions_l[self.nth_trial]
+        init_pos = self.init.init_positions_l[self.n_init_total]
         return init_pos
 
     def finish_initialization(self):

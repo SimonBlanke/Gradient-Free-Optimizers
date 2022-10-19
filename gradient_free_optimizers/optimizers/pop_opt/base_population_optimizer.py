@@ -35,7 +35,12 @@ class BasePopulationOptimizer(CoreOptimizer):
         self.pop_sorted = [self.optimizers[i] for i in idx_sorted_ind]
 
     def _create_population(self, Optimizer):
-        diff_init = self.population - self.init.n_inits
+        if isinstance(self.population, int):
+            pop_size = self.population
+        else:
+            pop_size = len(self.population)
+        diff_init = pop_size - self.init.n_inits
+
         if diff_init > 0:
             self.init.add_n_random_init_pos(diff_init)
 
@@ -54,8 +59,6 @@ class BasePopulationOptimizer(CoreOptimizer):
                 )
         else:
             population = self.population
-
-        print("\n init_positions_l \n", self.init.init_positions_l, "\n")
 
         return population
 
