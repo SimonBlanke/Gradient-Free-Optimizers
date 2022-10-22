@@ -945,7 +945,7 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 <summary><b>v1.2.0</b> </summary>
 
   - [ ] add DIRECT algorithm
-  - [ ] ...
+  - [ ] automatically add random initial positions if necessary (often requested)
 
 </details>
 
