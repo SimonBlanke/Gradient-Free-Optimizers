@@ -55,26 +55,21 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
 
     @BasePopulationOptimizer.track_new_pos
     def init_pos(self):
-        nth_pop = self.nth_iter % len(self.systems)
-
-        print("nth_pop", nth_pop)
-
+        nth_pop = self.nth_trial % len(self.systems)
         self.p_current = self.systems[nth_pop]
+
         return self.p_current.init_pos()
 
     @BasePopulationOptimizer.track_new_pos
     def iterate(self):
-        nth_iter = self._iterations(self.systems)
-        self.p_current = self.systems[nth_iter % len(self.systems)]
+        self.p_current = self.systems[self.nth_trial % len(self.systems)]
 
         return self.p_current.iterate()
 
     @BasePopulationOptimizer.track_new_score
     def evaluate(self, score_new):
-        nth_iter = self._iterations(self.systems)
-
         notZero = self.n_iter_swap != 0
-        modZero = nth_iter % self.n_iter_swap == 0
+        modZero = self.nth_trial % self.n_iter_swap == 0
 
         if notZero and modZero:
             self._swap_pos()

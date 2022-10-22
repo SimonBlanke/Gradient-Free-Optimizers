@@ -75,7 +75,8 @@ class CoreOptimizer(SearchTracker):
     def evaluate_init(self, score_new):
         if self.pos_best is None:
             self.pos_best = self.pos_new
-            self.pos_current = self.pos_new
-
             self.score_best = score_new
+
+        if self.pos_current is None:
+            self.pos_current = self.pos_new
             self.score_current = score_new

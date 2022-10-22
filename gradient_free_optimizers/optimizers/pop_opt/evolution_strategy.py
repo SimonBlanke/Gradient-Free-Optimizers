@@ -59,12 +59,14 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
 
         return pos_new
 
+    @BasePopulationOptimizer.track_new_pos
     def init_pos(self):
-        nth_pop = self.nth_iter % len(self.individuals)
+        nth_pop = self.nth_trial % len(self.individuals)
 
         self.p_current = self.individuals[nth_pop]
         return self.p_current.init_pos()
 
+    @BasePopulationOptimizer.track_new_pos
     def iterate(self):
         self.n_ind = len(self.individuals)
 
@@ -84,5 +86,6 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
         else:
             return self._cross()
 
+    @BasePopulationOptimizer.track_new_score
     def evaluate(self, score_new):
         self.p_current.evaluate(score_new)

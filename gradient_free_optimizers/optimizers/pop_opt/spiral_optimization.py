@@ -35,8 +35,9 @@ class SpiralOptimization(BasePopulationOptimizer, Search):
         self.particles = self._create_population(Spiral)
         self.optimizers = self.particles
 
+    @BasePopulationOptimizer.track_new_pos
     def init_pos(self):
-        nth_pop = self.nth_iter % len(self.particles)
+        nth_pop = self.nth_trial % len(self.particles)
 
         self.p_current = self.particles[nth_pop]
         self.p_current.decay_rate = self.decay_rate
@@ -50,6 +51,7 @@ class SpiralOptimization(BasePopulationOptimizer, Search):
 
         self.search_state = "iter"
 
+    @BasePopulationOptimizer.track_new_pos
     def iterate(self):
         n_iter = self._iterations(self.particles)
         self.p_current = self.particles[n_iter % len(self.particles)]
@@ -59,6 +61,7 @@ class SpiralOptimization(BasePopulationOptimizer, Search):
 
         return self.p_current.move_spiral(self.center_pos)
 
+    @BasePopulationOptimizer.track_new_score
     def evaluate(self, score_new):
         if self.search_state == "iter":
             if self.pop_sorted[0].score_current > self.center_score:
