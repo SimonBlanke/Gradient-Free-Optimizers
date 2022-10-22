@@ -58,7 +58,6 @@ optimizers_noSBOM = (
         (RandomSearchOptimizer),
         (PowellsMethod),
         (PatternSearch),
-        (DirectAlgorithm),
         (GridSearchOptimizer),
         (RandomRestartHillClimbingOptimizer),
         (RandomAnnealingOptimizer),
@@ -74,6 +73,7 @@ optimizers_noSBOM = (
 optimizers_SBOM = (
     "Optimizer",
     [
+        (DirectAlgorithm),
         (LipschitzOptimizer),
         (BayesianOptimizer),
         (TreeStructuredParzenEstimators),
