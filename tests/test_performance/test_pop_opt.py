@@ -76,4 +76,4 @@ def test_pop_perf_0(Optimizer, objective_function):
     score_norm = (score_mean_rnd - score_mean) / (score_mean_rnd + score_mean)
     print("\n score_norm", score_norm)
 
-    assert score_norm > 0.20
+    assert score_norm > 0.1
