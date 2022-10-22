@@ -2,7 +2,6 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import math
 import random
 import numpy as np
 
@@ -12,6 +11,10 @@ class InitialSampler:
         self.conv = conv
         self.max_sample_size = max_sample_size
         self.dim_max_sample_size = dim_max_sample_size
+
+        if self.conv.n_dimensions > 31:
+            msg = "maximum supported dimension for a search-space in sequence-model-based optimizers is 31"
+            raise ValueError(msg)
 
     def get_pos_space(self):
         if self.max_sample_size < self.conv.search_space_size:
@@ -34,25 +37,26 @@ class InitialSampler:
             return pos_space
 
     def get_n_samples_dims(self):
-        # TODO of search space is > 33 dims termination criterion must be:
-        # "search_space_size < self.max_sample_size"
-
         dim_sizes_temp = self.conv.dim_sizes
         dim_sizes_temp = np.clip(
             dim_sizes_temp, a_min=1, a_max=self.dim_max_sample_size
         )
         search_space_size = self.conv.dim_sizes.prod()
+        if search_space_size == 0:
+            search_space_size = np.inf
 
-        while abs(search_space_size - self.max_sample_size) > self.max_sample_size / 10:
+        while abs(search_space_size) > self.max_sample_size:
             n_samples_array = []
             for idx, dim_size in enumerate(np.nditer(dim_sizes_temp)):
                 array_diff_ = random.randint(1, dim_size)
                 n_samples_array.append(array_diff_)
 
-                sub = int((dim_size / 1000) ** 1.5)
+                sub = max(int(dim_size - (dim_size ** 0.999)), 1)
                 dim_sizes_temp[idx] = np.maximum(1, dim_size - sub)
 
             search_space_size = np.array(n_samples_array).prod()
+            if search_space_size == 0:
+                search_space_size = np.inf
 
         return n_samples_array
 
