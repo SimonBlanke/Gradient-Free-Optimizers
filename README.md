@@ -484,6 +484,17 @@ Calculates an upper bound from the distances of the previously explored position
 
 
 <details>
+<summary><b>DIRECT algorithm</b></summary>
+
+<br>
+
+TODO
+
+<br>
+
+</details>
+
+<details>
 <summary><b>Tree of Parzen Estimators</b></summary>
 
 <br>
