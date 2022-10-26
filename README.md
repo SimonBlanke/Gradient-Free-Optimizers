@@ -208,7 +208,7 @@ Gradient-Free-Optimizers is the optimization backend of <a href="https://github.
 
 ## Optimization algorithms:
 
-Gradient-Free-Optimizers supports a variety of optimization algorithms, which can make choosing the right algorithm a tedious endeavor. The gifs in this section give a visual representation how the different optimization algorithms explore the search space and exploit the collected information about the search space for a convex and non-convex objective function. 
+Gradient-Free-Optimizers supports a variety of optimization algorithms, which can make choosing the right algorithm a tedious endeavor. The gifs in this section give a visual representation how the different optimization algorithms explore the search space and exploit the collected information about the search space for a convex and non-convex objective function. More detailed explanations of all optimization algorithms can be found in the official [documentation](https://simonblanke.github.io/gradient-free-optimizers-documentation).
 
 
 
@@ -657,7 +657,7 @@ opt.search(model, n_iter=50)
 
 ### General optimization arguments
 
-The following arguments can be passed to each optimization class:
+The following (general) arguments can be passed to any optimization class:
 
 - search_space
   - Pass the search_space to the optimizer class to define the space were the optimization algorithm can search for the best parameters for the given objective function.
