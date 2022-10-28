@@ -208,7 +208,7 @@ Gradient-Free-Optimizers is the optimization backend of <a href="https://github.
 
 ## Optimization algorithms:
 
-Gradient-Free-Optimizers supports a variety of optimization algorithms, which can make choosing the right algorithm a tedious endeavor. The gifs in this section give a visual representation how the different optimization algorithms explore the search space and exploit the collected information about the search space for a convex and non-convex objective function. More detailed explanations of all optimization algorithms can be found in the official [documentation](https://simonblanke.github.io/gradient-free-optimizers-documentation).
+Gradient-Free-Optimizers supports a variety of optimization algorithms, which can make choosing the right algorithm a tedious endeavor. The gifs in this section give a visual representation how the different optimization algorithms explore the search space and exploit the collected information about the search space for a convex and non-convex objective function. More detailed explanations of all optimization algorithms can be found in the [official documentation](https://simonblanke.github.io/gradient-free-optimizers-documentation).
 
 
 
@@ -488,7 +488,7 @@ Calculates an upper bound from the distances of the previously explored position
 
 <br>
 
-TODO
+Separates search space into subspaces. It evaluates the center position of each subspace to decide which subspace to sepate further.
 
 <br>
 
@@ -654,6 +654,9 @@ opt.search(model, n_iter=50)
 <br>
 
 ## Basic API reference
+
+The API reference can also be found in the [official documentation](https://simonblanke.github.io/gradient-free-optimizers-documentation).
+
 
 ### General optimization arguments
 
@@ -954,10 +957,19 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 
 
 <details>
-<summary><b>v1.2.0</b> </summary>
+<summary><b>v1.2.0</b> :heavy_check_mark:</summary>
 
-  - [ ] add DIRECT algorithm
-  - [ ] automatically add random initial positions if necessary (often requested)
+  - [x] add DIRECT algorithm
+  - [x] automatically add random initial positions if necessary (often requested)
+
+</details>
+
+
+<details>
+<summary><b>v1.3.0</b> </summary>
+
+  - [ ] add Ant-colony optimization
+  - [ ] ...
 
 </details>
 
