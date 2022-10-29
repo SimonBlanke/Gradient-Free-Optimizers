@@ -20,10 +20,5 @@ def test_name_0(Optimizer):
     opt = Optimizer(search_space)
 
     opt.name
-
-
-@pytest.mark.parametrize(*optimizers)
-def test_name_1(Optimizer):
-    opt = Optimizer(search_space)
-
     opt._name_
+    opt.__name__
