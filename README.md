@@ -231,8 +231,8 @@ Evaluates the score of n neighbours in an epsilon environment and moves to the b
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
-    <td> <img src="./docs/gifs/hill_climbing_convex.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/hill_climbing_nonconvex.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/hill_climbing_sphere_function_.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/hill_climbing_ackley_function_.gif" width="100%"> </td>
   </tr>
 </table>
 
@@ -244,7 +244,7 @@ Evaluates the score of n neighbours in an epsilon environment and moves to the b
 
 <br>
 
-...
+Adds a probability to the hill climbing to move to a worse position in the search-space to escape local optima.
 
 <br>
 
@@ -254,8 +254,8 @@ Evaluates the score of n neighbours in an epsilon environment and moves to the b
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
-    <td> <img src="./docs/gifs/hill_climbing_convex.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/hill_climbing_nonconvex.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/stochastic_hill_climbing_sphere_function_.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/stochastic_hill_climbing_ackley_function_.gif" width="100%"> </td>
   </tr>
 </table>
 
@@ -267,7 +267,7 @@ Evaluates the score of n neighbours in an epsilon environment and moves to the b
 
 <br>
 
-Hill climbing iteration + increases epsilon by a factor if no better neighbour was found.
+Hill climbing algorithm with the addition of increasing epsilon by a factor if no better neighbour was found.
 
 <br>
 
@@ -277,8 +277,8 @@ Hill climbing iteration + increases epsilon by a factor if no better neighbour w
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
-    <td> <img src="./docs/gifs/tabu_convex.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/tabu_nonconvex.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/repulsing_hill_climbing_sphere_function_.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/repulsing_hill_climbing_ackley_function_.gif" width="100%"> </td>
   </tr>
 </table>
 
@@ -290,7 +290,7 @@ Hill climbing iteration + increases epsilon by a factor if no better neighbour w
 
 <br>
 
-Hill climbing iteration + accepts moving to worse positions with decreasing probability over time (transition probability).
+Adds a probability to the hill climbing to move to a worse position in the search-space to escape local optima with decreasing probability over time.
 
 <br>
 
@@ -300,8 +300,8 @@ Hill climbing iteration + accepts moving to worse positions with decreasing prob
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
-    <td> <img src="./docs/gifs/sim_ann_convex.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/sim_ann_nonconvex.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/simulated_annealing_sphere_function_.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/simulated_annealing_ackley_function_.gif" width="100%"> </td>
   </tr>
 </table>
 
@@ -313,7 +313,7 @@ Hill climbing iteration + accepts moving to worse positions with decreasing prob
 
 <br>
 
-...
+Constructs a simplex from multiple positions that moves through the search-space by reflecting, expanding, contracting or shrinking.
 
 <br>
 
@@ -323,8 +323,8 @@ Hill climbing iteration + accepts moving to worse positions with decreasing prob
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
-    <td> <img src="./docs/gifs/hill_climbing_convex.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/hill_climbing_nonconvex.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/downhill_simplex_sphere_function_.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/downhill_simplex_ackley_function_.gif" width="100%"> </td>
   </tr>
 </table>
 
@@ -349,8 +349,8 @@ Moves to random positions in each iteration.
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
-    <td> <img src="./docs/gifs/random_convex.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/random_nonconvex.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/random_search_sphere_function_.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/random_search_ackley_function_.gif" width="100%"> </td>
   </tr>
 </table>
 
@@ -362,7 +362,7 @@ Moves to random positions in each iteration.
 
 <br>
 
-...
+Grid-search that moves through search-space diagonal (with step-size=1) starting from a corner.
 
 <br>
 
@@ -372,8 +372,8 @@ Moves to random positions in each iteration.
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
-    <td> <img src="./docs/gifs/random_convex.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/random_nonconvex.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/grid_search_sphere_function_.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/grid_search_ackley_function_.gif" width="100%"> </td>
   </tr>
 </table>
 
@@ -385,7 +385,7 @@ Moves to random positions in each iteration.
 
 <br>
 
-Hill climbing + moves to a random position after n iterations.
+Hill climbingm, that moves to a random position after n iterations.
 
 <br>
 
@@ -395,8 +395,8 @@ Hill climbing + moves to a random position after n iterations.
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
-    <td> <img src="./docs/gifs/rrhc_convex.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/rrhc_nonconvex.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/random_restart_hill_climbing_sphere_function_.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/random_restart_hill_climbing_ackley_function_.gif" width="100%"> </td>
   </tr>
 </table>
 
@@ -408,7 +408,7 @@ Hill climbing + moves to a random position after n iterations.
 
 <br>
 
-Hill Climbing + large epsilon that decreases over time.
+Hill Climbing, that has large epsilon at the start of the search decreasing over time.
 
 <br>
 
@@ -418,8 +418,8 @@ Hill Climbing + large epsilon that decreases over time.
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
-    <td> <img src="./docs/gifs/random_ann_convex.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/random_ann_nonconvex.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/random_annealing_sphere_function_.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/random_annealing_ackley_function_.gif" width="100%"> </td>
   </tr>
 </table>
 
@@ -431,7 +431,7 @@ Hill Climbing + large epsilon that decreases over time.
 
 <br>
 
-...
+Creates cross-shaped collection of positions that move through search-space by moving as a whole towards optima or shrinking the cross.
 
 <br>
 
@@ -441,8 +441,8 @@ Hill Climbing + large epsilon that decreases over time.
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
-    <td> <img src="./docs/gifs/random_ann_convex.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/random_ann_nonconvex.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/pattern_search_sphere_function_.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/pattern_search_ackley_function_.gif" width="100%"> </td>
   </tr>
 </table>
 
@@ -454,7 +454,7 @@ Hill Climbing + large epsilon that decreases over time.
 
 <br>
 
-...
+Optimizes each search-space dimension at a time with a hill-climbing algorithm.
 
 <br>
 
@@ -464,8 +464,8 @@ Hill Climbing + large epsilon that decreases over time.
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
-    <td> <img src="./docs/gifs/random_ann_convex.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/random_ann_nonconvex.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/powells_method_sphere_function_.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/powells_method_ackley_function_.gif" width="100%"> </td>
   </tr>
 </table>
 
@@ -494,8 +494,8 @@ Population of n simulated annealers, which occasionally swap transition probabil
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
-    <td> <img src="./docs/gifs/par_temp_convex.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/par_temp_nonconvex.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/parallel_tempering_sphere_function_.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/parallel_tempering_ackley_function_.gif" width="100%"> </td>
   </tr>
 </table>
 
@@ -517,8 +517,8 @@ Population of n particles attracting each other and moving towards the best part
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
-    <td> <img src="./docs/gifs/particle_swarm_convex.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/particle_swarm_nonconvex.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/particle_swarm_optimization_sphere_function_.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/particle_swarm_optimization_ackley_function_.gif" width="100%"> </td>
   </tr>
 </table>
 
@@ -535,6 +535,17 @@ Population of n particles moving in a spiral pattern around the best position.
 
 <br>
 
+<table style="width:100%">
+  <tr>
+    <th> <b>Convex Function</b> </th> 
+    <th> <b>Non-convex Function</b> </th>
+  </tr>
+  <tr>
+    <td> <img src="./docs/gifs/spiral_optimization_sphere_function_.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/spiral_optimization_ackley_function_.gif" width="100%"> </td>
+  </tr>
+</table>
+
 </details>
 
 
@@ -543,7 +554,7 @@ Population of n particles moving in a spiral pattern around the best position.
 
 <br>
 
-Population of n hill climbers occasionally mixing positional information.
+Population of n hill climbers occasionally mixing positional information and removing worst positions from population.
 
 <br>
 
@@ -553,8 +564,8 @@ Population of n hill climbers occasionally mixing positional information.
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
-    <td> <img src="./docs/gifs/evo_strat_convex.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/evo_strat_nonconvex.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/evolution_strategy_sphere_function_.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/evolution_strategy_ackley_function_.gif" width="100%"> </td>
   </tr>
 </table>
 
@@ -580,8 +591,8 @@ Gaussian process fitting to explored positions and predicting promising new posi
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
-    <td> <img src="./docs/gifs/bayes_convex.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/bayes_nonconvex.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/bayesian_optimization_sphere_function_.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/bayesian_optimization_ackley_function_.gif" width="100%"> </td>
   </tr>
 </table>
 
@@ -597,6 +608,17 @@ Calculates an upper bound from the distances of the previously explored position
 
 <br>
 
+<table style="width:100%">
+  <tr>
+    <th> <b>Convex Function</b> </th> 
+    <th> <b>Non-convex Function</b> </th>
+  </tr>
+  <tr>
+    <td> <img src="./docs/gifs/lipschitz_optimizer_sphere_function_.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/lipschitz_optimizer_ackley_function_.gif" width="100%"> </td>
+  </tr>
+</table>
+
 </details>
 
 
@@ -609,7 +631,19 @@ Separates search space into subspaces. It evaluates the center position of each 
 
 <br>
 
+<table style="width:100%">
+  <tr>
+    <th> <b>Convex Function</b> </th> 
+    <th> <b>Non-convex Function</b> </th>
+  </tr>
+  <tr>
+    <td> <img src="./docs/gifs/direct_algorithm_sphere_function_.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/direct_algorithm_ackley_function_.gif" width="100%"> </td>
+  </tr>
+</table>
+
 </details>
+
 
 <details>
 <summary><b>Tree of Parzen Estimators</b></summary>
@@ -626,8 +660,8 @@ Kernel density estimators fitting to good and bad explored positions and predict
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
-    <td> <img src="./docs/gifs/tpe_convex.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/tpe_nonconvex.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/tree_structured_parzen_estimators_sphere_function_.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/tree_structured_parzen_estimators_ackley_function_.gif" width="100%"> </td>
   </tr>
 </table>
 
@@ -635,7 +669,7 @@ Kernel density estimators fitting to good and bad explored positions and predict
 
 
 <details>
-<summary><b>Decision Tree Optimizer</b></summary>
+<summary><b>Forest Optimizer</b></summary>
 
 <br>
 
@@ -649,8 +683,8 @@ Ensemble of decision trees fitting to explored positions and predicting promisin
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
-    <td> <img src="./docs/gifs/dto_convex.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/dto_nonconvex.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/forest_optimization_sphere_function_.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/forest_optimization_ackley_function_.gif" width="100%"> </td>
   </tr>
 </table>
 
@@ -823,6 +857,7 @@ The following (general) arguments can be passed to any optimization class:
 Each optimization class needs the "search_space" as an input argument. Optionally "initialize" and optimizer-specific parameters can be passed as well. You can read more about each optimization-algorithm and its parameters in the [Optimization Tutorial](https://github.com/SimonBlanke/optimization-tutorial).
 
 - HillClimbingOptimizer
+- StochasticHillClimbingOptimizer
 - RepulsingHillClimbingOptimizer
 - SimulatedAnnealingOptimizer
 - DownhillSimplexOptimizer
