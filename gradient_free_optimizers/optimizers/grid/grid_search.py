@@ -16,6 +16,10 @@ from ...search import Search
 class GridSearchOptimizer(BaseOptimizer, Search):
     name = "Grid Search"
     _name_ = "grid_search"
+    __name__ = "GridSearchOptimizer"
+
+    optimizer_type = "global"
+    computationally_expensive = False
 
     def __init__(self, *args, step_size=1, **kwargs):
         super().__init__(*args, **kwargs)
@@ -99,3 +103,7 @@ class GridSearchOptimizer(BaseOptimizer, Search):
         pos_new = self.grid_move()
         pos_new = self.conv2pos(pos_new)
         return pos_new
+
+    @BaseOptimizer.track_new_score
+    def evaluate(self, score_new):
+        BaseOptimizer.evaluate(self, score_new)
