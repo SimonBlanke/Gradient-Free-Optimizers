@@ -12,6 +12,10 @@ from ...search import Search
 class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer, Search):
     name = "Simulated Annealing"
     _name_ = "simulated_annealing"
+    __name__ = "SimulatedAnnealingOptimizer"
+
+    optimizer_type = "local"
+    computationally_expensive = False
 
     def __init__(self, *args, annealing_rate=0.97, start_temp=1, **kwargs):
         super().__init__(*args, **kwargs)

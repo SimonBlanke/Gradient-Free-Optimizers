@@ -30,6 +30,10 @@ def normalize(array):
 class BayesianOptimizer(SMBO):
     name = "Bayesian Optimization"
     _name_ = "bayesian_optimization"
+    __name__ = "BayesianOptimizer"
+
+    optimizer_type = "sequential"
+    computationally_expensive = True
 
     def __init__(
         self,

@@ -10,6 +10,10 @@ from ...search import Search
 class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer, Search):
     name = "Random Restart Hill Climbing"
     _name_ = "random_restart_hill_climbing"
+    __name__ = "RandomRestartHillClimbingOptimizer"
+
+    optimizer_type = "global"
+    computationally_expensive = False
 
     def __init__(
         self,

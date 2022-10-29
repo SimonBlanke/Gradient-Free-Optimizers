@@ -13,6 +13,10 @@ from ._individual import Individual
 class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
     name = "Evolution Strategy"
     _name_ = "evolution_strategy"
+    __name__ = "EvolutionStrategyOptimizer"
+
+    optimizer_type = "population"
+    computationally_expensive = False
 
     def __init__(
         self, *args, population=10, mutation_rate=0.7, crossover_rate=0.3, **kwargs

@@ -25,6 +25,10 @@ def centeroid(array_list):
 class SpiralOptimization(BasePopulationOptimizer, Search):
     name = "Spiral Optimization"
     _name_ = "spiral_optimization"
+    __name__ = "SpiralOptimization"
+
+    optimizer_type = "population"
+    computationally_expensive = False
 
     def __init__(self, *args, population=10, decay_rate=0.99, **kwargs):
         super().__init__(*args, **kwargs)

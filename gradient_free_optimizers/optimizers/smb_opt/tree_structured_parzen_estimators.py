@@ -12,7 +12,11 @@ from .smbo import SMBO
 class TreeStructuredParzenEstimators(SMBO):
     name = "Tree Structured Parzen Estimators"
     _name_ = "tree_structured_parzen_estimators"
+    __name__ = "TreeStructuredParzenEstimators"
 
+    optimizer_type = "sequential"
+    computationally_expensive = True
+    
     def __init__(
         self,
         *args,

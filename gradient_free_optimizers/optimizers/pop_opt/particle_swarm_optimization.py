@@ -13,6 +13,10 @@ from ._particle import Particle
 class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
     name = "Particle Swarm Optimization"
     _name_ = "particle_swarm_optimization"
+    __name__ = "ParticleSwarmOptimizer"
+
+    optimizer_type = "population"
+    computationally_expensive = False
 
     def __init__(
         self,

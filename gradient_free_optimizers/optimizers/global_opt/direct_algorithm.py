@@ -67,6 +67,10 @@ class SubSpace:
 class DirectAlgorithm(SMBO, Search):
     name = "Direct Algorithm"
     _name_ = "direct_algorithm"
+    __name__ = "DirectAlgorithm"
+
+    optimizer_type = "sequential"
+    computationally_expensive = True
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

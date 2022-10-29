@@ -15,6 +15,10 @@ from ..local_opt import SimulatedAnnealingOptimizer
 class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
     name = "Parallel Tempering"
     _name_ = "parallel_tempering"
+    __name__ = "ParallelTemperingOptimizer"
+
+    optimizer_type = "population"
+    computationally_expensive = False
 
     def __init__(self, *args, population=5, n_iter_swap=5, **kwargs):
         super().__init__(*args, **kwargs)

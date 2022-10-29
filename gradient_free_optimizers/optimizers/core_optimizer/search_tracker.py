@@ -104,9 +104,6 @@ class SearchTracker:
             self.positions_valid.append(self.pos_new)
             self.scores_valid.append(self.score_new)
 
-        # print("self.scores_valid", self.scores_valid)
-        # print("self.score_new_list", self.score_new_list)
-
     ##################### current #####################
 
     @property

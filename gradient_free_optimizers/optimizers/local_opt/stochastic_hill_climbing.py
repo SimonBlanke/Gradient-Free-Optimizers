@@ -12,6 +12,10 @@ from ...search import Search
 class StochasticHillClimbingOptimizer(HillClimbingOptimizer, Search):
     name = "Stochastic Hill Climbing"
     _name_ = "stochastic_hill_climbing"
+    __name__ = "StochasticHillClimbingOptimizer"
+
+    optimizer_type = "local"
+    computationally_expensive = False
 
     def __init__(self, *args, p_accept=0.1, norm_factor=1, **kwargs):
         super().__init__(*args, **kwargs)

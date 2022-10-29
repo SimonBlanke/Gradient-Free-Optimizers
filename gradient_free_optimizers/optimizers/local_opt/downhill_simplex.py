@@ -32,6 +32,10 @@ def centeroid(array_list):
 class DownhillSimplexOptimizer(BaseOptimizer, Search):
     name = "Downhill Simplex"
     _name_ = "downhill_simplex"
+    __name__ = "DownhillSimplexOptimizer"
+
+    optimizer_type = "local"
+    computationally_expensive = False
 
     def __init__(self, *args, alpha=1, gamma=2, beta=0.5, sigma=0.5, **kwargs):
         super().__init__(*args, **kwargs)
@@ -49,8 +53,6 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
         diff_init = self.n_simp_positions - self.init.n_inits
         if diff_init > 0:
             self.init.add_n_random_init_pos(diff_init)
-
-        print("\n DownhillSimplexOptimizer init_positions_l \n", self.init.init_positions_l, "\n")
 
     def finish_initialization(self):
         idx_sorted = sort_list_idx(self.scores_valid)
@@ -116,8 +118,6 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
 
     @BaseOptimizer.track_new_score
     def evaluate(self, score_new):
-        print("\n self.simplex_step", self.simplex_step)
-
         if self.simplex_step != 0:
             self.prev_pos = self.positions_valid[-1]
 

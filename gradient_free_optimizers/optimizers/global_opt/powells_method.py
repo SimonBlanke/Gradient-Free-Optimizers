@@ -19,6 +19,10 @@ def sort_list_idx(list_):
 class PowellsMethod(BaseOptimizer, Search):
     name = "Powell's Method"
     _name_ = "powells_method"
+    __name__ = "PowellsMethod"
+
+    optimizer_type = "global"
+    computationally_expensive = False
 
     def __init__(self, *args, iters_p_dim=10, **kwargs):
         super().__init__(*args, **kwargs)
@@ -39,11 +43,6 @@ class PowellsMethod(BaseOptimizer, Search):
             self.current_search_dim = 0
 
         idx_sorted = sort_list_idx(self.scores_valid)
-
-        print("self.positions_valid", self.positions_valid)
-        print("self.scores_valid", self.scores_valid)
-        print("idx_sorted", idx_sorted)
-        print("self.score_new_list", self.score_new_list)
 
         self.powells_pos = [self.positions_valid[idx] for idx in idx_sorted][0]
         self.powells_scores = [self.scores_valid[idx] for idx in idx_sorted][0]

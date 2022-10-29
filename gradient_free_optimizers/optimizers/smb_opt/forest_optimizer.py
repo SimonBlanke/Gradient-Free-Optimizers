@@ -35,6 +35,11 @@ def normalize(array):
 class ForestOptimizer(SMBO):
     name = "Forest Optimization"
     _name_ = "forest_optimization"
+    __name__ = "ForestOptimizer"
+
+    optimizer_type = "sequential"
+    computationally_expensive = True
+
     """Based on the forest-optimizer in the scikit-optimize package"""
 
     def __init__(

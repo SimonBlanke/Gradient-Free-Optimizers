@@ -48,6 +48,10 @@ class LipschitzFunction:
 class LipschitzOptimizer(SMBO, Search):
     name = "Lipschitz Optimizer"
     _name_ = "lipschitz_optimizer"
+    __name__ = "LipschitzOptimizer"
+
+    optimizer_type = "sequential"
+    computationally_expensive = True
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

@@ -10,6 +10,10 @@ from ...search import Search
 class RepulsingHillClimbingOptimizer(HillClimbingOptimizer, Search):
     name = "Repulsing Hill Climbing"
     _name_ = "repulsing_hill_climbing"
+    __name__ = "RepulsingHillClimbingOptimizer"
+
+    optimizer_type = "local"
+    computationally_expensive = False
 
     def __init__(self, *args, repulsion_factor=5, **kwargs):
         super().__init__(*args, **kwargs)
