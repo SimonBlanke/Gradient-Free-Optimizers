@@ -240,6 +240,29 @@ Evaluates the score of n neighbours in an epsilon environment and moves to the b
 
 
 <details>
+<summary><b>Stochastic Hill Climbing</b></summary>
+
+<br>
+
+...
+
+<br>
+
+<table style="width:100%">
+  <tr>
+    <th> <b>Convex Function</b> </th> 
+    <th> <b>Non-convex Function</b> </th>
+  </tr>
+  <tr>
+    <td> <img src="./docs/gifs/hill_climbing_convex.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/hill_climbing_nonconvex.gif" width="100%"> </td>
+  </tr>
+</table>
+
+</details>
+
+
+<details>
 <summary><b>Repulsing Hill Climbing</b></summary>
 
 <br>
@@ -285,6 +308,28 @@ Hill climbing iteration + accepts moving to worse positions with decreasing prob
 </details>
 
 
+<details>
+<summary><b>Downhill Simplex Optimization</b></summary>
+
+<br>
+
+...
+
+<br>
+
+<table style="width:100%">
+  <tr>
+    <th> <b>Convex Function</b> </th> 
+    <th> <b>Non-convex Function</b> </th>
+  </tr>
+  <tr>
+    <td> <img src="./docs/gifs/hill_climbing_convex.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/hill_climbing_nonconvex.gif" width="100%"> </td>
+  </tr>
+</table>
+
+</details>
+
 <br>
 
 ### Global Optimization
@@ -295,6 +340,29 @@ Hill climbing iteration + accepts moving to worse positions with decreasing prob
 <br>
 
 Moves to random positions in each iteration.
+
+<br>
+
+<table style="width:100%">
+  <tr>
+    <th> <b>Convex Function</b> </th> 
+    <th> <b>Non-convex Function</b> </th>
+  </tr>
+  <tr>
+    <td> <img src="./docs/gifs/random_convex.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/random_nonconvex.gif" width="100%"> </td>
+  </tr>
+</table>
+
+</details>
+
+
+<details>
+<summary><b>Grid Search</b></summary>
+
+<br>
+
+...
 
 <br>
 
@@ -358,7 +426,56 @@ Hill Climbing + large epsilon that decreases over time.
 </details>
 
 
+<details>
+<summary><b>Pattern Search</b></summary>
+
 <br>
+
+...
+
+<br>
+
+<table style="width:100%">
+  <tr>
+    <th> <b>Convex Function</b> </th> 
+    <th> <b>Non-convex Function</b> </th>
+  </tr>
+  <tr>
+    <td> <img src="./docs/gifs/random_ann_convex.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/random_ann_nonconvex.gif" width="100%"> </td>
+  </tr>
+</table>
+
+</details>
+
+
+<details>
+<summary><b>Powell's Method</b></summary>
+
+<br>
+
+...
+
+<br>
+
+<table style="width:100%">
+  <tr>
+    <th> <b>Convex Function</b> </th> 
+    <th> <b>Non-convex Function</b> </th>
+  </tr>
+  <tr>
+    <td> <img src="./docs/gifs/random_ann_convex.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/random_ann_nonconvex.gif" width="100%"> </td>
+  </tr>
+</table>
+
+</details>
+
+
+<br>
+
+
+
 
 ### Population-Based Optimization
 
