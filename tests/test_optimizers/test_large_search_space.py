@@ -37,7 +37,7 @@ def test_large_search_space_1(Optimizer):
 def test_large_search_space_2(Optimizer):
 
     search_space = {}
-    for i in range(100):
+    for i in range(50):
         key = "x" + str(i)
         search_space[key] = np.arange(0, 100)
 
@@ -49,7 +49,7 @@ def test_large_search_space_2(Optimizer):
 def test_large_search_space_3(Optimizer):
 
     search_space = {}
-    for i in range(31):
+    for i in range(25):
         key = "x" + str(i)
         search_space[key] = np.arange(0, 100)
 
