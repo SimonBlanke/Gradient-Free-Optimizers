@@ -12,7 +12,7 @@ def objective_function(para):
 def test_large_search_space_0(Optimizer):
 
     search_space = {
-        "x1": np.arange(0, 1000000),
+        "x1": np.arange(0, 100000),
         "x2": np.arange(0, 1000000),
         "x3": np.arange(0, 1000000),
     }
@@ -24,7 +24,7 @@ def test_large_search_space_0(Optimizer):
 def test_large_search_space_1(Optimizer):
 
     search_space = {
-        "x1": np.arange(0, 1000, 0.001),
+        "x1": np.arange(0, 100, 0.001),
         "x2": np.arange(0, 1000, 0.001),
         "x3": np.arange(0, 1000, 0.001),
     }
@@ -37,7 +37,7 @@ def test_large_search_space_1(Optimizer):
 def test_large_search_space_2(Optimizer):
 
     search_space = {}
-    for i in range(50):
+    for i in range(33):
         key = "x" + str(i)
         search_space[key] = np.arange(0, 100)
 
@@ -49,7 +49,7 @@ def test_large_search_space_2(Optimizer):
 def test_large_search_space_3(Optimizer):
 
     search_space = {}
-    for i in range(25):
+    for i in range(20):
         key = "x" + str(i)
         search_space[key] = np.arange(0, 100)
 
