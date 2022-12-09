@@ -48,7 +48,10 @@ class HillClimbingOptimizer(BaseOptimizer, Search):
     @BaseOptimizer.track_new_pos
     @BaseOptimizer.random_iteration
     def iterate(self):
-        return self._move_climb(self.pos_current)
+        while True:
+            pos = self._move_climb(self.pos_current)
+            if self.constraint_pos(pos):
+                return pos
 
     @BaseOptimizer.track_new_score
     def evaluate(self, score_new):

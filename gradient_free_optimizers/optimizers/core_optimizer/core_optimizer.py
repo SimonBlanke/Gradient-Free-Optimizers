@@ -14,6 +14,7 @@ class CoreOptimizer(SearchTracker):
         self,
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
+        constraints=None,
         random_state=None,
         rand_rest_p=0,
         nth_process=None,
@@ -27,10 +28,27 @@ class CoreOptimizer(SearchTracker):
         self.init = Initializer(self.conv, initialize)
 
         self.initialize = initialize
+        self.constraints = constraints
         self.random_state = random_state
         self.rand_rest_p = rand_rest_p
         self.nth_process = nth_process
         self.debug_log = debug_log
+
+        self.constraint = self.constraints[0]
+
+        def constraint_pos(constraint_para):
+            def objective_function_np(position):
+                para = self.conv.value2para(self.conv.position2value(position))
+                """
+                params = {}
+                for i, para_name in enumerate(search_space):
+                    params[para_name] = args[i]
+                """
+                return constraint_para(para)
+
+            return objective_function_np
+
+        self.constraint_pos = constraint_pos(self.constraint)
 
     def random_iteration(func):
         def wrapper(self, *args, **kwargs):
