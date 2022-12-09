@@ -57,9 +57,12 @@ class EnsembleOptimizer(SMBO):
 
         self.init_warm_start_smbo()
 
+    def finish_initialization(self):
+        self.all_pos_comb = self._all_possible_pos()
+        return super().finish_initialization()
+
     def _expected_improvement(self):
-        all_pos_comb = self._all_possible_pos()
-        self.pos_comb = self._sampling(all_pos_comb)
+        self.pos_comb = self._sampling(self.all_pos_comb)
 
         acqu_func = ExpectedImprovement(self.regr, self.pos_comb, self.xi)
         return acqu_func.calculate(self.X_sample, self.Y_sample)
