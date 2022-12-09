@@ -16,7 +16,7 @@ class TreeStructuredParzenEstimators(SMBO):
 
     optimizer_type = "sequential"
     computationally_expensive = True
-    
+
     def __init__(
         self,
         *args,
@@ -45,6 +45,10 @@ class TreeStructuredParzenEstimators(SMBO):
 
         self.init_warm_start_smbo()
 
+    def finish_initialization(self):
+        self.all_pos_comb = self._all_possible_pos()
+        return super().finish_initialization()
+
     def _get_samples(self):
         n_samples = len(self.X_sample)
         n_best = max(round(n_samples * self.gamma_tpe), 1)
@@ -60,8 +64,7 @@ class TreeStructuredParzenEstimators(SMBO):
         return best_samples, worst_samples
 
     def _expected_improvement(self):
-        all_pos_comb = self._all_possible_pos()
-        self.pos_comb = self._sampling(all_pos_comb)
+        self.pos_comb = self._sampling(self.all_pos_comb)
 
         logprob_best = self.kd_best.score_samples(self.pos_comb)
         logprob_worst = self.kd_worst.score_samples(self.pos_comb)

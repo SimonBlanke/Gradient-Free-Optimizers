@@ -56,11 +56,14 @@ class LipschitzOptimizer(SMBO, Search):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+    def finish_initialization(self):
+        self.all_pos_comb = self._all_possible_pos()
+        return super().finish_initialization()
+
     @SMBO.track_new_pos
     @SMBO.track_X_sample
     def iterate(self):
-        all_pos_comb = self._all_possible_pos()
-        self.pos_comb = self._sampling(all_pos_comb)
+        self.pos_comb = self._sampling(self.all_pos_comb)
 
         lip_func = LipschitzFunction(self.pos_comb)
         upper_bound_l = lip_func.calculate(
