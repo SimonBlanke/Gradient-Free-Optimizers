@@ -101,7 +101,15 @@ class SMBO(BaseOptimizer, Search):
     def _all_possible_pos(self):
         pos_space = self.sampler.get_pos_space()
         n_dim = len(pos_space)
-        return np.array(np.meshgrid(*pos_space)).T.reshape(-1, n_dim)
+        all_pos_comb = np.array(np.meshgrid(*pos_space)).T.reshape(-1, n_dim)
+
+        all_pos_comb_constr = []
+        for pos in all_pos_comb:
+            if self.constraint_pos(pos):
+                all_pos_comb_constr.append(pos)
+
+        all_pos_comb_constr = np.array(all_pos_comb_constr)
+        return all_pos_comb_constr
 
     def memory_warning(self, max_sample_size):
         if (
