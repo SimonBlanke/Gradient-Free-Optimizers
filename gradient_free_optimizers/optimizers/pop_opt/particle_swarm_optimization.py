@@ -57,13 +57,17 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
 
     @BasePopulationOptimizer.track_new_pos
     def iterate(self):
-        self.p_current = self.particles[self.nth_trial % len(self.particles)]
+        while True:
+            self.p_current = self.particles[self.nth_trial % len(self.particles)]
 
-        self.sort_pop_best_score()
-        self.p_current.global_pos_best = self.pop_sorted[0].pos_best
+            self.sort_pop_best_score()
+            self.p_current.global_pos_best = self.pop_sorted[0].pos_best
 
-        pos_new = self.p_current.move_linear()
-        return pos_new
+            pos_new = self.p_current.move_linear()
+            pos = self._move_climb(self.pos_current)
+
+            if self.constraint_pos(pos):
+                return pos_new
 
     @BasePopulationOptimizer.track_new_score
     def evaluate(self, score_new):
