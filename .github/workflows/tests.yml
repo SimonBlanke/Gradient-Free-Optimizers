@@ -15,12 +15,11 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     strategy:
       fail-fast: false
       matrix:
-        python-version:
-          ["3.5.x", "3.6.x", "3.7.x", "3.8.x", "3.9.x", "3.10.x", "3.11.x"]
+        python-version: ["3.5", "3.6", "3.7", "3.8", "3.9", "3.10", "3.11"]
 
     steps:
       - uses: actions/checkout@master
