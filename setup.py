@@ -53,4 +53,5 @@ setup(
         "Intended Audience :: Science/Research",
     ],
     install_requires=requirements,
+    python_requires=">=3.5",
 )
