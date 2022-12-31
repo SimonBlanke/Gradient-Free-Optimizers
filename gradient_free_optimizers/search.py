@@ -37,8 +37,7 @@ class Search(TimesTracker, SearchStatistics):
         return self.score(pos)
 
     @TimesTracker.iter_time
-    def _initialization(self, nth_iter):
-        self.nth_iter = nth_iter
+    def _initialization(self):
         self.best_score = self.p_bar.score_best
 
         init_pos = self.init_pos()
@@ -49,14 +48,15 @@ class Search(TimesTracker, SearchStatistics):
         self.pos_l.append(init_pos)
         self.score_l.append(score_new)
 
-        self.p_bar.update(score_new, init_pos, nth_iter)
+        self.p_bar.update(score_new, init_pos, self.nth_iter)
 
         self.n_init_total += 1
         self.n_init_search += 1
 
+        self.stop.update(self.p_bar.score_best, self.score_l)
+
     @TimesTracker.iter_time
-    def _iteration(self, nth_iter):
-        self.nth_iter = nth_iter
+    def _iteration(self):
         self.best_score = self.p_bar.score_best
 
         pos_new = self.iterate()
@@ -67,22 +67,13 @@ class Search(TimesTracker, SearchStatistics):
         self.pos_l.append(pos_new)
         self.score_l.append(score_new)
 
-        self.p_bar.update(score_new, pos_new, nth_iter)
+        self.p_bar.update(score_new, pos_new, self.nth_iter)
 
         self.n_iter_total += 1
         self.n_iter_search += 1
 
-    def _init_search(self):
-        if "progress_bar" in self.verbosity:
-            self.p_bar = ProgressBarLVL1(
-                self.nth_process, self.n_iter, self.objective_function
-            )
-        else:
-            self.p_bar = ProgressBarLVL0(
-                self.nth_process, self.n_iter, self.objective_function
-            )
+        self.stop.update(self.p_bar.score_best, self.score_l)
 
-    @SearchStatistics.init_stats
     def search(
         self,
         objective_function,
@@ -94,13 +85,36 @@ class Search(TimesTracker, SearchStatistics):
         memory_warm_start=None,
         verbosity=["progress_bar", "print_results", "print_times"],
     ):
-        self.start_time = time.time()
+        self.init_search(
+            objective_function,
+            n_iter,
+            max_time,
+            max_score,
+            early_stopping,
+            memory,
+            memory_warm_start,
+            verbosity,
+        )
 
-        self.results_mang.conv = self.conv
+        for nth_iter in range(n_iter):
+            self.search_step(nth_iter)
+            if self.stop.check():
+                break
 
-        if verbosity is False:
-            verbosity = []
+        self.finish_search()
 
+    @SearchStatistics.init_stats
+    def init_search(
+        self,
+        objective_function,
+        n_iter,
+        max_time,
+        max_score,
+        early_stopping,
+        memory,
+        memory_warm_start,
+        verbosity,
+    ):
         self.objective_function = objective_function
         self.n_iter = n_iter
         self.max_time = max_time
@@ -110,51 +124,56 @@ class Search(TimesTracker, SearchStatistics):
         self.memory_warm_start = memory_warm_start
         self.verbosity = verbosity
 
-        self.stop = StopRun(max_time, max_score, early_stopping)
+        self.results_mang.conv = self.conv
 
-        self._init_search()
+        if self.verbosity is False:
+            self.verbosity = []
 
-        if isinstance(memory, DictProxy):
-            mem = Memory(memory_warm_start, self.conv, dict_proxy=memory)
-            self.score = self.results_mang.score(mem.memory(objective_function))
-        elif memory is True:
-            mem = Memory(memory_warm_start, self.conv)
-            self.score = self.results_mang.score(mem.memory(objective_function))
+        start_time = time.time()
+        self.stop = StopRun(
+            start_time, self.max_time, self.max_score, self.early_stopping
+        )
+
+        if "progress_bar" in self.verbosity:
+            self.p_bar = ProgressBarLVL1(
+                self.nth_process, self.n_iter, self.objective_function
+            )
         else:
-            self.score = self.results_mang.score(objective_function)
+            self.p_bar = ProgressBarLVL0(
+                self.nth_process, self.n_iter, self.objective_function
+            )
 
-        n_inits_norm = min((self.init.n_inits - self.n_init_total), n_iter)
+        if isinstance(self.memory, DictProxy):
+            self.mem = Memory(self.memory_warm_start, self.conv, dict_proxy=self.memory)
+            self.score = self.results_mang.score(
+                self.mem.memory(self.objective_function)
+            )
+        elif self.memory is True:
+            self.mem = Memory(self.memory_warm_start, self.conv)
+            self.score = self.results_mang.score(
+                self.mem.memory(self.objective_function)
+            )
+        else:
+            self.score = self.results_mang.score(self.objective_function)
 
-        # if self.search_state == "init":
-        # loop to initialize N positions
-        for nth_iter in range(n_inits_norm):
-            if self.stop.check(self.start_time, self.p_bar.score_best, self.score_l):
-                break
-            self._initialization(nth_iter)
+        self.n_inits_norm = min((self.init.n_inits - self.n_init_total), self.n_iter)
 
-        self.finish_initialization()
-
-        # loop to do the iterations
-        for nth_iter in range(self.n_init_search, n_iter):
-            if self.stop.check(self.start_time, self.p_bar.score_best, self.score_l):
-                break
-            self._iteration(nth_iter)
-
+    def finish_search(self):
         self.search_data = self.results_mang.search_data
 
         self.best_score = self.p_bar.score_best
         self.best_value = self.conv.position2value(self.p_bar.pos_best)
         self.best_para = self.conv.value2para(self.best_value)
 
-        if memory not in [False, None]:
-            self.memory_dict = mem.memory_dict
+        if self.memory not in [False, None]:
+            self.memory_dict = self.mem.memory_dict
         else:
             self.memory_dict = {}
 
         self.p_bar.close()
 
         print_info(
-            verbosity,
+            self.verbosity,
             self.objective_function,
             self.best_score,
             self.best_para,
@@ -163,3 +182,31 @@ class Search(TimesTracker, SearchStatistics):
             self.n_iter,
             self.random_seed,
         )
+
+    def search_step(self, nth_iter):
+        self.nth_iter = nth_iter
+
+        if self.nth_iter < self.n_inits_norm:
+            self._initialization()
+
+        if self.nth_iter == self.n_init_search:
+            self.finish_initialization()
+
+        if self.n_init_search <= self.nth_iter < self.n_iter:
+            self._iteration()
+
+        """
+        # loop to initialize N positions
+        for nth_iter in range(self.n_inits_norm):
+            if self.stop.check(self.start_time, self.p_bar.score_best, self.score_l):
+                break
+            self._initialization(nth_iter)
+
+        self.finish_initialization()
+
+        # loop to do the iterations
+        for nth_iter in range(self.n_init_search, self.n_iter):
+            if self.stop.check(self.start_time, self.p_bar.score_best, self.score_l):
+                break
+            self._iteration(nth_iter)
+        """

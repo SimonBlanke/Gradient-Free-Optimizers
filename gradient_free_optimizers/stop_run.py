@@ -57,15 +57,22 @@ def no_change(score_new_list, early_stopping):
 
 
 class StopRun:
-    def __init__(self, max_time, max_score, early_stopping):
+    def __init__(self, start_time, max_time, max_score, early_stopping):
+        self.start_time = start_time
         self.max_time = max_time
         self.max_score = max_score
         self.early_stopping = early_stopping
 
-    def check(self, start_time, score_best, score_new_list):
-        if self.max_time and time_exceeded(start_time, self.max_time):
+    def update(self, score_best, score_new_list):
+        self.score_best = score_best
+        self.score_new_list = score_new_list
+
+    def check(self):
+        if self.max_time and time_exceeded(self.start_time, self.max_time):
             return True
-        elif self.max_score and score_exceeded(score_best, self.max_score):
+        elif self.max_score and score_exceeded(self.score_best, self.max_score):
             return True
-        elif self.early_stopping and no_change(score_new_list, self.early_stopping):
+        elif self.early_stopping and no_change(
+            self.score_new_list, self.early_stopping
+        ):
             return True
