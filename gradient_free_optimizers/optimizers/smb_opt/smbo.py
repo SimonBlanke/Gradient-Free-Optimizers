@@ -32,8 +32,6 @@ class SMBO(BaseOptimizer, Search):
         self.init_warm_start_smbo(warm_start_smbo)
 
     def init_warm_start_smbo(self, search_data):
-        print("search_data", search_data)
-
         if search_data is not None:
             # filter out nan and inf
             warm_start_smbo = search_data[
@@ -60,7 +58,6 @@ class SMBO(BaseOptimizer, Search):
             self.X_sample = self.conv.values2positions(X_sample_values)
             self.Y_sample = list(Y_sample)
 
-            print("self.X_sample", self.X_sample)
         else:
             self.X_sample = []
             self.Y_sample = []
