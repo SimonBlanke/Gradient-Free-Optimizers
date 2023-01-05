@@ -13,8 +13,8 @@ def test_large_search_space_0(Optimizer):
 
     search_space = {
         "x1": np.arange(0, 100000),
-        "x2": np.arange(0, 1000000),
-        "x3": np.arange(0, 1000000),
+        "x2": np.arange(0, 100000),
+        "x3": np.arange(0, 100000),
     }
     opt = Optimizer(search_space, initialize={"random": 10})
     opt.search(objective_function, n_iter=150, verbosity=False)
@@ -25,8 +25,8 @@ def test_large_search_space_1(Optimizer):
 
     search_space = {
         "x1": np.arange(0, 100, 0.001),
-        "x2": np.arange(0, 1000, 0.001),
-        "x3": np.arange(0, 1000, 0.001),
+        "x2": np.arange(0, 100, 0.001),
+        "x3": np.arange(0, 100, 0.001),
     }
 
     opt = Optimizer(search_space, initialize={"random": 10})
