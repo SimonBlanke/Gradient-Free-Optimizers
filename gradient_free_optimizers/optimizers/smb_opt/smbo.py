@@ -19,27 +19,25 @@ class SMBO(BaseOptimizer, Search):
         warm_start_smbo=None,
         max_sample_size=10000000,
         sampling={"random": 1000000},
-        # warnings={"training": 100000, "prediction": 100000000},
         **kwargs
     ):
         super().__init__(*args, **kwargs)
+
         self.warm_start_smbo = warm_start_smbo
+        self.max_sample_size = max_sample_size
         self.sampling = sampling
-        # self.warnings = warnings
 
         self.sampler = InitialSampler(self.conv, max_sample_size)
 
-        # if self.warnings:
-        #     self.memory_warning(max_sample_size)
+        self.init_warm_start_smbo(warm_start_smbo)
 
-        self.X_sample = []
-        self.Y_sample = []
+    def init_warm_start_smbo(self, search_data):
+        print("search_data", search_data)
 
-    def init_warm_start_smbo(self):
-        if self.warm_start_smbo is not None:
+        if search_data is not None:
             # filter out nan and inf
-            warm_start_smbo = self.warm_start_smbo[
-                ~self.warm_start_smbo.isin([np.nan, np.inf, -np.inf]).any(1)
+            warm_start_smbo = search_data[
+                ~search_data.isin([np.nan, np.inf, -np.inf]).any(1)
             ]
 
             # filter out elements that are not in search space
@@ -61,6 +59,11 @@ class SMBO(BaseOptimizer, Search):
 
             self.X_sample = self.conv.values2positions(X_sample_values)
             self.Y_sample = list(Y_sample)
+
+            print("self.X_sample", self.X_sample)
+        else:
+            self.X_sample = []
+            self.Y_sample = []
 
     def track_X_sample(iterate):
         def wrapper(self, *args, **kwargs):

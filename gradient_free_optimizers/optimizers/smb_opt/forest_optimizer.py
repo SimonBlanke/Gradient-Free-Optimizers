@@ -48,23 +48,14 @@ class ForestOptimizer(SMBO):
         tree_regressor="extra_tree",
         tree_para={"n_estimators": 100},
         xi=0.03,
-        warm_start_smbo=None,
-        max_sample_size=10000000,
-        sampling={"random": 1000000},
-        warnings=100000000,
         **kwargs
     ):
         super().__init__(*args, **kwargs)
+        
         self.tree_regressor = tree_regressor
         self.tree_para = tree_para
         self.regr = tree_regressor_dict[tree_regressor](**self.tree_para)
         self.xi = xi
-        self.warm_start_smbo = warm_start_smbo
-        self.max_sample_size = max_sample_size
-        self.sampling = sampling
-        self.warnings = warnings
-
-        self.init_warm_start_smbo()
 
     def finish_initialization(self):
         self.all_pos_comb = self._all_possible_pos()
