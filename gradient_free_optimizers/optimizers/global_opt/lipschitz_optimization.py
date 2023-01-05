@@ -5,7 +5,6 @@
 import numpy as np
 
 from ..smb_opt.smbo import SMBO
-from ...search import Search
 
 from scipy.spatial.distance import cdist
 
@@ -45,7 +44,7 @@ class LipschitzFunction:
         return upper_bound_l
 
 
-class LipschitzOptimizer(SMBO, Search):
+class LipschitzOptimizer(SMBO):
     name = "Lipschitz Optimizer"
     _name_ = "lipschitz_optimizer"
     __name__ = "LipschitzOptimizer"
