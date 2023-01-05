@@ -32,6 +32,7 @@ class SearchTracker:
         self.scores_valid = []
 
         self.nth_trial = 0
+        self.best_since_iter = 0
 
     ##################### track new #####################
 
@@ -143,3 +144,5 @@ class SearchTracker:
     def score_best(self, score):
         self.score_best_list.append(score)
         self._score_best = score
+
+        self.best_since_iter = self.nth_trial
