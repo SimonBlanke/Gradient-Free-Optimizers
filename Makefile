@@ -36,9 +36,16 @@ test-hyper:
 test-debug:
 	cd tests; \
 		python _test_debug.py
+
+test-timings:
+	python -m pytest -x -p no:warnings -rfEX tests/_test_memory.py
+	python -m pytest -x -p no:warnings -rfEX tests/test_optimizers/_test_max_time.py
+	python -m pytest -x -p no:warnings -rfEX tests/test_optimizers/_test_memory_warm_start.py
+
 	
 test:
 	make test-gfo
+	make test-timings
 	make test-examples
 	make test-hyper
 
