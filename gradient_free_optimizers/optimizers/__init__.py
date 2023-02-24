@@ -40,6 +40,7 @@ from .exp_opt import (
 
 from .grid import (
     GridSearchOptimizer,
+    OrthogonalGridSearchOptimizer,
 )
 
 __all__ = [
@@ -50,6 +51,7 @@ __all__ = [
     "DownhillSimplexOptimizer",
     "RandomSearchOptimizer",
     "GridSearchOptimizer",
+    "OrthogonalGridSearchOptimizer",
     "RandomRestartHillClimbingOptimizer",
     "PowellsMethod",
     "PatternSearch",
