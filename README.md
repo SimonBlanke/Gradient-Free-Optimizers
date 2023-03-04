@@ -703,6 +703,8 @@ The following packages are designed to support Gradient-Free-Optimizers and expa
 | [Search-Data-Collector](https://github.com/SimonBlanke/search-data-collector) | Simple tool to save search-data during or after the optimization run into csv-files. |
 | [Search-Data-Explorer](https://github.com/SimonBlanke/search-data-explorer)   | Visualize search-data with plotly inside a streamlit dashboard.
 
+If you want news about Gradient-Free-Optimizers and related projects you can follow me on [twitter](https://twitter.com/blanke_simon).
+
 
 <br>
 
