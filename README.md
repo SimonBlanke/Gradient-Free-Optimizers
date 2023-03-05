@@ -1150,7 +1150,8 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 <summary><b>v1.5.0</b> </summary>
 
   - [ ] add Ant-colony optimization
-  - [ ] ...
+  - [ ] add Grid search paraneter that changes direction of search
+  - [ ] add Random search parameter that enables to avoid replacement of the sampling
 
 </details>
 
