@@ -15,12 +15,12 @@ def set_random_seed(nth_process, random_state):
         nth_process = 0
 
     if random_state is None:
-        random_state = np.random.randint(0, high=2 ** 31 - 2, dtype=np.int64).item()
+        random_state = np.random.randint(0, high=2**31 - 2, dtype=np.int64).item()
 
     random.seed(random_state + nth_process)
     np.random.seed(random_state + nth_process)
 
-    return random_state
+    return random_state + nth_process
 
 
 def move_random(ss_positions):
