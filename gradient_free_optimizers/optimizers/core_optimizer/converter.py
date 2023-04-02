@@ -73,7 +73,6 @@ class Converter:
 
     @returnNoneIfArgNone
     def para2value(self, para: Optional[dict]) -> Optional[list]:
-
         value = []
         for para_name in self.para_names:
             value.append(para[para_name])
@@ -109,6 +108,13 @@ class Converter:
 
         values = [list(t) for t in zip(*values)]
         return values
+
+    @returnNoneIfArgNone
+    def values2paras(self, values: list) -> list:
+        paras = []
+        for value in values:
+            paras.append(self.value2para(value))
+        return paras
 
     @returnNoneIfArgNone
     def positions_scores2memory_dict(

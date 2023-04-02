@@ -5,7 +5,7 @@
 __version__ = "1.2.5"
 __license__ = "MIT"
 
-from .optimizers import (
+from .high_lvl_api import (
     HillClimbingOptimizer,
     StochasticHillClimbingOptimizer,
     RepulsingHillClimbingOptimizer,

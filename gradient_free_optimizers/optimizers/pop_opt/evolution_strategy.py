@@ -6,11 +6,10 @@ import random
 import numpy as np
 
 from .base_population_optimizer import BasePopulationOptimizer
-from ...search import Search
 from ._individual import Individual
 
 
-class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
+class EvolutionStrategyOptimizer(BasePopulationOptimizer):
     name = "Evolution Strategy"
     _name_ = "evolution_strategy"
     __name__ = "EvolutionStrategyOptimizer"

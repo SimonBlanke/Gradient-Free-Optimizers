@@ -4,7 +4,6 @@
 
 
 from ..base_optimizer import BaseOptimizer
-from ...search import Search
 from .sampling import InitialSampler
 
 import numpy as np
@@ -12,7 +11,7 @@ import numpy as np
 np.seterr(divide="ignore", invalid="ignore")
 
 
-class SMBO(BaseOptimizer, Search):
+class SMBO(BaseOptimizer):
     def __init__(
         self,
         *args,

@@ -28,8 +28,6 @@ class Search(TimesTracker, SearchStatistics):
         self.pos_l = []
         self.random_seed = None
 
-        self.search_state = "init"
-
         self.results_mang = ResultsManager()
 
     @TimesTracker.eval_time
@@ -52,6 +50,9 @@ class Search(TimesTracker, SearchStatistics):
 
         self.n_init_total += 1
         self.n_init_search += 1
+        print("\n Search score_new ", score_new)
+
+        print("\n Search self.score_l ", self.score_l)
 
         self.stop.update(self.p_bar.score_best, self.score_l)
 
@@ -96,8 +97,8 @@ class Search(TimesTracker, SearchStatistics):
             verbosity,
         )
 
-        for nth_iter in range(n_iter):
-            self.search_step(nth_iter)
+        for nth_trial in range(n_iter):
+            self.search_step(nth_trial)
             if self.stop.check():
                 break
 

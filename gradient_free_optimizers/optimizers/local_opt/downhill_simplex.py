@@ -18,6 +18,7 @@ def sort_list_idx(list_):
 
 def centeroid(array_list):
     centeroid = []
+
     for idx in range(array_list[0].shape[0]):
         center_dim_pos = []
         for array in array_list:

@@ -6,10 +6,9 @@
 import numpy as np
 
 from ..local_opt import StochasticHillClimbingOptimizer
-from ...search import Search
 
 
-class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer, Search):
+class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer):
     name = "Simulated Annealing"
     _name_ = "simulated_annealing"
     __name__ = "SimulatedAnnealingOptimizer"
