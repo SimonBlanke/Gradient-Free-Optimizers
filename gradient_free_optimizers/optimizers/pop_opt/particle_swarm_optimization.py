@@ -63,9 +63,8 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
             self.p_current.global_pos_best = self.pop_sorted[0].pos_best
 
             pos_new = self.p_current.move_linear()
-            pos = self._move_climb(self.pos_current)
 
-            if self.constraint_pos(pos):
+            if self.not_in_constraint(pos_new):
                 return pos_new
 
     @BasePopulationOptimizer.track_new_score

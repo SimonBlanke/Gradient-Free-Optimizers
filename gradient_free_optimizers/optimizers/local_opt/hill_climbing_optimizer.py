@@ -49,7 +49,7 @@ class HillClimbingOptimizer(BaseOptimizer):
     def iterate(self):
         while True:
             pos = self._move_climb(self.pos_current)
-            if self.constraint_pos(pos):
+            if self.not_in_constraint(pos):
                 return pos
 
     @BaseOptimizer.track_new_score

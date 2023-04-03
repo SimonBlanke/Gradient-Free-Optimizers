@@ -50,9 +50,6 @@ class Search(TimesTracker, SearchStatistics):
 
         self.n_init_total += 1
         self.n_init_search += 1
-        print("\n Search score_new ", score_new)
-
-        print("\n Search self.score_l ", self.score_l)
 
         self.stop.update(self.p_bar.score_best, self.score_l)
 

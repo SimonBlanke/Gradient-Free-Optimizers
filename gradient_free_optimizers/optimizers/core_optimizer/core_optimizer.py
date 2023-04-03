@@ -34,26 +34,19 @@ class CoreOptimizer(SearchTracker):
         self.nth_process = nth_process
         self.debug_log = debug_log
 
-        self.constraint = self.constraints[0]
+        if self.constraints is None:
+            self.constraints = []
 
-        def constraint_pos(constraint_para):
-            def objective_function_np(position):
-                para = self.conv.value2para(self.conv.position2value(position))
-                """
-                params = {}
-                for i, para_name in enumerate(search_space):
-                    params[para_name] = args[i]
-                """
-                return constraint_para(para)
-
-            return objective_function_np
-
-        self.constraint_pos = constraint_pos(self.constraint)
         self.nth_init = 0
         self.nth_trial = 0
         self.search_state = "init"
 
-        print("\n self.init.init_positions_l \n", self.init.init_positions_l)
+    def not_in_constraint(self, position):
+        para = self.conv.value2para(self.conv.position2value(position))
+        for constraint in self.constraints:
+            if not constraint(para):
+                return False
+        return True
 
     def random_iteration(func):
         def wrapper(self, *args, **kwargs):

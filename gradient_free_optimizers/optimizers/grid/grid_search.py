@@ -67,10 +67,12 @@ class GridSearchOptimizer(BaseOptimizer):
             new_pos.append(pointer // np.prod(dim_sizes[dim + 1 :]) % dim_sizes[dim])
             pointer = pointer % np.prod(dim_sizes[dim + 1 :])
         new_pos.append(pointer)
+
         return np.array(new_pos)
 
     @BaseOptimizer.track_new_pos
     def iterate(self):
+        # while loop for constraint opt
         while True:
             # If this is the first iteration:
             # Generate the direction and return initial_position
@@ -103,7 +105,8 @@ class GridSearchOptimizer(BaseOptimizer):
             pos_new = self.grid_move()
             pos_new = self.conv2pos(pos_new)
 
-            if self.constraint_pos(pos_new):
+            # constraint
+            if self.not_in_constraint(pos_new):
                 return pos_new
 
     @BaseOptimizer.track_new_score

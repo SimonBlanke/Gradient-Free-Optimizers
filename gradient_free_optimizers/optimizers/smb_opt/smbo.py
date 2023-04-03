@@ -104,7 +104,7 @@ class SMBO(BaseOptimizer):
 
         all_pos_comb_constr = []
         for pos in all_pos_comb:
-            if self.constraint_pos(pos):
+            if self.not_in_constraint(pos):
                 all_pos_comb_constr.append(pos)
 
         all_pos_comb_constr = np.array(all_pos_comb_constr)
