@@ -65,14 +65,10 @@ class BasePopulationOptimizer(CoreOptimizer):
                 self.init.init_positions_l, self.population
             )
 
-            print("\n distributed_init_positions \n", distributed_init_positions, "\n")
-
             population = []
             for init_positions in distributed_init_positions:
                 init_values = self.conv.positions2values(init_positions)
                 init_paras = self.conv.values2paras(init_values)
-
-                print("\n init_paras", init_paras)
 
                 population.append(
                     Optimizer(

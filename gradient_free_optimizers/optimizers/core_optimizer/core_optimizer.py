@@ -78,8 +78,6 @@ class CoreOptimizer(SearchTracker):
 
     @SearchTracker.track_new_pos
     def init_pos(self):
-        print("self.init.init_positions_l", self.init.init_positions_l)
-        print("self.nth_init", self.nth_init)
         init_pos = self.init.init_positions_l[self.nth_init]
         return init_pos
 

@@ -64,9 +64,6 @@ class StopRun:
         self.early_stopping = early_stopping
 
     def update(self, score_best, score_new_list):
-        print("score_best", score_best)
-        print("score_new_list", score_new_list)
-
         self.score_best = score_best
         self.score_new_list = score_new_list
 
