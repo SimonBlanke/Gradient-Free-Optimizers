@@ -32,13 +32,14 @@ class SearchTracker:
         self.scores_valid = []
 
         self.nth_trial = 0
+        self.best_since_iter = 0
 
     ##################### track new #####################
 
     def track_new_pos(func):
         def wrapper(self, *args, **kwargs):
             self.pos_new = func(self, *args, **kwargs)
-            self.nth_trial += 1
+            self.nth_init += 1
             return self.pos_new
 
         return wrapper
@@ -46,7 +47,9 @@ class SearchTracker:
     def track_new_score(func):
         def wrapper(self, score):
             self.score_new = score
-            return func(self, score)
+            _return_ = func(self, score)
+            self.nth_trial += 1
+            return _return_
 
         return wrapper
 
@@ -143,3 +146,5 @@ class SearchTracker:
     def score_best(self, score):
         self.score_best_list.append(score)
         self._score_best = score
+
+        self.best_since_iter = self.nth_trial

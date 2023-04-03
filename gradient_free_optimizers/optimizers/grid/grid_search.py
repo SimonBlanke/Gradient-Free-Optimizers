@@ -10,10 +10,9 @@ except:
     from math import gcd
 
 from ..base_optimizer import BaseOptimizer
-from ...search import Search
 
 
-class GridSearchOptimizer(BaseOptimizer, Search):
+class GridSearchOptimizer(BaseOptimizer):
     name = "Grid Search"
     _name_ = "grid_search"
     __name__ = "GridSearchOptimizer"
@@ -84,10 +83,10 @@ class GridSearchOptimizer(BaseOptimizer, Search):
 
             # Multiple passes are needed in order to observe the entire search space
             # depending on the step_size parameter.
-            _, current_pass = self.nth_iter, self.high_dim_pointer % self.step_size
+            _, current_pass = self.nth_trial, self.high_dim_pointer % self.step_size
             current_pass_finished = (
-                (self.nth_iter + 1) * self.step_size // self.conv.search_space_size
-                > self.nth_iter * self.step_size // self.conv.search_space_size
+                (self.nth_trial + 1) * self.step_size // self.conv.search_space_size
+                > self.nth_trial * self.step_size // self.conv.search_space_size
             )
             # Begin the next pass if current is finished.
             if current_pass_finished:

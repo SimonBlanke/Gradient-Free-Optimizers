@@ -4,10 +4,9 @@
 
 
 from . import HillClimbingOptimizer
-from ...search import Search
 
 
-class RepulsingHillClimbingOptimizer(HillClimbingOptimizer, Search):
+class RepulsingHillClimbingOptimizer(HillClimbingOptimizer):
     name = "Repulsing Hill Climbing"
     _name_ = "repulsing_hill_climbing"
     __name__ = "RepulsingHillClimbingOptimizer"

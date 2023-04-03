@@ -10,8 +10,6 @@ class BaseOptimizer(CoreOptimizer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.state = "init"
-
         self.optimizers = [self]
 
     def finish_initialization(self):

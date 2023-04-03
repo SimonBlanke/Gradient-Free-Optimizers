@@ -49,6 +49,11 @@ class CoreOptimizer(SearchTracker):
             return objective_function_np
 
         self.constraint_pos = constraint_pos(self.constraint)
+        self.nth_init = 0
+        self.nth_trial = 0
+        self.search_state = "init"
+
+        print("\n self.init.init_positions_l \n", self.init.init_positions_l)
 
     def random_iteration(func):
         def wrapper(self, *args, **kwargs):
@@ -68,7 +73,7 @@ class CoreOptimizer(SearchTracker):
         pos = np.clip(r_pos, n_zeros, self.conv.max_positions).astype(int)
 
         dist = scipy.spatial.distance.cdist(r_pos.reshape(1, -1), pos.reshape(1, -1))
-        threshold = self.conv.search_space_size / (100 ** self.conv.n_dimensions)
+        threshold = self.conv.search_space_size / (100**self.conv.n_dimensions)
 
         if dist > threshold:
             return self.move_random()
@@ -80,7 +85,9 @@ class CoreOptimizer(SearchTracker):
 
     @SearchTracker.track_new_pos
     def init_pos(self):
-        init_pos = self.init.init_positions_l[self.n_init_total]
+        print("self.init.init_positions_l", self.init.init_positions_l)
+        print("self.nth_init", self.nth_init)
+        init_pos = self.init.init_positions_l[self.nth_init]
         return init_pos
 
     def finish_initialization(self):

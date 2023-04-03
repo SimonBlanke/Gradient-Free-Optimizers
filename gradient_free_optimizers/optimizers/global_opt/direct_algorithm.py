@@ -7,7 +7,6 @@ import numpy as np
 from scipy.spatial.distance import cdist
 
 from ..smb_opt.smbo import SMBO
-from ...search import Search
 
 
 class SubSpace:
@@ -64,7 +63,7 @@ class SubSpace:
         self.lipschitz_bound = score + K * dist
 
 
-class DirectAlgorithm(SMBO, Search):
+class DirectAlgorithm(SMBO):
     name = "Direct Algorithm"
     _name_ = "direct_algorithm"
     __name__ = "DirectAlgorithm"
@@ -74,6 +73,7 @@ class DirectAlgorithm(SMBO, Search):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
         self.subspace_l = []
 
     def select_next_subspace(self):

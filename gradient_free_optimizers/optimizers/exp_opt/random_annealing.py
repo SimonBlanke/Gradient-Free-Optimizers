@@ -4,10 +4,9 @@
 
 
 from ..local_opt import HillClimbingOptimizer
-from ...search import Search
 
 
-class RandomAnnealingOptimizer(HillClimbingOptimizer, Search):
+class RandomAnnealingOptimizer(HillClimbingOptimizer):
     name = "Random Annealing"
     _name_ = "random_annealing"
 

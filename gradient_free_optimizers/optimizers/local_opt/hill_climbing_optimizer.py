@@ -5,7 +5,6 @@
 import numpy as np
 
 from ..base_optimizer import BaseOptimizer
-from ...search import Search
 
 from numpy.random import normal, laplace, logistic, gumbel
 
@@ -23,7 +22,7 @@ def max_list_idx(list_):
     return max_item_idx[-1:][0]
 
 
-class HillClimbingOptimizer(BaseOptimizer, Search):
+class HillClimbingOptimizer(BaseOptimizer):
     name = "Hill Climbing"
     _name_ = "hill_climbing"
     __name__ = "HillClimbingOptimizer"
@@ -59,7 +58,7 @@ class HillClimbingOptimizer(BaseOptimizer, Search):
         if len(self.scores_valid) == 0:
             return
 
-        modZero = self.nth_iter % self.n_neighbours == 0
+        modZero = self.nth_trial % self.n_neighbours == 0
         if modZero:
             score_new_list_temp = self.scores_valid[-self.n_neighbours :]
             pos_new_list_temp = self.positions_valid[-self.n_neighbours :]

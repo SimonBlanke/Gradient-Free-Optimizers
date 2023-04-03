@@ -24,7 +24,7 @@ test-gfo:
 
 test-examples:
 	cd tests; \
-		python test_examples.py
+		python _test_examples.py
 
 test-hyper:
 	# test if new version of gfo works with current release of hyperactive 
@@ -36,9 +36,16 @@ test-hyper:
 test-debug:
 	cd tests; \
 		python _test_debug.py
+
+test-timings:
+	python -m pytest -x -p no:warnings -rfEX tests/_test_memory.py
+	python -m pytest -x -p no:warnings -rfEX tests/test_optimizers/_test_max_time.py
+	python -m pytest -x -p no:warnings -rfEX tests/test_optimizers/_test_memory_warm_start.py
+
 	
 test:
 	make test-gfo
-	make test-hyper
+	make test-timings
 	make test-examples
+	make test-hyper
 

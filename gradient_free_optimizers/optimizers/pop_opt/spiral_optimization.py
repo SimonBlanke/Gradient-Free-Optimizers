@@ -5,7 +5,6 @@
 import numpy as np
 
 from .base_population_optimizer import BasePopulationOptimizer
-from ...search import Search
 from ._spiral import Spiral
 
 
@@ -22,7 +21,7 @@ def centeroid(array_list):
     return centeroid
 
 
-class SpiralOptimization(BasePopulationOptimizer, Search):
+class SpiralOptimization(BasePopulationOptimizer):
     name = "Spiral Optimization"
     _name_ = "spiral_optimization"
     __name__ = "SpiralOptimization"

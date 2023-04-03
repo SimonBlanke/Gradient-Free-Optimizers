@@ -6,11 +6,10 @@
 import numpy as np
 
 from .base_population_optimizer import BasePopulationOptimizer
-from ...search import Search
 from ._particle import Particle
 
 
-class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
+class ParticleSwarmOptimizer(BasePopulationOptimizer):
     name = "Particle Swarm Optimization"
     _name_ = "particle_swarm_optimization"
     __name__ = "ParticleSwarmOptimizer"

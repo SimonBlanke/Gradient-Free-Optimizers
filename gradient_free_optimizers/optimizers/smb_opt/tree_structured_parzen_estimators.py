@@ -17,22 +17,10 @@ class TreeStructuredParzenEstimators(SMBO):
     optimizer_type = "sequential"
     computationally_expensive = True
 
-    def __init__(
-        self,
-        *args,
-        gamma_tpe=0.2,
-        warm_start_smbo=None,
-        max_sample_size=10000000,
-        sampling={"random": 1000000},
-        warnings=100000000,
-        **kwargs
-    ):
+    def __init__(self, *args, gamma_tpe=0.2, **kwargs):
         super().__init__(*args, **kwargs)
+        
         self.gamma_tpe = gamma_tpe
-        self.warm_start_smbo = warm_start_smbo
-        self.max_sample_size = max_sample_size
-        self.sampling = sampling
-        self.warnings = warnings
 
         kde_para = {
             "kernel": "gaussian",
@@ -42,8 +30,6 @@ class TreeStructuredParzenEstimators(SMBO):
 
         self.kd_best = KernelDensity(**kde_para)
         self.kd_worst = KernelDensity(**kde_para)
-
-        self.init_warm_start_smbo()
 
     def finish_initialization(self):
         self.all_pos_comb = self._all_possible_pos()

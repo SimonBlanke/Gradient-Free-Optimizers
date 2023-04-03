@@ -1120,11 +1120,24 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 <details>
 <summary><b>v1.3.0</b> </summary>
 
+  - [ ] add API, testing and doc to (better) use GFO as backend-optimization package
+
+</details>
+
+<details>
+<summary><b>v1.4.0</b> </summary>
+
+  - [ ] add support for constrained optimization
+
+</details>
+
+<details>
+<summary><b>v1.5.0</b> </summary>
+
   - [ ] add Ant-colony optimization
   - [ ] ...
 
 </details>
-
 
 <details>
 <summary><b>v2.0.0</b> </summary>
