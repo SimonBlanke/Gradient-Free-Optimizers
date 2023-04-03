@@ -56,8 +56,7 @@ class SpiralOptimization(BasePopulationOptimizer):
 
     @BasePopulationOptimizer.track_new_pos
     def iterate(self):
-        n_iter = self._iterations(self.particles)
-        self.p_current = self.particles[n_iter % len(self.particles)]
+        self.p_current = self.particles[self.nth_trial % len(self.particles)]
 
         self.sort_pop_best_score()
         self.p_current.global_pos_best = self.pop_sorted[0].pos_current

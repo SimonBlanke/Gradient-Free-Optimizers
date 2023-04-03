@@ -36,8 +36,6 @@ class CoreOptimizer(SearchTracker):
         self.nth_trial = 0
         self.search_state = "init"
 
-        print("\n self.init.init_positions_l \n", self.init.init_positions_l)
-
     def random_iteration(func):
         def wrapper(self, *args, **kwargs):
             if self.rand_rest_p > random.uniform(0, 1):
@@ -68,8 +66,6 @@ class CoreOptimizer(SearchTracker):
 
     @SearchTracker.track_new_pos
     def init_pos(self):
-        print("self.init.init_positions_l", self.init.init_positions_l)
-        print("self.nth_init", self.nth_init)
         init_pos = self.init.init_positions_l[self.nth_init]
         return init_pos
 
