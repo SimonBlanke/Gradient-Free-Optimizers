@@ -56,13 +56,17 @@ class SpiralOptimization(BasePopulationOptimizer):
 
     @BasePopulationOptimizer.track_new_pos
     def iterate(self):
-        n_iter = self._iterations(self.particles)
-        self.p_current = self.particles[n_iter % len(self.particles)]
+        while True:
+            n_iter = self._iterations(self.particles)
+            self.p_current = self.particles[n_iter % len(self.particles)]
 
-        self.sort_pop_best_score()
-        self.p_current.global_pos_best = self.pop_sorted[0].pos_current
+            self.sort_pop_best_score()
+            self.p_current.global_pos_best = self.pop_sorted[0].pos_current
 
-        return self.p_current.move_spiral(self.center_pos)
+            pos_new = self.p_current.move_spiral(self.center_pos)
+
+            if self.not_in_constraint(pos_new):
+                return pos_new
 
     @BasePopulationOptimizer.track_new_score
     def evaluate(self, score_new):
