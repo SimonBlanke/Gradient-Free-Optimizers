@@ -69,12 +69,6 @@ class CoreOptimizer(SearchTracker):
         init_pos = self.init.init_positions_l[self.nth_init]
         return init_pos
 
-    def finish_initialization(self):
-        raise NotImplementedError
-
-    def evaluate_iter(self, score_new):
-        raise NotImplementedError
-
     @SearchTracker.track_new_score
     def evaluate_init(self, score_new):
         if self.pos_best is None:
