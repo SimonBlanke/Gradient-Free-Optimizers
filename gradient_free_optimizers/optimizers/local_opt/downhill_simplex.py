@@ -6,8 +6,7 @@
 import random
 import numpy as np
 
-from ..base_optimizer import BaseOptimizer
-from ...search import Search
+from .hill_climbing_optimizer import HillClimbingOptimizer
 
 
 def sort_list_idx(list_):
@@ -30,7 +29,7 @@ def centeroid(array_list):
     return centeroid
 
 
-class DownhillSimplexOptimizer(BaseOptimizer, Search):
+class DownhillSimplexOptimizer(HillClimbingOptimizer):
     name = "Downhill Simplex"
     _name_ = "downhill_simplex"
     __name__ = "DownhillSimplexOptimizer"
@@ -68,7 +67,7 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
 
         self.search_state = "iter"
 
-    @BaseOptimizer.track_new_pos
+    @HillClimbingOptimizer.track_new_pos
     def iterate(self):
         simplex_stale = all(
             [np.array_equal(self.simplex_pos[0], array) for array in self.simplex_pos]
@@ -92,7 +91,7 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
                 self.center_array - self.simplex_pos[-1]
             )
             self.r_pos = self.conv2pos(r_pos)
-            return self.r_pos
+            pos_new = self.r_pos
 
         elif self.simplex_step == 2:
             e_pos = self.center_array + self.gamma * (
@@ -101,23 +100,28 @@ class DownhillSimplexOptimizer(BaseOptimizer, Search):
             self.e_pos = self.conv2pos(e_pos)
             self.simplex_step = 1
 
-            return self.e_pos
+            pos_new = self.e_pos
 
         elif self.simplex_step == 3:
             # iter Contraction
             c_pos = self.h_pos + self.beta * (self.center_array - self.h_pos)
             c_pos = self.conv2pos(c_pos)
 
-            return c_pos
+            pos_new = c_pos
 
         elif self.simplex_step == 4:
             # iter Shrink
             pos = self.simplex_pos[self.compress_idx]
             pos = pos + self.sigma * (self.simplex_pos[0] - pos)
 
-            return self.conv2pos(pos)
+            pos_new = self.conv2pos(pos)
 
-    @BaseOptimizer.track_new_score
+        if self.conv.not_in_constraint(pos_new):
+            return pos_new
+
+        return HillClimbingOptimizer.move_climb(self, pos_new)
+
+    @HillClimbingOptimizer.track_new_score
     def evaluate(self, score_new):
         if self.simplex_step != 0:
             self.prev_pos = self.positions_valid[-1]
