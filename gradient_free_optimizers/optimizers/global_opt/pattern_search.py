@@ -5,7 +5,7 @@
 import random
 import numpy as np
 
-from ..base_optimizer import BaseOptimizer
+from ..local_opt import HillClimbingOptimizer
 
 
 def max_list_idx(list_):
@@ -14,7 +14,7 @@ def max_list_idx(list_):
     return max_item_idx[-1:][0]
 
 
-class PatternSearch(BaseOptimizer):
+class PatternSearch(HillClimbingOptimizer):
     name = "Pattern Search"
     _name_ = "pattern_search"
     __name__ = "PatternSearch"
@@ -65,32 +65,30 @@ class PatternSearch(BaseOptimizer):
 
         self.pattern_pos_l = list(random.sample(pattern_pos_l, self.n_positions_))
 
-        pattern_pos_l_tmp = []
-        for pos in self.pattern_pos_l:
-            if self.constraint_pos(pos):
-                pattern_pos_l_tmp.append(pos)
-        self.pattern_pos_l = pattern_pos_l_tmp
-
-    @BaseOptimizer.track_new_pos
-    @BaseOptimizer.random_iteration
+    @HillClimbingOptimizer.track_new_pos
+    @HillClimbingOptimizer.random_iteration
     def iterate(self):
-        if len(self.pattern_pos_l) == 0:
-            pos_new = self.move_random()
-            self.pos_current = pos_new
-            return pos_new
+        while True:
+            if len(self.pattern_pos_l) == 0:
+                pos_new = self.move_random()
+                self.pos_current = pos_new
+                return pos_new
 
-        pos_new = self.pattern_pos_l[0]
-        self.pattern_pos_l.pop(0)
+            pos_new = self.pattern_pos_l[0]
+            self.pattern_pos_l.pop(0)
 
-        return pos_new
+            if self.conv.not_in_constraint(pos_new):
+                return pos_new
+
+            return HillClimbingOptimizer.move_climb(self, pos_new)
 
     def finish_initialization(self):
         self.generate_pattern(self.pos_current)
         self.search_state = "iter"
 
-    @BaseOptimizer.track_new_score
+    @HillClimbingOptimizer.track_new_score
     def evaluate(self, score_new):
-        BaseOptimizer.evaluate(self, score_new)
+        HillClimbingOptimizer.evaluate(self, score_new)
         if len(self.scores_valid) == 0:
             return
 
