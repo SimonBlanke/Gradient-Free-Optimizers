@@ -31,7 +31,7 @@ class RandomAnnealingOptimizer(HillClimbingOptimizer):
     @HillClimbingOptimizer.track_new_pos
     @HillClimbingOptimizer.random_iteration
     def iterate(self):
-        pos = self._move_climb(self.pos_current, epsilon_mod=self.temp)
+        pos = self.move_climb(self.pos_current, epsilon_mod=self.temp)
         self.temp = self.temp * self.annealing_rate
 
         return pos

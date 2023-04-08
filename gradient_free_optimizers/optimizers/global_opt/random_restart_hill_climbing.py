@@ -38,6 +38,6 @@ class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer):
         if notZero and modZero:
             pos = self.move_random()
         else:
-            pos = self._move_climb(self.pos_current)
+            pos = self.move_climb(self.pos_current)
 
         return pos

@@ -106,7 +106,7 @@ class GridSearchOptimizer(BaseOptimizer):
             pos_new = self.conv2pos(pos_new)
 
             # constraint
-            if self.not_in_constraint(pos_new):
+            if self.conv.not_in_constraint(pos_new):
                 return pos_new
 
     @BaseOptimizer.track_new_score
