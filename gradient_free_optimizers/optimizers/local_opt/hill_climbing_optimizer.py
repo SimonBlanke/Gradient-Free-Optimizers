@@ -38,19 +38,21 @@ class HillClimbingOptimizer(BaseOptimizer):
         self.distribution = distribution
         self.n_neighbours = n_neighbours
 
-    def _move_climb(self, pos, epsilon_mod=1):
-        sigma = self.conv.max_positions * self.epsilon * epsilon_mod
-        pos_normal = dist_dict[self.distribution](pos, sigma, pos.shape)
+    def move_climb(self, pos, epsilon_mod=1):
+        while True:
+            sigma = self.conv.max_positions * self.epsilon * epsilon_mod
+            pos_normal = dist_dict[self.distribution](pos, sigma, pos.shape)
 
-        return self.conv2pos(pos_normal)
+            pos = self.conv2pos(pos_normal)
+            if self.conv.not_in_constraint(pos):
+                return pos
+
+            print("\n   pos in constr !!!")
 
     @BaseOptimizer.track_new_pos
     @BaseOptimizer.random_iteration
     def iterate(self):
-        while True:
-            pos = self._move_climb(self.pos_current)
-            if self.not_in_constraint(pos):
-                return pos
+        return self.move_climb(self.pos_current)
 
     @BaseOptimizer.track_new_score
     def evaluate(self, score_new):
