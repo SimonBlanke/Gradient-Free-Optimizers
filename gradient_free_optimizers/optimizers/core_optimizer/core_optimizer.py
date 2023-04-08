@@ -24,7 +24,7 @@ class CoreOptimizer(SearchTracker):
 
         self.random_seed = set_random_seed(nth_process, random_state)
 
-        self.conv = Converter(search_space)
+        self.conv = Converter(search_space, constraints)
         self.init = Initializer(self.conv, initialize)
 
         self.initialize = initialize
@@ -40,13 +40,6 @@ class CoreOptimizer(SearchTracker):
         self.nth_init = 0
         self.nth_trial = 0
         self.search_state = "init"
-
-    def not_in_constraint(self, position):
-        para = self.conv.value2para(self.conv.position2value(position))
-        for constraint in self.constraints:
-            if not constraint(para):
-                return False
-        return True
 
     def random_iteration(func):
         def wrapper(self, *args, **kwargs):

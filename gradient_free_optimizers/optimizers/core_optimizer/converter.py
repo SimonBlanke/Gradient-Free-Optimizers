@@ -10,9 +10,14 @@ from typing import Optional
 
 
 class Converter:
-    def __init__(self, search_space: dict) -> None:
+    def __init__(self, search_space: dict, constraints: list = None) -> None:
         self.n_dimensions = len(search_space)
         self.search_space = search_space
+        if constraints is None:
+            self.constraints = []
+        else:
+            self.constraints = constraints
+
         self.para_names = list(search_space.keys())
 
         dim_sizes_list = [len(array) for array in search_space.values()]
@@ -34,6 +39,14 @@ class Converter:
 
         self.max_positions = self.dim_sizes - 1
         self.search_space_values = list(search_space.values())
+
+    def not_in_constraint(self, position):
+        para = self.value2para(self.position2value(position))
+
+        for constraint in self.constraints:
+            if not constraint(para):
+                return False
+        return True
 
     def returnNoneIfArgNone(func_):
         def wrapper(self, *args):
