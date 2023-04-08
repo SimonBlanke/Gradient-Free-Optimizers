@@ -75,6 +75,7 @@ class BasePopulationOptimizer(CoreOptimizer):
                         self.conv.search_space,
                         rand_rest_p=self.rand_rest_p,
                         initialize={"warm_start": init_paras},
+                        constraints=self.constraints,
                     )
                 )
         else:
