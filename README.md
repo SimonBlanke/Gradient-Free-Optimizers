@@ -1135,14 +1135,17 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 <details>
 <summary><b>v1.3.0</b> </summary>
 
-  - [ ] add API, testing and doc to (better) use GFO as backend-optimization package
+  - [ ] add support for constrained optimization
 
 </details>
 
 <details>
 <summary><b>v1.4.0</b> </summary>
 
-  - [ ] add support for constrained optimization
+  - [ ] add API, testing and doc to (better) use GFO as backend-optimization package
+  - [ ] add Grid search paraneter that changes direction of search
+  - [ ] add Random search parameter that enables to avoid replacement of the sampling
+  - [ ] add SMBO parameter that enables to avoid replacement of the sampling
 
 </details>
 
@@ -1150,8 +1153,6 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 <summary><b>v1.5.0</b> </summary>
 
   - [ ] add Ant-colony optimization
-  - [ ] add Grid search paraneter that changes direction of search
-  - [ ] add Random search parameter that enables to avoid replacement of the sampling
 
 </details>
 
