@@ -2,7 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-__version__ = "1.2.6"
+__version__ = "1.3.0"
 __license__ = "MIT"
 
 from .high_lvl_api import (
