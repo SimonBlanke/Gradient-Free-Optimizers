@@ -691,6 +691,21 @@ Ensemble of decision trees fitting to explored positions and predicting promisin
 </details>
 
 
+
+<br>
+
+## Sideprojects and Tools
+
+The following packages are designed to support Gradient-Free-Optimizers and expand its use cases. 
+
+| Package                                                                       | Description                                                                          |
+|-------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
+| [Search-Data-Collector](https://github.com/SimonBlanke/search-data-collector) | Simple tool to save search-data during or after the optimization run into csv-files. |
+| [Search-Data-Explorer](https://github.com/SimonBlanke/search-data-explorer)   | Visualize search-data with plotly inside a streamlit dashboard.
+
+If you want news about Gradient-Free-Optimizers and related projects you can follow me on [twitter](https://twitter.com/blanke_simon).
+
+
 <br>
 
 ## Installation
@@ -1120,14 +1135,17 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 <details>
 <summary><b>v1.3.0</b> </summary>
 
-  - [ ] add API, testing and doc to (better) use GFO as backend-optimization package
+  - [ ] add support for constrained optimization
 
 </details>
 
 <details>
 <summary><b>v1.4.0</b> </summary>
 
-  - [ ] add support for constrained optimization
+  - [ ] add API, testing and doc to (better) use GFO as backend-optimization package
+  - [ ] add Grid search paraneter that changes direction of search
+  - [ ] add Random search parameter that enables to avoid replacement of the sampling
+  - [ ] add SMBO parameter that enables to avoid replacement of the sampling
 
 </details>
 
@@ -1135,7 +1153,6 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 <summary><b>v1.5.0</b> </summary>
 
   - [ ] add Ant-colony optimization
-  - [ ] ...
 
 </details>
 
