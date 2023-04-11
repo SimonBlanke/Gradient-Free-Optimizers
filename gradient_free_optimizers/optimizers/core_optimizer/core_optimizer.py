@@ -67,7 +67,10 @@ class CoreOptimizer(SearchTracker):
         return pos
 
     def move_random(self):
-        return move_random(self.conv.search_space_positions)
+        while True:
+            pos = move_random(self.conv.search_space_positions)
+            if self.conv.not_in_constraint(pos):
+                return pos
 
     @SearchTracker.track_new_pos
     def init_pos(self):

@@ -78,7 +78,12 @@ class GridSearchOptimizer(BaseOptimizer):
             # Generate the direction and return initial_position
             if self.direction is None:
                 self.direction = self.get_direction()
-                return self.initial_position
+
+                pos_new = self.initial_position
+                if self.conv.not_in_constraint(pos_new):
+                    return pos_new
+                else:
+                    return self.move_random()
 
             # If this is not the first iteration:
             # Update high_dim_pointer by taking a step of size step_size * direction.
@@ -105,7 +110,6 @@ class GridSearchOptimizer(BaseOptimizer):
             pos_new = self.grid_move()
             pos_new = self.conv2pos(pos_new)
 
-            # constraint
             if self.conv.not_in_constraint(pos_new):
                 return pos_new
 
