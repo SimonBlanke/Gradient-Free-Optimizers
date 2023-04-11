@@ -69,18 +69,12 @@ class PatternSearch(HillClimbingOptimizer):
     @HillClimbingOptimizer.random_iteration
     def iterate(self):
         while True:
-            if len(self.pattern_pos_l) == 0:
-                pos_new = self.move_random()
-                self.pos_current = pos_new
-                return pos_new
-
             pos_new = self.pattern_pos_l[0]
             self.pattern_pos_l.pop(0)
 
             if self.conv.not_in_constraint(pos_new):
                 return pos_new
-
-            return HillClimbingOptimizer.move_climb(self, pos_new)
+            return self.move_climb(pos_new)
 
     def finish_initialization(self):
         self.generate_pattern(self.pos_current)

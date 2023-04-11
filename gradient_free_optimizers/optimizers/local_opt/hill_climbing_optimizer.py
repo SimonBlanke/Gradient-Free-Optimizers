@@ -42,12 +42,11 @@ class HillClimbingOptimizer(BaseOptimizer):
         while True:
             sigma = self.conv.max_positions * self.epsilon * epsilon_mod
             pos_normal = dist_dict[self.distribution](pos, sigma, pos.shape)
-
             pos = self.conv2pos(pos_normal)
+
             if self.conv.not_in_constraint(pos):
                 return pos
-
-            print("\n   pos in constr !!!")
+            epsilon_mod *= 1.01
 
     @BaseOptimizer.track_new_pos
     @BaseOptimizer.random_iteration

@@ -192,19 +192,3 @@ class Search(TimesTracker, SearchStatistics):
 
         if self.n_init_search <= self.nth_iter < self.n_iter:
             self._iteration()
-
-        """
-        # loop to initialize N positions
-        for nth_iter in range(self.n_inits_norm):
-            if self.stop.check(self.start_time, self.p_bar.score_best, self.score_l):
-                break
-            self._initialization(nth_iter)
-
-        self.finish_initialization()
-
-        # loop to do the iterations
-        for nth_iter in range(self.n_init_search, self.n_iter):
-            if self.stop.check(self.start_time, self.p_bar.score_best, self.score_l):
-                break
-            self._iteration(nth_iter)
-        """

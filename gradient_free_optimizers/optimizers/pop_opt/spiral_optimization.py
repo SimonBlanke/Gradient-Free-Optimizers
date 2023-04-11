@@ -64,8 +64,9 @@ class SpiralOptimization(BasePopulationOptimizer):
 
             pos_new = self.p_current.move_spiral(self.center_pos)
 
-            if self.not_in_constraint(pos_new):
+            if self.conv.not_in_constraint(pos_new):
                 return pos_new
+            return self.p_current.iterate()
 
     @BasePopulationOptimizer.track_new_score
     def evaluate(self, score_new):

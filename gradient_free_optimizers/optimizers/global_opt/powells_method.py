@@ -5,7 +5,6 @@
 import numpy as np
 from collections import OrderedDict
 
-from ..base_optimizer import BaseOptimizer
 from ..local_opt import HillClimbingOptimizer
 
 
@@ -15,7 +14,7 @@ def sort_list_idx(list_):
     return idx_sorted
 
 
-class PowellsMethod(BaseOptimizer):
+class PowellsMethod(HillClimbingOptimizer):
     name = "Powell's Method"
     _name_ = "powells_method"
     __name__ = "PowellsMethod"
@@ -73,11 +72,12 @@ class PowellsMethod(BaseOptimizer):
         self.init_positions_ = [min_pos, center_pos, max_pos]
 
         self.hill_climb = HillClimbingOptimizer(
-            search_space=search_space_1D, initialize={"random": 5}
+            search_space=search_space_1D,
+            initialize={"random": 5},
         )
 
-    @BaseOptimizer.track_new_pos
-    @BaseOptimizer.random_iteration
+    @HillClimbingOptimizer.track_new_pos
+    @HillClimbingOptimizer.random_iteration
     def iterate(self):
         self.nth_iter_ += 1
         self.nth_iter_current_dim += 1
@@ -95,13 +95,16 @@ class PowellsMethod(BaseOptimizer):
         else:
             pos_new = self.hill_climb.iterate()
             pos_new = self.hill_climb.conv.position2value(pos_new)
+        pos_new = np.array(pos_new)
 
-        return pos_new
+        if self.conv.not_in_constraint(pos_new):
+            return pos_new
+        return self.move_climb(pos_new)
 
-    @BaseOptimizer.track_new_score
+    @HillClimbingOptimizer.track_new_score
     def evaluate(self, score_new):
         if self.current_search_dim == -1:
-            BaseOptimizer.evaluate(self, score_new)
+            HillClimbingOptimizer.evaluate(self, score_new)
         else:
             self.hill_climb.evaluate(score_new)
-            BaseOptimizer.evaluate(self, score_new)
+            HillClimbingOptimizer.evaluate(self, score_new)

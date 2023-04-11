@@ -3,7 +3,7 @@
 # License: MIT License
 
 
-from ..base_optimizer import BaseOptimizer
+from ..local_opt import HillClimbingOptimizer
 from .sampling import InitialSampler
 
 import numpy as np
@@ -11,7 +11,7 @@ import numpy as np
 np.seterr(divide="ignore", invalid="ignore")
 
 
-class SMBO(BaseOptimizer):
+class SMBO(HillClimbingOptimizer):
     def __init__(
         self,
         *args,
@@ -104,7 +104,7 @@ class SMBO(BaseOptimizer):
 
         all_pos_comb_constr = []
         for pos in all_pos_comb:
-            if self.not_in_constraint(pos):
+            if self.conv.not_in_constraint(pos):
                 all_pos_comb_constr.append(pos)
 
         all_pos_comb_constr = np.array(all_pos_comb_constr)
@@ -128,18 +128,18 @@ class SMBO(BaseOptimizer):
     def init_pos(self):
         return super().init_pos()
 
-    @BaseOptimizer.track_new_pos
+    @HillClimbingOptimizer.track_new_pos
     @track_X_sample
     def iterate(self):
         return self._propose_location()
 
-    @BaseOptimizer.track_new_score
+    @HillClimbingOptimizer.track_new_score
     @track_y_sample
     def evaluate(self, score_new):
         self._evaluate_new2current(score_new)
         self._evaluate_current2best()
 
-    @BaseOptimizer.track_new_score
+    @HillClimbingOptimizer.track_new_score
     @track_y_sample
     def evaluate_init(self, score_new):
         self._evaluate_new2current(score_new)

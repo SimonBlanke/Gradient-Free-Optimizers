@@ -64,8 +64,9 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
 
             pos_new = self.p_current.move_linear()
 
-            if self.not_in_constraint(pos_new):
+            if self.conv.not_in_constraint(pos_new):
                 return pos_new
+            return self.p_current.move_climb(pos_new)
 
     @BasePopulationOptimizer.track_new_score
     def evaluate(self, score_new):
