@@ -6,10 +6,9 @@ import random
 import numpy as np
 
 from . import HillClimbingOptimizer
-from ...search import Search
 
 
-class StochasticHillClimbingOptimizer(HillClimbingOptimizer, Search):
+class StochasticHillClimbingOptimizer(HillClimbingOptimizer):
     name = "Stochastic Hill Climbing"
     _name_ = "stochastic_hill_climbing"
     __name__ = "StochasticHillClimbingOptimizer"

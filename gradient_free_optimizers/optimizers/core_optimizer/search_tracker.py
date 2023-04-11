@@ -39,7 +39,7 @@ class SearchTracker:
     def track_new_pos(func):
         def wrapper(self, *args, **kwargs):
             self.pos_new = func(self, *args, **kwargs)
-            self.nth_trial += 1
+            self.nth_init += 1
             return self.pos_new
 
         return wrapper
@@ -47,7 +47,9 @@ class SearchTracker:
     def track_new_score(func):
         def wrapper(self, score):
             self.score_new = score
-            return func(self, score)
+            _return_ = func(self, score)
+            self.nth_trial += 1
+            return _return_
 
         return wrapper
 

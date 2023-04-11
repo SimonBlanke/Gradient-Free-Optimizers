@@ -6,7 +6,6 @@ import random
 import numpy as np
 
 from ..base_optimizer import BaseOptimizer
-from ...search import Search
 
 
 def max_list_idx(list_):
@@ -15,7 +14,7 @@ def max_list_idx(list_):
     return max_item_idx[-1:][0]
 
 
-class PatternSearch(BaseOptimizer, Search):
+class PatternSearch(BaseOptimizer):
     name = "Pattern Search"
     _name_ = "pattern_search"
     __name__ = "PatternSearch"
@@ -82,10 +81,9 @@ class PatternSearch(BaseOptimizer, Search):
     def evaluate(self, score_new):
         BaseOptimizer.evaluate(self, score_new)
         if len(self.scores_valid) == 0:
-
             return
 
-        modZero = self.nth_iter % int(self.n_positions_ * 2) == 0
+        modZero = self.nth_trial % int(self.n_positions_ * 2) == 0
 
         if modZero or len(self.pattern_pos_l) == 0:
             if self.search_state == "iter":

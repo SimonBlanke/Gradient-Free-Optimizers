@@ -6,7 +6,6 @@ import numpy as np
 from collections import OrderedDict
 
 from ..base_optimizer import BaseOptimizer
-from ...search import Search
 from ..local_opt import HillClimbingOptimizer
 
 
@@ -16,7 +15,7 @@ def sort_list_idx(list_):
     return idx_sorted
 
 
-class PowellsMethod(BaseOptimizer, Search):
+class PowellsMethod(BaseOptimizer):
     name = "Powell's Method"
     _name_ = "powells_method"
     __name__ = "PowellsMethod"

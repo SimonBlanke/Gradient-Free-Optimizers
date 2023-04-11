@@ -4,10 +4,9 @@
 
 
 from ..base_optimizer import BaseOptimizer
-from ...search import Search
 
 
-class RandomSearchOptimizer(BaseOptimizer, Search):
+class RandomSearchOptimizer(BaseOptimizer):
     name = "Random Search"
     _name_ = "random_search"
     __name__ = "RandomSearchOptimizer"

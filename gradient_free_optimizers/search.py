@@ -28,8 +28,6 @@ class Search(TimesTracker, SearchStatistics):
         self.pos_l = []
         self.random_seed = None
 
-        self.search_state = "init"
-
         self.results_mang = ResultsManager()
 
     @TimesTracker.eval_time
@@ -96,8 +94,8 @@ class Search(TimesTracker, SearchStatistics):
             verbosity,
         )
 
-        for nth_iter in range(n_iter):
-            self.search_step(nth_iter)
+        for nth_trial in range(n_iter):
+            self.search_step(nth_trial)
             if self.stop.check():
                 break
 

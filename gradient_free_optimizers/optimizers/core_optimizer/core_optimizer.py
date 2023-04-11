@@ -13,7 +13,7 @@ class CoreOptimizer(SearchTracker):
     def __init__(
         self,
         search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
+        initialize: dict = {"grid": 4, "random": 2, "vertices": 4},
         random_state=None,
         rand_rest_p=0,
         nth_process=None,
@@ -31,6 +31,10 @@ class CoreOptimizer(SearchTracker):
         self.rand_rest_p = rand_rest_p
         self.nth_process = nth_process
         self.debug_log = debug_log
+
+        self.nth_init = 0
+        self.nth_trial = 0
+        self.search_state = "init"
 
     def random_iteration(func):
         def wrapper(self, *args, **kwargs):
@@ -50,7 +54,7 @@ class CoreOptimizer(SearchTracker):
         pos = np.clip(r_pos, n_zeros, self.conv.max_positions).astype(int)
 
         dist = scipy.spatial.distance.cdist(r_pos.reshape(1, -1), pos.reshape(1, -1))
-        threshold = self.conv.search_space_size / (100 ** self.conv.n_dimensions)
+        threshold = self.conv.search_space_size / (100**self.conv.n_dimensions)
 
         if dist > threshold:
             return self.move_random()
@@ -62,14 +66,8 @@ class CoreOptimizer(SearchTracker):
 
     @SearchTracker.track_new_pos
     def init_pos(self):
-        init_pos = self.init.init_positions_l[self.n_init_total]
+        init_pos = self.init.init_positions_l[self.nth_init]
         return init_pos
-
-    def finish_initialization(self):
-        raise NotImplementedError
-
-    def evaluate_iter(self, score_new):
-        raise NotImplementedError
 
     @SearchTracker.track_new_score
     def evaluate_init(self, score_new):
