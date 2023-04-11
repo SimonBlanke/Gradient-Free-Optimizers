@@ -104,7 +104,7 @@ class PowellsMethod(HillClimbingOptimizer):
     @HillClimbingOptimizer.track_new_score
     def evaluate(self, score_new):
         if self.current_search_dim == -1:
-            HillClimbingOptimizer.evaluate(self, score_new)
+            super(HillClimbingOptimizer, self).evaluate(score_new)
         else:
             self.hill_climb.evaluate(score_new)
-            HillClimbingOptimizer.evaluate(self, score_new)
+            super(HillClimbingOptimizer, self).evaluate(score_new)

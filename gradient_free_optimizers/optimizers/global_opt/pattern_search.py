@@ -82,7 +82,7 @@ class PatternSearch(HillClimbingOptimizer):
 
     @HillClimbingOptimizer.track_new_score
     def evaluate(self, score_new):
-        HillClimbingOptimizer.evaluate(self, score_new)
+        super(HillClimbingOptimizer, self).evaluate(score_new)
         if len(self.scores_valid) == 0:
             return
 
