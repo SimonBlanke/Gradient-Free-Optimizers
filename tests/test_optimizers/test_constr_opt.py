@@ -59,6 +59,8 @@ def test_constr_opt_1(Optimizer):
 
 @pytest.mark.parametrize(*optimizers)
 def test_constr_opt_2(Optimizer):
+    n_iter = 50
+
     def objective_function(para):
         score = -para["x1"] * para["x1"]
         return score
@@ -76,7 +78,7 @@ def test_constr_opt_2(Optimizer):
     constraints_list = [constraint_1, constraint_2]
 
     opt = Optimizer(search_space, constraints=constraints_list)
-    opt.search(objective_function, n_iter=50)
+    opt.search(objective_function, n_iter=n_iter)
 
     search_data = opt.search_data
     x0_values = search_data["x1"].values
@@ -85,3 +87,37 @@ def test_constr_opt_2(Optimizer):
 
     assert np.all(x0_values > -5)
     assert np.all(x0_values < 5)
+
+    n_new_positions = 0
+    n_new_scores = 0
+
+    n_current_positions = 0
+    n_current_scores = 0
+
+    n_best_positions = 0
+    n_best_scores = 0
+
+    for optimizer in opt.optimizers:
+        n_new_positions = n_new_positions + len(optimizer.pos_new_list)
+        n_new_scores = n_new_scores + len(optimizer.score_new_list)
+
+        n_current_positions = n_current_positions + len(optimizer.pos_current_list)
+        n_current_scores = n_current_scores + len(optimizer.score_current_list)
+
+        n_best_positions = n_best_positions + len(optimizer.pos_best_list)
+        n_best_scores = n_best_scores + len(optimizer.score_best_list)
+
+        print("\n  optimizer", optimizer)
+        print("  n_new_positions", optimizer.pos_new_list)
+        print("  n_new_scores", optimizer.score_new_list)
+
+    assert n_new_positions == n_iter
+    assert n_new_scores == n_iter
+
+    assert n_current_positions == n_current_scores
+    assert n_current_positions <= n_new_positions
+
+    assert n_best_positions == n_best_scores
+    assert n_best_positions <= n_new_positions
+
+    assert n_new_positions == n_new_scores
