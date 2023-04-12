@@ -882,7 +882,7 @@ opt.search(model, n_iter=50)
 
 
 <details>
-<summary><b>v1.3.0</b> </summary>
+<summary><b>v1.3.0</b> :heavy_check_mark:</summary>
 
   - [ ] add support for constrained optimization
 
@@ -892,9 +892,6 @@ opt.search(model, n_iter=50)
 <summary><b>v1.4.0</b> </summary>
 
   - [ ] add API, testing and doc to (better) use GFO as backend-optimization package
-  - [ ] add Grid search paraneter that changes direction of search
-  - [ ] add Random search parameter that enables to avoid replacement of the sampling
-  - [ ] add SMBO parameter that enables to avoid replacement of the sampling
 
 </details>
 
@@ -902,6 +899,9 @@ opt.search(model, n_iter=50)
 <summary><b>v1.5.0</b> </summary>
 
   - [ ] add Ant-colony optimization
+  - [ ] add Grid search paraneter that changes direction of search
+  - [ ] add Random search parameter that enables to avoid replacement of the sampling
+  - [ ] add SMBO parameter that enables to avoid replacement of the sampling
 
 </details>
 
