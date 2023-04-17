@@ -952,8 +952,8 @@ While Gradient-Free-Optimizers is relatively simple, Hyperactive is a more compl
   </tr>
   <tr>
     <td> Visualization </td>
-    <td> not supported</td>
-    <td> yes, via a streamlit-dashboard</td>
+    <td> via Search-Data-Explorer</td>
+    <td> via Search-Data-Explorer and Progress Board</td>
   </tr>
   </tr>
 </table>
