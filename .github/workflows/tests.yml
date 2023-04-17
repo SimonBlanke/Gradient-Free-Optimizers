@@ -50,6 +50,6 @@ jobs:
         run: bash <(sed -i 's/filename=\"/filename=\"gradient_free_optimizers\//g' coverage.xml)
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v2
         with:
           file: ./coverage.xml
