@@ -34,7 +34,7 @@ class SMBO(HillClimbingOptimizer):
         if search_data is not None:
             # filter out nan and inf
             warm_start_smbo = search_data[
-                ~search_data.isin([np.nan, np.inf, -np.inf]).any(1)
+                ~search_data.isin([np.nan, np.inf, -np.inf]).any(axis=1)
             ]
 
             # filter out elements that are not in search space
