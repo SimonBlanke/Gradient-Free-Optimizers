@@ -925,7 +925,7 @@ print("\n search_data \n", search_data, "\n")
 <details>
 <summary><b>v1.3.0</b> :heavy_check_mark:</summary>
 
-  - [ ] add support for constrained optimization
+  - [x] add support for constrained optimization
 
 </details>
 
