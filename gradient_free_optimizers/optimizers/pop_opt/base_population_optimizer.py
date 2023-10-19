@@ -2,10 +2,26 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-
+import math
 import numpy as np
 
 from ..core_optimizer import CoreOptimizer
+
+
+def split(positions_l, population):
+    div_int = math.ceil(len(positions_l) / population)
+    dist_init_positions = []
+
+    for nth_indiv in range(population):
+        indiv_pos = []
+        for nth_indiv_pos in range(div_int):
+            idx = nth_indiv + nth_indiv_pos * population
+            if idx < len(positions_l):
+                indiv_pos.append(positions_l[idx])
+
+        dist_init_positions.append(indiv_pos)
+
+    return dist_init_positions
 
 
 class BasePopulationOptimizer(CoreOptimizer):
@@ -45,16 +61,21 @@ class BasePopulationOptimizer(CoreOptimizer):
             self.init.add_n_random_init_pos(diff_init)
 
         if isinstance(self.population, int):
+            distributed_init_positions = split(
+                self.init.init_positions_l, self.population
+            )
+
             population = []
-            for init_position in self.init.init_positions_l:
-                init_value = self.conv.position2value(init_position)
-                init_para = self.conv.value2para(init_value)
+            for init_positions in distributed_init_positions:
+                init_values = self.conv.positions2values(init_positions)
+                init_paras = self.conv.values2paras(init_values)
 
                 population.append(
                     Optimizer(
                         self.conv.search_space,
                         rand_rest_p=self.rand_rest_p,
-                        initialize={"warm_start": [init_para]},
+                        initialize={"warm_start": init_paras},
+                        constraints=self.constraints,
                     )
                 )
         else:

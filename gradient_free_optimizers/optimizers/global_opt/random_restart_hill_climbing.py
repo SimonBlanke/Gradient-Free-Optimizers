@@ -4,10 +4,9 @@
 
 
 from ..local_opt import HillClimbingOptimizer
-from ...search import Search
 
 
-class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer, Search):
+class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer):
     name = "Random Restart Hill Climbing"
     _name_ = "random_restart_hill_climbing"
     __name__ = "RandomRestartHillClimbingOptimizer"
@@ -33,12 +32,10 @@ class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer, Search):
     @HillClimbingOptimizer.track_new_pos
     @HillClimbingOptimizer.random_iteration
     def iterate(self):
-        notZero = self.nth_iter != 0
-        modZero = self.nth_iter % self.n_iter_restart == 0
+        notZero = self.nth_trial != 0
+        modZero = self.nth_trial % self.n_iter_restart == 0
 
         if notZero and modZero:
-            pos = self.move_random()
+            return self.move_random()
         else:
-            pos = self._move_climb(self.pos_current)
-
-        return pos
+            return self.move_climb(self.pos_current)

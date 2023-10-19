@@ -125,15 +125,22 @@ class DirectAlgorithm(SMBO):
     @SMBO.track_new_pos
     @SMBO.track_X_sample
     def iterate(self):
-        self.current_subspace = self.select_next_subspace()
-        if self.current_subspace:
-            return self.current_subspace.center_pos
+        while True:
+            self.current_subspace = self.select_next_subspace()
+            if self.current_subspace:
+                pos = self.current_subspace.center_pos
+                if self.conv.not_in_constraint(pos):
+                    return pos
 
-        else:
-            self.current_subspace = self.select_subspace()
-            self.split_dim_into_n(self.current_subspace)
+            else:
+                self.current_subspace = self.select_subspace()
+                self.split_dim_into_n(self.current_subspace)
 
-            return self.subspace_l[-1].center_pos
+                pos = self.subspace_l[-1].center_pos
+                if self.conv.not_in_constraint(pos):
+                    return pos
+
+            return self.move_climb(pos, epsilon_mod=0.3)
 
     @SMBO.track_new_score
     def evaluate(self, score_new):

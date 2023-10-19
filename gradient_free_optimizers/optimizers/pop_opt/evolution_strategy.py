@@ -6,11 +6,10 @@ import random
 import numpy as np
 
 from .base_population_optimizer import BasePopulationOptimizer
-from ...search import Search
 from ._individual import Individual
 
 
-class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
+class EvolutionStrategyOptimizer(BasePopulationOptimizer):
     name = "Evolution Strategy"
     _name_ = "evolution_strategy"
     __name__ = "EvolutionStrategyOptimizer"
@@ -43,25 +42,29 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer, Search):
         return cross_array
 
     def _cross(self):
-        if len(self.individuals) > 2:
-            rnd_int2 = random.choice(
-                [i for i in range(0, self.n_ind - 1) if i not in [self.rnd_int]]
-            )
-        else:
-            rnd_int2 = random.choice(
-                [i for i in range(0, self.n_ind) if i not in [self.rnd_int]]
-            )
+        while True:
+            if len(self.individuals) > 2:
+                rnd_int2 = random.choice(
+                    [i for i in range(0, self.n_ind - 1) if i not in [self.rnd_int]]
+                )
+            else:
+                rnd_int2 = random.choice(
+                    [i for i in range(0, self.n_ind) if i not in [self.rnd_int]]
+                )
 
-        p_sec = self.pop_sorted[rnd_int2]
-        p_worst = self.pop_sorted[-1]
+            p_sec = self.pop_sorted[rnd_int2]
+            p_worst = self.pop_sorted[-1]
 
-        two_best_pos = [self.p_current.pos_current, p_sec.pos_current]
-        pos_new = self._random_cross(two_best_pos)
+            two_best_pos = [self.p_current.pos_current, p_sec.pos_current]
+            pos_new = self._random_cross(two_best_pos)
 
-        self.p_current = p_worst
-        p_worst.pos_new = pos_new
+            self.p_current = p_worst
+            p_worst.pos_new = pos_new
 
-        return pos_new
+            if self.conv.not_in_constraint(pos_new):
+                return pos_new
+
+            return self.p_current.move_climb(pos_new)
 
     @BasePopulationOptimizer.track_new_pos
     def init_pos(self):

@@ -14,6 +14,7 @@ class CoreOptimizer(SearchTracker):
         self,
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
+        constraints=None,
         random_state=None,
         rand_rest_p=0,
         nth_process=None,
@@ -23,14 +24,22 @@ class CoreOptimizer(SearchTracker):
 
         self.random_seed = set_random_seed(nth_process, random_state)
 
-        self.conv = Converter(search_space)
+        self.conv = Converter(search_space, constraints)
         self.init = Initializer(self.conv, initialize)
 
         self.initialize = initialize
+        self.constraints = constraints
         self.random_state = random_state
         self.rand_rest_p = rand_rest_p
         self.nth_process = nth_process
         self.debug_log = debug_log
+
+        if self.constraints is None:
+            self.constraints = []
+
+        self.nth_init = 0
+        self.nth_trial = 0
+        self.search_state = "init"
 
     def random_iteration(func):
         def wrapper(self, *args, **kwargs):
@@ -50,7 +59,7 @@ class CoreOptimizer(SearchTracker):
         pos = np.clip(r_pos, n_zeros, self.conv.max_positions).astype(int)
 
         dist = scipy.spatial.distance.cdist(r_pos.reshape(1, -1), pos.reshape(1, -1))
-        threshold = self.conv.search_space_size / (100 ** self.conv.n_dimensions)
+        threshold = self.conv.search_space_size / (100**self.conv.n_dimensions)
 
         if dist > threshold:
             return self.move_random()
@@ -58,18 +67,15 @@ class CoreOptimizer(SearchTracker):
         return pos
 
     def move_random(self):
-        return move_random(self.conv.search_space_positions)
+        while True:
+            pos = move_random(self.conv.search_space_positions)
+            if self.conv.not_in_constraint(pos):
+                return pos
 
     @SearchTracker.track_new_pos
     def init_pos(self):
-        init_pos = self.init.init_positions_l[self.n_init_total]
+        init_pos = self.init.init_positions_l[self.nth_init]
         return init_pos
-
-    def finish_initialization(self):
-        raise NotImplementedError
-
-    def evaluate_iter(self, score_new):
-        raise NotImplementedError
 
     @SearchTracker.track_new_score
     def evaluate_init(self, score_new):

@@ -4,10 +4,9 @@
 
 
 from . import HillClimbingOptimizer
-from ...search import Search
 
 
-class RepulsingHillClimbingOptimizer(HillClimbingOptimizer, Search):
+class RepulsingHillClimbingOptimizer(HillClimbingOptimizer):
     name = "Repulsing Hill Climbing"
     _name_ = "repulsing_hill_climbing"
     __name__ = "RepulsingHillClimbingOptimizer"
@@ -24,7 +23,7 @@ class RepulsingHillClimbingOptimizer(HillClimbingOptimizer, Search):
 
     @HillClimbingOptimizer.track_new_pos
     def iterate(self):
-        return self._move_climb(self.pos_current, epsilon_mod=self.epsilon_mod)
+        return self.move_climb(self.pos_current, epsilon_mod=self.epsilon_mod)
 
     def evaluate(self, score_new):
         super().evaluate(score_new)

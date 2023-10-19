@@ -5,8 +5,7 @@
 import random
 import numpy as np
 
-from ..base_optimizer import BaseOptimizer
-from ...search import Search
+from ..local_opt import HillClimbingOptimizer
 
 
 def max_list_idx(list_):
@@ -15,7 +14,7 @@ def max_list_idx(list_):
     return max_item_idx[-1:][0]
 
 
-class PatternSearch(BaseOptimizer, Search):
+class PatternSearch(HillClimbingOptimizer):
     name = "Pattern Search"
     _name_ = "pattern_search"
     __name__ = "PatternSearch"
@@ -66,26 +65,28 @@ class PatternSearch(BaseOptimizer, Search):
 
         self.pattern_pos_l = list(random.sample(pattern_pos_l, self.n_positions_))
 
-    @BaseOptimizer.track_new_pos
-    @BaseOptimizer.random_iteration
+    @HillClimbingOptimizer.track_new_pos
+    @HillClimbingOptimizer.random_iteration
     def iterate(self):
-        pos_new = self.pattern_pos_l[0]
-        self.pattern_pos_l.pop(0)
+        while True:
+            pos_new = self.pattern_pos_l[0]
+            self.pattern_pos_l.pop(0)
 
-        return pos_new
+            if self.conv.not_in_constraint(pos_new):
+                return pos_new
+            return self.move_climb(pos_new)
 
     def finish_initialization(self):
         self.generate_pattern(self.pos_current)
         self.search_state = "iter"
 
-    @BaseOptimizer.track_new_score
+    @HillClimbingOptimizer.track_new_score
     def evaluate(self, score_new):
-        BaseOptimizer.evaluate(self, score_new)
+        super(HillClimbingOptimizer, self).evaluate(score_new)
         if len(self.scores_valid) == 0:
-
             return
 
-        modZero = self.nth_iter % int(self.n_positions_ * 2) == 0
+        modZero = self.nth_trial % int(self.n_positions_ * 2) == 0
 
         if modZero or len(self.pattern_pos_l) == 0:
             if self.search_state == "iter":

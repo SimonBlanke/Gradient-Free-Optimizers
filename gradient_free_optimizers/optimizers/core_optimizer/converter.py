@@ -10,9 +10,14 @@ from typing import Optional
 
 
 class Converter:
-    def __init__(self, search_space: dict) -> None:
+    def __init__(self, search_space: dict, constraints: list = None) -> None:
         self.n_dimensions = len(search_space)
         self.search_space = search_space
+        if constraints is None:
+            self.constraints = []
+        else:
+            self.constraints = constraints
+
         self.para_names = list(search_space.keys())
 
         dim_sizes_list = [len(array) for array in search_space.values()]
@@ -34,6 +39,14 @@ class Converter:
 
         self.max_positions = self.dim_sizes - 1
         self.search_space_values = list(search_space.values())
+
+    def not_in_constraint(self, position):
+        para = self.value2para(self.position2value(position))
+
+        for constraint in self.constraints:
+            if not constraint(para):
+                return False
+        return True
 
     def returnNoneIfArgNone(func_):
         def wrapper(self, *args):
@@ -73,7 +86,6 @@ class Converter:
 
     @returnNoneIfArgNone
     def para2value(self, para: Optional[dict]) -> Optional[list]:
-
         value = []
         for para_name in self.para_names:
             value.append(para[para_name])
@@ -109,6 +121,13 @@ class Converter:
 
         values = [list(t) for t in zip(*values)]
         return values
+
+    @returnNoneIfArgNone
+    def values2paras(self, values: list) -> list:
+        paras = []
+        for value in values:
+            paras.append(self.value2para(value))
+        return paras
 
     @returnNoneIfArgNone
     def positions_scores2memory_dict(

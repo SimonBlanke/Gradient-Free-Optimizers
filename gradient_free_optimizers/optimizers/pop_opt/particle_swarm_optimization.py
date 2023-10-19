@@ -6,11 +6,10 @@
 import numpy as np
 
 from .base_population_optimizer import BasePopulationOptimizer
-from ...search import Search
 from ._particle import Particle
 
 
-class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
+class ParticleSwarmOptimizer(BasePopulationOptimizer):
     name = "Particle Swarm Optimization"
     _name_ = "particle_swarm_optimization"
     __name__ = "ParticleSwarmOptimizer"
@@ -57,13 +56,17 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer, Search):
 
     @BasePopulationOptimizer.track_new_pos
     def iterate(self):
-        self.p_current = self.particles[self.nth_trial % len(self.particles)]
+        while True:
+            self.p_current = self.particles[self.nth_trial % len(self.particles)]
 
-        self.sort_pop_best_score()
-        self.p_current.global_pos_best = self.pop_sorted[0].pos_best
+            self.sort_pop_best_score()
+            self.p_current.global_pos_best = self.pop_sorted[0].pos_best
 
-        pos_new = self.p_current.move_linear()
-        return pos_new
+            pos_new = self.p_current.move_linear()
+
+            if self.conv.not_in_constraint(pos_new):
+                return pos_new
+            return self.p_current.move_climb(pos_new)
 
     @BasePopulationOptimizer.track_new_score
     def evaluate(self, score_new):

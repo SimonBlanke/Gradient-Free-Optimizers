@@ -8,11 +8,10 @@ import random
 import numpy as np
 
 from .base_population_optimizer import BasePopulationOptimizer
-from ...search import Search
 from ..local_opt import SimulatedAnnealingOptimizer
 
 
-class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
+class ParallelTemperingOptimizer(BasePopulationOptimizer):
     name = "Parallel Tempering"
     _name_ = "parallel_tempering"
     __name__ = "ParallelTemperingOptimizer"
@@ -67,7 +66,6 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer, Search):
     @BasePopulationOptimizer.track_new_pos
     def iterate(self):
         self.p_current = self.systems[self.nth_trial % len(self.systems)]
-
         return self.p_current.iterate()
 
     @BasePopulationOptimizer.track_new_score

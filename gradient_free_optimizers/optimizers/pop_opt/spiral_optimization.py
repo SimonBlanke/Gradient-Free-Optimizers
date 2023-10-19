@@ -5,7 +5,6 @@
 import numpy as np
 
 from .base_population_optimizer import BasePopulationOptimizer
-from ...search import Search
 from ._spiral import Spiral
 
 
@@ -22,7 +21,7 @@ def centeroid(array_list):
     return centeroid
 
 
-class SpiralOptimization(BasePopulationOptimizer, Search):
+class SpiralOptimization(BasePopulationOptimizer):
     name = "Spiral Optimization"
     _name_ = "spiral_optimization"
     __name__ = "SpiralOptimization"
@@ -57,13 +56,17 @@ class SpiralOptimization(BasePopulationOptimizer, Search):
 
     @BasePopulationOptimizer.track_new_pos
     def iterate(self):
-        n_iter = self._iterations(self.particles)
-        self.p_current = self.particles[n_iter % len(self.particles)]
+        while True:
+            self.p_current = self.particles[self.nth_trial % len(self.particles)]
 
-        self.sort_pop_best_score()
-        self.p_current.global_pos_best = self.pop_sorted[0].pos_current
+            self.sort_pop_best_score()
+            self.p_current.global_pos_best = self.pop_sorted[0].pos_current
 
-        return self.p_current.move_spiral(self.center_pos)
+            pos_new = self.p_current.move_spiral(self.center_pos)
+
+            if self.conv.not_in_constraint(pos_new):
+                return pos_new
+            return self.p_current.iterate()
 
     @BasePopulationOptimizer.track_new_score
     def evaluate(self, score_new):

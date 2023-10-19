@@ -13,6 +13,16 @@ class Initializer:
         self.conv = conv
         self.initialize = initialize
 
+        self.n_inits = 0
+        if "random" in initialize:
+            self.n_inits += initialize["random"]
+        if "grid" in initialize:
+            self.n_inits += initialize["grid"]
+        if "vertices" in initialize:
+            self.n_inits += initialize["vertices"]
+        if "warm_start" in initialize:
+            self.n_inits += len(initialize["warm_start"])
+
         self.init_positions_l = None
 
         self.set_pos()
@@ -55,7 +65,7 @@ class Initializer:
         self.init_positions_l = [
             item for sublist in init_positions_ll for item in sublist
         ]
-        self.n_inits = len(self.init_positions_l)
+        self.init_positions_l = self._fill_rest_random(self.init_positions_l)
 
     def _init_warm_start(self, value_list):
         positions = []
@@ -64,7 +74,12 @@ class Initializer:
             pos = self.conv.value2position(list(value_.values()))
             positions.append(pos)
 
-        return positions
+        positions_constr = []
+        for pos in positions:
+            if self.conv.not_in_constraint(pos):
+                positions_constr.append(pos)
+
+        return positions_constr
 
     def _init_random_search(self, n_pos):
         positions = []
@@ -73,13 +88,16 @@ class Initializer:
             return positions
 
         for nth_pos in range(n_pos):
-            pos = move_random(self.conv.search_space_positions)
-            positions.append(pos)
+            while True:
+                pos = move_random(self.conv.search_space_positions)
+                if self.conv.not_in_constraint(pos):
+                    positions.append(pos)
+                    break
 
         return positions
 
-    def _fill_rest_random(self, n_pos, positions):
-        diff_pos = n_pos - len(positions)
+    def _fill_rest_random(self, positions):
+        diff_pos = self.n_inits - len(positions)
         if diff_pos > 0:
             pos_rnd = self._init_random_search(n_pos=diff_pos)
 
@@ -108,8 +126,12 @@ class Initializer:
             pos_mesh = np.array(np.meshgrid(*positions))
             positions = list(pos_mesh.T.reshape(-1, n_dim))
 
-        positions = self._fill_rest_random(n_pos, positions)
-        return positions
+        positions_constr = []
+        for pos in positions:
+            if self.conv.not_in_constraint(pos):
+                positions_constr.append(pos)
+
+        return positions_constr
 
     def _get_random_vertex(self):
         vertex = []
@@ -138,4 +160,9 @@ class Initializer:
                 pos = move_random(self.conv.search_space_positions)
                 positions.append(pos)
 
-        return positions
+        positions_constr = []
+        for pos in positions:
+            if self.conv.not_in_constraint(pos):
+                positions_constr.append(pos)
+
+        return positions_constr

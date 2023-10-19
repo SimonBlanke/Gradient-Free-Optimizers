@@ -42,9 +42,16 @@ test-timings:
 	python -m pytest -x -p no:warnings -rfEX tests/test_optimizers/_test_max_time.py
 	python -m pytest -x -p no:warnings -rfEX tests/test_optimizers/_test_memory_warm_start.py
 
-	
+test-performance:
+	python -m pytest -x -p no:warnings -rfEX tests/local_test_performance/local_test_local_opt.py
+	python -m pytest -x -p no:warnings -rfEX tests/local_test_performance/local_test_global_opt.py
+	python -m pytest -x -p no:warnings -rfEX tests/local_test_performance/local_test_grid_search.py
+	python -m pytest -x -p no:warnings -rfEX tests/local_test_performance/local_test_pop_opt.py
+	python -m pytest -x -p no:warnings -rfEX tests/local_test_performance/local_test_smb_opt.py
+
 test:
 	make test-gfo
+	make test-performance
 	make test-timings
 	make test-examples
 	make test-hyper

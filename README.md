@@ -86,7 +86,7 @@ Gradient-Free-Optimizers is the optimization backend of <a href="https://github.
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#optimization-algorithms">Optimization algorithms</a> •
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#installation">Installation</a> •
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#examples">Examples</a> •
-    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#basic-api-reference">API reference</a> •
+    <a href="https://simonblanke.github.io/gradient-free-optimizers-documentation">API reference</a> •
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#roadmap">Roadmap</a>
   </h3>
 </div>
@@ -691,6 +691,21 @@ Ensemble of decision trees fitting to explored positions and predicting promisin
 </details>
 
 
+
+<br>
+
+## Sideprojects and Tools
+
+The following packages are designed to support Gradient-Free-Optimizers and expand its use cases. 
+
+| Package                                                                       | Description                                                                          |
+|-------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
+| [Search-Data-Collector](https://github.com/SimonBlanke/search-data-collector) | Simple tool to save search-data during or after the optimization run into csv-files. |
+| [Search-Data-Explorer](https://github.com/SimonBlanke/search-data-explorer)   | Visualize search-data with plotly inside a streamlit dashboard.
+
+If you want news about Gradient-Free-Optimizers and related projects you can follow me on [twitter](https://twitter.com/blanke_simon).
+
+
 <br>
 
 ## Installation
@@ -802,253 +817,43 @@ opt.search(model, n_iter=50)
 </details>
 
 
-<br>
-
-## Basic API reference
-
-The API reference can also be found in the [official documentation](https://simonblanke.github.io/gradient-free-optimizers-documentation).
-
-
-### General optimization arguments
-
-The following (general) arguments can be passed to any optimization class:
-
-- search_space
-  - Pass the search_space to the optimizer class to define the space were the optimization algorithm can search for the best parameters for the given objective function.
-
-    example:
-    ```python
-    ...
-    
-    search_space = {
-      "x1": numpy.arange(-10, 31, 0.3),
-      "x2": numpy.arange(-10, 31, 0.3),
-    }
-    
-    opt = HillClimbingOptimizer(search_space)
-    
-    ...
-    ```
-
-- initialize={"grid": 8, "vertices": 8, "random": 4, "warm_start": []}
-  - (dict, None)
-
-  - The initialization dictionary automatically determines a number of parameters that will be evaluated in the first n iterations (n is the sum of the values in initialize). The initialize keywords are the following:
-    - grid
-      - Initializes positions in a grid like pattern. Positions that cannot be put into a grid are randomly positioned.
-    - vertices
-      - Initializes positions at the vertices of the search space. Positions that cannot be put into a vertices are randomly positioned.
-
-    - random
-      - Number of random initialized positions
-
-    - warm_start
-      - List of parameter dictionaries that marks additional start points for the optimization run.
-
-
-- random_state=None
-    - (int, None)
-    - Random state for random processes in the random, numpy and scipy module.
-
-
-
-### Optimizer Classes
-
-Each optimization class needs the "search_space" as an input argument. Optionally "initialize" and optimizer-specific parameters can be passed as well. You can read more about each optimization-algorithm and its parameters in the [Optimization Tutorial](https://github.com/SimonBlanke/optimization-tutorial).
-
-- HillClimbingOptimizer
-- StochasticHillClimbingOptimizer
-- RepulsingHillClimbingOptimizer
-- SimulatedAnnealingOptimizer
-- DownhillSimplexOptimizer
-- RandomSearchOptimizer
-- GridSearchOptimizer
-- RandomRestartHillClimbingOptimizer
-- RandomAnnealingOptimizer
-- PowellsMethod
-- PatternSearch
-- ParallelTemperingOptimizer
-- ParticleSwarmOptimizer
-- SpiralOptimization
-- EvolutionStrategyOptimizer
-- LipschitzOptimizer
-- DirectAlgorithm
-- BayesianOptimizer
-- TreeStructuredParzenEstimators
-- ForestOptimizer
-
-
-
-<br>
-
 <details>
-<summary><b> .search(...)</b></summary>
+<summary><b>Constrained  Optimization example</b></summary>
 
-- objective_function
-  - (callable)
-
-  - The objective function defines the optimization problem. The optimization algorithm will try to maximize the numerical value that is returned by the objective function by trying out different parameters from the search space.
-
-    example:
-    ```python
-    def objective_function(para):
-        score = -(para["x1"] * para["x1"] + para["x2"] * para["x2"])
-        return score
-    ```
-
-- n_iter 
-  - (int)
-
-  - The number of iterations that will be performed during the optimiation run. The entire iteration consists of the optimization-step, which decides the next parameter that will be evaluated and the evaluation-step, which will run the objective function with the chosen parameter and return the score.
-
-- max_time=None
-  - (float, None)
-  - Maximum number of seconds until the optimization stops. The time will be checked after each completed iteration.
-
-- max_score=None
-  - (float, None)
-  - Maximum score until the optimization stops. The score will be checked after each completed iteration.
+```python
+import numpy as np
+from gradient_free_optimizers import RandomSearchOptimizer
 
 
-- early_stopping=None
-  - (dict, None)
-  - Stops the optimization run early if it did not achive any score-improvement within the last iterations. The early_stopping-parameter enables to set three parameters:
-    - `n_iter_no_change`: Non-optional int-parameter. This marks the last n iterations to look for an improvement over the iterations that came before n. If the best score of the entire run is within those last n iterations the run will continue (until other stopping criteria are met), otherwise the run will stop.
-    - `tol_abs`: Optional float-paramter. The score must have improved at least this absolute tolerance in the last n iterations over the best score in the iterations before n. This is an absolute value, so 0.1 means an imporvement of 0.8 -> 0.9 is acceptable but 0.81 -> 0.9 would stop the run.
-    - `tol_rel`: Optional float-paramter. The score must have imporved at least this relative tolerance (in percentage) in the last n iterations over the best score in the iterations before n. This is a relative value, so 10 means an imporvement of 0.8 -> 0.88 is acceptable but 0.8 -> 0.87 would stop the run.
-
-  
-
-- memory=True
-  - (bool)
-  - Whether or not to use the "memory"-feature. The memory is a dictionary, which gets filled with parameters and scores during the optimization run. If the optimizer encounters a parameter that is already in the dictionary it just extracts the score instead of reevaluating the objective function (which can take a long time).
+def convex_function(pos_new):
+    score = -(pos_new["x1"] * pos_new["x1"] + pos_new["x2"] * pos_new["x2"])
+    return score
 
 
-- memory_warm_start=None
-  - (pandas dataframe, None)
-  - Pandas dataframe that contains score and paramter information that will be automatically loaded into the memory-dictionary.
-
-      example:
-
-      <table class="table">
-        <thead class="table-head">
-          <tr class="row">
-            <td class="cell">score</td>
-            <td class="cell">x1</td>
-            <td class="cell">x2</td>
-            <td class="cell">x...</td>
-          </tr>
-        </thead>
-        <tbody class="table-body">
-          <tr class="row">
-            <td class="cell">0.756</td>
-            <td class="cell">0.1</td>
-            <td class="cell">0.2</td>
-            <td class="cell">...</td>
-          </tr>
-          <tr class="row">
-            <td class="cell">0.823</td>
-            <td class="cell">0.3</td>
-            <td class="cell">0.1</td>
-            <td class="cell">...</td>
-          </tr>
-          <tr class="row">
-            <td class="cell">...</td>
-            <td class="cell">...</td>
-            <td class="cell">...</td>
-            <td class="cell">...</td>
-          </tr>
-          <tr class="row">
-            <td class="cell">...</td>
-            <td class="cell">...</td>
-            <td class="cell">...</td>
-            <td class="cell">...</td>
-          </tr>
-        </tbody>
-      </table>
+search_space = {
+    "x1": np.arange(-100, 101, 0.1),
+    "x2": np.arange(-100, 101, 0.1),
+}
 
 
-
-- verbosity=[
-          "progress_bar",
-          "print_results",
-          "print_times"
-      ]
-  - (list, False)
-  - The verbosity list determines what part of the optimization information will be printed in the command line.
+def constraint_1(para):
+    # only values in 'x1' higher than -5 are valid
+    return para["x1"] > -5
 
 
-</details>
-
-<br>
-
-<details>
-<summary><b> Results from attributes </b></summary>
+# put one or more constraints inside a list
+constraints_list = [constraint_1]
 
 
-- .search_data
-  - Dataframe containing information about the score and the value of each parameter. Each row shows the information of one optimization iteration.
+# pass list of constraints to the optimizer
+opt = RandomSearchOptimizer(search_space, constraints=constraints_list)
+opt.search(convex_function, n_iter=50)
 
-    example:
+search_data = opt.search_data
 
-    <table class="table">
-      <thead class="table-head">
-        <tr class="row">
-          <td class="cell">score</td>
-          <td class="cell">x1</td>
-          <td class="cell">x2</td>
-          <td class="cell">x...</td>
-        </tr>
-      </thead>
-      <tbody class="table-body">
-        <tr class="row">
-          <td class="cell">0.756</td>
-          <td class="cell">0.1</td>
-          <td class="cell">0.2</td>
-          <td class="cell">...</td>
-        </tr>
-        <tr class="row">
-          <td class="cell">0.823</td>
-          <td class="cell">0.3</td>
-          <td class="cell">0.1</td>
-          <td class="cell">...</td>
-        </tr>
-        <tr class="row">
-          <td class="cell">...</td>
-          <td class="cell">...</td>
-          <td class="cell">...</td>
-          <td class="cell">...</td>
-        </tr>
-        <tr class="row">
-          <td class="cell">...</td>
-          <td class="cell">...</td>
-          <td class="cell">...</td>
-          <td class="cell">...</td>
-        </tr>
-      </tbody>
-    </table>
-
-- .best_score
-  - numerical value of the best score, that was found during the optimization run.
-
-- .best_para
-  - parameter dictionary of the best score, that was found during the optimization run.
-
-    example:
-    ```python
-    {
-      'x1': 0.2, 
-      'x2': 0.3,
-    }
-    ```
-      
-- .eval_times
-  - List of evaluation times (time of objective function evaluation) collected during the optimization run.
-
-- .iter_times
-  - List of iteration times (evaluation + optimization) collected during the optimization run.
-
-
+# the search-data does not contain any samples where x1 is equal or below -5
+print("\n search_data \n", search_data, "\n")
+```
 
 </details>
 
@@ -1118,24 +923,27 @@ Each optimization class needs the "search_space" as an input argument. Optionall
 
 
 <details>
-<summary><b>v1.3.0</b> </summary>
+<summary><b>v1.3.0</b> :heavy_check_mark:</summary>
 
-  - [ ] add API, testing and doc to (better) use GFO as backend-optimization package
+  - [x] add support for constrained optimization
 
 </details>
+
 
 <details>
 <summary><b>v1.4.0</b> </summary>
 
-  - [ ] add support for constrained optimization
+  - [ ] add Ant-colony optimization
+  - [ ] add Grid search paraneter that changes direction of search
+  - [ ] add Random search parameter that enables to avoid replacement of the sampling
+  - [ ] add SMBO parameter that enables to avoid replacement of the sampling
 
 </details>
 
 <details>
 <summary><b>v1.5.0</b> </summary>
 
-  - [ ] add Ant-colony optimization
-  - [ ] ...
+  - [ ] add API, testing and doc to (better) use GFO as backend-optimization package
 
 </details>
 
@@ -1146,7 +954,6 @@ Each optimization class needs the "search_space" as an input argument. Optionall
   - [ ] ...
 
 </details>
-
 
 
 <br>
@@ -1187,8 +994,8 @@ While Gradient-Free-Optimizers is relatively simple, Hyperactive is a more compl
   </tr>
   <tr>
     <td> Visualization </td>
-    <td> not supported</td>
-    <td> yes, via a streamlit-dashboard</td>
+    <td> via Search-Data-Explorer</td>
+    <td> via Search-Data-Explorer and Progress Board</td>
   </tr>
   </tr>
 </table>

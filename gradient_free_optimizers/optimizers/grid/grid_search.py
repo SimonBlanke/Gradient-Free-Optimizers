@@ -10,10 +10,9 @@ except:
     from math import gcd
 
 from ..base_optimizer import BaseOptimizer
-from ...search import Search
 
 
-class GridSearchOptimizer(BaseOptimizer, Search):
+class GridSearchOptimizer(BaseOptimizer):
     name = "Grid Search"
     _name_ = "grid_search"
     __name__ = "GridSearchOptimizer"
@@ -68,41 +67,51 @@ class GridSearchOptimizer(BaseOptimizer, Search):
             new_pos.append(pointer // np.prod(dim_sizes[dim + 1 :]) % dim_sizes[dim])
             pointer = pointer % np.prod(dim_sizes[dim + 1 :])
         new_pos.append(pointer)
+
         return np.array(new_pos)
 
     @BaseOptimizer.track_new_pos
     def iterate(self):
-        # If this is the first iteration:
-        # Generate the direction and return initial_position
-        if self.direction is None:
-            self.direction = self.get_direction()
-            return self.initial_position
+        # while loop for constraint opt
+        while True:
+            # If this is the first iteration:
+            # Generate the direction and return initial_position
+            if self.direction is None:
+                self.direction = self.get_direction()
 
-        # If this is not the first iteration:
-        # Update high_dim_pointer by taking a step of size step_size * direction.
+                pos_new = self.initial_position
+                if self.conv.not_in_constraint(pos_new):
+                    return pos_new
+                else:
+                    return self.move_random()
 
-        # Multiple passes are needed in order to observe the entire search space
-        # depending on the step_size parameter.
-        _, current_pass = self.nth_iter, self.high_dim_pointer % self.step_size
-        current_pass_finished = (
-            (self.nth_iter + 1) * self.step_size // self.conv.search_space_size
-            > self.nth_iter * self.step_size // self.conv.search_space_size
-        )
-        # Begin the next pass if current is finished.
-        if current_pass_finished:
-            self.high_dim_pointer = current_pass + 1
-        else:
-            # Otherwise update pointer in Z/(search_space_size*Z)
-            # using the prime step direction and step_size.
-            self.high_dim_pointer = (
-                self.high_dim_pointer + self.step_size * self.direction
-            ) % self.conv.search_space_size
+            # If this is not the first iteration:
+            # Update high_dim_pointer by taking a step of size step_size * direction.
 
-        # Compute corresponding position in our search space.
+            # Multiple passes are needed in order to observe the entire search space
+            # depending on the step_size parameter.
+            _, current_pass = self.nth_trial, self.high_dim_pointer % self.step_size
+            current_pass_finished = (
+                (self.nth_trial + 1) * self.step_size // self.conv.search_space_size
+                > self.nth_trial * self.step_size // self.conv.search_space_size
+            )
+            # Begin the next pass if current is finished.
+            if current_pass_finished:
+                self.high_dim_pointer = current_pass + 1
+            else:
+                # Otherwise update pointer in Z/(search_space_size*Z)
+                # using the prime step direction and step_size.
+                self.high_dim_pointer = (
+                    self.high_dim_pointer + self.step_size * self.direction
+                ) % self.conv.search_space_size
 
-        pos_new = self.grid_move()
-        pos_new = self.conv2pos(pos_new)
-        return pos_new
+            # Compute corresponding position in our search space.
+
+            pos_new = self.grid_move()
+            pos_new = self.conv2pos(pos_new)
+
+            if self.conv.not_in_constraint(pos_new):
+                return pos_new
 
     @BaseOptimizer.track_new_score
     def evaluate(self, score_new):
