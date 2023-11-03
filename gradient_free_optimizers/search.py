@@ -4,8 +4,6 @@
 
 import time
 
-from multiprocessing.managers import DictProxy
-
 from .progress_bar import ProgressBarLVL0, ProgressBarLVL1
 from .times_tracker import TimesTracker
 from .search_statistics import SearchStatistics
@@ -141,13 +139,9 @@ class Search(TimesTracker, SearchStatistics):
                 self.nth_process, self.n_iter, self.objective_function
             )
 
-        if isinstance(self.memory, DictProxy):
-            self.mem = Memory(self.memory_warm_start, self.conv, dict_proxy=self.memory)
-            self.score = self.results_mang.score(
-                self.mem.memory(self.objective_function)
-            )
-        elif self.memory is True:
-            self.mem = Memory(self.memory_warm_start, self.conv)
+        self.mem = Memory(self.memory_warm_start, self.conv, memory=self.memory)
+
+        if self.memory not in [False, None]:
             self.score = self.results_mang.score(
                 self.mem.memory(self.objective_function)
             )
