@@ -25,6 +25,7 @@ from .pop_opt import (
     ParticleSwarmOptimizer,
     SpiralOptimization,
     EvolutionStrategyOptimizer,
+    AntColonyOptimization,
 )
 
 from .smb_opt import (
@@ -61,6 +62,7 @@ __all__ = [
     "ParticleSwarmOptimizer",
     "SpiralOptimization",
     "EvolutionStrategyOptimizer",
+    "AntColonyOptimization",
     "BayesianOptimizer",
     "TreeStructuredParzenEstimators",
     "ForestOptimizer",
