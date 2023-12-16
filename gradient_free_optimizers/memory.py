@@ -5,15 +5,17 @@
 import numpy as np
 import pandas as pd
 
+from multiprocessing.managers import DictProxy
+
 
 class Memory:
-    def __init__(self, warm_start, conv, dict_proxy=None):
+    def __init__(self, warm_start, conv, memory=None):
         self.memory_dict = {}
         self.memory_dict_new = {}
         self.conv = conv
 
-        if dict_proxy is not None:
-            self.memory_dict = dict_proxy
+        if isinstance(self.memory, DictProxy):
+            self.memory_dict = memory
 
         if warm_start is None:
             return
