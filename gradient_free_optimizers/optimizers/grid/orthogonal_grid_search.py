@@ -9,13 +9,6 @@ from ...search import Search
 
 
 class OrthogonalGridSearchOptimizer(BaseOptimizer, Search):
-    name = "Orthogonal Grid Search"
-    _name_ = "orthogonal_grid_search"
-    __name__ = "OrthogonalGridSearchOptimizer"
-
-    optimizer_type = "global"
-    computationally_expensive = False
-
     def __init__(self, *args, step_size=1, **kwargs):
         super().__init__(*args, **kwargs)
 

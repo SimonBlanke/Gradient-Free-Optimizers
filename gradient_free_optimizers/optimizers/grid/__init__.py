@@ -4,9 +4,7 @@
 
 
 from .grid_search import GridSearchOptimizer
-from .orthogonal_grid_search import OrthogonalGridSearchOptimizer
 
 __all__ = [
     "GridSearchOptimizer",
-    "OrthogonalGridSearchOptimizer",
 ]
