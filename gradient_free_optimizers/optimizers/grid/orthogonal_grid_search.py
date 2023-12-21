@@ -5,21 +5,20 @@
 import numpy as np
 
 from ..base_optimizer import BaseOptimizer
-from ...search import Search
 
 
-class OrthogonalGridSearchOptimizer(BaseOptimizer, Search):
+class OrthogonalGridSearchOptimizer(BaseOptimizer):
     def __init__(self, *args, step_size=1, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.step_size = step_size
 
     def grid_move(self):
-        mod_tmp = self.nth_iter * self.step_size + int(
-            self.nth_iter * self.step_size / self.conv.search_space_size
+        mod_tmp = self.nth_trial * self.step_size + int(
+            self.nth_trial * self.step_size / self.conv.search_space_size
         )
-        div_tmp = self.nth_iter * self.step_size + int(
-            self.nth_iter * self.step_size / self.conv.search_space_size
+        div_tmp = self.nth_trial * self.step_size + int(
+            self.nth_trial * self.step_size / self.conv.search_space_size
         )
         flipped_new_pos = []
 
