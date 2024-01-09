@@ -21,7 +21,7 @@ from gradient_free_optimizers import (
     ForestOptimizer,
 )
 
-from surfaces.test_functions import SphereFunction
+from surfaces.mathematical_functions import SphereFunction
 
 optimizers = (
     "Optimizer",
