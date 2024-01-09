@@ -1,5 +1,5 @@
-# Author: ...
-# Email: ...
+# Author: Simon Blanke
+# Email: simon.blanke@yahoo.com
 # License: MIT License
 
 from ..base_optimizer import BaseOptimizer
