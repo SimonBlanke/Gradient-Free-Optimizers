@@ -32,7 +32,7 @@ from gradient_free_optimizers import (
     TreeStructuredParzenEstimators,
     ForestOptimizer,
 )
-from surfaces.test_functions import SphereFunction, AckleyFunction
+from surfaces.mathematical_functions import SphereFunction, AckleyFunction
 
 from search_path_gif import search_path_gif
 

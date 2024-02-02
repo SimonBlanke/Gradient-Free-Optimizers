@@ -6,7 +6,7 @@ from functools import reduce
 
 from gradient_free_optimizers import GridSearchOptimizer
 
-from surfaces.test_functions import SphereFunction, RastriginFunction
+from surfaces.mathematical_functions import SphereFunction, RastriginFunction
 
 
 obj_func_l = (

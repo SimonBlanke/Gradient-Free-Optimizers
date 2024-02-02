@@ -5,7 +5,7 @@ import pandas as pd
 
 
 from ._parametrize import optimizers_non_deterministic as optimizers
-from surfaces.test_functions import AckleyFunction
+from surfaces.mathematical_functions import AckleyFunction
 from gradient_free_optimizers import DirectAlgorithm
 
 ackkley_function = AckleyFunction()

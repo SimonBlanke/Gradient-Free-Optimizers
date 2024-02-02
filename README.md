@@ -933,7 +933,6 @@ print("\n search_data \n", search_data, "\n")
 <details>
 <summary><b>v1.4.0</b> </summary>
 
-  - [ ] add Ant-colony optimization
   - [ ] add Grid search parameter that changes direction of search
   - [ ] add Random search parameter that enables to avoid replacement of the sampling
   - [ ] add SMBO parameter that enables to avoid replacement of the sampling
@@ -943,6 +942,7 @@ print("\n search_data \n", search_data, "\n")
 <details>
 <summary><b>v1.5.0</b> </summary>
 
+  - [ ] add Ant-colony optimization
   - [ ] add API, testing and doc to (better) use GFO as backend-optimization package
 
 </details>
