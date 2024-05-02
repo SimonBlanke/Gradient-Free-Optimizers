@@ -6,6 +6,7 @@
 from ..local_opt import HillClimbingOptimizer
 from .sampling import InitialSampler
 
+import warnings
 import numpy as np
 
 np.seterr(divide="ignore", invalid="ignore")
@@ -122,7 +123,7 @@ class SMBO(HillClimbingOptimizer):
                 + " exceeding recommended limit."
             )
             warning_message3 = "\n Reduce search space size for better performance."
-            print(warning_message0 + warning_message1 + warning_message3)
+            warnings.warn(warning_message0 + warning_message1 + warning_message3)
 
     @track_X_sample
     def init_pos(self):
