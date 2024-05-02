@@ -28,7 +28,9 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer):
             self._accept = self._accept_default
 
     def _consider(self, p_accept):
-        if random.uniform(0, 1) < p_accept:
+        rand = random.uniform(0, self.p_accept)
+
+        if rand > p_accept:
             self._new2current()
 
     def _score_norm_default(self):
