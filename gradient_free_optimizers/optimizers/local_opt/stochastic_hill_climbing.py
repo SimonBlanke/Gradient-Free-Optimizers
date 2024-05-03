@@ -67,8 +67,5 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer):
             self._consider(p_accept)
 
     def evaluate(self, score_new):
-        HillClimbingOptimizer.evaluate(self, score_new)
-
-        # self._evaluate_new2current(score_new)
         self._transition(score_new)
-        # self._evaluate_current2best()
+        HillClimbingOptimizer.evaluate(self, score_new)
