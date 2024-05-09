@@ -2,13 +2,15 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import random
+
 import numpy as np
+from random import random
 
 from . import HillClimbingOptimizer
+from ..core_optimizer.parameter_tracker.stochastic_hill_climbing import ParameterTracker
 
 
-class StochasticHillClimbingOptimizer(HillClimbingOptimizer):
+class StochasticHillClimbingOptimizer(HillClimbingOptimizer, ParameterTracker):
     name = "Stochastic Hill Climbing"
     _name_ = "stochastic_hill_climbing"
     __name__ = "StochasticHillClimbingOptimizer"
@@ -16,22 +18,23 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer):
     optimizer_type = "local"
     computationally_expensive = False
 
-    def __init__(self, *args, p_accept=0.1, norm_factor=1, **kwargs):
+    def __init__(self, *args, p_accept=0.5, **kwargs):
         super().__init__(*args, **kwargs)
+
         self.p_accept = p_accept
-        self.norm_factor = norm_factor
+        self.temp = 1
 
-        if self.norm_factor == "adaptive":
-            self._accept = self._accept_adapt
-            self.diff_max = 0
-        else:
-            self._accept = self._accept_default
-
+    @ParameterTracker.considered_transitions
     def _consider(self, p_accept):
-        if random.uniform(0, 1) < p_accept:
-            self._new2current()
+        if p_accept >= random():
+            self._execute_transition()
 
-    def _score_norm_default(self):
+    @ParameterTracker.transitions
+    def _execute_transition(self):
+        self._new2current()
+
+    @property
+    def _normalized_energy_state(self):
         denom = self.score_current + self.score_new
 
         if denom == 0:
@@ -39,31 +42,21 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer):
         elif abs(denom) == np.inf:
             return 0
         else:
-            return self.norm_factor * (self.score_current - self.score_new) / denom
+            return (self.score_new - self.score_current) / denom
 
-    def _score_norm_adapt(self):
-        diff = abs(self.score_current - self.score_new)
-        if self.diff_max < diff:
-            self.diff_max = diff
-
-        denom = self.diff_max + diff
-
-        if denom == 0:
-            return 1
-        elif abs(denom) == np.inf:
-            return 0
+    @property
+    def _exponent(self):
+        if self.temp == 0:
+            return -np.inf
         else:
-            return abs(self.diff_max - diff) / denom
+            return self._normalized_energy_state / self.temp
 
-    def _accept_default(self):
-        return np.exp(-self._score_norm_default())
-
-    def _accept_adapt(self):
-        return self._score_norm_adapt()
+    def _p_accept_default(self):
+        return self.p_accept * 2 / (1 + np.exp(self._exponent))
 
     def _transition(self, score_new):
         if score_new <= self.score_current:
-            p_accept = self._accept()
+            p_accept = self._p_accept_default()
             self._consider(p_accept)
 
     def evaluate(self, score_new):
