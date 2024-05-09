@@ -6,11 +6,11 @@ from functools import reduce
 
 from gradient_free_optimizers import GridSearchOptimizer
 
-from surfaces.test_functions import SphereFunction, RastriginFunction
+from surfaces.test_functions.mathematical import SphereFunction, RastriginFunction
 
 
 obj_func_l = (
-    "objective_function",
+    "test_function",
     [
         (SphereFunction(n_dim=1, metric="score")),
         (RastriginFunction(n_dim=1, metric="score")),
@@ -19,7 +19,7 @@ obj_func_l = (
 
 
 @pytest.mark.parametrize(*obj_func_l)
-def test_global_perf_0(objective_function):
+def test_global_perf_0(test_function):
     search_space = {"x0": np.arange(-10, 10, 0.1)}
     initialize = {"vertices": 2}
 
@@ -41,7 +41,7 @@ def test_global_perf_0(objective_function):
             search_space, initialize=initialize, random_state=rnd_st
         )
         opt.search(
-            objective_function,
+            test_function.objective_function,
             n_iter=n_iter,
             memory=False,
             verbosity=False,
@@ -57,7 +57,7 @@ def test_global_perf_0(objective_function):
 
 
 obj_func_l = (
-    "objective_function",
+    "test_function",
     [
         (SphereFunction(n_dim=2, metric="score")),
         (RastriginFunction(n_dim=2, metric="score")),
@@ -66,7 +66,7 @@ obj_func_l = (
 
 
 @pytest.mark.parametrize(*obj_func_l)
-def test_global_perf_1(objective_function):
+def test_global_perf_1(test_function):
     search_space = {
         "x0": np.arange(-2, 1, 0.1),
         "x1": np.arange(-1, 2, 0.1),
@@ -85,7 +85,7 @@ def test_global_perf_1(objective_function):
             search_space, initialize=initialize, random_state=rnd_st
         )
         opt.search(
-            objective_function,
+            test_function.objective_function,
             n_iter=n_iter,
             memory=False,
             verbosity=False,

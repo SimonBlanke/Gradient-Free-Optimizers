@@ -56,7 +56,7 @@ class PowellsMethod(HillClimbingOptimizer):
             if self.current_search_dim == idx:
                 # fill with range of values
                 search_space_pos = self.conv.search_space_positions[idx]
-                search_space_1D[para_name] = search_space_pos
+                search_space_1D[para_name] = np.array(search_space_pos)
 
                 min_pos.append(int(np.amin(search_space_pos)))
                 max_pos.append(int(np.amax(search_space_pos)))

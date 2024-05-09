@@ -2,7 +2,7 @@ import pytest
 from tqdm import tqdm
 import numpy as np
 
-from surfaces.test_functions import SphereFunction, RastriginFunction
+from surfaces.test_functions.mathematical import SphereFunction, RastriginFunction
 
 from gradient_free_optimizers import (
     BayesianOptimizer,
@@ -23,7 +23,7 @@ opt_smbo_l = (
 
 
 obj_func_l = (
-    "objective_function",
+    "test_function",
     [
         (SphereFunction(n_dim=2, metric="score")),
         (RastriginFunction(n_dim=2, metric="score")),
@@ -33,7 +33,7 @@ obj_func_l = (
 
 @pytest.mark.parametrize(*obj_func_l)
 @pytest.mark.parametrize(*opt_smbo_l)
-def test_smbo_perf_0(Optimizer, objective_function):
+def test_smbo_perf_0(Optimizer, test_function):
     search_space = {
         "x0": np.arange(-30, 101, 1),
         "x1": np.arange(-100, 31, 1),
@@ -48,7 +48,7 @@ def test_smbo_perf_0(Optimizer, objective_function):
     for rnd_st in tqdm(range(n_opts)):
         opt = Optimizer(search_space, initialize=initialize, random_state=rnd_st)
         opt.search(
-            objective_function,
+            test_function.objective_function,
             n_iter=n_iter,
             memory=False,
             verbosity=False,
@@ -58,7 +58,7 @@ def test_smbo_perf_0(Optimizer, objective_function):
             search_space, initialize=initialize, random_state=rnd_st
         )
         opt_rnd.search(
-            objective_function,
+            test_function.objective_function,
             n_iter=n_iter,
             memory=False,
             verbosity=False,

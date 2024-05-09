@@ -2,7 +2,7 @@ import pytest
 from tqdm import tqdm
 import numpy as np
 
-from surfaces.test_functions import RastriginFunction
+from surfaces.test_functions.mathematical import RastriginFunction
 
 from gradient_free_optimizers import (
     RandomSearchOptimizer,
@@ -35,7 +35,7 @@ def test_global_perf(Optimizer):
     for rnd_st in tqdm(range(n_opts)):
         opt = Optimizer(search_space, initialize=initialize, random_state=rnd_st)
         opt.search(
-            ackley_function,
+            ackley_function.objective_function,
             n_iter=n_iter,
             memory=False,
             verbosity=False,

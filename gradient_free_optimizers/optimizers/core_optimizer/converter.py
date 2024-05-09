@@ -9,10 +9,25 @@ from functools import reduce
 from typing import Optional
 
 
+def check_numpy_array(search_space):
+    for para_name, dim_values in search_space.items():
+
+        def error_message(wrong_type):
+            return "\n Value in '{}' of search space dictionary must be of type array but is '{}' \n".format(
+                para_name, wrong_type
+            )
+
+        if not isinstance(dim_values, np.ndarray):
+            raise ValueError(error_message(type(dim_values)))
+
+
 class Converter:
     def __init__(self, search_space: dict, constraints: list = None) -> None:
+        check_numpy_array(search_space)
+
         self.n_dimensions = len(search_space)
         self.search_space = search_space
+
         if constraints is None:
             self.constraints = []
         else:

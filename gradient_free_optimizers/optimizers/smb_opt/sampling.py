@@ -51,7 +51,7 @@ class InitialSampler:
                 array_diff_ = random.randint(1, dim_size)
                 n_samples_array.append(array_diff_)
 
-                sub = max(int(dim_size - (dim_size ** 0.999)), 1)
+                sub = max(int(dim_size - (dim_size**0.999)), 1)
                 dim_sizes_temp[idx] = np.maximum(1, dim_size - sub)
 
             search_space_size = np.array(n_samples_array).prod()
@@ -63,7 +63,6 @@ class InitialSampler:
     def random_choices(self, n_samples_array):
         pos_space = []
         for n_samples, dim_size in zip(n_samples_array, self.conv.dim_sizes):
-
             if dim_size > self.dim_max_sample_size:
                 pos_space.append(
                     np.random.randint(low=1, high=dim_size, size=n_samples)
