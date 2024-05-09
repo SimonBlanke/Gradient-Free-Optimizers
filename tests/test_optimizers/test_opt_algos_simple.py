@@ -21,7 +21,7 @@ from gradient_free_optimizers import (
     ForestOptimizer,
 )
 
-from surfaces.mathematical_functions import SphereFunction
+from surfaces.test_functions.mathematical import SphereFunction
 
 optimizers = (
     "Optimizer",
@@ -53,7 +53,7 @@ sphere_function = SphereFunction(n_dim=2, metric="score")
 @pytest.mark.parametrize(*optimizers)
 def test_opt_algos_0(Optimizer):
     opt = Optimizer(sphere_function.search_space())
-    opt.search(sphere_function, n_iter=15)
+    opt.search(sphere_function.objective_function, n_iter=15)
 
     _ = opt.best_para
     _ = opt.best_score
