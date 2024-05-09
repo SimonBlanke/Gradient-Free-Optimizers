@@ -23,10 +23,6 @@ stochastic_hill_climbing_para = hill_climbing_para + [
     ({"p_accept": 0.5}),
     ({"p_accept": 1}),
     ({"p_accept": 10}),
-    ({"norm_factor": 0.1}),
-    ({"norm_factor": 0.5}),
-    ({"norm_factor": 0.9}),
-    ({"norm_factor": "adaptive"}),
 ]
 
 
