@@ -19,6 +19,7 @@ class SMBO(HillClimbingOptimizer):
         warm_start_smbo=None,
         max_sample_size=10000000,
         sampling={"random": 1000000},
+        replacement=True,
         **kwargs
     ):
         super().__init__(*args, **kwargs)
@@ -26,6 +27,7 @@ class SMBO(HillClimbingOptimizer):
         self.warm_start_smbo = warm_start_smbo
         self.max_sample_size = max_sample_size
         self.sampling = sampling
+        self.replacement = replacement
 
         self.sampler = InitialSampler(self.conv, max_sample_size)
 
@@ -132,7 +134,14 @@ class SMBO(HillClimbingOptimizer):
     @HillClimbingOptimizer.track_new_pos
     @track_X_sample
     def iterate(self):
-        return self._propose_location()
+        pos_new = self._propose_location()
+        if not self.replacement:
+            self._remove_position(pos_new)
+        return pos_new
+
+    def _remove_position(self, position):
+        mask = np.all(self.all_pos_comb == position, axis=1)
+        self.all_pos_comb = self.all_pos_comb[np.invert(mask)]
 
     @HillClimbingOptimizer.track_new_score
     @track_y_sample
