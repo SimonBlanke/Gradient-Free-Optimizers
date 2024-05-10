@@ -6,7 +6,7 @@
 from ..local_opt import HillClimbingOptimizer
 from .sampling import InitialSampler
 
-import warnings
+import logging
 import numpy as np
 
 np.seterr(divide="ignore", invalid="ignore")
@@ -125,7 +125,7 @@ class SMBO(HillClimbingOptimizer):
                 + " exceeding recommended limit."
             )
             warning_message3 = "\n Reduce search space size for better performance."
-            warnings.warn(warning_message0 + warning_message1 + warning_message3)
+            logging.warning(warning_message0 + warning_message1 + warning_message3)
 
     @track_X_sample
     def init_pos(self):
@@ -134,10 +134,7 @@ class SMBO(HillClimbingOptimizer):
     @HillClimbingOptimizer.track_new_pos
     @track_X_sample
     def iterate(self):
-        pos_new = self._propose_location()
-        if not self.replacement:
-            self._remove_position(pos_new)
-        return pos_new
+        return self._propose_location()
 
     def _remove_position(self, position):
         mask = np.all(self.all_pos_comb == position, axis=1)
@@ -149,6 +146,9 @@ class SMBO(HillClimbingOptimizer):
         self._evaluate_new2current(score_new)
         self._evaluate_current2best()
 
+        if not self.replacement:
+            self._remove_position(self.pos_new)
+
     @HillClimbingOptimizer.track_new_score
     @track_y_sample
     def evaluate_init(self, score_new):
@@ -159,7 +159,7 @@ class SMBO(HillClimbingOptimizer):
         try:
             self._training()
         except ValueError:
-            print(
+            logging.warning(
                 "Warning: training sequential model failed. Performing random iteration instead."
             )
             return self.move_random()
