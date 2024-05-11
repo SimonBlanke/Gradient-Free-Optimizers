@@ -931,10 +931,10 @@ print("\n search_data \n", search_data, "\n")
 
 
 <details>
-<summary><b>v1.4.0</b> </summary>
+<summary><b>v1.4.0</b> :heavy_check_mark:</summary>
 
-  - [ ] add Grid search parameter that changes direction of search
-  - [ ] add SMBO parameter that enables to avoid replacement of the sampling
+  - [x] add Grid search parameter that changes direction of search
+  - [x] add SMBO parameter that enables to avoid replacement of the sampling
 
 </details>
 
