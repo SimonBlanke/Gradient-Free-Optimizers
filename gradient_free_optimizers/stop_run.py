@@ -2,6 +2,8 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+
+import logging
 import time
 import numpy as np
 
@@ -17,7 +19,7 @@ def score_exceeded(score_best, max_score):
 
 def no_change(score_new_list, early_stopping):
     if "n_iter_no_change" not in early_stopping:
-        print(
+        logging.warning(
             "Warning n_iter_no_change-parameter must be set in order for early stopping to work"
         )
         return False

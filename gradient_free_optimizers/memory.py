@@ -2,7 +2,8 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import numpy as np
+
+import logging
 import pandas as pd
 
 from multiprocessing.managers import DictProxy
@@ -21,14 +22,14 @@ class Memory:
             return
 
         if not isinstance(warm_start, pd.DataFrame):
-            print("Memory warm start must be of type pandas.DataFrame")
-            print("Optimization will continue without memory warm start")
+            logging.warning("Memory warm start must be of type pandas.DataFrame")
+            logging.warning("Optimization will continue without memory warm start")
 
             return
 
         if len(warm_start) == 0:
-            print("Memory warm start has no values in current search space")
-            print("Optimization will continue without memory warm start")
+            logging.warning("Memory warm start has no values in current search space")
+            logging.warning("Optimization will continue without memory warm start")
 
             return
 
