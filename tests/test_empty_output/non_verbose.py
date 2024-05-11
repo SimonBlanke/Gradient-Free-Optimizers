@@ -1,5 +1,57 @@
+def warn(*args, **kwargs):
+    pass
+
+
+import warnings
+
+warnings.warn = warn
+
 import numpy as np
-from gradient_free_optimizers import RandomSearchOptimizer
+from gradient_free_optimizers import (
+    HillClimbingOptimizer,
+    StochasticHillClimbingOptimizer,
+    RepulsingHillClimbingOptimizer,
+    SimulatedAnnealingOptimizer,
+    DownhillSimplexOptimizer,
+    RandomSearchOptimizer,
+    PowellsMethod,
+    GridSearchOptimizer,
+    RandomRestartHillClimbingOptimizer,
+    RandomAnnealingOptimizer,
+    PatternSearch,
+    DirectAlgorithm,
+    ParallelTemperingOptimizer,
+    ParticleSwarmOptimizer,
+    SpiralOptimization,
+    EvolutionStrategyOptimizer,
+    LipschitzOptimizer,
+    BayesianOptimizer,
+    TreeStructuredParzenEstimators,
+    ForestOptimizer,
+)
+
+optimizers = [
+    HillClimbingOptimizer,
+    StochasticHillClimbingOptimizer,
+    RepulsingHillClimbingOptimizer,
+    SimulatedAnnealingOptimizer,
+    DownhillSimplexOptimizer,
+    RandomSearchOptimizer,
+    PowellsMethod,
+    GridSearchOptimizer,
+    RandomRestartHillClimbingOptimizer,
+    RandomAnnealingOptimizer,
+    PatternSearch,
+    DirectAlgorithm,
+    ParallelTemperingOptimizer,
+    ParticleSwarmOptimizer,
+    SpiralOptimization,
+    EvolutionStrategyOptimizer,
+    LipschitzOptimizer,
+    BayesianOptimizer,
+    TreeStructuredParzenEstimators,
+    ForestOptimizer,
+]
 
 
 def ackley_function(para):
@@ -16,10 +68,10 @@ def ackley_function(para):
 
 
 search_space = {
-    "x": np.arange(-10, 10, 0.01),
-    "y": np.arange(-10, 10, 0.01),
+    "x": np.arange(-10, 10, 1),
+    "y": np.arange(-10, 10, 1),
 }
 
-
-opt = RandomSearchOptimizer(search_space)
-opt.search(ackley_function, n_iter=30, verbosity=False)
+for optimizer in optimizers:
+    opt = optimizer(search_space)
+    opt.search(ackley_function, n_iter=15, verbosity=False)
