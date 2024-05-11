@@ -1,3 +1,8 @@
+# Author: Simon Blanke
+# Email: simon.blanke@yahoo.com
+# License: MIT License
+
+
 import scipy
 import random
 import numpy as np
