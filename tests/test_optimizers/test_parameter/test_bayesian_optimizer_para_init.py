@@ -118,6 +118,8 @@ bayesian_optimizer_para = [
     ({"rand_rest_p": 0.5}),
     ({"rand_rest_p": 1}),
     ({"rand_rest_p": 10}),
+    ({"replacement": True}),
+    ({"replacement": False}),
 ]
 
 
