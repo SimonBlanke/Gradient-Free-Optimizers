@@ -15,7 +15,7 @@ class Memory:
         self.memory_dict_new = {}
         self.conv = conv
 
-        if isinstance(self.memory, DictProxy):
+        if isinstance(memory, DictProxy):
             self.memory_dict = memory
 
         if warm_start is None:
