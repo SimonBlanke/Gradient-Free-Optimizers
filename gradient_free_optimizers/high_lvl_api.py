@@ -18,6 +18,7 @@ from .optimizers import (
     ParallelTemperingOptimizer as _ParallelTemperingOptimizer,
     ParticleSwarmOptimizer as _ParticleSwarmOptimizer,
     SpiralOptimization as _SpiralOptimization,
+    GeneticAlgorithmOptimizer as _GeneticAlgorithmOptimizer,
     EvolutionStrategyOptimizer as _EvolutionStrategyOptimizer,
     BayesianOptimizer as _BayesianOptimizer,
     LipschitzOptimizer as _LipschitzOptimizer,
@@ -94,6 +95,11 @@ class ParticleSwarmOptimizer(_ParticleSwarmOptimizer, Search):
 
 
 class SpiralOptimization(_SpiralOptimization, Search):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class GeneticAlgorithmOptimizer(_GeneticAlgorithmOptimizer, Search):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

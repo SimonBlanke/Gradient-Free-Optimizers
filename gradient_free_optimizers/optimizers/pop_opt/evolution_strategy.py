@@ -18,11 +18,20 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
     computationally_expensive = False
 
     def __init__(
-        self, *args, population=10, mutation_rate=0.7, crossover_rate=0.3, **kwargs
+        self,
+        *args,
+        population=10,
+        offspring=20,
+        replace_parents=False,
+        mutation_rate=0.7,
+        crossover_rate=0.3,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
 
         self.population = population
+        self.offspring = offspring
+        self.replace_parents = replace_parents
         self.mutation_rate = mutation_rate
         self.crossover_rate = crossover_rate
 

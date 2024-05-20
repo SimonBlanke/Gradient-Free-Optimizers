@@ -24,6 +24,7 @@ from .pop_opt import (
     ParallelTemperingOptimizer,
     ParticleSwarmOptimizer,
     SpiralOptimization,
+    GeneticAlgorithmOptimizer,
     EvolutionStrategyOptimizer,
 )
 
@@ -56,10 +57,10 @@ __all__ = [
     "LipschitzOptimizer",
     "DirectAlgorithm",
     "RandomAnnealingOptimizer",
-    "LocalBayesianOptimizer",
     "ParallelTemperingOptimizer",
     "ParticleSwarmOptimizer",
     "SpiralOptimization",
+    "GeneticAlgorithmOptimizer",
     "EvolutionStrategyOptimizer",
     "BayesianOptimizer",
     "TreeStructuredParzenEstimators",
