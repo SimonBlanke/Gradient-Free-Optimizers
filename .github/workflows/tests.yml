@@ -45,5 +45,10 @@ jobs:
 
       - name: Test with pytest
         run: |
-          python -m pytest tests -p no:warnings
+          python -m pytest tests --cov=gradient_free_optimizers --cov-report=term-missing --cov-report=xml -p no:warnings
           
+      - name: Coverage Summary Report
+        uses:  irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: coverage.xml
+          badge: true
