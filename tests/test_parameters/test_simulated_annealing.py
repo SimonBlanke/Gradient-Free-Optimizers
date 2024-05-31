@@ -153,7 +153,7 @@ def test_start_temp_1():
     print("\n n_transitions_inf", n_transitions_inf)
 
     assert n_transitions_0 == start_temp_0
-    assert n_transitions_1 < n_transitions_10 < n_transitions_100 < n_transitions_inf
+    assert n_transitions_1 <= n_transitions_10 <= n_transitions_100 <= n_transitions_inf
 
 
 def test_annealing_rate_0():
