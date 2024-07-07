@@ -943,6 +943,8 @@ print("\n search_data \n", search_data, "\n")
 <summary><b>Future releases</b> </summary>
 
   - [ ] add Ant-colony optimization
+  - [ ] add Harmonic-serch
+  - [ ] add Differential evolution
   - [ ] add API, testing and doc to (better) use GFO as backend-optimization package
   - [ ] add Random search parameter that enables to avoid replacement of the sampling
   - [ ] add other acquisition functions to smbo (Probability of improvement, Entropy search, ...)
@@ -965,37 +967,7 @@ The separation of Gradient-Free-Optimizers from Hyperactive enables multiple adv
   - Better isolation from the complex information flow in Hyperactive. GFOs only uses positions and scores in a N-dimensional search-space. It returns only the new position after each iteration.
   - a smaller and cleaner code base, if you want to explore my implementation of these optimization techniques.
 
-While Gradient-Free-Optimizers is relatively simple, Hyperactive is a more complex project with additional features. The differences between Gradient-Free-Optimizers and Hyperactive are listed in the following table:
-
-<table>
-  <tr>
-    <th> </th>
-    <th>Gradient-Free-Optimizers</th>
-    <th>Hyperactive</th>
-  </tr>
-  <tr>
-    <td> Search space composition </td>
-    <td> only numerical </td>
-    <td> numbers, strings and functions </td>
-  </tr>
-  <tr>
-    <td> Parallel Computing </td>
-    <td> not supported </td>
-    <td> yes, via multiprocessing or joblib </td>
-  </tr>
-  <tr>
-    <td> Distributed computing </td>
-    <td> not supported</td>
-    <td> yes, via data sharing at runtime</td>
-  </tr>
-  <tr>
-    <td> Visualization </td>
-    <td> via Search-Data-Explorer</td>
-    <td> via Search-Data-Explorer and Progress Board</td>
-  </tr>
-  </tr>
-</table>
-
+While Gradient-Free-Optimizers is relatively simple, Hyperactive is a more complex project with additional features to make optimization of computationally expensive models (like engineering simulation or machine-/deep-learning models) more convenient.
 
 
 <br>

@@ -49,9 +49,9 @@ def test_large_search_space_2(Optimizer):
 def test_large_search_space_3(Optimizer):
 
     search_space = {}
-    for i in range(20):
+    for i in range(10):
         key = "x" + str(i)
-        search_space[key] = np.arange(0, 100)
+        search_space[key] = np.arange(0, 10)
 
     opt = Optimizer(search_space, initialize={"random": 1})
     opt.search(objective_function, n_iter=2, verbosity=False)

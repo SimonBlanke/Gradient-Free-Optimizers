@@ -1,3 +1,12 @@
+install-requirements:
+	python -m pip install -r ./requirements/requirements.in
+
+install-test-requirements:
+	python -m pip install -r ./requirements/requirements-test.in
+
+install-build-requirements:
+	python -m pip install -r ./requirements/requirements-build.in
+
 dist:
 	python setup.py sdist
 	python setup.py bdist_wheel
@@ -51,7 +60,6 @@ test-performance:
 
 test:
 	make test-gfo
-	make test-performance
 	make test-timings
 	make test-examples
 	make test-hyper
