@@ -12,17 +12,22 @@ dist:
 	python setup.py bdist_wheel
 	ls -l dist
 
-install:
-	pip install .
+build:
+	python setup.py bdist_wheel
 
-develop:
+install: build
+	pip install dist/*.whl
+
+uninstall:
+	pip uninstall -y gradient-free-optimizers
+	rm -fr build dist *.egg-info
+
+install-editable:
 	pip install -e .
 
-reinstall:
-	pip uninstall -y gradient_free_optimizers
-	rm -fr build dist gradient_free_optimizers.egg-info
-	python setup.py bdist_wheel
-	pip install dist/*
+reinstall: uninstall install
+
+reinstall-editable: uninstall install-editable
 
 test-visual:
 	cd tests/local; \
@@ -42,21 +47,10 @@ test-hyper:
 	cd ../Hyperactive; \
 		make test
 
-test-debug:
-	cd tests; \
-		python _test_debug.py
-
 test-timings:
 	python -m pytest -x -p no:warnings -rfEX tests/_test_memory.py
 	python -m pytest -x -p no:warnings -rfEX tests/test_optimizers/_test_max_time.py
 	python -m pytest -x -p no:warnings -rfEX tests/test_optimizers/_test_memory_warm_start.py
-
-test-performance:
-	python -m pytest -x -p no:warnings -rfEX tests/local_test_performance/local_test_local_opt.py
-	python -m pytest -x -p no:warnings -rfEX tests/local_test_performance/local_test_global_opt.py
-	python -m pytest -x -p no:warnings -rfEX tests/local_test_performance/local_test_grid_search.py
-	python -m pytest -x -p no:warnings -rfEX tests/local_test_performance/local_test_pop_opt.py
-	python -m pytest -x -p no:warnings -rfEX tests/local_test_performance/local_test_smb_opt.py
 
 test:
 	make test-gfo
