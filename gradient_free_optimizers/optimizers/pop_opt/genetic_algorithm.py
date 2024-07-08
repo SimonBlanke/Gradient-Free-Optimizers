@@ -21,12 +21,12 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
         self,
         *args,
         population=10,
-        offspring=20,
+        offspring=10,
         crossover="discrete-recombination",
         n_parents=2,
         replace_parents=False,
-        mutation_rate=0.7,
-        crossover_rate=0.3,
+        mutation_rate=0.5,
+        crossover_rate=0.5,
         **kwargs
     ):
         super().__init__(*args, **kwargs)
@@ -46,7 +46,8 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
 
     def discrete_recombination(self, parent_l):
         n_arrays = len(parent_l)
-        size = parent_l[0].pos_new.size
+        parent_pos_l = [parent.pos_new for parent in parent_l]
+        size = parent_pos_l[0].size
 
         if random.choice([True, False]):
             choice = [True, False]
@@ -55,7 +56,7 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
         if size > 2:
             add_choice = np.random.randint(n_arrays, size=size - 2).astype(bool)
             choice += list(add_choice)
-        return np.choose(choice, parent_l)
+        return np.choose(choice, parent_pos_l)
 
     def fittest_parents(self):
         fittest_parents_f = 0.5
@@ -63,7 +64,14 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
         self.sort_pop_best_score()
 
         n_fittest = int(len(self.pop_sorted) * fittest_parents_f)
-        return self.pop_sorted[:n_fittest]
+
+        best_l = self.pop_sorted[:n_fittest]
+        worst_l = self.pop_sorted[n_fittest:]
+
+        if 0.01 >= random.random():
+            best_l[random.randint(0, len(best_l) - 1)] = random.choice(worst_l)
+
+        return best_l
 
     def _crossover(self):
         fittest_parents = self.fittest_parents()
@@ -74,10 +82,7 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
             offspring = self._constraint_loop(offspring)
             self.offspring_l.append(offspring)
 
-            print("\n offspring \n", offspring, "\n")
-
     def _constraint_loop(self, position):
-        print("\n position \n", position, "\n")
         while True:
             if self.conv.not_in_constraint(position):
                 return position
@@ -117,7 +122,10 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
         if rand <= self.mutation_rate:
             return self.p_current.iterate()
         else:
-            return self._crossover()
+            if not self.offspring_l:
+                self._crossover()
+            self.p_current.pos_new = self.offspring_l.pop(0)
+            return self.p_current.pos_new
 
     @BasePopulationOptimizer.track_new_score
     def evaluate(self, score_new):
