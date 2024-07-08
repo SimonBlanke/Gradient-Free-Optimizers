@@ -6,7 +6,8 @@ from gradient_free_optimizers import HillClimbingOptimizer
 
 # define the gaussian function for the fit
 def gaussian_function(x, A, B, C):
-    return A * np.exp(-(x-B)**2/(2*C**2))
+    return A * np.exp(-((x - B) ** 2) / (2 * C**2))
+
 
 # create the gaussian distributed samples
 gauss_np1 = np.random.normal(loc=2, scale=3, size=30000)
@@ -14,7 +15,7 @@ gauss_np1 = np.random.normal(loc=2, scale=3, size=30000)
 bins = 100
 min_x = np.min(gauss_np1)
 max_x = np.max(gauss_np1)
-step_x = (max_x - min_x)/bins
+step_x = (max_x - min_x) / bins
 
 # create the x axis samples
 x_range = np.arange(min_x, max_x, step_x)
@@ -31,14 +32,14 @@ def fit_gaussian(para):
     diff = np.subtract(y_gauss_func, y_gauss_hist)
 
     # we want to minimize the difference
-    score = - np.abs(diff).sum()
+    score = -np.abs(diff).sum()
     return score
 
 
 search_space = {
-    "A" : list(np.arange(-10, 10, 0.01)),
-    "B" : list(np.arange(-10, 10, 0.01)),
-    "C" : list(np.arange(-10, 10, 0.01)),
+    "A": np.arange(-10, 10, 0.01),
+    "B": np.arange(-10, 10, 0.01),
+    "C": np.arange(-10, 10, 0.01),
 }
 
 opt = HillClimbingOptimizer(search_space)
