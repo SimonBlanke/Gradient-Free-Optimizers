@@ -1,5 +1,6 @@
 import os
 import re
+import pathlib
 
 from setuptools import setup
 from setuptools import find_packages
@@ -7,8 +8,9 @@ from setuptools import find_packages
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+
 # Read the requirements
-with open("requirements.txt", encoding="utf8") as f:
+with open("requirements/requirements.in", encoding="utf8") as f:
     requirements = f.readlines()
 
 
