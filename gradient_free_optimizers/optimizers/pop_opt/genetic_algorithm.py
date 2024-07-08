@@ -46,7 +46,7 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
 
     def discrete_recombination(self, parent_l):
         n_arrays = len(parent_l)
-        size = parent_l[0].size
+        size = parent_l[0].pos_new.size
 
         if random.choice([True, False]):
             choice = [True, False]
@@ -74,11 +74,14 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
             offspring = self._constraint_loop(offspring)
             self.offspring_l.append(offspring)
 
+            print("\n offspring \n", offspring, "\n")
+
     def _constraint_loop(self, position):
+        print("\n position \n", position, "\n")
         while True:
-            position = self.p_current.move_climb(position, epsilon_mod=0.3)
             if self.conv.not_in_constraint(position):
                 return position
+            position = self.p_current.move_climb(position, epsilon_mod=0.3)
 
     @BasePopulationOptimizer.track_new_pos
     def init_pos(self):
@@ -114,7 +117,7 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
         if rand <= self.mutation_rate:
             return self.p_current.iterate()
         else:
-            return self._cross(n_ind, rnd_int)
+            return self._crossover()
 
     @BasePopulationOptimizer.track_new_score
     def evaluate(self, score_new):
