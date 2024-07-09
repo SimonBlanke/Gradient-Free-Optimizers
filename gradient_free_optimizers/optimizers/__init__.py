@@ -26,6 +26,7 @@ from .pop_opt import (
     SpiralOptimization,
     GeneticAlgorithmOptimizer,
     EvolutionStrategyOptimizer,
+    DifferentialEvolutionOptimizer,
 )
 
 from .smb_opt import (
@@ -62,6 +63,7 @@ __all__ = [
     "SpiralOptimization",
     "GeneticAlgorithmOptimizer",
     "EvolutionStrategyOptimizer",
+    "DifferentialEvolutionOptimizer",
     "BayesianOptimizer",
     "TreeStructuredParzenEstimators",
     "ForestOptimizer",

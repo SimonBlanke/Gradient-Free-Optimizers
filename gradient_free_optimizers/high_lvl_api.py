@@ -20,6 +20,7 @@ from .optimizers import (
     SpiralOptimization as _SpiralOptimization,
     GeneticAlgorithmOptimizer as _GeneticAlgorithmOptimizer,
     EvolutionStrategyOptimizer as _EvolutionStrategyOptimizer,
+    DifferentialEvolutionOptimizer as _DifferentialEvolutionOptimizer,
     BayesianOptimizer as _BayesianOptimizer,
     LipschitzOptimizer as _LipschitzOptimizer,
     DirectAlgorithm as _DirectAlgorithm,
@@ -64,7 +65,9 @@ class GridSearchOptimizer(_GridSearchOptimizer, Search):
         super().__init__(*args, **kwargs)
 
 
-class RandomRestartHillClimbingOptimizer(_RandomRestartHillClimbingOptimizer, Search):
+class RandomRestartHillClimbingOptimizer(
+    _RandomRestartHillClimbingOptimizer, Search
+):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -105,6 +108,11 @@ class GeneticAlgorithmOptimizer(_GeneticAlgorithmOptimizer, Search):
 
 
 class EvolutionStrategyOptimizer(_EvolutionStrategyOptimizer, Search):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+
+class DifferentialEvolutionOptimizer(_DifferentialEvolutionOptimizer, Search):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
