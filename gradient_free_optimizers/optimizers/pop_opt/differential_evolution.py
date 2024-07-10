@@ -17,8 +17,10 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
     optimizer_type = "population"
     computationally_expensive = False
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, population=10, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.population = population
 
         self.individuals = self._create_population(Individual)
         self.optimizers = self.individuals
