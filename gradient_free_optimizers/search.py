@@ -148,7 +148,9 @@ class Search(TimesTracker, SearchStatistics):
         else:
             self.score = self.results_mang.score(self.objective_function)
 
-        self.n_inits_norm = min((self.init.n_inits - self.n_init_total), self.n_iter)
+        self.n_inits_norm = min(
+            (self.init.n_inits - self.n_init_total), self.n_iter
+        )
 
     def finish_search(self):
         self.search_data = self.results_mang.search_data
