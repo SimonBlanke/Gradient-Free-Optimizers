@@ -5,11 +5,11 @@
 import random
 import numpy as np
 
-from .base_population_optimizer import BasePopulationOptimizer
+from ._evolutionary_algorithm import EvolutionaryAlgorithmOptimizer
 from ._individual import Individual
 
 
-class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
+class GeneticAlgorithmOptimizer(EvolutionaryAlgorithmOptimizer):
     name = "Genetic Algorithm"
     _name_ = "genetic_algorithm"
     __name__ = "GeneticAlgorithmOptimizer"
@@ -88,7 +88,7 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
                 return position
             position = self.p_current.move_climb(position, epsilon_mod=0.3)
 
-    @BasePopulationOptimizer.track_new_pos
+    @EvolutionaryAlgorithmOptimizer.track_new_pos
     def init_pos(self):
         nth_pop = self.nth_trial % len(self.individuals)
 
@@ -104,7 +104,7 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
     def _iterate_pure_mutation(self):
         pass
 
-    @BasePopulationOptimizer.track_new_pos
+    @EvolutionaryAlgorithmOptimizer.track_new_pos
     def iterate(self):
         n_ind = len(self.individuals)
 
@@ -127,6 +127,6 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
             self.p_current.pos_new = self.offspring_l.pop(0)
             return self.p_current.pos_new
 
-    @BasePopulationOptimizer.track_new_score
+    @EvolutionaryAlgorithmOptimizer.track_new_score
     def evaluate(self, score_new):
         self.p_current.evaluate(score_new)

@@ -5,11 +5,11 @@
 import random
 import numpy as np
 
-from .base_population_optimizer import BasePopulationOptimizer
+from ._evolutionary_algorithm import EvolutionaryAlgorithmOptimizer
 from ._individual import Individual
 
 
-class EvolutionStrategyOptimizer(BasePopulationOptimizer):
+class EvolutionStrategyOptimizer(EvolutionaryAlgorithmOptimizer):
     name = "Evolution Strategy"
     _name_ = "evolution_strategy"
     __name__ = "EvolutionStrategyOptimizer"
@@ -54,7 +54,11 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
         while True:
             if len(self.individuals) > 2:
                 rnd_int2 = random.choice(
-                    [i for i in range(0, self.n_ind - 1) if i not in [self.rnd_int]]
+                    [
+                        i
+                        for i in range(0, self.n_ind - 1)
+                        if i not in [self.rnd_int]
+                    ]
                 )
             else:
                 rnd_int2 = random.choice(
@@ -75,14 +79,14 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
 
             return self.p_current.move_climb(pos_new)
 
-    @BasePopulationOptimizer.track_new_pos
+    @EvolutionaryAlgorithmOptimizer.track_new_pos
     def init_pos(self):
         nth_pop = self.nth_trial % len(self.individuals)
 
         self.p_current = self.individuals[nth_pop]
         return self.p_current.init_pos()
 
-    @BasePopulationOptimizer.track_new_pos
+    @EvolutionaryAlgorithmOptimizer.track_new_pos
     def iterate(self):
         self.n_ind = len(self.individuals)
 
@@ -102,6 +106,6 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
         else:
             return self._cross()
 
-    @BasePopulationOptimizer.track_new_score
+    @EvolutionaryAlgorithmOptimizer.track_new_score
     def evaluate(self, score_new):
         self.p_current.evaluate(score_new)

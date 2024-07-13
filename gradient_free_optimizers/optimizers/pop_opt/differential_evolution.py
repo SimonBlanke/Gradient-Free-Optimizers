@@ -5,11 +5,11 @@
 import random
 import numpy as np
 
-from .base_population_optimizer import BasePopulationOptimizer
+from ._evolutionary_algorithm import EvolutionaryAlgorithmOptimizer
 from ._individual import Individual
 
 
-class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
+class DifferentialEvolutionOptimizer(EvolutionaryAlgorithmOptimizer):
     name = "Differential Evolution"
     _name_ = "differential_evolution"
     __name__ = "DifferentialEvolutionOptimizer"
@@ -33,7 +33,7 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
         x_1, x_2, x_3 = [ind.pos_best for ind in ind_selected]
         return x_1 + f * np.subtract(x_2, x_3)
 
-    def crossover(self, target_vector, mutant_vector):
+    def discrete_recombination(self, target_vector, mutant_vector):
         size = target_vector.size
         vector_l = [target_vector, mutant_vector]
 
@@ -52,14 +52,14 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
                 return position
             position = self.p_current.move_climb(position, epsilon_mod=0.3)
 
-    @BasePopulationOptimizer.track_new_pos
+    @EvolutionaryAlgorithmOptimizer.track_new_pos
     def init_pos(self):
         nth_pop = self.nth_trial % len(self.individuals)
 
         self.p_current = self.individuals[nth_pop]
         return self.p_current.init_pos()
 
-    @BasePopulationOptimizer.track_new_pos
+    @EvolutionaryAlgorithmOptimizer.track_new_pos
     def iterate(self):
         self.p_current = self.individuals[
             self.nth_trial % len(self.individuals)
@@ -67,13 +67,13 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
         target_vector = self.p_current.pos_new
 
         mutant_vector = self.mutation()
-        pos_new = self.crossover(target_vector, mutant_vector)
+        pos_new = self.discrete_recombination(target_vector, mutant_vector)
         pos_new = self.conv2pos(pos_new)
         pos_new = self._constraint_loop(pos_new)
 
         self.p_current.pos_new = self.conv2pos(pos_new)
         return self.p_current.pos_new
 
-    @BasePopulationOptimizer.track_new_score
+    @EvolutionaryAlgorithmOptimizer.track_new_score
     def evaluate(self, score_new):
         self.p_current.evaluate(score_new)  # selection
