@@ -41,10 +41,16 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
             choice = [True, False]
         else:
             choice = [False, True]
-
-        add_choice = np.random.randint(2, size=size - 2).astype(bool)
-        choice += list(add_choice)
+        if size > 2:
+            add_choice = np.random.randint(2, size=size - 2).astype(bool)
+            choice += list(add_choice)
         return np.choose(choice, vector_l)
+
+    def _constraint_loop(self, position):
+        while True:
+            if self.conv.not_in_constraint(position):
+                return position
+            position = self.p_current.move_climb(position, epsilon_mod=0.3)
 
     @BasePopulationOptimizer.track_new_pos
     def init_pos(self):
@@ -62,6 +68,9 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
 
         mutant_vector = self.mutation()
         pos_new = self.crossover(target_vector, mutant_vector)
+        pos_new = self.conv2pos(pos_new)
+        pos_new = self._constraint_loop(pos_new)
+
         self.p_current.pos_new = self.conv2pos(pos_new)
         return self.p_current.pos_new
 
