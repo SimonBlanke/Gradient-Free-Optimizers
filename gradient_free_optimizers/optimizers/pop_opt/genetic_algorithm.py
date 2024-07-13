@@ -44,20 +44,6 @@ class GeneticAlgorithmOptimizer(EvolutionaryAlgorithmOptimizer):
 
         self.offspring_l = []
 
-    def discrete_recombination(self, parent_l):
-        n_arrays = len(parent_l)
-        parent_pos_l = [parent.pos_new for parent in parent_l]
-        size = parent_pos_l[0].size
-
-        if random.choice([True, False]):
-            choice = [True, False]
-        else:
-            choice = [False, True]
-        if size > 2:
-            add_choice = np.random.randint(n_arrays, size=size - 2).astype(bool)
-            choice += list(add_choice)
-        return np.choose(choice, parent_pos_l)
-
     def fittest_parents(self):
         fittest_parents_f = 0.5
 
@@ -78,7 +64,8 @@ class GeneticAlgorithmOptimizer(EvolutionaryAlgorithmOptimizer):
         selected_parents = random.sample(fittest_parents, self.n_parents)
 
         for _ in range(self.offspring):
-            offspring = self.discrete_recombination(selected_parents)
+            parent_pos_l = [parent.pos_new for parent in selected_parents]
+            offspring = self.discrete_recombination(parent_pos_l)
             offspring = self._constraint_loop(offspring)
             self.offspring_l.append(offspring)
 

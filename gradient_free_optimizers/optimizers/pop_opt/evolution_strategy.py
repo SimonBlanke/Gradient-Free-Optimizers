@@ -38,18 +38,6 @@ class EvolutionStrategyOptimizer(EvolutionaryAlgorithmOptimizer):
         self.individuals = self._create_population(Individual)
         self.optimizers = self.individuals
 
-    def _random_cross(self, array_list):
-        n_arrays = len(array_list)
-        size = array_list[0].size
-
-        choice = [True, False]
-        if size > 2:
-            add_choice = np.random.randint(n_arrays, size=size - 2).astype(bool)
-            choice += list(add_choice)
-
-        cross_array = np.choose(choice, array_list)
-        return cross_array
-
     def _cross(self):
         while True:
             if len(self.individuals) > 2:
@@ -69,7 +57,7 @@ class EvolutionStrategyOptimizer(EvolutionaryAlgorithmOptimizer):
             p_worst = self.pop_sorted[-1]
 
             two_best_pos = [self.p_current.pos_current, p_sec.pos_current]
-            pos_new = self._random_cross(two_best_pos)
+            pos_new = self.discrete_recombination(two_best_pos)
 
             self.p_current = p_worst
             p_worst.pos_new = pos_new
