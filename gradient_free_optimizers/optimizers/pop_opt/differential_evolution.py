@@ -17,10 +17,19 @@ class DifferentialEvolutionOptimizer(EvolutionaryAlgorithmOptimizer):
     optimizer_type = "population"
     computationally_expensive = False
 
-    def __init__(self, *args, population=10, **kwargs):
+    def __init__(
+        self,
+        *args,
+        population=10,
+        mutation_rate=0.9,
+        crossover_rate=0.9,
+        **kwargs
+    ):
         super().__init__(*args, **kwargs)
 
         self.population = population
+        self.mutation_rate = mutation_rate
+        self.crossover_rate = crossover_rate
 
         self.individuals = self._create_population(Individual)
         self.optimizers = self.individuals
@@ -31,7 +40,7 @@ class DifferentialEvolutionOptimizer(EvolutionaryAlgorithmOptimizer):
         ind_selected = random.sample(self.individuals, 3)
 
         x_1, x_2, x_3 = [ind.pos_best for ind in ind_selected]
-        return x_1 + f * np.subtract(x_2, x_3)
+        return x_1 + self.mutation_rate * np.subtract(x_2, x_3)
 
     def _constraint_loop(self, position):
         while True:
@@ -54,7 +63,12 @@ class DifferentialEvolutionOptimizer(EvolutionaryAlgorithmOptimizer):
         target_vector = self.p_current.pos_new
 
         mutant_vector = self.mutation()
-        pos_new = self.discrete_recombination([target_vector, mutant_vector])
+
+        crossover_rates = [1 - self.crossover_rate, self.crossover_rate]
+        pos_new = self.discrete_recombination(
+            [target_vector, mutant_vector],
+            crossover_rates,
+        )
         pos_new = self.conv2pos(pos_new)
         pos_new = self._constraint_loop(pos_new)
 
