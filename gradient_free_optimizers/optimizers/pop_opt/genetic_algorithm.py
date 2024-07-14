@@ -82,15 +82,6 @@ class GeneticAlgorithmOptimizer(EvolutionaryAlgorithmOptimizer):
         self.p_current = self.individuals[nth_pop]
         return self.p_current.init_pos()
 
-    def _iterate_existing_offspring(self):
-        pass
-
-    def _iterate_no_offspring(self):
-        pass
-
-    def _iterate_pure_mutation(self):
-        pass
-
     @EvolutionaryAlgorithmOptimizer.track_new_pos
     def iterate(self):
         n_ind = len(self.individuals)
