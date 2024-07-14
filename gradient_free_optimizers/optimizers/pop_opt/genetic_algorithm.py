@@ -24,7 +24,6 @@ class GeneticAlgorithmOptimizer(EvolutionaryAlgorithmOptimizer):
         offspring=10,
         crossover="discrete-recombination",
         n_parents=2,
-        replace_parents=False,
         mutation_rate=0.5,
         crossover_rate=0.5,
         **kwargs
@@ -35,7 +34,6 @@ class GeneticAlgorithmOptimizer(EvolutionaryAlgorithmOptimizer):
         self.offspring = offspring
         self.crossover = crossover
         self.n_parents = n_parents
-        self.replace_parents = replace_parents
         self.mutation_rate = mutation_rate
         self.crossover_rate = crossover_rate
 
