@@ -7,7 +7,9 @@ import numpy as np
 from random import random
 
 from . import HillClimbingOptimizer
-from ..core_optimizer.parameter_tracker.stochastic_hill_climbing import ParameterTracker
+from ..core_optimizer.parameter_tracker.stochastic_hill_climbing import (
+    ParameterTracker,
+)
 
 
 class StochasticHillClimbingOptimizer(HillClimbingOptimizer, ParameterTracker):
@@ -54,11 +56,13 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer, ParameterTracker):
     def _p_accept_default(self):
         return self.p_accept * 2 / (1 + np.exp(self._exponent))
 
+    @HillClimbingOptimizer.track_new_score
     def _transition(self, score_new):
-        if score_new <= self.score_current:
-            p_accept = self._p_accept_default()
-            self._consider(p_accept)
+        p_accept = self._p_accept_default()
+        self._consider(p_accept)
 
     def evaluate(self, score_new):
-        self._transition(score_new)
-        HillClimbingOptimizer.evaluate(self, score_new)
+        if score_new <= self.score_current:
+            self._transition(score_new)
+        else:
+            HillClimbingOptimizer.evaluate(self, score_new)
