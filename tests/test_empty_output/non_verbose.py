@@ -74,4 +74,4 @@ search_space = {
 
 for optimizer in optimizers:
     opt = optimizer(search_space)
-    opt.search(ackley_function, n_iter=15, verbosity=False)
+    opt.search(ackley_function, n_iter=100, verbosity=False)
