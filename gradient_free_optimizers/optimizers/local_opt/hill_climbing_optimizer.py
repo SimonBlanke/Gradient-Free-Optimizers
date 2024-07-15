@@ -31,7 +31,12 @@ class HillClimbingOptimizer(BaseOptimizer):
     computationally_expensive = False
 
     def __init__(
-        self, *args, epsilon=0.03, distribution="normal", n_neighbours=3, **kwargs
+        self,
+        *args,
+        epsilon=0.03,
+        distribution="normal",
+        n_neighbours=3,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
         self.epsilon = epsilon
