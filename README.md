@@ -549,6 +549,30 @@ Population of n particles moving in a spiral pattern around the best position.
 </details>
 
 
+
+<details>
+<summary><b>Genetic Algorithm</b></summary>
+
+<br>
+
+Evolutionary algorithm selecting the best individuals in the population, mixing their parameters to get new solutions.
+
+<br>
+
+<table style="width:100%">
+  <tr>
+    <th> <b>Convex Function</b> </th> 
+    <th> <b>Non-convex Function</b> </th>
+  </tr>
+  <tr>
+    <td> <img src="./docs/gifs/genetic_algorithm_sphere_function_.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/genetic_algorithm_ackley_function_.gif" width="100%"> </td>
+  </tr>
+</table>
+
+</details>
+
+
 <details>
 <summary><b>Evolution Strategy</b></summary>
 
@@ -572,7 +596,31 @@ Population of n hill climbers occasionally mixing positional information and rem
 </details>
 
 
+<details>
+<summary><b>Differential Evolution</b></summary>
+
 <br>
+
+Improves a population of candidate solutions by creating trial vectors through the differential mutation of three randomly selected individuals.
+
+<br>
+
+<table style="width:100%">
+  <tr>
+    <th> <b>Convex Function</b> </th> 
+    <th> <b>Non-convex Function</b> </th>
+  </tr>
+  <tr>
+    <td> <img src="./docs/gifs/differential_evolution_sphere_function_.gif" width="100%"> </td>
+    <td> <img src="./docs/gifs/differential_evolution_ackley_function_.gif" width="100%"> </td>
+  </tr>
+</table>
+
+</details>
+
+
+<br>
+
 
 ### Sequential Model-Based Optimization
 
@@ -940,11 +988,21 @@ print("\n search_data \n", search_data, "\n")
 
 
 <details>
+<summary><b>v1.5.0</b> :heavy_check_mark:</summary>
+
+  - [x] add Genetic Algorithm
+  - [x] add Differential evolution
+
+</details>
+
+
+
+
+<details>
 <summary><b>Future releases</b> </summary>
 
   - [ ] add Ant-colony optimization
   - [ ] add Harmonic-serch
-  - [ ] add Differential evolution
   - [ ] add API, testing and doc to (better) use GFO as backend-optimization package
   - [ ] add Random search parameter that enables to avoid replacement of the sampling
   - [ ] add other acquisition functions to smbo (Probability of improvement, Entropy search, ...)
