@@ -27,12 +27,14 @@ from gradient_free_optimizers import (
     ParallelTemperingOptimizer,
     ParticleSwarmOptimizer,
     SpiralOptimization,
+    GeneticAlgorithmOptimizer,
     EvolutionStrategyOptimizer,
+    DifferentialEvolutionOptimizer,
     BayesianOptimizer,
     TreeStructuredParzenEstimators,
     ForestOptimizer,
 )
-from surfaces.mathematical_functions import SphereFunction, AckleyFunction
+from surfaces.test_functions.mathematical import SphereFunction, AckleyFunction
 
 from search_path_gif import search_path_gif
 
@@ -52,7 +54,7 @@ random_state = 23
 sphere_function = SphereFunction(n_dim=2)
 ackley_function = AckleyFunction()
 
-objective_function_l = [sphere_function, ackley_function]
+test_function_l = [sphere_function, ackley_function]
 
 optimizer_l = [
     HillClimbingOptimizer,
@@ -71,7 +73,9 @@ optimizer_l = [
     ParallelTemperingOptimizer,
     ParticleSwarmOptimizer,
     SpiralOptimization,
+    GeneticAlgorithmOptimizer,
     EvolutionStrategyOptimizer,
+    DifferentialEvolutionOptimizer,
     BayesianOptimizer,
     TreeStructuredParzenEstimators,
     ForestOptimizer,
@@ -80,7 +84,8 @@ optimizer_l = [
 
 """
 
-for objective_function in objective_function_l:
+for test_function_ in test_function_l:
+    objective_function = test_function_.objective_function
     for optimizer in optimizer_l:
         if optimizer.computationally_expensive:
             n_iter = 50
@@ -96,7 +101,11 @@ for objective_function in objective_function_l:
             "path": os.path.join(here, "gifs"),
             "optimizer": optimizer,
             "opt_para": {},
-            "name": optimizer._name_ + "_" + objective_function._name_ + "_" + ".gif",
+            "name": optimizer._name_
+            + "_"
+            + test_function_._name_
+            + "_"
+            + ".gif",
             "n_iter": n_iter,
             "objective_function": objective_function,
             "search_space": search_space,
