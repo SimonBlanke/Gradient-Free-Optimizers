@@ -7,13 +7,8 @@ install-test-requirements:
 install-build-requirements:
 	python -m pip install -r ./requirements/requirements-build.in
 
-dist:
-	python setup.py sdist
-	python setup.py bdist_wheel
-	ls -l dist
-
 build:
-	python setup.py bdist_wheel
+	python -m build
 
 install: build
 	pip install dist/*.whl
