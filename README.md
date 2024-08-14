@@ -996,6 +996,19 @@ print("\n search_data \n", search_data, "\n")
 </details>
 
 
+<details>
+<summary><b>v1.6.0</b> :heavy_check_mark:</summary>
+
+  - [x] add support for numpy v2
+  - [x] add support for pandas v2
+  - [x] add support for python 3.12
+  - [x] transfer setup.py to pyproject.toml
+  - [x] change projects structure to src-layout
+
+</details>
+
+
+
 
 
 <details>
