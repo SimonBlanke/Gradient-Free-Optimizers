@@ -1,0 +1,50 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[project]
+name = "gradient-free-optimizers"
+version = "1.5.0"
+description = "Simple and reliable optimization with local, global, population-based and sequential techniques in numerical discrete search spaces."
+dynamic = ["dependencies"]
+readme = "README.md"
+requires-python = ">=3.8"
+license = {file = "LICENSE"}
+keywords = ["visualization", "data-science"]
+authors = [
+  {name = "Simon Blanke", email = "simon.blanke@yahoo.com" }
+]
+maintainers = [
+  {name = "Simon Blanke", email = "simon.blanke@yahoo.com" }
+]
+classifiers=[
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: Science/Research",
+]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements/requirements.in"]}
+
+[project.optional-dependencies]
+dev = ["check-manifest"]
+test = ["coverage"]
+
+[project.urls]
+"Homepage" = "https://github.com/SimonBlanke/Gradient-Free-Optimizers"
+"Bug Reports" = "https://github.com/SimonBlanke/Gradient-Free-Optimizers/issues"
+"Source" = "https://github.com/SimonBlanke/Gradient-Free-Optimizers/"
