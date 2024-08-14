@@ -2,7 +2,9 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-__version__ = "1.5.0"
+import importlib.metadata
+
+__version__ = importlib.metadata.version("gradient-free-optimizers")
 __license__ = "MIT"
 
 from .high_lvl_api import (
