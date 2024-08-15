@@ -17,8 +17,9 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        numpy-pandas-version: ["1.x", "2.x"]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -37,7 +38,9 @@ jobs:
           make install-build-requirements
           make install-test-requirements
           make install
-          python -m pip install --upgrade pandas # surfaces install pandas < 2
+
+          python -m pip install numpy==${{ matrix.numpy-pandas-version }}
+          python -m pip install pandas==${{ matrix.numpy-pandas-version }}
 
       - name: Lint with flake8
         run: |
