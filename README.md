@@ -1003,7 +1003,7 @@ print("\n search_data \n", search_data, "\n")
   - [x] add support for pandas v2
   - [x] add support for python 3.12
   - [x] transfer setup.py to pyproject.toml
-  - [x] change projects structure to src-layout
+  - [x] change project structure to src-layout
 
 </details>
 
