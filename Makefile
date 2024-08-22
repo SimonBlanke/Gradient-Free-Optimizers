@@ -1,11 +1,8 @@
-install-requirements:
-	python -m pip install -r ./requirements/requirements.in
-
 install-test-requirements:
-	python -m pip install -r ./requirements/requirements-test.in
+	python -m pip install .[test]
 
 install-build-requirements:
-	python -m pip install -r ./requirements/requirements-build.in
+	python -m pip install .[build]
 
 build:
 	python -m build

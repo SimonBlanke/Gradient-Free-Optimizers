@@ -7,9 +7,8 @@ where = ["src"]
 
 [project]
 name = "gradient-free-optimizers"
-version = "1.6.0"
+version = "1.6.1"
 description = "Simple and reliable optimization with local, global, population-based and sequential techniques in numerical discrete search spaces."
-dynamic = ["dependencies"]
 readme = "README.md"
 requires-python = ">=3.8"
 license = {file = "LICENSE"}
@@ -37,14 +36,29 @@ classifiers=[
     "Intended Audience :: Science/Research",
 ]
 
-[tool.setuptools.dynamic]
-dependencies = {file = ["requirements/requirements.in"]}
+dependencies = [
+  "scipy <2.0.0",
+  "numpy >=1.18.1, <3.0.0",
+  "pandas <3.0.0",
+  "scikit-learn >=0.21, !=0.23.*",
+  "tqdm >=4.48.0, <5.0.0",
+]
 
 [project.optional-dependencies]
-dev = ["check-manifest"]
-test = ["coverage"]
+build = [
+  "setuptools",
+  "build",
+  "wheel",
+]
+test = [
+  "pytest == 8.3.2",
+  "flake8",
+  "pytest-cov",
+  "surfaces",
+]
 
 [project.urls]
 "Homepage" = "https://github.com/SimonBlanke/Gradient-Free-Optimizers"
 "Bug Reports" = "https://github.com/SimonBlanke/Gradient-Free-Optimizers/issues"
 "Source" = "https://github.com/SimonBlanke/Gradient-Free-Optimizers/"
+
