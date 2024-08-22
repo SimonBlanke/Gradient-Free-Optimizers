@@ -56,7 +56,6 @@
         </a>
       </td>
     </tr>
-    <tr/>
     <tr align="left" valign="center">
       <td>
          <strong>Code quality:</strong>
@@ -70,7 +69,7 @@
         </a>
       </td>
     </tr>
-    <tr/>    <tr align="left" valign="center">
+    <tr align="left" valign="center">
       <td>
         <strong>Latest versions:</strong>
       </td>
