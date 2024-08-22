@@ -24,7 +24,13 @@
       </td>
       <td>
         <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions">
-          <img src="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions/workflows/tests.yml/badge.svg?branch=master" alt="img not loaded: try F5 :)">
+          <img src="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions/workflows/tests_ubuntu.yml/badge.svg?branch=master" alt="img not loaded: try F5 :)">
+        </a>
+        <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions">
+          <img src="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions/workflows/tests_windows.yml/badge.svg?branch=master" alt="img not loaded: try F5 :)">
+        </a>
+        <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions">
+          <img src="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions/workflows/tests_macos.yml/badge.svg?branch=master" alt="img not loaded: try F5 :)">
         </a>
         <a href="https://app.codecov.io/gh/SimonBlanke/Gradient-Free-Optimizers">
           <img src="https://img.shields.io/codecov/c/github/SimonBlanke/Gradient-Free-Optimizers/master" alt="img not loaded: try F5 :)">
