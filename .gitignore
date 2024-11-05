@@ -31,7 +31,7 @@ MANIFEST
 **/_gifs/
 
 # Dev
-*___.*
+**/_dev_scripts
 
 # temp data
 **/temp/

@@ -72,7 +72,7 @@ def test_early_stop_3(Optimizer):
         return score
 
     search_space = {
-        "x1": np.arange(0, 100, 0.1),
+        "x1": np.arange(0, 1000, 0.01),
     }
 
     n_iter_no_change = 5

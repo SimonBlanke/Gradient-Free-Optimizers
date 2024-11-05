@@ -1,4 +1,4 @@
-from gradient_free_optimizers.optimizers import search_tracker
+from gradient_free_optimizers.optimizers.core_optimizer import search_tracker
 import pytest
 
 from gradient_free_optimizers import (
@@ -19,15 +19,9 @@ from gradient_free_optimizers import (
     BayesianOptimizer,
     TreeStructuredParzenEstimators,
     ForestOptimizer,
-    OneDimensionalBayesianOptimization,
-    ParallelAnnealingOptimizer,
-    EnsembleOptimizer,
-    LocalBayesianOptimizer,
-    VariableResolutionBayesianOptimizer,
-    EvoSubSpaceBayesianOptimizer,
 )
 
-from surfaces.test_functions import SphereFunction
+from surfaces.test_functions.mathematical import SphereFunction
 
 optimizers = (
     "Optimizer",
@@ -49,12 +43,6 @@ optimizers = (
         (BayesianOptimizer),
         (TreeStructuredParzenEstimators),
         (ForestOptimizer),
-        (OneDimensionalBayesianOptimization),
-        (ParallelAnnealingOptimizer),
-        (EnsembleOptimizer),
-        (LocalBayesianOptimizer),
-        (VariableResolutionBayesianOptimizer),
-        (EvoSubSpaceBayesianOptimizer),
     ],
 )
 
@@ -65,7 +53,7 @@ sphere_function = SphereFunction(n_dim=2, metric="score")
 @pytest.mark.parametrize(*optimizers)
 def test_opt_algos_0(Optimizer):
     opt = Optimizer(sphere_function.search_space())
-    opt.search(sphere_function, n_iter=15)
+    opt.search(sphere_function.objective_function, n_iter=15)
 
     _ = opt.best_para
     _ = opt.best_score

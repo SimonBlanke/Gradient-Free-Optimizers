@@ -114,13 +114,12 @@ bayesian_optimizer_para = [
     ({"sampling": False}),
     ({"sampling": {"random": 1}}),
     ({"sampling": {"random": 100000000}}),
-    ({"warnings": False}),
-    ({"warnings": 1}),
-    ({"warnings": 100000000000}),
     ({"rand_rest_p": 0}),
     ({"rand_rest_p": 0.5}),
     ({"rand_rest_p": 1}),
     ({"rand_rest_p": 10}),
+    ({"replacement": True}),
+    ({"replacement": False}),
 ]
 
 

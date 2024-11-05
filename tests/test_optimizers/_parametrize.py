@@ -10,14 +10,17 @@ from gradient_free_optimizers import (
     RandomRestartHillClimbingOptimizer,
     RandomAnnealingOptimizer,
     PatternSearch,
+    DirectAlgorithm,
     ParallelTemperingOptimizer,
-    ParallelAnnealingOptimizer,
     ParticleSwarmOptimizer,
+    SpiralOptimization,
+    GeneticAlgorithmOptimizer,
     EvolutionStrategyOptimizer,
+    DifferentialEvolutionOptimizer,
+    LipschitzOptimizer,
     BayesianOptimizer,
     TreeStructuredParzenEstimators,
     ForestOptimizer,
-    EnsembleOptimizer,
 )
 
 optimizers_singleOpt = (
@@ -29,21 +32,24 @@ optimizers_singleOpt = (
         (RandomSearchOptimizer),
         (PowellsMethod),
         (PatternSearch),
+        (DirectAlgorithm),
         (GridSearchOptimizer),
         (RandomRestartHillClimbingOptimizer),
         (RandomAnnealingOptimizer),
         (SimulatedAnnealingOptimizer),
-        (DownhillSimplexOptimizer),
     ],
 )
 
 optimizers_PopBased = (
     "Optimizer",
     [
+        (DownhillSimplexOptimizer),
         (ParallelTemperingOptimizer),
-        (ParallelAnnealingOptimizer),
         (ParticleSwarmOptimizer),
+        (SpiralOptimization),
+        (GeneticAlgorithmOptimizer),
         (EvolutionStrategyOptimizer),
+        (DifferentialEvolutionOptimizer),
     ],
 )
 
@@ -61,9 +67,11 @@ optimizers_noSBOM = (
         (RandomAnnealingOptimizer),
         (SimulatedAnnealingOptimizer),
         (ParallelTemperingOptimizer),
-        (ParallelAnnealingOptimizer),
         (ParticleSwarmOptimizer),
+        (SpiralOptimization),
+        (GeneticAlgorithmOptimizer),
         (EvolutionStrategyOptimizer),
+        (DifferentialEvolutionOptimizer),
         (DownhillSimplexOptimizer),
     ],
 )
@@ -71,10 +79,11 @@ optimizers_noSBOM = (
 optimizers_SBOM = (
     "Optimizer",
     [
+        (DirectAlgorithm),
+        (LipschitzOptimizer),
         (BayesianOptimizer),
         (TreeStructuredParzenEstimators),
         (ForestOptimizer),
-        (EnsembleOptimizer),
     ],
 )
 
@@ -87,13 +96,72 @@ optimizers_local = (
         (SimulatedAnnealingOptimizer),
         (ParallelTemperingOptimizer),
         (ParticleSwarmOptimizer),
+        (GeneticAlgorithmOptimizer),
         (EvolutionStrategyOptimizer),
+        (DifferentialEvolutionOptimizer),
         (DownhillSimplexOptimizer),
     ],
 )
 
 
 optimizers = (
+    "Optimizer",
+    [
+        (HillClimbingOptimizer),
+        (StochasticHillClimbingOptimizer),
+        (RepulsingHillClimbingOptimizer),
+        (SimulatedAnnealingOptimizer),
+        (DownhillSimplexOptimizer),
+        (RandomSearchOptimizer),
+        (PowellsMethod),
+        (PatternSearch),
+        (DirectAlgorithm),
+        (GridSearchOptimizer),
+        (RandomRestartHillClimbingOptimizer),
+        (RandomAnnealingOptimizer),
+        (ParallelTemperingOptimizer),
+        (ParticleSwarmOptimizer),
+        (SpiralOptimization),
+        (GeneticAlgorithmOptimizer),
+        (EvolutionStrategyOptimizer),
+        (DifferentialEvolutionOptimizer),
+        (LipschitzOptimizer),
+        (BayesianOptimizer),
+        (TreeStructuredParzenEstimators),
+        (ForestOptimizer),
+    ],
+)
+
+
+optimizers_2 = (
+    "Optimizer2",
+    [
+        (HillClimbingOptimizer),
+        (StochasticHillClimbingOptimizer),
+        (RepulsingHillClimbingOptimizer),
+        (SimulatedAnnealingOptimizer),
+        (DownhillSimplexOptimizer),
+        (RandomSearchOptimizer),
+        (PowellsMethod),
+        (PatternSearch),
+        (DirectAlgorithm),
+        (GridSearchOptimizer),
+        (RandomRestartHillClimbingOptimizer),
+        (RandomAnnealingOptimizer),
+        (ParallelTemperingOptimizer),
+        (ParticleSwarmOptimizer),
+        (SpiralOptimization),
+        (GeneticAlgorithmOptimizer),
+        (EvolutionStrategyOptimizer),
+        (DifferentialEvolutionOptimizer),
+        (LipschitzOptimizer),
+        (BayesianOptimizer),
+        (TreeStructuredParzenEstimators),
+        (ForestOptimizer),
+    ],
+)
+
+optimizers_non_deterministic = (
     "Optimizer",
     [
         (HillClimbingOptimizer),
@@ -108,12 +176,46 @@ optimizers = (
         (RandomRestartHillClimbingOptimizer),
         (RandomAnnealingOptimizer),
         (ParallelTemperingOptimizer),
-        (ParallelAnnealingOptimizer),
         (ParticleSwarmOptimizer),
+        (SpiralOptimization),
         (EvolutionStrategyOptimizer),
+        (LipschitzOptimizer),
         (BayesianOptimizer),
         (TreeStructuredParzenEstimators),
         (ForestOptimizer),
-        (EnsembleOptimizer),
+    ],
+)
+
+
+optimizers_non_smbo = (
+    "Optimizer_non_smbo",
+    [
+        (HillClimbingOptimizer),
+        (StochasticHillClimbingOptimizer),
+        (RepulsingHillClimbingOptimizer),
+        (SimulatedAnnealingOptimizer),
+        (DownhillSimplexOptimizer),
+        (RandomSearchOptimizer),
+        (GridSearchOptimizer),
+        (RandomRestartHillClimbingOptimizer),
+        (RandomAnnealingOptimizer),
+        (PowellsMethod),
+        (PatternSearch),
+        (ParallelTemperingOptimizer),
+        (ParticleSwarmOptimizer),
+        (SpiralOptimization),
+        (EvolutionStrategyOptimizer),
+    ],
+)
+
+
+optimizers_smbo = (
+    "Optimizer_smbo",
+    [
+        (BayesianOptimizer),
+        (LipschitzOptimizer),
+        (DirectAlgorithm),
+        (TreeStructuredParzenEstimators),
+        (ForestOptimizer),
     ],
 )
