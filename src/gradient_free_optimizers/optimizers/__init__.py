@@ -13,7 +13,7 @@ from .local_opt import (
 from .global_opt import (
     RandomSearchOptimizer,
     RandomRestartHillClimbingOptimizer,
-    PowellsMethod,
+    PowellsConjugateDirectionMethod,
     PatternSearch,
     LipschitzOptimizer,
     DirectAlgorithm,
@@ -53,7 +53,7 @@ __all__ = [
     "RandomSearchOptimizer",
     "GridSearchOptimizer",
     "RandomRestartHillClimbingOptimizer",
-    "PowellsMethod",
+    "PowellsConjugateDirectionMethod",
     "PatternSearch",
     "LipschitzOptimizer",
     "DirectAlgorithm",

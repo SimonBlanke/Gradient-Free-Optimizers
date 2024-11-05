@@ -1,5 +1,5 @@
 import numpy as np
-from gradient_free_optimizers import PowellsMethod
+from gradient_free_optimizers import PowellsConjugateDirectionMethod
 
 
 def sphere_function(para):
@@ -14,7 +14,7 @@ search_space = {
     "y": np.arange(-10, 10, 0.1),
 }
 
-opt = PowellsMethod(
+opt = PowellsConjugateDirectionMethod(
     search_space,
     iters_p_dim=20,
 )

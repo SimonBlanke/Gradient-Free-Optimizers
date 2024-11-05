@@ -13,7 +13,7 @@ from .optimizers import (
     GridSearchOptimizer as _GridSearchOptimizer,
     RandomRestartHillClimbingOptimizer as _RandomRestartHillClimbingOptimizer,
     RandomAnnealingOptimizer as _RandomAnnealingOptimizer,
-    PowellsMethod as _PowellsMethod,
+    PowellsConjugateDirectionMethod as _PowellsConjugateDirectionMethod,
     PatternSearch as _PatternSearch,
     ParallelTemperingOptimizer as _ParallelTemperingOptimizer,
     ParticleSwarmOptimizer as _ParticleSwarmOptimizer,
@@ -77,7 +77,7 @@ class RandomAnnealingOptimizer(_RandomAnnealingOptimizer, Search):
         super().__init__(*args, **kwargs)
 
 
-class PowellsMethod(_PowellsMethod, Search):
+class PowellsConjugateDirectionMethod(_PowellsConjugateDirectionMethod, Search):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

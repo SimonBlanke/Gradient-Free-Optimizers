@@ -6,7 +6,7 @@ from gradient_free_optimizers import (
     HillClimbingOptimizer,
     RandomSearchOptimizer,
     RepulsingHillClimbingOptimizer,
-    PowellsMethod,
+    PowellsConjugateDirectionMethod,
 )
 
 # Define a synthetic dataset

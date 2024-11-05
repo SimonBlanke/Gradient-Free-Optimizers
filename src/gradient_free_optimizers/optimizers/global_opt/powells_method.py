@@ -14,10 +14,10 @@ def sort_list_idx(list_):
     return idx_sorted
 
 
-class PowellsMethod(HillClimbingOptimizer):
-    name = "Powell's Method"
-    _name_ = "powells_method"
-    __name__ = "PowellsMethod"
+class PowellsConjugateDirectionMethod(HillClimbingOptimizer):
+    name = "Powell's Conjugate Direction Method"
+    _name_ = "powells_conjugate_direction_method"
+    __name__ = "PowellsConjugateDirectionMethod"
 
     optimizer_type = "global"
     computationally_expensive = False
