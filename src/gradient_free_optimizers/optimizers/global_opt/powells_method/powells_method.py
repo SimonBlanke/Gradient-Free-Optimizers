@@ -5,7 +5,7 @@
 import numpy as np
 from collections import OrderedDict
 
-from ..local_opt import HillClimbingOptimizer
+from ...local_opt import HillClimbingOptimizer
 
 
 def sort_list_idx(list_):
