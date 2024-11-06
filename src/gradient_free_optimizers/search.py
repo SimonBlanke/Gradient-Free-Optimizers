@@ -4,17 +4,16 @@
 
 import time
 
-from .progress_bar import ProgressBarLVL0, ProgressBarLVL1
-from .times_tracker import _TimesTracker
-from .search_statistics import SearchStatistics
-from .memory import Memory
-from .print_info import print_info
-from .stop_run import StopRun
+from ._progress_bar import ProgressBarLVL0, ProgressBarLVL1
+from ._times_tracker import TimesTracker
+from ._search_statistics import SearchStatistics
+from ._memory import Memory
+from ._print_info import print_info
+from ._stop_run import StopRun
+from ._results_manager import ResultsManager
 
-from .results_manager import ResultsManager
 
-
-class Search(_TimesTracker, SearchStatistics):
+class Search(TimesTracker, SearchStatistics):
     def __init__(self):
         super().__init__()
 
@@ -28,11 +27,11 @@ class Search(_TimesTracker, SearchStatistics):
 
         self.results_mang = ResultsManager()
 
-    @_TimesTracker._eval_time
+    @TimesTracker.eval_time
     def _score(self, pos):
         return self.score(pos)
 
-    @_TimesTracker._iter_time
+    @TimesTracker.iter_time
     def _initialization(self):
         self.best_score = self.p_bar.score_best
 
@@ -51,7 +50,7 @@ class Search(_TimesTracker, SearchStatistics):
 
         self.stop.update(self.p_bar.score_best, self.score_l)
 
-    @_TimesTracker._iter_time
+    @TimesTracker.iter_time
     def _iteration(self):
         self.best_score = self.p_bar.score_best
 
