@@ -14,7 +14,7 @@ class Direction:
         self.position_1 = position_1
         self.position_2 = position_2
 
-    def get_position_on_vector(self, t):
+    def get_new_position(self, t):
         """
         Calculate a position on the line (vector) between two positions using parameter t.
 
