@@ -11,7 +11,7 @@ from .search_tracker import SearchTracker
 from .converter import Converter
 from .init_positions import Initializer
 
-from ...utils import set_random_seed, move_random
+from .utils import set_random_seed, move_random
 
 
 class CoreOptimizer(SearchTracker):
@@ -63,7 +63,9 @@ class CoreOptimizer(SearchTracker):
         # clip into search space boundaries
         pos = np.clip(r_pos, n_zeros, self.conv.max_positions).astype(int)
 
-        dist = scipy.spatial.distance.cdist(r_pos.reshape(1, -1), pos.reshape(1, -1))
+        dist = scipy.spatial.distance.cdist(
+            r_pos.reshape(1, -1), pos.reshape(1, -1)
+        )
         threshold = self.conv.search_space_size / (100**self.conv.n_dimensions)
 
         if dist > threshold:
