@@ -14,12 +14,8 @@ jobs:
   build:
     strategy:
       matrix:
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
         numpy-pandas-version: [">=1.0, <2.0", ">=2.0, <3.0"]
-
-        exclude:
-          - python-version: "3.8"
-            numpy-pandas-version: ">=2.0, <3.0"
 
       fail-fast: false
 
