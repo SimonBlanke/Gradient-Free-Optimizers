@@ -10,7 +10,7 @@ name = "gradient-free-optimizers"
 version = "1.6.1"
 description = "Simple and reliable optimization with local, global, population-based and sequential techniques in numerical discrete search spaces."
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 license = {file = "LICENSE"}
 keywords = ["visualization", "data-science"]
 authors = [
@@ -21,7 +21,6 @@ maintainers = [
 ]
 classifiers=[
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
