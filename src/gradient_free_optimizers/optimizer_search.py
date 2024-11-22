@@ -2,6 +2,8 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+from typing import List, Dict, Literal
+
 from .search import Search
 from .optimizers import (
     HillClimbingOptimizer as _HillClimbingOptimizer,
@@ -31,8 +33,64 @@ from .optimizers import (
 
 
 class HillClimbingOptimizer(_HillClimbingOptimizer, Search):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    """
+    **Hill climbing** is a very basic optimization technique, that explores the search space only localy. It starts at an initial point, which is often chosen randomly and continues to move to positions within its neighbourhood with a better solution. It has no method against getting stuck in local optima.
+
+    Parameters
+    ----------
+    search_space : dict[str, list]
+        The search space to explore. Formatted as a dictionary with parameter
+        names as keys and a list of possible values as values.
+    initialize : dict[str, int]
+        The method to generate initial positions. Formatted as a dictionary with
+        a single key of one of ["grid", "random", "vertices"] and the number of
+        points to generate as the value.
+    constraints : list[callable]
+        A list of constraints. Each constraint is a dictionary with the key
+        "fun" and the value a function that takes a numpy array of size
+        (n_points, n_dimensions) and returns a boolean array of size n_points
+        indicating which points are valid.
+    random_state : None, int
+        If None, create a new random state. If int, create a new random state
+        seeded with the value.
+    rand_rest_p : float
+        The probability of randomly re-starting the search process.
+    nth_process : int
+        The process number of this optimizer. Used for seeding the random state.
+    epsilon : float
+        The step-size for the climbing.
+    distribution : str
+        The type of distribution to sample from.
+    n_neighbours : int
+        The number of neighbours to sample and evaluate before moving to the best
+        of those neighbours.
+    """
+
+    def __init__(
+        self,
+        search_space: Dict[str, list],
+        initialize: Dict[str, int] = {"grid": 4, "random": 2, "vertices": 4},
+        constraints: List[Dict[str, callable]] = [],
+        random_state: int = None,
+        rand_rest_p: float = 0,
+        nth_process: int = None,
+        epsilon: float = 0.03,
+        distribution: Literal[
+            "normal", "laplace", "gumbel", "logistic"
+        ] = "normal",
+        n_neighbours: int = 3,
+    ):
+        super().__init__(
+            search_space=search_space,
+            initialize=initialize,
+            constraints=constraints,
+            random_state=random_state,
+            rand_rest_p=rand_rest_p,
+            nth_process=nth_process,
+            epsilon=epsilon,
+            distribution=distribution,
+            n_neighbours=n_neighbours,
+        )
 
 
 class StochasticHillClimbingOptimizer(_StochasticHillClimbingOptimizer, Search):
