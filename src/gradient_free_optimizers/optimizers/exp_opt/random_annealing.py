@@ -9,6 +9,7 @@ from ..local_opt import HillClimbingOptimizer
 class RandomAnnealingOptimizer(HillClimbingOptimizer):
     name = "Random Annealing"
     _name_ = "random_annealing"
+    __name__ = "RandomAnnealingOptimizer"
 
     def __init__(
         self,
@@ -18,7 +19,7 @@ class RandomAnnealingOptimizer(HillClimbingOptimizer):
         n_neighbours=3,
         annealing_rate=0.98,
         start_temp=10,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.epsilon = epsilon
