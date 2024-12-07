@@ -52,7 +52,7 @@ class RandomRestartHillClimbingOptimizer(
         initialize: Dict[
             Literal["grid", "vertices", "random", "warm_start"], int | List
         ] = {"grid": 4, "random": 2, "vertices": 4},
-        constraints: List[Dict[str, callable]] = [],
+        constraints: List[callable] = [],
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,
