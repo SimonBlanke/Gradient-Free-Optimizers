@@ -57,7 +57,7 @@ class TreeStructuredParzenEstimators(_TreeStructuredParzenEstimators, Search):
         nth_process: int = None,
         warm_start_smbo=None,
         max_sample_size: int = 10000000,
-        sampling: dict = {"random": 1000000},
+        sampling: Dict[Literal["random"], int] = {"random": 1000000},
         replacement: bool = True,
         gamma_tpe=0.2,
     ):
