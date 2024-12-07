@@ -22,8 +22,30 @@ class PowellsMethod(HillClimbingOptimizer):
     optimizer_type = "global"
     computationally_expensive = False
 
-    def __init__(self, *args, iters_p_dim=10, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        search_space,
+        initialize={"grid": 4, "random": 2, "vertices": 4},
+        constraints=[],
+        random_state=None,
+        rand_rest_p=0,
+        nth_process=None,
+        epsilon=0.03,
+        distribution="normal",
+        n_neighbours=3,
+        iters_p_dim=10,
+    ):
+        super().__init__(
+            search_space=search_space,
+            initialize=initialize,
+            constraints=constraints,
+            random_state=random_state,
+            rand_rest_p=rand_rest_p,
+            nth_process=nth_process,
+            epsilon=epsilon,
+            distribution=distribution,
+            n_neighbours=n_neighbours,
+        )
 
         self.iters_p_dim = iters_p_dim
 
@@ -74,6 +96,9 @@ class PowellsMethod(HillClimbingOptimizer):
         self.hill_climb = HillClimbingOptimizer(
             search_space=search_space_1D,
             initialize={"random": 5},
+            epsilon=self.epsilon,
+            distribution=self.distribution,
+            n_neighbours=self.n_neighbours,
         )
 
     @HillClimbingOptimizer.track_new_pos
@@ -99,7 +124,9 @@ class PowellsMethod(HillClimbingOptimizer):
 
         if self.conv.not_in_constraint(pos_new):
             return pos_new
-        return self.move_climb(pos_new)
+        return self.move_climb(
+            pos_new, epsilon=self.epsilon, distribution=self.distribution
+        )
 
     @HillClimbingOptimizer.track_new_score
     def evaluate(self, score_new):

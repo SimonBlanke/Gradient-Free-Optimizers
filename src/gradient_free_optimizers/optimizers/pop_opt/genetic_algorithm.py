@@ -19,16 +19,27 @@ class GeneticAlgorithmOptimizer(EvolutionaryAlgorithmOptimizer):
 
     def __init__(
         self,
-        *args,
+        search_space,
+        initialize={"grid": 4, "random": 2, "vertices": 4},
+        constraints=[],
+        random_state=None,
+        rand_rest_p=0,
+        nth_process=None,
         population=10,
         offspring=10,
         crossover="discrete-recombination",
         n_parents=2,
         mutation_rate=0.5,
         crossover_rate=0.5,
-        **kwargs
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(
+            search_space=search_space,
+            initialize=initialize,
+            constraints=constraints,
+            random_state=random_state,
+            rand_rest_p=rand_rest_p,
+            nth_process=nth_process,
+        )
 
         self.population = population
         self.offspring = offspring
@@ -76,7 +87,6 @@ class GeneticAlgorithmOptimizer(EvolutionaryAlgorithmOptimizer):
     @EvolutionaryAlgorithmOptimizer.track_new_pos
     def init_pos(self):
         nth_pop = self.nth_trial % len(self.individuals)
-
         self.p_current = self.individuals[nth_pop]
         return self.p_current.init_pos()
 

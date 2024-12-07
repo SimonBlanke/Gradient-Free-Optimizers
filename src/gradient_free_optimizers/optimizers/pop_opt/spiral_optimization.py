@@ -29,8 +29,25 @@ class SpiralOptimization(BasePopulationOptimizer):
     optimizer_type = "population"
     computationally_expensive = False
 
-    def __init__(self, *args, population=10, decay_rate=0.99, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        search_space,
+        initialize={"grid": 4, "random": 2, "vertices": 4},
+        constraints=[],
+        random_state=None,
+        rand_rest_p=0,
+        nth_process=None,
+        population=10,
+        decay_rate=0.99,
+    ):
+        super().__init__(
+            search_space=search_space,
+            initialize=initialize,
+            constraints=constraints,
+            random_state=random_state,
+            rand_rest_p=rand_rest_p,
+            nth_process=nth_process,
+        )
 
         self.population = population
         self.decay_rate = decay_rate
@@ -57,7 +74,9 @@ class SpiralOptimization(BasePopulationOptimizer):
     @BasePopulationOptimizer.track_new_pos
     def iterate(self):
         while True:
-            self.p_current = self.particles[self.nth_trial % len(self.particles)]
+            self.p_current = self.particles[
+                self.nth_trial % len(self.particles)
+            ]
 
             self.sort_pop_best_score()
             self.p_current.global_pos_best = self.pop_sorted[0].pos_current

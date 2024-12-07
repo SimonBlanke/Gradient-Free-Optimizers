@@ -37,10 +37,12 @@ class RandomSearchOptimizer(_RandomSearchOptimizer, Search):
         initialize: Dict[str, int] = {"grid": 4, "random": 2, "vertices": 4},
         constraints: List[Dict[str, callable]] = [],
         random_state: int = None,
+        nth_process: int = None,
     ):
         super().__init__(
             search_space=search_space,
             initialize=initialize,
             constraints=constraints,
             random_state=random_state,
+            nth_process=nth_process,
         )

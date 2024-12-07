@@ -32,7 +32,15 @@ class EnsembleOptimizer(SMBO):
 
     def __init__(
         self,
-        *args,
+        search_space,
+        initialize={"grid": 4, "random": 2, "vertices": 4},
+        constraints=[],
+        random_state=None,
+        rand_rest_p=0,
+        nth_process=None,
+        epsilon=0.03,
+        distribution="normal",
+        n_neighbours=3,
         estimators=[
             GradientBoostingRegressor(n_estimators=5),
             # DecisionTreeRegressor(),
@@ -43,10 +51,25 @@ class EnsembleOptimizer(SMBO):
         warm_start_smbo=None,
         max_sample_size=10000000,
         sampling={"random": 1000000},
+        replacement=True,
         warnings=100000000,
-        **kwargs
+        **kwargs,
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(
+            search_space=search_space,
+            initialize=initialize,
+            constraints=constraints,
+            random_state=random_state,
+            rand_rest_p=rand_rest_p,
+            nth_process=nth_process,
+            epsilon=epsilon,
+            distribution=distribution,
+            n_neighbours=n_neighbours,  #
+            warm_start_smbo=warm_start_smbo,
+            max_sample_size=max_sample_size,
+            sampling=sampling,
+            replacement=replacement,
+        )
         self.estimators = estimators
         self.regr = EnsembleRegressor(estimators)
         self.xi = xi

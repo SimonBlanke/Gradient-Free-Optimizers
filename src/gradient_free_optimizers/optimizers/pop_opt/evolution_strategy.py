@@ -19,15 +19,26 @@ class EvolutionStrategyOptimizer(EvolutionaryAlgorithmOptimizer):
 
     def __init__(
         self,
-        *args,
+        search_space,
+        initialize={"grid": 4, "random": 2, "vertices": 4},
+        constraints=[],
+        random_state=None,
+        rand_rest_p=0,
+        nth_process=None,
         population=10,
         offspring=20,
         replace_parents=False,
         mutation_rate=0.7,
         crossover_rate=0.3,
-        **kwargs
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(
+            search_space=search_space,
+            initialize=initialize,
+            constraints=constraints,
+            random_state=random_state,
+            rand_rest_p=rand_rest_p,
+            nth_process=nth_process,
+        )
 
         self.population = population
         self.offspring = offspring

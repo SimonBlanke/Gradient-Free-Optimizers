@@ -13,6 +13,15 @@ from .init_positions import Initializer
 
 from .utils import set_random_seed, move_random
 
+from numpy.random import normal, laplace, logistic, gumbel
+
+dist_dict = {
+    "normal": normal,
+    "laplace": laplace,
+    "logistic": logistic,
+    "gumbel": gumbel,
+}
+
 
 class CoreOptimizer(SearchTracker):
     def __init__(
@@ -50,6 +59,18 @@ class CoreOptimizer(SearchTracker):
                 return func(self, *args, **kwargs)
 
         return wrapper
+
+    def move_climb(
+        self, pos, epsilon=0.03, distribution="normal", epsilon_mod=1
+    ):
+        while True:
+            sigma = self.conv.max_positions * epsilon * epsilon_mod
+            pos_normal = dist_dict[distribution](pos, sigma, pos.shape)
+            pos = self.conv2pos(pos_normal)
+
+            if self.conv.not_in_constraint(pos):
+                return pos
+            epsilon_mod *= 1.01
 
     def conv2pos(self, pos):
         # position to int

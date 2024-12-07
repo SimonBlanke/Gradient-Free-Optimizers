@@ -35,8 +35,33 @@ class BayesianOptimizer(SMBO):
     optimizer_type = "sequential"
     computationally_expensive = True
 
-    def __init__(self, *args, gpr=gaussian_process["gp_nonlinear"], xi=0.03, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        search_space,
+        initialize={"grid": 4, "random": 2, "vertices": 4},
+        constraints=[],
+        random_state=None,
+        rand_rest_p=0,
+        nth_process=None,
+        warm_start_smbo=None,
+        max_sample_size=10000000,
+        sampling={"random": 1000000},
+        replacement=True,
+        gpr=gaussian_process["gp_nonlinear"],
+        xi=0.03,
+    ):
+        super().__init__(
+            search_space=search_space,
+            initialize=initialize,
+            constraints=constraints,
+            random_state=random_state,
+            rand_rest_p=rand_rest_p,
+            nth_process=nth_process,
+            warm_start_smbo=warm_start_smbo,
+            max_sample_size=max_sample_size,
+            sampling=sampling,
+            replacement=replacement,
+        )
 
         self.gpr = gpr
         self.regr = gpr
