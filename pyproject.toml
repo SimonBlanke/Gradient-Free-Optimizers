@@ -7,7 +7,7 @@ where = ["src"]
 
 [project]
 name = "gradient-free-optimizers"
-version = "1.7.0"
+version = "1.7.1"
 description = "Simple and reliable optimization with local, global, population-based and sequential techniques in numerical discrete search spaces."
 readme = "README.md"
 requires-python = ">=3.9"
