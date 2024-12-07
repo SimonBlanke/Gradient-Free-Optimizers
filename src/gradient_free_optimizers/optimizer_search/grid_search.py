@@ -2,7 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-from typing import List, Dict, Literal, Literal
+from typing import List, Dict, Literal, Union
 
 from ..search import Search
 from ..optimizers import GridSearchOptimizer as _GridSearchOptimizer
@@ -41,7 +41,8 @@ class GridSearchOptimizer(_GridSearchOptimizer, Search):
         self,
         search_space: Dict[str, list],
         initialize: Dict[
-            Literal["grid", "vertices", "random", "warm_start"], int | List
+            Literal["grid", "vertices", "random", "warm_start"],
+            Union[int, list[dict]],
         ] = {"grid": 4, "random": 2, "vertices": 4},
         constraints: List[callable] = [],
         random_state: int = None,
