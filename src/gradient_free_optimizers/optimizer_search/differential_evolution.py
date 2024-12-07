@@ -2,7 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-from typing import List, Dict, Literal
+from typing import List, Dict, Literal, Literal
 
 from ..search import Search
 from ..optimizers import (
@@ -44,7 +44,9 @@ class DifferentialEvolutionOptimizer(_DifferentialEvolutionOptimizer, Search):
     def __init__(
         self,
         search_space: Dict[str, list],
-        initialize: Dict[str, int] = {"grid": 4, "random": 2, "vertices": 4},
+        initialize: Dict[
+            Literal["grid", "vertices", "random", "warm_start"], int | List
+        ] = {"grid": 4, "random": 2, "vertices": 4},
         constraints: List[Dict[str, callable]] = [],
         random_state: int = None,
         rand_rest_p: float = 0,
