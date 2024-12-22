@@ -111,7 +111,6 @@ Gradient-Free-Optimizers is the optimization backend of <a href="https://github.
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#installation">Installation</a> •
     <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#examples">Examples</a> •
     <a href="https://simonblanke.github.io/gradient-free-optimizers-documentation">API reference</a> •
-    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#roadmap">Roadmap</a>
   </h3>
 </div>
 
@@ -928,124 +927,6 @@ print("\n search_data \n", search_data, "\n")
 ```
 
 </details>
-
-
-<br>
-
-## Roadmap
-
-
-<details>
-<summary><b>v0.3.0</b> :heavy_check_mark:</summary>
-
-  - [x] add sampling parameter to Bayesian optimizer
-  - [x] add warnings parameter to Bayesian optimizer
-  - [x] improve access to parameters of optimizers within population-based-optimizers (e.g. annealing rate of simulated annealing population in parallel tempering)
-
-</details>
-
-
-<details>
-<summary><b>v0.4.0</b> :heavy_check_mark:</summary>
-
-  - [x] add early stopping parameter
-
-</details>
-
-
-<details>
-<summary><b>v0.5.0</b> :heavy_check_mark:</summary>
-
-  - [x] add grid-search to optimizers
-  - [x] impoved performance testing for optimizers
-
-</details>
-
-
-<details>
-<summary><b>v1.0.0</b> :heavy_check_mark:</summary>
-
-  - [x] Finalize API (1.0.0)
-  - [x] add Downhill-simplex algorithm to optimizers
-  - [x] add Pattern search to optimizers
-  - [x] add Powell's method to optimizers
-  - [x] add parallel random annealing to optimizers
-  - [x] add ensemble-optimizer to optimizers
-
-</details>
-
-
-<details>
-<summary><b>v1.1.0</b> :heavy_check_mark:</summary>
-
-  - [x] add Spiral Optimization
-  - [x] add Lipschitz Optimizer
-  - [x] print the random seed for reproducibility
-
-</details>
-
-
-<details>
-<summary><b>v1.2.0</b> :heavy_check_mark:</summary>
-
-  - [x] add DIRECT algorithm
-  - [x] automatically add random initial positions if necessary (often requested)
-
-</details>
-
-
-<details>
-<summary><b>v1.3.0</b> :heavy_check_mark:</summary>
-
-  - [x] add support for constrained optimization
-
-</details>
-
-
-<details>
-<summary><b>v1.4.0</b> :heavy_check_mark:</summary>
-
-  - [x] add Grid search parameter that changes direction of search
-  - [x] add SMBO parameter that enables to avoid replacement of the sampling
-
-</details>
-
-
-<details>
-<summary><b>v1.5.0</b> :heavy_check_mark:</summary>
-
-  - [x] add Genetic Algorithm
-  - [x] add Differential evolution
-
-</details>
-
-
-<details>
-<summary><b>v1.6.0</b> :heavy_check_mark:</summary>
-
-  - [x] add support for numpy v2
-  - [x] add support for pandas v2
-  - [x] add support for python 3.12
-  - [x] transfer setup.py to pyproject.toml
-  - [x] change project structure to src-layout
-
-</details>
-
-
-
-
-
-<details>
-<summary><b>Future releases</b> </summary>
-
-  - [ ] add Ant-colony optimization
-  - [ ] add Harmonic-serch
-  - [ ] add API, testing and doc to (better) use GFO as backend-optimization package
-  - [ ] add Random search parameter that enables to avoid replacement of the sampling
-  - [ ] add other acquisition functions to smbo (Probability of improvement, Entropy search, ...)
-
-</details>
-
 
 
 
