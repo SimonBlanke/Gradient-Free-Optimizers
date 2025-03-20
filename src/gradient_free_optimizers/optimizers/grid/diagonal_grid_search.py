@@ -65,21 +65,24 @@ class DiagonalGridSearchOptimizer(BaseOptimizer):
         We convert our pointer of Z/(search_space_size * Z) in a position of our search space.
         This algorithm uses a bijection from Z/(search_space_size * Z) -> (Z/dim_1*Z)x...x(Z/dim_n*Z).
         """
-        new_pos = []
         dim_sizes = self.conv.dim_sizes
+        new_pos = np.zeros(len(dim_sizes), dtype=int)
         pointer = self.high_dim_pointer
 
         # The coordinate of our new position for each dimension is
         # the quotient of the pointer by the product of remaining dimensions
         # Describes a bijection from Z/search_space_size*Z -> (Z/dim_1*Z)x...x(Z/dim_n*Z)
-        for dim in range(len(dim_sizes) - 1):
-            new_pos.append(
-                pointer // np.prod(dim_sizes[dim + 1 :]) % dim_sizes[dim]
-            )
-            pointer = pointer % np.prod(dim_sizes[dim + 1 :])
-        new_pos.append(pointer)
 
-        return np.array(new_pos)
+        # Precompute cumulative product dimensions in reverse order
+        cumprod_dims = np.cumprod(dim_sizes[::-1])[::-1]
+
+        for dim in range(len(dim_sizes) - 1):
+            quotient, pointer = divmod(pointer, cumprod_dims[dim + 1])
+            new_pos[dim] = quotient % dim_sizes[dim]
+
+        new_pos[-1] = pointer
+
+        return new_pos
 
     @BaseOptimizer.track_new_pos
     def iterate(self):
