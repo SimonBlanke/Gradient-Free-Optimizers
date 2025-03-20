@@ -14,15 +14,20 @@ class LipschitzFunction:
         self.position_l = position_l
 
     def find_best_slope(self, X_sample, Y_sample):
-        slopes = [
-            abs(y_sample1 - y_sample2) / abs(x_sample1 - x_sample2)
-            for x_sample1, y_sample1 in zip(X_sample, Y_sample)
-            for x_sample2, y_sample2 in zip(X_sample, Y_sample)
-            if y_sample1 is not y_sample2
-            if np.prod((x_sample1 - x_sample2)) != 0
-        ]
+        slopes = []
 
-        if len(slopes) == 0:
+        len_sample = len(X_sample)
+        for i in range(len_sample):
+            for j in range(i + 1, len_sample):
+                x_sample1, y_sample1 = X_sample[i], Y_sample[i]
+                x_sample2, y_sample2 = X_sample[j], Y_sample[j]
+
+                if y_sample1 != y_sample2 and np.prod((x_sample1 - x_sample2)) != 0:
+                    slopes.append(
+                        abs(y_sample1 - y_sample2) / abs(x_sample1 - x_sample2)
+                    )
+
+        if not slopes:
             return 1
         return np.max(slopes)
 
