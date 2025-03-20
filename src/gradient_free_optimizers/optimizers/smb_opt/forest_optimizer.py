@@ -23,13 +23,14 @@ tree_regressor_dict = {
 
 
 def normalize(array):
-    num = array - array.min()
-    den = array.max() - array.min()
+    min_val = array.min()
+    max_val = array.max()
+    den = max_val - min_val
 
     if den == 0:
         return np.random.random_sample(array.shape)
     else:
-        return ((num / den) + 0) / 1
+        return (array - min_val) / den
 
 
 class ForestOptimizer(SMBO):
