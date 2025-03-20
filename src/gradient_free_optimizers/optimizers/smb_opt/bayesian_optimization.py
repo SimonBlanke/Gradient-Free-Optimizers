@@ -18,13 +18,14 @@ gaussian_process = {"gp_nonlinear": GPR(), "gp_linear": GPR_linear()}
 
 
 def normalize(array):
-    num = array - array.min()
-    den = array.max() - array.min()
+    array_min = array.min()
+    array_max = array.max()
+    range_ = array_max - array_min
 
-    if den == 0:
+    if range_ == 0:
         return np.random.random_sample(array.shape)
     else:
-        return ((num / den) + 0) / 1
+        return (array - array_min) / range_
 
 
 class BayesianOptimizer(SMBO):
