@@ -4,8 +4,6 @@
 
 import numpy as np
 
-from gradient_free_optimizers.optimizers.base_optimizer import BaseOptimizer
-
 try:
     from fractions import gcd
 except:
@@ -71,6 +69,10 @@ class DiagonalGridSearchOptimizer(BaseOptimizer):
         new_pos = np.zeros(len(dim_sizes), dtype=int)
         pointer = self.high_dim_pointer
 
+        # The coordinate of our new position for each dimension is
+        # the quotient of the pointer by the product of remaining dimensions
+        # Describes a bijection from Z/search_space_size*Z -> (Z/dim_1*Z)x...x(Z/dim_n*Z)
+
         # Precompute cumulative product dimensions in reverse order
         cumprod_dims = np.cumprod(dim_sizes[::-1])[::-1]
 
@@ -107,7 +109,9 @@ class DiagonalGridSearchOptimizer(BaseOptimizer):
                 self.high_dim_pointer % self.step_size,
             )
             current_pass_finished = (
-                (self.nth_trial + 1) * self.step_size // self.conv.search_space_size
+                (self.nth_trial + 1)
+                * self.step_size
+                // self.conv.search_space_size
                 > self.nth_trial * self.step_size // self.conv.search_space_size
             )
             # Begin the next pass if current is finished.
