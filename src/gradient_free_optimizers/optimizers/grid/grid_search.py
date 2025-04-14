@@ -5,6 +5,7 @@
 from ..base_optimizer import BaseOptimizer
 from .diagonal_grid_search import DiagonalGridSearchOptimizer
 from .orthogonal_grid_search import OrthogonalGridSearchOptimizer
+from .hilbert_grid_search import HilbertGridSearchOptimizer
 
 
 class GridSearchOptimizer(BaseOptimizer):
@@ -58,9 +59,18 @@ class GridSearchOptimizer(BaseOptimizer):
                 nth_process=nth_process,
                 step_size=step_size,
             )
+        elif direction == "hilbert":
+            self.grid_search_opt = HilbertGridSearchOptimizer(
+                search_space=search_space,
+                initialize=initialize,
+                constraints=constraints,
+                random_state=random_state,
+                rand_rest_p=rand_rest_p,
+                nth_process=nth_process,
+                step_size=step_size,
+            )
         else:
-            msg = ""
-            raise Exception(msg)
+            raise ValueError("Invalid direction. Choose 'orthogonal', 'diagonal', or 'hilbert'.")
 
     @BaseOptimizer.track_new_pos
     def iterate(self):
