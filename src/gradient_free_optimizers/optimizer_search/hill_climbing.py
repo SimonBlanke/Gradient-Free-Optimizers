@@ -56,6 +56,7 @@ class HillClimbingOptimizer(_HillClimbingOptimizer, Search):
             "normal", "laplace", "gumbel", "logistic"
         ] = "normal",
         n_neighbours: int = 3,
+        optimum: Literal["minimum", "maximum"] = "maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -67,4 +68,5 @@ class HillClimbingOptimizer(_HillClimbingOptimizer, Search):
             epsilon=epsilon,
             distribution=distribution,
             n_neighbours=n_neighbours,
+            optimum=optimum,
         )

@@ -55,6 +55,7 @@ class ParallelTemperingOptimizer(_ParallelTemperingOptimizer, Search):
         nth_process: int = None,
         population: int = 5,
         n_iter_swap: int = 5,
+        optimum: Literal["minimum", "maximum"] = "maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -65,4 +66,5 @@ class ParallelTemperingOptimizer(_ParallelTemperingOptimizer, Search):
             nth_process=nth_process,
             population=population,
             n_iter_swap=n_iter_swap,
+            optimum=optimum,
         )

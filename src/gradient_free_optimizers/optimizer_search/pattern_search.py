@@ -53,6 +53,7 @@ class PatternSearch(_PatternSearch, Search):
         n_positions=4,
         pattern_size=0.25,
         reduction=0.9,
+        optimum: Literal["minimum", "maximum"] = "maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -64,4 +65,5 @@ class PatternSearch(_PatternSearch, Search):
             n_positions=n_positions,
             pattern_size=pattern_size,
             reduction=reduction,
+            optimum=optimum,
         )

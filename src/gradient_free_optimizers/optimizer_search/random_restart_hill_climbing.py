@@ -63,6 +63,7 @@ class RandomRestartHillClimbingOptimizer(
         ] = "normal",
         n_neighbours: int = 3,
         n_iter_restart: int = 10,
+        optimum: Literal["minimum", "maximum"] = "maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -75,4 +76,5 @@ class RandomRestartHillClimbingOptimizer(
             distribution=distribution,
             n_neighbours=n_neighbours,
             n_iter_restart=n_iter_restart,
+            optimum=optimum,
         )

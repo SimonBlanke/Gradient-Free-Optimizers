@@ -34,6 +34,7 @@ class PowellsMethod(HillClimbingOptimizer):
         distribution="normal",
         n_neighbours=3,
         iters_p_dim=10,
+        optimum="maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -45,6 +46,7 @@ class PowellsMethod(HillClimbingOptimizer):
             epsilon=epsilon,
             distribution=distribution,
             n_neighbours=n_neighbours,
+            optimum=optimum,
         )
 
         self.iters_p_dim = iters_p_dim

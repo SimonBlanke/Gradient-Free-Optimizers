@@ -24,6 +24,7 @@ class RandomAnnealingOptimizer(HillClimbingOptimizer):
         n_neighbours=3,
         annealing_rate=0.98,
         start_temp=10,
+        optimum="maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -35,6 +36,7 @@ class RandomAnnealingOptimizer(HillClimbingOptimizer):
             epsilon=epsilon,
             distribution=distribution,
             n_neighbours=n_neighbours,
+            optimum=optimum,
         )
         self.epsilon = epsilon
         self.distribution = distribution

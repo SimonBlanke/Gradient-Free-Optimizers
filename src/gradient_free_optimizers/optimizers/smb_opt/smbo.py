@@ -25,6 +25,7 @@ class SMBO(BaseOptimizer):
         max_sample_size=10000000,
         sampling={"random": 1000000},
         replacement=True,
+        optimum="maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -33,6 +34,7 @@ class SMBO(BaseOptimizer):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
+            optimum=optimum
         )
 
         self.warm_start_smbo = warm_start_smbo

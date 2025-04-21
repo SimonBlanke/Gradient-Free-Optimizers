@@ -61,6 +61,7 @@ class RepulsingHillClimbingOptimizer(_RepulsingHillClimbingOptimizer, Search):
         ] = "normal",
         n_neighbours: int = 3,
         repulsion_factor: float = 5,
+        optimum: Literal["minimum", "maximum"] = "maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -73,4 +74,5 @@ class RepulsingHillClimbingOptimizer(_RepulsingHillClimbingOptimizer, Search):
             distribution=distribution,
             n_neighbours=n_neighbours,
             repulsion_factor=repulsion_factor,
+            optimum=optimum,
         )

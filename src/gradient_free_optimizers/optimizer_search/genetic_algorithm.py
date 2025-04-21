@@ -30,7 +30,7 @@ class GeneticAlgorithmOptimizer(_GeneticAlgorithmOptimizer, Search):
         If None, create a new random state. If int, create a new random state
         seeded with the value.
     rand_rest_p : float
-        The probability of a random iteration during the the search process.
+        The probability of a random iteration during the search process.
     population : int
         The number of individuals in the population.
     offspring : int
@@ -62,6 +62,7 @@ class GeneticAlgorithmOptimizer(_GeneticAlgorithmOptimizer, Search):
         n_parents=2,
         mutation_rate=0.5,
         crossover_rate=0.5,
+        optimum: Literal["minimum", "maximum"] = "maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -76,4 +77,5 @@ class GeneticAlgorithmOptimizer(_GeneticAlgorithmOptimizer, Search):
             n_parents=n_parents,
             mutation_rate=mutation_rate,
             crossover_rate=crossover_rate,
+            optimum=optimum,
         )

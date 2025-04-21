@@ -26,6 +26,7 @@ class RepulsingHillClimbingOptimizer(HillClimbingOptimizer):
         distribution="normal",
         n_neighbours=3,
         repulsion_factor=5,
+        optimum="maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -37,6 +38,7 @@ class RepulsingHillClimbingOptimizer(HillClimbingOptimizer):
             epsilon=epsilon,
             distribution=distribution,
             n_neighbours=n_neighbours,
+            optimum=optimum,
         )
 
         self.tabus = []

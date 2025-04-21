@@ -17,6 +17,7 @@ class EvolutionaryAlgorithmOptimizer(BasePopulationOptimizer):
         random_state=None,
         rand_rest_p=0,
         nth_process=None,
+        optimum="maximum",
     ) -> None:
         super().__init__(
             search_space=search_space,
@@ -25,6 +26,7 @@ class EvolutionaryAlgorithmOptimizer(BasePopulationOptimizer):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
+            optimum=optimum,
         )
 
     def discrete_recombination(self, parent_pos_l, crossover_rates=None):

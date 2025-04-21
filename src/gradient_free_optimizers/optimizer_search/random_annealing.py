@@ -62,6 +62,7 @@ class RandomAnnealingOptimizer(_RandomAnnealingOptimizer, Search):
         n_neighbours: int = 3,
         annealing_rate=0.98,
         start_temp=10,
+        optimum: Literal["minimum", "maximum"] = "maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -75,4 +76,5 @@ class RandomAnnealingOptimizer(_RandomAnnealingOptimizer, Search):
             n_neighbours=n_neighbours,
             annealing_rate=annealing_rate,
             start_temp=start_temp,
+            optimum=optimum,
         )

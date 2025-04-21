@@ -30,6 +30,7 @@ class TreeStructuredParzenEstimators(SMBO):
         sampling={"random": 1000000},
         replacement=True,
         gamma_tpe=0.2,
+        optimum="maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -42,6 +43,7 @@ class TreeStructuredParzenEstimators(SMBO):
             max_sample_size=max_sample_size,
             sampling=sampling,
             replacement=replacement,
+            optimum=optimum,
         )
 
         self.gamma_tpe = gamma_tpe

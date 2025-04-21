@@ -30,7 +30,7 @@ class PowellsMethod(_PowellsMethod, Search):
         If None, create a new random state. If int, create a new random state
         seeded with the value.
     rand_rest_p : float
-        The probability of a random iteration during the the search process.
+        The probability of a random iteration during the search process.
     epsilon : float
         The step-size for the climbing.
     distribution : str
@@ -52,6 +52,7 @@ class PowellsMethod(_PowellsMethod, Search):
         rand_rest_p: float = 0,
         nth_process: int = None,
         iters_p_dim: int = 10,
+        optimum: Literal["minimum", "maximum"] = "maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -61,4 +62,5 @@ class PowellsMethod(_PowellsMethod, Search):
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
             iters_p_dim=iters_p_dim,
+            optimum=optimum,
         )

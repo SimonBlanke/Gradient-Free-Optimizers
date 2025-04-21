@@ -59,6 +59,7 @@ class ParticleSwarmOptimizer(_ParticleSwarmOptimizer, Search):
         cognitive_weight: float = 0.5,
         social_weight: float = 0.5,
         temp_weight: float = 0.2,
+        optimum: Literal["minimum", "maximum"] = "maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -72,4 +73,5 @@ class ParticleSwarmOptimizer(_ParticleSwarmOptimizer, Search):
             cognitive_weight=cognitive_weight,
             social_weight=social_weight,
             temp_weight=temp_weight,
+            optimum=optimum,
         )

@@ -29,6 +29,7 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
         nth_process=None,
         population=5,
         n_iter_swap=5,
+        optimum="maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -37,6 +38,7 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
+            optimum=optimum,
         )
 
         self.population = population

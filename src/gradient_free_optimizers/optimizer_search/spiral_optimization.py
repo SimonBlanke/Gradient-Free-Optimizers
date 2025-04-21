@@ -51,6 +51,7 @@ class SpiralOptimization(_SpiralOptimization, Search):
         nth_process: int = None,
         population: int = 10,
         decay_rate: float = 0.99,
+        optimum: Literal["minimum", "maximum"] = "maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -61,4 +62,5 @@ class SpiralOptimization(_SpiralOptimization, Search):
             nth_process=nth_process,
             population=population,
             decay_rate=decay_rate,
+            optimum=optimum,
         )

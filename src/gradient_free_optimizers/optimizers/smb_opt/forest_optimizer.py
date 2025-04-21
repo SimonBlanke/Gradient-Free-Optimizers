@@ -58,6 +58,7 @@ class ForestOptimizer(SMBO):
         tree_regressor="extra_tree",
         tree_para={"n_estimators": 100},
         xi=0.03,
+        optimum="maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -70,6 +71,7 @@ class ForestOptimizer(SMBO):
             max_sample_size=max_sample_size,
             sampling=sampling,
             replacement=replacement,
+            optimum=optimum,
         )
 
         self.tree_regressor = tree_regressor

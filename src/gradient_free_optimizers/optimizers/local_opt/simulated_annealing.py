@@ -29,6 +29,7 @@ class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer):
         n_neighbours=3,
         annealing_rate=0.97,
         start_temp=1,
+        optimum="maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -40,6 +41,7 @@ class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer):
             epsilon=epsilon,
             distribution=distribution,
             n_neighbours=n_neighbours,
+            optimum=optimum,
         )
 
         self.annealing_rate = annealing_rate

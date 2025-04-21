@@ -34,6 +34,7 @@ class PatternSearch(BaseOptimizer):
         n_positions=4,
         pattern_size=0.25,
         reduction=0.9,
+        optimum="maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -42,6 +43,7 @@ class PatternSearch(BaseOptimizer):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
+            optimum=optimum,
         )
 
         self.n_positions = n_positions

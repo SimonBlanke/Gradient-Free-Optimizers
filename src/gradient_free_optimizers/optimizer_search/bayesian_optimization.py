@@ -31,7 +31,7 @@ class BayesianOptimizer(_BayesianOptimizer, Search):
         If None, create a new random state. If int, create a new random state
         seeded with the value.
     rand_rest_p : float
-        The probability of a random iteration during the the search process.
+        The probability of a random iteration during the search process.
     warm_start_smbo
         The warm start for SMBO.
     max_sample_size : int
@@ -63,6 +63,7 @@ class BayesianOptimizer(_BayesianOptimizer, Search):
         replacement: bool = True,
         gpr=gaussian_process["gp_nonlinear"],
         xi: float = 0.03,
+        optimum: Literal["minimum", "maximum"] = "maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -77,4 +78,5 @@ class BayesianOptimizer(_BayesianOptimizer, Search):
             replacement=replacement,
             gpr=gpr,
             xi=xi,
+            optimum=optimum,
         )

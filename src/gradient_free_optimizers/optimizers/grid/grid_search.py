@@ -25,6 +25,7 @@ class GridSearchOptimizer(BaseOptimizer):
         nth_process=None,
         step_size=1,
         direction="diagonal",
+        optimum="maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -33,6 +34,7 @@ class GridSearchOptimizer(BaseOptimizer):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
+            optimum=optimum,
         )
 
         self.step_size = step_size

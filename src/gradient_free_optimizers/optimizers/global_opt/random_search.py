@@ -22,6 +22,7 @@ class RandomSearchOptimizer(BaseOptimizer):
         random_state=None,
         rand_rest_p=0,
         nth_process=None,
+        optimum="maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -30,6 +31,7 @@ class RandomSearchOptimizer(BaseOptimizer):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
+            optimum=optimum
         )
 
     @BaseOptimizer.track_new_pos

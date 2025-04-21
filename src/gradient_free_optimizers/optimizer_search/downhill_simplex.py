@@ -56,6 +56,7 @@ class DownhillSimplexOptimizer(_DownhillSimplexOptimizer, Search):
         gamma: float = 2,
         beta: float = 0.5,
         sigma: float = 0.5,
+        optimum: Literal["minimum", "maximum"] = "maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -68,4 +69,5 @@ class DownhillSimplexOptimizer(_DownhillSimplexOptimizer, Search):
             gamma=gamma,
             beta=beta,
             sigma=sigma,
+            optimum=optimum,
         )
