@@ -64,7 +64,6 @@ class SimulatedAnnealingOptimizer(_SimulatedAnnealingOptimizer, Search):
         n_neighbours: int = 3,
         annealing_rate: float = 0.97,
         start_temp: float = 1,
-        optimum: Literal["minimum", "maximum"] = "maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -78,5 +77,4 @@ class SimulatedAnnealingOptimizer(_SimulatedAnnealingOptimizer, Search):
             n_neighbours=n_neighbours,
             annealing_rate=annealing_rate,
             start_temp=start_temp,
-            optimum=optimum,
         )

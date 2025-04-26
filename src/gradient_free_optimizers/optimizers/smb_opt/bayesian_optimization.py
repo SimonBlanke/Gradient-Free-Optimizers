@@ -50,7 +50,6 @@ class BayesianOptimizer(SMBO):
         replacement=True,
         gpr=gaussian_process["gp_nonlinear"],
         xi=0.03,
-        optimum="maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -63,7 +62,6 @@ class BayesianOptimizer(SMBO):
             max_sample_size=max_sample_size,
             sampling=sampling,
             replacement=replacement,
-            optimum=optimum
         )
 
         self.gpr = gpr

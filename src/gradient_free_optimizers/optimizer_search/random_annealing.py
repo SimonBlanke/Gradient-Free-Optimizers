@@ -30,7 +30,7 @@ class RandomAnnealingOptimizer(_RandomAnnealingOptimizer, Search):
         If None, create a new random state. If int, create a new random state
         seeded with the value.
     rand_rest_p : float
-        The probability of a random iteration during the the search process.
+        The probability of a random iteration during the search process.
     epsilon : float
         The step-size for the climbing.
     distribution : str
@@ -62,7 +62,6 @@ class RandomAnnealingOptimizer(_RandomAnnealingOptimizer, Search):
         n_neighbours: int = 3,
         annealing_rate=0.98,
         start_temp=10,
-        optimum: Literal["minimum", "maximum"] = "maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -76,5 +75,4 @@ class RandomAnnealingOptimizer(_RandomAnnealingOptimizer, Search):
             n_neighbours=n_neighbours,
             annealing_rate=annealing_rate,
             start_temp=start_temp,
-            optimum=optimum,
         )

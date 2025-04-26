@@ -86,7 +86,6 @@ class DirectAlgorithm(SMBO):
         max_sample_size=10000000,
         sampling={"random": 1000000},
         replacement=True,
-        optimum="maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -99,7 +98,6 @@ class DirectAlgorithm(SMBO):
             max_sample_size=max_sample_size,
             sampling=sampling,
             replacement=replacement,
-            optimum=optimum,
         )
 
         self.subspace_l = []

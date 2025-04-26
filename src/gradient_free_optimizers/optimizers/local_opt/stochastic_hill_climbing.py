@@ -32,7 +32,6 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer, ParameterTracker):
         distribution="normal",
         n_neighbours=3,
         p_accept=0.5,
-        optimum="maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -44,7 +43,6 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer, ParameterTracker):
             epsilon=epsilon,
             distribution=distribution,
             n_neighbours=n_neighbours,
-            optimum=optimum,
         )
 
         self.p_accept = p_accept

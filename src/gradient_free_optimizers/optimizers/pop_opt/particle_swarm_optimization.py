@@ -30,7 +30,6 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         cognitive_weight=0.5,
         social_weight=0.5,
         temp_weight=0.2,
-        optimum="maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -39,7 +38,6 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
-            optimum=optimum,
         )
 
         self.population = population

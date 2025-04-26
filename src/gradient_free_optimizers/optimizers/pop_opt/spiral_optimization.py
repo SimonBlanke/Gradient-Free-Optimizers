@@ -39,7 +39,6 @@ class SpiralOptimization(BasePopulationOptimizer):
         nth_process=None,
         population=10,
         decay_rate=0.99,
-        optimum="maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -48,7 +47,6 @@ class SpiralOptimization(BasePopulationOptimizer):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
-            optimum=optimum,
         )
 
         self.population = population

@@ -63,7 +63,6 @@ class EvolutionStrategyOptimizer(_EvolutionStrategyOptimizer, Search):
         replace_parents=False,
         mutation_rate=0.7,
         crossover_rate=0.3,
-        optimum: Literal["minimum", "maximum"] = "maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -77,5 +76,4 @@ class EvolutionStrategyOptimizer(_EvolutionStrategyOptimizer, Search):
             replace_parents=replace_parents,
             mutation_rate=mutation_rate,
             crossover_rate=crossover_rate,
-            optimum=optimum,
         )

@@ -50,7 +50,6 @@ class GridSearchOptimizer(_GridSearchOptimizer, Search):
         nth_process: int = None,
         step_size: int = 1,
         direction: Literal["diagonal", "orthogonal"] = "diagonal",
-        optimum: Literal["minimum", "maximum"] = "maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -61,5 +60,4 @@ class GridSearchOptimizer(_GridSearchOptimizer, Search):
             nth_process=nth_process,
             step_size=step_size,
             direction=direction,
-            optimum=optimum
         )

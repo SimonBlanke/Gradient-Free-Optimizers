@@ -32,11 +32,9 @@ class CoreOptimizer(SearchTracker):
         random_state,
         rand_rest_p,
         nth_process,
-        optimum,
     ):
         super().__init__()
 
-        self.optimum = optimum
         self.search_space = search_space
         self.initialize = initialize
         self.constraints = constraints

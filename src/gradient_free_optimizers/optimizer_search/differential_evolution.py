@@ -55,7 +55,6 @@ class DifferentialEvolutionOptimizer(_DifferentialEvolutionOptimizer, Search):
         population=10,
         mutation_rate=0.9,
         crossover_rate=0.9,
-        optimum: Literal["minimum", "maximum"] = "maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -67,5 +66,4 @@ class DifferentialEvolutionOptimizer(_DifferentialEvolutionOptimizer, Search):
             population=population,
             mutation_rate=mutation_rate,
             crossover_rate=crossover_rate,
-            optimum=optimum,
         )

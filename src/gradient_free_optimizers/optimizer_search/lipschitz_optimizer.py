@@ -56,7 +56,6 @@ class LipschitzOptimizer(_LipschitzOptimizer, Search):
         max_sample_size: int = 10000000,
         sampling: Dict[Literal["random"], int] = {"random": 1000000},
         replacement: bool = True,
-        optimum: Literal["minimum", "maximum"] = "maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -69,5 +68,4 @@ class LipschitzOptimizer(_LipschitzOptimizer, Search):
             max_sample_size=max_sample_size,
             sampling=sampling,
             replacement=replacement,
-            optimum=optimum,
         )

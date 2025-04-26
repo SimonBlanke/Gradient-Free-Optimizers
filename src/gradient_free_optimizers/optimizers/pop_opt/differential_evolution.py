@@ -28,7 +28,6 @@ class DifferentialEvolutionOptimizer(EvolutionaryAlgorithmOptimizer):
         population=10,
         mutation_rate=0.9,
         crossover_rate=0.9,
-        optimum="maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -37,7 +36,6 @@ class DifferentialEvolutionOptimizer(EvolutionaryAlgorithmOptimizer):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
-            optimum=optimum,
         )
 
         self.population = population

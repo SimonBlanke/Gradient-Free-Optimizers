@@ -64,7 +64,6 @@ class LipschitzOptimizer(SMBO):
         max_sample_size=10000000,
         sampling={"random": 1000000},
         replacement=True,
-        optimum="maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -77,7 +76,6 @@ class LipschitzOptimizer(SMBO):
             max_sample_size=max_sample_size,
             sampling=sampling,
             replacement=replacement,
-            optimum=optimum,
         )
 
     def finish_initialization(self):

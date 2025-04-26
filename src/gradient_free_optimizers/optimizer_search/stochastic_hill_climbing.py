@@ -61,7 +61,6 @@ class StochasticHillClimbingOptimizer(_StochasticHillClimbingOptimizer, Search):
         ] = "normal",
         n_neighbours: int = 3,
         p_accept: float = 0.5,
-        optimum: Literal["minimum", "maximum"] = "maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -74,5 +73,4 @@ class StochasticHillClimbingOptimizer(_StochasticHillClimbingOptimizer, Search):
             distribution=distribution,
             n_neighbours=n_neighbours,
             p_accept=p_accept,
-            optimum=optimum,
         )

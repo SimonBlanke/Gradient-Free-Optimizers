@@ -62,7 +62,6 @@ class GeneticAlgorithmOptimizer(_GeneticAlgorithmOptimizer, Search):
         n_parents=2,
         mutation_rate=0.5,
         crossover_rate=0.5,
-        optimum: Literal["minimum", "maximum"] = "maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -77,5 +76,4 @@ class GeneticAlgorithmOptimizer(_GeneticAlgorithmOptimizer, Search):
             n_parents=n_parents,
             mutation_rate=mutation_rate,
             crossover_rate=crossover_rate,
-            optimum=optimum,
         )

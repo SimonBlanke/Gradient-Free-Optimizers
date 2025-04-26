@@ -41,7 +41,6 @@ class RandomSearchOptimizer(_RandomSearchOptimizer, Search):
         constraints: List[callable] = [],
         random_state: int = None,
         nth_process: int = None,
-        optimum: Literal["minimum", "maximum"] = "maximum"
     ):
         super().__init__(
             search_space=search_space,
@@ -49,5 +48,4 @@ class RandomSearchOptimizer(_RandomSearchOptimizer, Search):
             constraints=constraints,
             random_state=random_state,
             nth_process=nth_process,
-            optimum=optimum,
         )

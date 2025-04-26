@@ -32,7 +32,6 @@ class HillClimbingOptimizer(BaseOptimizer):
         epsilon=0.03,
         distribution="normal",
         n_neighbours=3,
-        optimum="maximum",
     ):
 
         super().__init__(
@@ -42,7 +41,6 @@ class HillClimbingOptimizer(BaseOptimizer):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
-            optimum=optimum
         )
         self.epsilon = epsilon
         self.distribution = distribution

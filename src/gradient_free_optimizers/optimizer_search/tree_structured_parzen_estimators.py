@@ -61,7 +61,6 @@ class TreeStructuredParzenEstimators(_TreeStructuredParzenEstimators, Search):
         sampling: Dict[Literal["random"], int] = {"random": 1000000},
         replacement: bool = True,
         gamma_tpe=0.2,
-        optimum: Literal["minimum", "maximum"] = "maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -75,5 +74,4 @@ class TreeStructuredParzenEstimators(_TreeStructuredParzenEstimators, Search):
             sampling=sampling,
             replacement=replacement,
             gamma_tpe=gamma_tpe,
-            optimum=optimum,
         )

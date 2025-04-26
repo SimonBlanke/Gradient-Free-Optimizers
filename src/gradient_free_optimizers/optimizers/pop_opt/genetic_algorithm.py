@@ -31,7 +31,6 @@ class GeneticAlgorithmOptimizer(EvolutionaryAlgorithmOptimizer):
         n_parents=2,
         mutation_rate=0.5,
         crossover_rate=0.5,
-        optimum="maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -40,7 +39,6 @@ class GeneticAlgorithmOptimizer(EvolutionaryAlgorithmOptimizer):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
-            optimum=optimum,
         )
 
         self.population = population

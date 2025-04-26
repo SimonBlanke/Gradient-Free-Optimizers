@@ -63,7 +63,6 @@ class BayesianOptimizer(_BayesianOptimizer, Search):
         replacement: bool = True,
         gpr=gaussian_process["gp_nonlinear"],
         xi: float = 0.03,
-        optimum: Literal["minimum", "maximum"] = "maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -78,5 +77,4 @@ class BayesianOptimizer(_BayesianOptimizer, Search):
             replacement=replacement,
             gpr=gpr,
             xi=xi,
-            optimum=optimum,
         )

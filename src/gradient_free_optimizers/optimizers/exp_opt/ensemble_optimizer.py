@@ -53,7 +53,6 @@ class EnsembleOptimizer(SMBO):
         sampling={"random": 1000000},
         replacement=True,
         warnings=100000000,
-        optimum="maximum",
         **kwargs,
     ):
         super().__init__(
@@ -70,7 +69,6 @@ class EnsembleOptimizer(SMBO):
             max_sample_size=max_sample_size,
             sampling=sampling,
             replacement=replacement,
-            optimum=optimum,
         )
         self.estimators = estimators
         self.regr = EnsembleRegressor(estimators)

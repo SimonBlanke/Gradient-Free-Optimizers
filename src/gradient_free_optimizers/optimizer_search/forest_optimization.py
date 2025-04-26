@@ -65,7 +65,6 @@ class ForestOptimizer(_ForestOptimizer, Search):
         tree_regressor="extra_tree",
         tree_para={"n_estimators": 100},
         xi=0.03,
-        optimum: Literal["minimum", "maximum"] = "maximum",
     ):
         super().__init__(
             search_space=search_space,
@@ -81,5 +80,4 @@ class ForestOptimizer(_ForestOptimizer, Search):
             tree_regressor=tree_regressor,
             tree_para=tree_para,
             xi=xi,
-            optimum=optimum,
         )
