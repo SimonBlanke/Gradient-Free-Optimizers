@@ -30,7 +30,7 @@ class PowellsMethod(_PowellsMethod, Search):
         If None, create a new random state. If int, create a new random state
         seeded with the value.
     rand_rest_p : float
-        The probability of a random iteration during the the search process.
+        The probability of a random iteration during the search process.
     epsilon : float
         The step-size for the climbing.
     distribution : str

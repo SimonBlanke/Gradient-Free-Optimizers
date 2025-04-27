@@ -79,7 +79,9 @@ class Search(TimesTracker, SearchStatistics):
         memory=True,
         memory_warm_start=None,
         verbosity=["progress_bar", "print_results", "print_times"],
+        optimum = "maximum",
     ):
+        self.optimum = optimum
         self.init_search(
             objective_function,
             n_iter,
@@ -110,7 +112,10 @@ class Search(TimesTracker, SearchStatistics):
         memory_warm_start,
         verbosity,
     ):
-        self.objective_function = objective_function
+        if getattr(self, "optimum", "maximum") == "minimum":
+            self.objective_function = lambda pos: -objective_function(pos)
+        else:
+            self.objective_function = objective_function
         self.n_iter = n_iter
         self.max_time = max_time
         self.max_score = max_score
