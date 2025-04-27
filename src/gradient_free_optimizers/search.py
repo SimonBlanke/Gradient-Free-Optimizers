@@ -113,7 +113,7 @@ class Search(TimesTracker, SearchStatistics):
         memory_warm_start,
         verbosity,
     ):
-        if self.optimum == "minimum":
+        if getattr(self, "optimum", "maximum") == "minimum":
             self.objective_function = lambda pos: -objective_function(pos)
         else:
             self.objective_function = objective_function
