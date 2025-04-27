@@ -18,6 +18,7 @@ class Search(TimesTracker, SearchStatistics):
         super().__init__()
 
         self.optimizers = []
+        self.optimum = "maximum"
         self.new_results_list = []
         self.all_results_list = []
 
