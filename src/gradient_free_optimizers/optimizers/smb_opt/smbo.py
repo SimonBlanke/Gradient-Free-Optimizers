@@ -58,7 +58,7 @@ class SMBO(BaseOptimizer):
                 search_space_dim = self.conv.search_space[para_name]
 
                 int_idx = np.nonzero(
-                    np.in1d(search_data_dim, search_space_dim)
+                    np.isin(search_data_dim, search_space_dim)
                 )[0]
                 int_idx_list.append(int_idx)
 
