@@ -64,9 +64,6 @@
         <a href="https://codeclimate.com/github/SimonBlanke/Gradient-Free-Optimizers">
         <img src="https://img.shields.io/codeclimate/maintainability/SimonBlanke/Gradient-Free-Optimizers?style=flat-square&logo=code-climate" alt="img not loaded: try F5 :)">
         </a>
-        <a href="https://scrutinizer-ci.com/g/SimonBlanke/Gradient-Free-Optimizers/">
-        <img src="https://img.shields.io/scrutinizer/quality/g/SimonBlanke/Gradient-Free-Optimizers?style=flat-square&logo=scrutinizer-ci" alt="img not loaded: try F5 :)">
-        </a>
       </td>
     </tr>
     <tr align="left" valign="center">
