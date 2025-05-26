@@ -2,6 +2,8 @@ import pytest
 from tqdm import tqdm
 import numpy as np
 
+from surfaces.test_functions.mathematical import RastriginFunction
+
 from gradient_free_optimizers import (
     RandomSearchOptimizer,
     RandomRestartHillClimbingOptimizer,
