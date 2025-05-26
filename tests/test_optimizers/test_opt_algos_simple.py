@@ -1,5 +1,6 @@
 from gradient_free_optimizers.optimizers.core_optimizer import search_tracker
 import pytest
+import numpy as np
 
 from gradient_free_optimizers import (
     HillClimbingOptimizer,
@@ -20,8 +21,6 @@ from gradient_free_optimizers import (
     TreeStructuredParzenEstimators,
     ForestOptimizer,
 )
-
-from surfaces.test_functions.mathematical import SphereFunction
 
 optimizers = (
     "Optimizer",
@@ -47,13 +46,20 @@ optimizers = (
 )
 
 
-sphere_function = SphereFunction(n_dim=2, metric="score")
+def objective_function(para):
+    score = -para["x1"] * para["x1"]
+    return score
+
+
+search_space = {
+    "x1": np.arange(0, 10, 1),
+}
 
 
 @pytest.mark.parametrize(*optimizers)
 def test_opt_algos_0(Optimizer):
-    opt = Optimizer(sphere_function.search_space())
-    opt.search(sphere_function.objective_function, n_iter=15)
+    opt = Optimizer(search_space)
+    opt.search(objective_function, n_iter=15)
 
     _ = opt.best_para
     _ = opt.best_score

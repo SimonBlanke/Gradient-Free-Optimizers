@@ -5,10 +5,7 @@ import pandas as pd
 
 
 from ._parametrize import optimizers_non_deterministic as optimizers
-from surfaces.test_functions.mathematical import AckleyFunction
 from gradient_free_optimizers import DirectAlgorithm
-
-ackkley_function = AckleyFunction()
 
 
 def objective_function(para):
@@ -33,13 +30,13 @@ n_last = n_iter - n_random
 def test_random_state_0(Optimizer):
     opt0 = Optimizer(search_space, initialize={"random": n_random}, random_state=1)
     opt0.search(
-        ackkley_function.objective_function,
+        objective_function,
         n_iter=n_iter,
     )
 
     opt1 = Optimizer(search_space, initialize={"random": n_random}, random_state=1)
     opt1.search(
-        ackkley_function.objective_function,
+        objective_function,
         n_iter=n_iter,
     )
 
@@ -56,13 +53,13 @@ def test_random_state_0(Optimizer):
 def test_random_state_1(Optimizer):
     opt0 = Optimizer(search_space, initialize={"random": n_random}, random_state=10)
     opt0.search(
-        ackkley_function.objective_function,
+        objective_function,
         n_iter=n_iter,
     )
 
     opt1 = Optimizer(search_space, initialize={"random": n_random}, random_state=10)
     opt1.search(
-        ackkley_function.objective_function,
+        objective_function,
         n_iter=n_iter,
     )
 
@@ -76,13 +73,13 @@ def test_random_state_1(Optimizer):
 def test_random_state_2(Optimizer):
     opt0 = Optimizer(search_space, initialize={"random": n_random}, random_state=1)
     opt0.search(
-        ackkley_function.objective_function,
+        objective_function,
         n_iter=n_iter,
     )
 
     opt1 = Optimizer(search_space, initialize={"random": n_random}, random_state=10)
     opt1.search(
-        ackkley_function.objective_function,
+        objective_function,
         n_iter=n_iter,
     )
 
@@ -100,7 +97,7 @@ def test_random_state_direct():
         search_space, initialize={"random": n_random}, random_state=1
     )
     opt0.search(
-        ackkley_function.objective_function,
+        objective_function,
         n_iter=n_iter,
     )
 
@@ -108,7 +105,7 @@ def test_random_state_direct():
         search_space, initialize={"random": n_random}, random_state=10
     )
     opt1.search(
-        ackkley_function.objective_function,
+        objective_function,
         n_iter=n_iter,
     )
 
@@ -124,10 +121,10 @@ def test_random_state_direct():
 @pytest.mark.parametrize(*optimizers)
 def test_no_random_state_0(Optimizer):
     opt0 = Optimizer(search_space, initialize={"random": n_random})
-    opt0.search(ackkley_function.objective_function, n_iter=n_iter)
+    opt0.search(objective_function, n_iter=n_iter)
 
     opt1 = Optimizer(search_space, initialize={"random": n_random})
-    opt1.search(ackkley_function.objective_function, n_iter=n_iter)
+    opt1.search(objective_function, n_iter=n_iter)
 
     print("\n opt0.search_data \n", opt0.search_data)
     print("\n opt1.search_data \n", opt1.search_data)
