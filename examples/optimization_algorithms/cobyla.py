@@ -9,7 +9,7 @@ def sphere_function(para: np.array):
     return -(x * x + y * y)
 
 def constraint_1(para):
-    return para[0] > -5
+    return para[0] + 5
 
 search_space = {
     "x": np.arange(-10, 10, 0.1),

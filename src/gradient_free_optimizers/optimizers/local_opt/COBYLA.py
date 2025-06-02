@@ -1,9 +1,3 @@
-# copyright: hyperactive developers, MIT License (see LICENSE file)
-
-# todo: write an informative docstring for the file or module, remove the above
-
-__author__ = ["SimonBlanke", "yashnator"]
-
 from ..base_optimizer import BaseOptimizer
 
 import numpy as np
@@ -57,15 +51,58 @@ class COBYLA(BaseOptimizer):
     ... )
     >>> opt.search(sphere_function, n_iter=10)
     """
+    
+    name = "COBYLA"
+    _name_ = "COBYLA"
+    __name__ = "COBYLA"
 
-    _tags = {
-        "authors": ["SimonBlanke", "yashnator"],
-    }
+    optimizer_type = "local"
+    computationally_expensive = False
+    
+    def __init__(
+        self,
+        search_space,
+        x_0: np.array, 
+        rho_beg: int, 
+        rho_end: int, 
+        initialize={"grid": 4, "random": 2, "vertices": 4},
+        constraints=[],
+        random_state=None,
+        rand_rest_p=0,
+        nth_process=None,
+        alpha = 0.25,
+        beta = 2.1,
+    ):
+        super().__init__(
+            search_space=search_space,
+            initialize=initialize,
+            constraints=constraints,
+            random_state=random_state,
+            rand_rest_p=rand_rest_p,
+            nth_process=nth_process,
+        )
+        self.dim = np.shape(x_0)[0]
+        self.simplex = self._generate_initial_simplex(x_0, rho_beg)
+        self.rho_beg = rho_beg
+        self.rho_end = rho_end
+        self._rho = rho_beg
+        
+        self._mu = 0
+        self.state = 0
+        self.FLAG = 0
+        
+        if alpha <= 0 or alpha >= 1:
+            raise ValueError("Parameter alpha must belong to the range (0, 1)")
+        
+        if beta <= 1:
+            raise ValueError("Parameter beta must belong to the range (1, ∞)")
+        
+        self.alpha = alpha
+        self.beta = beta
     
     def _generate_initial_simplex(self, x_0_initial, rho_beg):
         n = x_0_initial.shape[0]
         arr = np.ones((n + 1, 1)) * x_0_initial + rho_beg * np.eye(n + 1, n)
-        print(arr)
         return arr
     
     def _vertices_to_oppsite_face_distances(self):
@@ -76,9 +113,6 @@ class COBYLA(BaseOptimizer):
         For each vertex, the opposite hyperplane is obtained after removing the current
         vertex and then finding the projection on the subspace spanned by the hyperplane.
         The distance is then the L2 norm between projection and the current vertex.
-        
-        Args:
-            self: instance of current COBYLA class
 
         Returns:
             distances: (n+1,) array of distances from each vertex to its opposite face.
@@ -96,6 +130,22 @@ class COBYLA(BaseOptimizer):
         return distances
     
     def _is_simplex_acceptable(self):
+        """
+        Determine whether the current simplex is acceptable according to COBYLA criteria.
+
+        In COBYLA, a simplex is acceptable if:
+        1. The distances between each vertex and the first vertex (η_j) do not exceed 
+        a threshold defined by `beta * rho`, controlling simplex edge lengths.
+        2. The distance from each vertex to its opposite (n-1)-dimensional face (σ_j)
+        is not too small, ensuring the simplex is well-shaped. These distances must 
+        exceed a threshold given by `alpha * rho`.
+
+        This function enforces these two geometric conditions to ensure that the simplex
+        maintains good numerical stability and approximation quality.
+
+        Returns:
+            bool: True if both η and σ conditions are satisfied, False otherwise.
+        """
         eta = [np.linalg.norm(x - self.simplex[0]) for x in self.simplex]
         eta_constraint = self.beta * self._rho
         for eta_j in eta:
@@ -103,59 +153,42 @@ class COBYLA(BaseOptimizer):
                 return False
         sigma = self._vertices_to_oppsite_face_distances()
         sigma_constraint = self.alpha * self._rho
-        print(sigma)
         for sigma_j in sigma:
             if sigma_j < sigma_constraint:
                 return False
         return True
     
     def _eval_constraints(self, pos):
-        # TODO: evalute constraints in optimized way
-        
-        return None
-    
-    def _merit_value(self, pos):
-        # TODO: write the merit function using the _eval_constraints
-        return 0
+        """
+        Evaluates constraints for the given position
 
-    def __init__(
-        self,
-        search_space,
-        x_0: np.array, 
-        rho_beg: int, 
-        rho_end: int, 
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        constraints=[],
-        random_state=None,
-        rand_rest_p=0,
-        nth_process=None,
-        alpha = 0.25,
-        beta = 2.1
-    ):
-        super().__init__(
-            search_space=search_space,
-            initialize=initialize,
-            constraints=constraints,
-            random_state=random_state,
-            rand_rest_p=rand_rest_p,
-            nth_process=nth_process,
-        )
-        self.dim = np.shape(x_0)[0]
-        self.simplex = self._generate_initial_simplex(x_0, rho_beg)
-        self.rho_beg = rho_beg
-        self.rho_end = rho_end
-        self._rho = rho_beg
-        self.state = 0
-        self.FLAG = 0
-        
-        if alpha <= 0 or alpha >= 1:
-            raise ValueError("Parameter alpha must belong to the range (0, 1)")
-        
-        if beta <= 1:
-            raise ValueError("Parameter beta must belong to the range (1, ∞)")
-        
-        self.alpha = alpha
-        self.beta = beta
+        Returns:
+            np.array: array containing the evaluated value of constraints
+        """
+        return [np.clip(f(pos), 0, np.inf) for f in self.constraints]
+    
+    def _phi(self, pos):
+        """
+        Compute the merit function Φ used in COBYLA to evaluate candidate points. Given by:
+
+            Φ(x) = f(x) + μ * max_i(max(c_i(x), 0))
+
+        Args:
+            pos (np.array): The point in parameter space at which to evaluate the merit function.
+
+        Returns:
+            float: The value of the merit function Φ at the given point.
+        """
+        c = self._eval_constraints(pos)
+        return self.objective_function(pos) + self._mu * np.max(c)
+    
+    def _rearrange_optimum_to_top(self):
+        """
+        Rearrages simplex vertices such that first row is the optimal position
+        """
+        opt_idx = np.argmin([self._phi(vert) for vert in self.simplex])
+        if opt_idx != 0:
+            self.simplex[[0, opt_idx]] = self.simplex[[opt_idx, 0]]
 
     def iterate(self):
         # TODO: Impl
@@ -167,7 +200,7 @@ class COBYLA(BaseOptimizer):
     
     def evaluate(self, pos):
         # TODO: Impl
-        return self._merit_value(pos)
+        return self._phi(self.simplex[0])
         
     def finish_search(self):
         # TODO: Impl
