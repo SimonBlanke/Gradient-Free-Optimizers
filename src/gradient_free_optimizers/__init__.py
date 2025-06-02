@@ -31,6 +31,7 @@ from .optimizer_search import (
     TreeStructuredParzenEstimators,
     ForestOptimizer,
     EnsembleOptimizer,
+    COBYLA
 )
 
 
@@ -58,4 +59,5 @@ __all__ = [
     "TreeStructuredParzenEstimators",
     "ForestOptimizer",
     "EnsembleOptimizer",
+    "COBYLA"
 ]

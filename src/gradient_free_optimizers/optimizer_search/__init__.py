@@ -25,6 +25,7 @@ from .bayesian_optimization import BayesianOptimizer
 from .tree_structured_parzen_estimators import TreeStructuredParzenEstimators
 from .forest_optimization import ForestOptimizer
 from .ensemble_optimizer import EnsembleOptimizer
+from .COBYLA import COBYLA
 
 
 __all__ = [
@@ -51,4 +52,5 @@ __all__ = [
     "TreeStructuredParzenEstimators",
     "ForestOptimizer",
     "EnsembleOptimizer",
+    "COBYLA",
 ]

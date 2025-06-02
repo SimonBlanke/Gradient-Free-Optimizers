@@ -8,6 +8,7 @@ from .stochastic_hill_climbing import StochasticHillClimbingOptimizer
 from .repulsing_hill_climbing_optimizer import RepulsingHillClimbingOptimizer
 from .simulated_annealing import SimulatedAnnealingOptimizer
 from .downhill_simplex import DownhillSimplexOptimizer
+from .COBYLA import COBYLA
 
 __all__ = [
     "HillClimbingOptimizer",
@@ -15,4 +16,5 @@ __all__ = [
     "RepulsingHillClimbingOptimizer",
     "SimulatedAnnealingOptimizer",
     "DownhillSimplexOptimizer",
+    "COBYLA"
 ]
