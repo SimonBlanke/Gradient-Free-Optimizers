@@ -37,6 +37,7 @@ class CoreOptimizer(SearchTracker):
 
         self.search_space = search_space
         self.initialize = initialize
+        print(constraints)
         self.constraints = constraints
         self.random_state = random_state
         self.rand_rest_p = rand_rest_p
