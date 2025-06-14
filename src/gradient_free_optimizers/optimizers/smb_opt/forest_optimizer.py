@@ -53,7 +53,7 @@ class ForestOptimizer(SMBO):
         nth_process=None,
         warm_start_smbo=None,
         max_sample_size=10000000,
-        sampling={"random": 1000000},
+        sampling=None,
         replacement=True,
         tree_regressor="extra_tree",
         tree_para={"n_estimators": 100},
