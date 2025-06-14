@@ -5,7 +5,6 @@
 
 import numpy as np
 
-from sklearn.neighbors import KernelDensity
 from .smbo import SMBO
 
 
@@ -45,6 +44,8 @@ class TreeStructuredParzenEstimators(SMBO):
         )
 
         self.gamma_tpe = gamma_tpe
+
+        from sklearn.neighbors import KernelDensity
 
         kde_para = {
             "kernel": "gaussian",

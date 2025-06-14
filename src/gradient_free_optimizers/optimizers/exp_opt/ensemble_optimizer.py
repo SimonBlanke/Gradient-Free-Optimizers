@@ -3,18 +3,10 @@
 # License: MIT License
 
 import numpy as np
-from scipy.stats import norm
 
 from ..smb_opt.smbo import SMBO
 from ..smb_opt.surrogate_models import EnsembleRegressor
 from ..smb_opt.acquisition_function import ExpectedImprovement
-
-
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import GradientBoostingRegressor
-from sklearn.svm import SVR
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.neural_network import MLPRegressor
 
 
 def normalize(array):
@@ -41,12 +33,7 @@ class EnsembleOptimizer(SMBO):
         epsilon=0.03,
         distribution="normal",
         n_neighbours=3,
-        estimators=[
-            GradientBoostingRegressor(n_estimators=5),
-            # DecisionTreeRegressor(),
-            # MLPRegressor(),
-            GaussianProcessRegressor(),
-        ],
+        estimators=None,
         xi=0.01,
         warm_start_smbo=None,
         max_sample_size=10000000,
@@ -71,12 +58,26 @@ class EnsembleOptimizer(SMBO):
             replacement=replacement,
         )
         self.estimators = estimators
-        self.regr = EnsembleRegressor(estimators)
         self.xi = xi
         self.warm_start_smbo = warm_start_smbo
         self.max_sample_size = max_sample_size
         self.sampling = sampling
         self.warnings = warnings
+
+        if estimators is None:
+            from sklearn.ensemble import GradientBoostingRegressor
+            from sklearn.gaussian_process import GaussianProcessRegressor
+
+            self._estimators = [
+                GradientBoostingRegressor(n_estimators=5),
+                # DecisionTreeRegressor(),
+                # MLPRegressor(),
+                GaussianProcessRegressor(),
+            ]
+        else:
+            self._estimators = estimators
+
+        self.regr = EnsembleRegressor(self._estimators)
 
         self.init_warm_start_smbo()
 
