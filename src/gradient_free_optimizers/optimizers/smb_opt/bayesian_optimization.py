@@ -6,14 +6,10 @@ import numpy as np
 
 
 from .smbo import SMBO
-from .surrogate_models import (
-    GPR_linear,
-    GPR,
-)
 from .acquisition_function import ExpectedImprovement
 
 
-gaussian_process = {"gp_nonlinear": GPR(), "gp_linear": GPR_linear()}
+# gaussian_process = {"gp_nonlinear": GPR(), "gp_linear": GPR_linear()}
 
 
 def normalize(array):
@@ -45,9 +41,9 @@ class BayesianOptimizer(SMBO):
         nth_process=None,
         warm_start_smbo=None,
         max_sample_size=10000000,
-        sampling={"random": 1000000},
+        sampling=None,
         replacement=True,
-        gpr=gaussian_process["gp_nonlinear"],
+        gpr=None,
         xi=0.03,
     ):
         super().__init__(
@@ -64,7 +60,13 @@ class BayesianOptimizer(SMBO):
         )
 
         self.gpr = gpr
-        self.regr = gpr
+        if gpr is None:
+            from gradient_free_optimizers.optimizers.smb_opt.surrogate_models import GPR
+            self._gpr = GPR()
+        else:
+            self._gpr = gpr
+
+        self.regr = self._gpr
         self.xi = xi
 
     def finish_initialization(self):

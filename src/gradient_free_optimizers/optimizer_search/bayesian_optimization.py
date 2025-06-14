@@ -6,7 +6,6 @@ from typing import List, Dict, Literal, Union
 
 from ..search import Search
 from ..optimizers import BayesianOptimizer as _BayesianOptimizer
-from ..optimizers.smb_opt.bayesian_optimization import gaussian_process
 
 
 class BayesianOptimizer(_BayesianOptimizer, Search):
@@ -61,7 +60,7 @@ class BayesianOptimizer(_BayesianOptimizer, Search):
         max_sample_size: int = 10000000,
         sampling: Dict[Literal["random"], int] = {"random": 1000000},
         replacement: bool = True,
-        gpr=gaussian_process["gp_nonlinear"],
+        gpr=None,
         xi: float = 0.03,
     ):
         super().__init__(

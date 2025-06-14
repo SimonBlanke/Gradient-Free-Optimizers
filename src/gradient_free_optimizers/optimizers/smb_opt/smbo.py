@@ -23,7 +23,7 @@ class SMBO(BaseOptimizer):
         nth_process=None,
         warm_start_smbo=None,
         max_sample_size=10000000,
-        sampling={"random": 1000000},
+        sampling=None,
         replacement=True,
     ):
         super().__init__(
@@ -39,6 +39,11 @@ class SMBO(BaseOptimizer):
         self.max_sample_size = max_sample_size
         self.sampling = sampling
         self.replacement = replacement
+
+        if sampling is None:
+            self._sampling_dict = {"random": 1000000}
+        else:
+            self._sampling_dict = sampling
 
         self.sampler = InitialSampler(self.conv, max_sample_size)
 
@@ -97,13 +102,13 @@ class SMBO(BaseOptimizer):
         return wrapper
 
     def _sampling(self, all_pos_comb):
-        if self.sampling is False:
+        if self._sampling_dict is False:
             return all_pos_comb
-        elif "random" in self.sampling:
+        elif "random" in self._sampling_dict:
             return self.random_sampling(all_pos_comb)
 
     def random_sampling(self, pos_comb):
-        n_samples = self.sampling["random"]
+        n_samples = self._sampling_dict["random"]
         n_pos_comb = pos_comb.shape[0]
 
         if n_pos_comb <= n_samples:
