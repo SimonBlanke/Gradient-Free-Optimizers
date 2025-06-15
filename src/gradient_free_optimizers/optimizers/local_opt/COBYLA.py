@@ -1,6 +1,7 @@
 from ..base_optimizer import BaseOptimizer
 
 import numpy as np
+from scipy.optimize import linprog
 
 class COBYLA(BaseOptimizer):
     """TODO: write docstring
@@ -73,6 +74,12 @@ class COBYLA(BaseOptimizer):
         alpha = 0.25,
         beta = 2.1,
     ):
+        if alpha <= 0 or alpha >= 1:
+            raise ValueError("Parameter alpha must belong to the range (0, 1)")
+        
+        if beta <= 1:
+            raise ValueError("Parameter beta must belong to the range (1, ∞)")
+        
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -90,13 +97,6 @@ class COBYLA(BaseOptimizer):
         self._mu = 0
         self.state = 0
         self.FLAG = 0
-        
-        if alpha <= 0 or alpha >= 1:
-            raise ValueError("Parameter alpha must belong to the range (0, 1)")
-        
-        if beta <= 1:
-            raise ValueError("Parameter beta must belong to the range (1, ∞)")
-        
         self.alpha = alpha
         self.beta = beta
     
@@ -118,7 +118,7 @@ class COBYLA(BaseOptimizer):
             distances: (n+1,) array of distances from each vertex to its opposite face.
         """
         distances = np.zeros(self.dim + 1)
-        for j in range(0, self.dim + 1):
+        for j in range(self.dim + 1):
             face_vertices = np.delete(self.simplex, j, axis=0) 
             start_vertex = face_vertices[0]
             A = np.stack([v - start_vertex for v in face_vertices[1:]], axis=1)
@@ -189,9 +189,62 @@ class COBYLA(BaseOptimizer):
         opt_idx = np.argmin([self._phi(vert) for vert in self.simplex])
         if opt_idx != 0:
             self.simplex[[0, opt_idx]] = self.simplex[[opt_idx, 0]]
+            
+    def _linear_approx(self, vert_index, f: callable):
+        """
+        Builds a linear approximation of function f at simplex[vert_index],
+        using the other n vertices of the simplex for interpolation.
+
+        Returns a function: approx(x) = f(x_j) + grad^T @ (x - x_j)
+        """
+        x_j = self.simplex[vert_index]
+        remaining_vertices = np.delete(self.simplex, vert_index, axis=0)
+
+        A = remaining_vertices - x_j 
+        f_xj = f(x_j)
+        b = np.array([f(x_i) - f_xj for x_i in remaining_vertices])
+
+        # Solve for grad
+        # A * grad.T  = grad(xi - xj)
+        grad = np.linalg.solve(A, b)
+
+        return (f_xj, grad)
+
+    def _linear_approx_at_x0(self):
+        func_approx = self._linear_approx(0, self.objective_function)
+        constraint_approx = [self._linear_approx(0, c_i) for c_i in self.constraints]
+        return (func_approx, constraint_approx)
+    
+    def _solve_LP(self):
+        (f0, grad_f), constraint_approximations = self._linear_approx_at_x0()
+        # print(f0)
+        # print(grad_f)
+        # print(constraint_approximations)
+        x0 = self.simplex[0]
+        c = grad_f
+        A_ub = []
+        b_ub = []
+        for (ci_val, grad_ci) in constraint_approximations:
+            # grad_ci^T s ≥ -ci_val  =>  -grad_ci^T s ≤ ci_val
+            A_ub.append(-grad_ci)
+            b_ub.append(ci_val)
+        bounds = [(-self._rho, self._rho) for _ in range(len(x0))]
+        res = linprog(c=c, A_ub=A_ub, b_ub=b_ub, bounds=bounds, method='highs')
+        if res.success:
+            s = res.x
+            self.simplex[0] = x0 + s
+        else:
+            raise RuntimeError("LP step failed: " + res.message)
+
+            
+    def _revise_mu(self):
+        return None
 
     def iterate(self):
         # TODO: Impl
+        # TODO: Check if simplex becomes degenerate
+        self._rearrange_optimum_to_top()
+        self._solve_LP()
         return self.simplex[0]
     
     def _score(self, pos):
