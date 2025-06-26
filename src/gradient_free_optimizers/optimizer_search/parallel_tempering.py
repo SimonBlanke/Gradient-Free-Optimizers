@@ -33,13 +33,10 @@ class ParallelTemperingOptimizer(_ParallelTemperingOptimizer, Search):
         seeded with the value.
     rand_rest_p : float
         The probability of a random iteration during the the search process.
-    epsilon : float
-        The step-size for the climbing.
-    distribution : str
-        The type of distribution to sample from.
-    n_neighbours : int
-        The number of neighbours to sample and evaluate before moving to the best
-        of those neighbours.
+    population : int
+        The number of simulated annealers in the population.
+    n_iter_swap : int
+        The number of iterations the algorithm performs before switching temperatures of the individual optimizers in the population.
     """
 
     def __init__(
