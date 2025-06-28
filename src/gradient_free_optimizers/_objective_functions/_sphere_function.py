@@ -1,7 +1,9 @@
 import numpy as np
 
+from ._base_objective_function import BaseFunction
 
-class SphereFunction:
+
+class SphereFunction(BaseFunction):
     def __init__(self, n_dim, A=1):
         self.n_dim = n_dim
         self.A = A
