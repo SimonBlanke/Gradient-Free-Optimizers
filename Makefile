@@ -26,7 +26,7 @@ test-visual:
 		python _visualize_search_paths.py
 
 test-gfo:
-	python -m pytest -x -p no:warnings -rfEX tests/
+	python -m pytest -x -p no:warnings -rfEX tests/ src/gradient_free_optimizers/
 
 test-examples:
 	cd tests; \
