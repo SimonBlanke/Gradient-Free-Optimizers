@@ -4,6 +4,22 @@ from ._base_function import BaseFunction
 
 
 class AckleyFunction(BaseFunction):
+    """
+    Implements the Ackley function, a common benchmark function for optimization
+    algorithms. Inherits from BaseFunction.
+
+    Attributes:
+        A (float): A constant used in the Ackley function.
+        angle (float): The angle in radians used for cosine calculations.
+
+    Methods:
+        objective_function(para): Computes the Ackley function value for given
+        parameters 'x0' and 'x1'.
+
+        search_space: Defines the search space for the parameters 'x0' and 'x1',
+        ranging from -5 to 5 with a step of 0.1.
+    """
+
     def __init__(self):
         self.A = 20
         self.angle = 2 * np.pi
