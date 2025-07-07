@@ -60,3 +60,44 @@ class KernelDensityEstimator:
         self._log_norm_const = -0.5 * d * np.log(2 * np.pi) - d * np.log(self.bandwidth)
         self._fitted = True
         return self
+
+    def score_samples(self, X: np.ndarray, log: bool = True) -> np.ndarray:
+        """
+        Evaluate (log-)density for each query point.
+
+        Parameters
+        ----------
+        X : (n_queries, n_features) ndarray
+            Locations where the density should be estimated.
+        log : bool, default=True
+            If True, return log-density; otherwise return density.
+
+        Returns
+        -------
+        density : (n_queries,) ndarray
+            Estimated (log-)density values.
+        """
+        if not self._fitted:
+            raise RuntimeError("Estimator must be fitted before calling score_samples.")
+
+        X = np.asarray(X, dtype=float)
+        if X.ndim == 1:
+            X = X[:, None]
+
+        # Pairwise squared Euclidean distances
+        diff = (X[:, None, :] - self.X_train[None, :, :]) / self.bandwidth
+        sq_dist = np.sum(diff * diff, axis=-1)  # shape: (n_queries, n_samples)
+
+        # Log-kernel values
+        log_kernel = self._log_norm_const - 0.5 * sq_dist
+
+        # Numerically stable summation via logsumexp
+        log_density = logsumexp(log_kernel, axis=1) - np.log(self.n_samples)
+
+        if log:
+            return log_density
+        else:
+            # Avoid exponentiating extremely small values
+            density = np.exp(log_density)
+            density[density < self.atol] = 0.0
+            return density
