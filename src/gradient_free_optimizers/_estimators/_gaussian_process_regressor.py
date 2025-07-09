@@ -128,3 +128,14 @@ class GaussianProcessRegressor:
         var = K_starstar - np.sum(v**2, axis=0)
         std = np.sqrt(np.maximum(var, 0))
         return mu, std
+
+    @staticmethod
+    def _rbf_kernel(X1, X2, theta, diag=False):
+        log_ell, log_sigma_f, _ = theta
+        if diag:
+            return np.exp(2 * log_sigma_f) * np.ones(X1.shape[0])
+
+        X1 = X1 / np.exp(log_ell)
+        X2 = X2 / np.exp(log_ell)
+        dists2 = np.sum(X1**2, 1)[:, None] + np.sum(X2**2, 1) - 2 * X1 @ X2.T
+        return np.exp(2 * log_sigma_f) * np.exp(-0.5 * dists2)
