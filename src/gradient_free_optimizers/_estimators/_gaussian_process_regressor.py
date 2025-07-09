@@ -98,3 +98,33 @@ class GaussianProcessRegressor:
             options=dict(maxiter=100, ftol=1e-6),
         )
         return res.x
+
+    def predict(self, X_star, return_std=False):
+        """
+        Predict the GP posterior mean and (optionally) standard deviation.
+
+        Parameters
+        ----------
+        X_star : ndarray, shape (m, d)
+            Test inputs.
+        return_std : bool, default False
+            If True, also return predictive standard deviation.
+
+        Returns
+        -------
+        mu : ndarray, shape (m,)
+            Posterior mean.
+        std : ndarray, shape (m,), optional
+            Posterior standard deviation (present iff `return_std` is True).
+        """
+        K_starX = self.kernel(np.asarray(X_star, dtype=float), self.X, self.theta)
+        mu = K_starX @ self.alpha
+
+        if not return_std:
+            return mu
+
+        v = np.linalg.solve(self.L, K_starX.T)
+        K_starstar = self.kernel(X_star, X_star, self.theta, diag=True)
+        var = K_starstar - np.sum(v**2, axis=0)
+        std = np.sqrt(np.maximum(var, 0))
+        return mu, std
