@@ -105,15 +105,15 @@ def test_early_stop_4():
     n_iter_no_change = 5
     early_stopping = {
         "n_iter_no_change": 5,
-        "tol_abs": 0.1,
+        "tol_abs": 1,
         "tol_rel": None,
     }
 
     start1 = {"x1": 0}
-    start2 = {"x1": 0.1}
-    start3 = {"x1": 0.2}
-    start4 = {"x1": 0.3}
-    start5 = {"x1": 0.4}
+    start2 = {"x1": 1}
+    start3 = {"x1": 2}
+    start4 = {"x1": 3}
+    start5 = {"x1": 4}
 
     warm_start_l = [
         start1,
@@ -162,13 +162,13 @@ def test_early_stop_5():
     n_iter_no_change = 5
     early_stopping = {
         "n_iter_no_change": n_iter_no_change,
-        "tol_abs": 0.1,
+        "tol_abs": 10,
         "tol_rel": None,
     }
 
     start1 = {"x1": 0}
-    start2 = {"x1": 0.09}
-    start3 = {"x1": 0.20}
+    start2 = {"x1": 9}
+    start3 = {"x1": 20}
 
     warm_start_l = [
         start1,

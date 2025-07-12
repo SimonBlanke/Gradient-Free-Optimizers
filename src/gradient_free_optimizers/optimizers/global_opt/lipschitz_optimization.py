@@ -14,15 +14,20 @@ class LipschitzFunction:
         self.position_l = position_l
 
     def find_best_slope(self, X_sample, Y_sample):
-        slopes = [
-            abs(y_sample1 - y_sample2) / abs(x_sample1 - x_sample2)
-            for x_sample1, y_sample1 in zip(X_sample, Y_sample)
-            for x_sample2, y_sample2 in zip(X_sample, Y_sample)
-            if y_sample1 is not y_sample2
-            if np.prod((x_sample1 - x_sample2)) != 0
-        ]
+        slopes = []
 
-        if len(slopes) == 0:
+        len_sample = len(X_sample)
+        for i in range(len_sample):
+            for j in range(i + 1, len_sample):
+                x_sample1, y_sample1 = X_sample[i], Y_sample[i]
+                x_sample2, y_sample2 = X_sample[j], Y_sample[j]
+
+                if y_sample1 != y_sample2 and np.prod((x_sample1 - x_sample2)) != 0:
+                    slopes.append(
+                        abs(y_sample1 - y_sample2) / abs(x_sample1 - x_sample2)
+                    )
+
+        if not slopes:
             return 1
         return np.max(slopes)
 
@@ -52,8 +57,31 @@ class LipschitzOptimizer(SMBO):
     optimizer_type = "sequential"
     computationally_expensive = True
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        search_space,
+        initialize={"grid": 4, "random": 2, "vertices": 4},
+        constraints=[],
+        random_state=None,
+        rand_rest_p=0,
+        nth_process=None,
+        warm_start_smbo=None,
+        max_sample_size=10000000,
+        sampling={"random": 1000000},
+        replacement=True,
+    ):
+        super().__init__(
+            search_space=search_space,
+            initialize=initialize,
+            constraints=constraints,
+            random_state=random_state,
+            rand_rest_p=rand_rest_p,
+            nth_process=nth_process,
+            warm_start_smbo=warm_start_smbo,
+            max_sample_size=max_sample_size,
+            sampling=sampling,
+            replacement=replacement,
+        )
 
     def finish_initialization(self):
         self.all_pos_comb = self._all_possible_pos()

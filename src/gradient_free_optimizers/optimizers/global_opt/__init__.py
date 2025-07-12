@@ -4,7 +4,7 @@
 
 from .random_search import RandomSearchOptimizer
 from .random_restart_hill_climbing import RandomRestartHillClimbingOptimizer
-from .powells_method import PowellsConjugateDirectionMethod
+from .powells_conjugate_direction_method import PowellsConjugateDirectionMethod
 from .pattern_search import PatternSearch
 from .lipschitz_optimization import LipschitzOptimizer
 from .direct_algorithm import DirectAlgorithm

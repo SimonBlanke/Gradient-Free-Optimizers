@@ -7,7 +7,7 @@ import importlib.metadata
 __version__ = importlib.metadata.version("gradient-free-optimizers")
 __license__ = "MIT"
 
-from .high_lvl_api import (
+from .optimizer_search import (
     HillClimbingOptimizer,
     StochasticHillClimbingOptimizer,
     RepulsingHillClimbingOptimizer,

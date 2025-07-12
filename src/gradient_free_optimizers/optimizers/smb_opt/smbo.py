@@ -3,7 +3,7 @@
 # License: MIT License
 
 
-from ..local_opt import HillClimbingOptimizer
+from ..base_optimizer import BaseOptimizer
 from .sampling import InitialSampler
 
 import logging
@@ -12,17 +12,28 @@ import numpy as np
 np.seterr(divide="ignore", invalid="ignore")
 
 
-class SMBO(HillClimbingOptimizer):
+class SMBO(BaseOptimizer):
     def __init__(
         self,
-        *args,
+        search_space,
+        initialize={"grid": 4, "random": 2, "vertices": 4},
+        constraints=[],
+        random_state=None,
+        rand_rest_p=0,
+        nth_process=None,
         warm_start_smbo=None,
         max_sample_size=10000000,
         sampling={"random": 1000000},
         replacement=True,
-        **kwargs
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(
+            search_space=search_space,
+            initialize=initialize,
+            constraints=constraints,
+            random_state=random_state,
+            rand_rest_p=rand_rest_p,
+            nth_process=nth_process,
+        )
 
         self.warm_start_smbo = warm_start_smbo
         self.max_sample_size = max_sample_size
@@ -46,7 +57,9 @@ class SMBO(HillClimbingOptimizer):
                 search_data_dim = warm_start_smbo[para_name].values
                 search_space_dim = self.conv.search_space[para_name]
 
-                int_idx = np.nonzero(np.in1d(search_data_dim, search_space_dim))[0]
+                int_idx = np.nonzero(
+                    np.isin(search_data_dim, search_space_dim)
+                )[0]
                 int_idx_list.append(int_idx)
 
             intersec = int_idx_list[0]
@@ -124,14 +137,18 @@ class SMBO(HillClimbingOptimizer):
                 + str(self.conv.search_space_size)
                 + " exceeding recommended limit."
             )
-            warning_message3 = "\n Reduce search space size for better performance."
-            logging.warning(warning_message0 + warning_message1 + warning_message3)
+            warning_message3 = (
+                "\n Reduce search space size for better performance."
+            )
+            logging.warning(
+                warning_message0 + warning_message1 + warning_message3
+            )
 
     @track_X_sample
     def init_pos(self):
         return super().init_pos()
 
-    @HillClimbingOptimizer.track_new_pos
+    @BaseOptimizer.track_new_pos
     @track_X_sample
     def iterate(self):
         return self._propose_location()
@@ -140,7 +157,7 @@ class SMBO(HillClimbingOptimizer):
         mask = np.all(self.all_pos_comb == position, axis=1)
         self.all_pos_comb = self.all_pos_comb[np.invert(mask)]
 
-    @HillClimbingOptimizer.track_new_score
+    @BaseOptimizer.track_new_score
     @track_y_sample
     def evaluate(self, score_new):
         self._evaluate_new2current(score_new)
@@ -149,7 +166,7 @@ class SMBO(HillClimbingOptimizer):
         if not self.replacement:
             self._remove_position(self.pos_new)
 
-    @HillClimbingOptimizer.track_new_score
+    @BaseOptimizer.track_new_score
     @track_y_sample
     def evaluate_init(self, score_new):
         self._evaluate_new2current(score_new)

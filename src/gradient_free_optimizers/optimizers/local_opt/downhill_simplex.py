@@ -37,8 +37,27 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
     optimizer_type = "local"
     computationally_expensive = False
 
-    def __init__(self, *args, alpha=1, gamma=2, beta=0.5, sigma=0.5, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        search_space,
+        initialize={"grid": 4, "random": 2, "vertices": 4},
+        constraints=[],
+        random_state=None,
+        rand_rest_p=0,
+        nth_process=None,
+        alpha=1,
+        gamma=2,
+        beta=0.5,
+        sigma=0.5,
+    ):
+        super().__init__(
+            search_space=search_space,
+            initialize=initialize,
+            constraints=constraints,
+            random_state=random_state,
+            rand_rest_p=rand_rest_p,
+            nth_process=nth_process,
+        )
 
         self.alpha = alpha
         self.gamma = gamma
@@ -70,7 +89,10 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
     @HillClimbingOptimizer.track_new_pos
     def iterate(self):
         simplex_stale = all(
-            [np.array_equal(self.simplex_pos[0], array) for array in self.simplex_pos]
+            [
+                np.array_equal(self.simplex_pos[0], array)
+                for array in self.simplex_pos
+            ]
         )
 
         if simplex_stale:
@@ -83,7 +105,9 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
         if self.simplex_step == 1:
             idx_sorted = sort_list_idx(self.simplex_scores)
             self.simplex_pos = [self.simplex_pos[idx] for idx in idx_sorted]
-            self.simplex_scores = [self.simplex_scores[idx] for idx in idx_sorted]
+            self.simplex_scores = [
+                self.simplex_scores[idx] for idx in idx_sorted
+            ]
 
             self.center_array = centeroid(self.simplex_pos[:-1])
 
@@ -119,7 +143,9 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
         if self.conv.not_in_constraint(pos_new):
             return pos_new
 
-        return HillClimbingOptimizer.move_climb(self, pos_new)
+        return self.move_climb(
+            pos_new, epsilon=self.epsilon, distribution=self.distribution
+        )
 
     @HillClimbingOptimizer.track_new_score
     def evaluate(self, score_new):
@@ -156,7 +182,9 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
             elif self.r_score > self.e_score:
                 self.simplex_scores[-1] = self.r_pos
             else:
-                self.simplex_scores[-1] = random.choice([self.e_pos, self.r_pos])[0]
+                self.simplex_scores[-1] = random.choice(
+                    [self.e_pos, self.r_pos]
+                )[0]
 
         elif self.simplex_step == 3:
             # eval Contraction

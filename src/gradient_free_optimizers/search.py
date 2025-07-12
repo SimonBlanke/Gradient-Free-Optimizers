@@ -4,14 +4,13 @@
 
 import time
 
-from .progress_bar import ProgressBarLVL0, ProgressBarLVL1
-from .times_tracker import TimesTracker
-from .search_statistics import SearchStatistics
-from .memory import Memory
-from .print_info import print_info
-from .stop_run import StopRun
-
-from .results_manager import ResultsManager
+from ._progress_bar import ProgressBarLVL0, ProgressBarLVL1
+from ._times_tracker import TimesTracker
+from ._search_statistics import SearchStatistics
+from ._memory import Memory
+from ._print_info import print_info
+from ._stop_run import StopRun
+from ._results_manager import ResultsManager
 
 
 class Search(TimesTracker, SearchStatistics):
@@ -80,7 +79,9 @@ class Search(TimesTracker, SearchStatistics):
         memory=True,
         memory_warm_start=None,
         verbosity=["progress_bar", "print_results", "print_times"],
+        optimum = "maximum",
     ):
+        self.optimum = optimum
         self.init_search(
             objective_function,
             n_iter,
@@ -111,7 +112,10 @@ class Search(TimesTracker, SearchStatistics):
         memory_warm_start,
         verbosity,
     ):
-        self.objective_function = objective_function
+        if getattr(self, "optimum", "maximum") == "minimum":
+            self.objective_function = lambda pos: -objective_function(pos)
+        else:
+            self.objective_function = objective_function
         self.n_iter = n_iter
         self.max_time = max_time
         self.max_score = max_score

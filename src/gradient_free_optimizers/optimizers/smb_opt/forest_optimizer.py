@@ -23,13 +23,14 @@ tree_regressor_dict = {
 
 
 def normalize(array):
-    num = array - array.min()
-    den = array.max() - array.min()
+    min_val = array.min()
+    max_val = array.max()
+    den = max_val - min_val
 
     if den == 0:
         return np.random.random_sample(array.shape)
     else:
-        return ((num / den) + 0) / 1
+        return (array - min_val) / den
 
 
 class ForestOptimizer(SMBO):
@@ -44,14 +45,33 @@ class ForestOptimizer(SMBO):
 
     def __init__(
         self,
-        *args,
+        search_space,
+        initialize={"grid": 4, "random": 2, "vertices": 4},
+        constraints=[],
+        random_state=None,
+        rand_rest_p=0,
+        nth_process=None,
+        warm_start_smbo=None,
+        max_sample_size=10000000,
+        sampling={"random": 1000000},
+        replacement=True,
         tree_regressor="extra_tree",
         tree_para={"n_estimators": 100},
         xi=0.03,
-        **kwargs
     ):
-        super().__init__(*args, **kwargs)
-        
+        super().__init__(
+            search_space=search_space,
+            initialize=initialize,
+            constraints=constraints,
+            random_state=random_state,
+            rand_rest_p=rand_rest_p,
+            nth_process=nth_process,
+            warm_start_smbo=warm_start_smbo,
+            max_sample_size=max_sample_size,
+            sampling=sampling,
+            replacement=replacement,
+        )
+
         self.tree_regressor = tree_regressor
         self.tree_para = tree_para
         self.regr = tree_regressor_dict[tree_regressor](**self.tree_para)

@@ -11,36 +11,41 @@ from .search_tracker import SearchTracker
 from .converter import Converter
 from .init_positions import Initializer
 
-from ...utils import set_random_seed, move_random
+from .utils import set_random_seed, move_random
+
+from numpy.random import normal, laplace, logistic, gumbel
+
+dist_dict = {
+    "normal": normal,
+    "laplace": laplace,
+    "logistic": logistic,
+    "gumbel": gumbel,
+}
 
 
 class CoreOptimizer(SearchTracker):
     def __init__(
         self,
         search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        constraints=None,
-        random_state=None,
-        rand_rest_p=0,
-        nth_process=None,
-        debug_log=False,
+        initialize,
+        constraints,
+        random_state,
+        rand_rest_p,
+        nth_process,
     ):
         super().__init__()
 
-        self.random_seed = set_random_seed(nth_process, random_state)
-
-        self.conv = Converter(search_space, constraints)
-        self.init = Initializer(self.conv, initialize)
-
+        self.search_space = search_space
         self.initialize = initialize
         self.constraints = constraints
         self.random_state = random_state
         self.rand_rest_p = rand_rest_p
         self.nth_process = nth_process
-        self.debug_log = debug_log
 
-        if self.constraints is None:
-            self.constraints = []
+        self.random_seed = set_random_seed(self.nth_process, self.random_state)
+
+        self.conv = Converter(self.search_space, self.constraints)
+        self.init = Initializer(self.conv, self.initialize)
 
         self.nth_init = 0
         self.nth_trial = 0
@@ -55,6 +60,18 @@ class CoreOptimizer(SearchTracker):
 
         return wrapper
 
+    def move_climb(
+        self, pos, epsilon=0.03, distribution="normal", epsilon_mod=1
+    ):
+        while True:
+            sigma = self.conv.max_positions * epsilon * epsilon_mod
+            pos_normal = dist_dict[distribution](pos, sigma, pos.shape)
+            pos = self.conv2pos(pos_normal)
+
+            if self.conv.not_in_constraint(pos):
+                return pos
+            epsilon_mod *= 1.01
+
     def conv2pos(self, pos):
         # position to int
         r_pos = np.rint(pos)
@@ -63,7 +80,9 @@ class CoreOptimizer(SearchTracker):
         # clip into search space boundaries
         pos = np.clip(r_pos, n_zeros, self.conv.max_positions).astype(int)
 
-        dist = scipy.spatial.distance.cdist(r_pos.reshape(1, -1), pos.reshape(1, -1))
+        dist = scipy.spatial.distance.cdist(
+            r_pos.reshape(1, -1), pos.reshape(1, -1)
+        )
         threshold = self.conv.search_space_size / (100**self.conv.n_dimensions)
 
         if dist > threshold:

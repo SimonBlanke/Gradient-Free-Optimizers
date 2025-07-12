@@ -25,7 +25,11 @@ opt_global_l = (
 def test_global_perf(Optimizer):
     ackley_function = RastriginFunction(n_dim=1, metric="score")
 
-    search_space = {"x0": np.arange(-100, 101, 1)}
+    def objective_function(para):
+        score = -para["x1"] * para["x1"]
+        return score
+
+    search_space = {"x1": np.arange(-100, 101, 1)}
     initialize = {"vertices": 2}
 
     n_opts = 33
@@ -35,7 +39,7 @@ def test_global_perf(Optimizer):
     for rnd_st in tqdm(range(n_opts)):
         opt = Optimizer(search_space, initialize=initialize, random_state=rnd_st)
         opt.search(
-            ackley_function.objective_function,
+            objective_function,
             n_iter=n_iter,
             memory=False,
             verbosity=False,

@@ -5,14 +5,17 @@
 import pytest
 import numpy as np
 
-from surfaces.test_functions.mathematical import SphereFunction
-
 from gradient_free_optimizers import SimulatedAnnealingOptimizer
 
 
-sphere_function = SphereFunction(n_dim=2)
-objective_function = sphere_function.objective_function
-search_space = sphere_function.search_space()
+def objective_function(para):
+    score = -para["x1"] * para["x1"]
+    return score
+
+
+search_space = {
+    "x1": np.arange(0, 10, 1),
+}
 
 
 n_iter = 1000

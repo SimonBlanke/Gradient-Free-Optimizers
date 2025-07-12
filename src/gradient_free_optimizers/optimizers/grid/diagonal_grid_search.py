@@ -13,8 +13,24 @@ from ..base_optimizer import BaseOptimizer
 
 
 class DiagonalGridSearchOptimizer(BaseOptimizer):
-    def __init__(self, *args, step_size=1, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        search_space,
+        initialize={"grid": 4, "random": 2, "vertices": 4},
+        constraints=[],
+        random_state=None,
+        rand_rest_p=0,
+        nth_process=None,
+        step_size=1,
+    ):
+        super().__init__(
+            search_space=search_space,
+            initialize=initialize,
+            constraints=constraints,
+            random_state=random_state,
+            rand_rest_p=rand_rest_p,
+            nth_process=nth_process,
+        )
         self.initial_position = np.zeros((self.conv.n_dimensions,), dtype=int)
         # current position mapped in [|0,search_space_size-1|] (1D)
         self.high_dim_pointer = 0
@@ -57,7 +73,9 @@ class DiagonalGridSearchOptimizer(BaseOptimizer):
         # the quotient of the pointer by the product of remaining dimensions
         # Describes a bijection from Z/search_space_size*Z -> (Z/dim_1*Z)x...x(Z/dim_n*Z)
         for dim in range(len(dim_sizes) - 1):
-            new_pos.append(pointer // np.prod(dim_sizes[dim + 1 :]) % dim_sizes[dim])
+            new_pos.append(
+                pointer // np.prod(dim_sizes[dim + 1 :]) % dim_sizes[dim]
+            )
             pointer = pointer % np.prod(dim_sizes[dim + 1 :])
         new_pos.append(pointer)
 
@@ -83,9 +101,14 @@ class DiagonalGridSearchOptimizer(BaseOptimizer):
 
             # Multiple passes are needed in order to observe the entire search space
             # depending on the step_size parameter.
-            _, current_pass = self.nth_trial, self.high_dim_pointer % self.step_size
+            _, current_pass = (
+                self.nth_trial,
+                self.high_dim_pointer % self.step_size,
+            )
             current_pass_finished = (
-                (self.nth_trial + 1) * self.step_size // self.conv.search_space_size
+                (self.nth_trial + 1)
+                * self.step_size
+                // self.conv.search_space_size
                 > self.nth_trial * self.step_size // self.conv.search_space_size
             )
             # Begin the next pass if current is finished.

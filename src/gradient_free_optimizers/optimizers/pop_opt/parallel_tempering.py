@@ -19,8 +19,25 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
     optimizer_type = "population"
     computationally_expensive = False
 
-    def __init__(self, *args, population=5, n_iter_swap=5, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        search_space,
+        initialize={"grid": 4, "random": 2, "vertices": 4},
+        constraints=[],
+        random_state=None,
+        rand_rest_p=0,
+        nth_process=None,
+        population=5,
+        n_iter_swap=5,
+    ):
+        super().__init__(
+            search_space=search_space,
+            initialize=initialize,
+            constraints=constraints,
+            random_state=random_state,
+            rand_rest_p=rand_rest_p,
+            nth_process=nth_process,
+        )
 
         self.population = population
         self.n_iter_swap = n_iter_swap

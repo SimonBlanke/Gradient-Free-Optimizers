@@ -16,14 +16,28 @@ class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer):
 
     def __init__(
         self,
-        *args,
+        search_space,
+        initialize={"grid": 4, "random": 2, "vertices": 4},
+        constraints=[],
+        random_state=None,
+        rand_rest_p=0,
+        nth_process=None,
         epsilon=0.03,
         distribution="normal",
         n_neighbours=3,
         n_iter_restart=10,
-        **kwargs
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(
+            search_space=search_space,
+            initialize=initialize,
+            constraints=constraints,
+            random_state=random_state,
+            rand_rest_p=rand_rest_p,
+            nth_process=nth_process,
+            epsilon=epsilon,
+            distribution=distribution,
+            n_neighbours=n_neighbours,
+        )
         self.epsilon = epsilon
         self.distribution = distribution
         self.n_neighbours = n_neighbours
@@ -38,4 +52,8 @@ class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer):
         if notZero and modZero:
             return self.move_random()
         else:
-            return self.move_climb(self.pos_current)
+            return self.move_climb(
+                self.pos_current,
+                epsilon=self.epsilon,
+                distribution=self.distribution,
+            )

@@ -29,4 +29,3 @@ class TimesTracker:
             return res
 
         return wrapper
-

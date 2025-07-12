@@ -6,15 +6,6 @@ import numpy as np
 
 from ..base_optimizer import BaseOptimizer
 
-from numpy.random import normal, laplace, logistic, gumbel
-
-dist_dict = {
-    "normal": normal,
-    "laplace": laplace,
-    "logistic": logistic,
-    "gumbel": gumbel,
-}
-
 
 def max_list_idx(list_):
     max_item = max(list_)
@@ -32,31 +23,37 @@ class HillClimbingOptimizer(BaseOptimizer):
 
     def __init__(
         self,
-        *args,
+        search_space,
+        initialize={"grid": 4, "random": 2, "vertices": 4},
+        constraints=[],
+        random_state=None,
+        rand_rest_p=0,
+        nth_process=None,
         epsilon=0.03,
         distribution="normal",
         n_neighbours=3,
-        **kwargs
     ):
-        super().__init__(*args, **kwargs)
+
+        super().__init__(
+            search_space=search_space,
+            initialize=initialize,
+            constraints=constraints,
+            random_state=random_state,
+            rand_rest_p=rand_rest_p,
+            nth_process=nth_process,
+        )
         self.epsilon = epsilon
         self.distribution = distribution
         self.n_neighbours = n_neighbours
 
-    def move_climb(self, pos, epsilon_mod=1):
-        while True:
-            sigma = self.conv.max_positions * self.epsilon * epsilon_mod
-            pos_normal = dist_dict[self.distribution](pos, sigma, pos.shape)
-            pos = self.conv2pos(pos_normal)
-
-            if self.conv.not_in_constraint(pos):
-                return pos
-            epsilon_mod *= 1.01
-
     @BaseOptimizer.track_new_pos
     @BaseOptimizer.random_iteration
     def iterate(self):
-        return self.move_climb(self.pos_current)
+        return self.move_climb(
+            self.pos_current,
+            epsilon=self.epsilon,
+            distribution=self.distribution,
+        )
 
     @BaseOptimizer.track_new_score
     def evaluate(self, score_new):

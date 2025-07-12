@@ -5,7 +5,8 @@
 import random
 import numpy as np
 
-from ..local_opt import HillClimbingOptimizer
+from ..base_optimizer import BaseOptimizer
+from ..local_opt.hill_climbing_optimizer import HillClimbingOptimizer
 
 
 def max_list_idx(list_):
@@ -14,7 +15,7 @@ def max_list_idx(list_):
     return max_item_idx[-1:][0]
 
 
-class PatternSearch(HillClimbingOptimizer):
+class PatternSearch(BaseOptimizer):
     name = "Pattern Search"
     _name_ = "pattern_search"
     __name__ = "PatternSearch"
@@ -23,9 +24,25 @@ class PatternSearch(HillClimbingOptimizer):
     computationally_expensive = False
 
     def __init__(
-        self, *args, n_positions=4, pattern_size=0.25, reduction=0.9, **kwargs
+        self,
+        search_space,
+        initialize={"grid": 4, "random": 2, "vertices": 4},
+        constraints=[],
+        random_state=None,
+        rand_rest_p=0,
+        nth_process=None,
+        n_positions=4,
+        pattern_size=0.25,
+        reduction=0.9,
     ):
-        super().__init__(*args, **kwargs)
+        super().__init__(
+            search_space=search_space,
+            initialize=initialize,
+            constraints=constraints,
+            random_state=random_state,
+            rand_rest_p=rand_rest_p,
+            nth_process=nth_process,
+        )
 
         self.n_positions = n_positions
         self.pattern_size = pattern_size
@@ -63,10 +80,12 @@ class PatternSearch(HillClimbingOptimizer):
             pattern_pos_l.append(pos_pattern_p)
             pattern_pos_l.append(pos_pattern_n)
 
-        self.pattern_pos_l = list(random.sample(pattern_pos_l, self.n_positions_))
+        self.pattern_pos_l = list(
+            random.sample(pattern_pos_l, self.n_positions_)
+        )
 
-    @HillClimbingOptimizer.track_new_pos
-    @HillClimbingOptimizer.random_iteration
+    @BaseOptimizer.track_new_pos
+    @BaseOptimizer.random_iteration
     def iterate(self):
         while True:
             pos_new = self.pattern_pos_l[0]
@@ -80,9 +99,9 @@ class PatternSearch(HillClimbingOptimizer):
         self.generate_pattern(self.pos_current)
         self.search_state = "iter"
 
-    @HillClimbingOptimizer.track_new_score
+    @BaseOptimizer.track_new_score
     def evaluate(self, score_new):
-        super(HillClimbingOptimizer, self).evaluate(score_new)
+        BaseOptimizer.evaluate(self, score_new)
         if len(self.scores_valid) == 0:
             return
 

@@ -20,7 +20,7 @@ def objective_function(para):
 search_space = {"x1": np.arange(-100, 101, 1)}
 
 
-simulated_annealing_para = stochastic_hill_climbing_para + [
+simulated_annealing_para = [
     ({"annealing_rate": 0.9}),
     ({"annealing_rate": 0.8}),
     ({"annealing_rate": 0.5}),
