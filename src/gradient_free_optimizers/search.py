@@ -12,6 +12,9 @@ from ._print_info import print_info
 from ._stop_run import StopRun
 from ._results_manager import ResultsManager
 
+from ._objective_adapter import ObjectiveAdapter
+from ._trial_result import TrialResult
+
 
 class Search(TimesTracker, SearchStatistics):
     def __init__(self):
@@ -37,7 +40,7 @@ class Search(TimesTracker, SearchStatistics):
 
         init_pos = self.init_pos()
 
-        score_new = self._score(init_pos)
+        score_new = self._evaluate_position(init_pos)
         self.evaluate_init(score_new)
 
         self.pos_l.append(init_pos)
@@ -56,7 +59,7 @@ class Search(TimesTracker, SearchStatistics):
 
         pos_new = self.iterate()
 
-        score_new = self._score(pos_new)
+        score_new = self._evaluate_position(pos_new)
         self.evaluate(score_new)
 
         self.pos_l.append(pos_new)
@@ -79,7 +82,7 @@ class Search(TimesTracker, SearchStatistics):
         memory=True,
         memory_warm_start=None,
         verbosity=["progress_bar", "print_results", "print_times"],
-        optimum = "maximum",
+        optimum="maximum",
     ):
         self.optimum = optimum
         self.init_search(
@@ -99,6 +102,12 @@ class Search(TimesTracker, SearchStatistics):
                 break
 
         self.finish_search()
+
+    def _evaluate_position(self, pos: list[int]) -> float:
+        score, metrics, params = self.adapter(pos)
+        self.results.add(TrialResult(self._iter, pos, params, score, metrics))
+        self._iter += 1
+        return score
 
     @SearchStatistics.init_stats
     def init_search(
@@ -124,7 +133,9 @@ class Search(TimesTracker, SearchStatistics):
         self.memory_warm_start = memory_warm_start
         self.verbosity = verbosity
 
-        self.results_mang.conv = self.conv
+        self.adapter = ObjectiveAdapter(self.conv, objective_function)
+        self.results = ResultsManager()
+        self._iter = 0
 
         if self.verbosity is False:
             self.verbosity = []
@@ -143,7 +154,9 @@ class Search(TimesTracker, SearchStatistics):
                 self.nth_process, self.n_iter, self.objective_function
             )
 
+        """
         self.mem = Memory(self.memory_warm_start, self.conv, memory=self.memory)
+        self.results_mang.conv = self.conv
 
         if self.memory not in [False, None]:
             self.score = self.results_mang.score(
@@ -151,23 +164,21 @@ class Search(TimesTracker, SearchStatistics):
             )
         else:
             self.score = self.results_mang.score(self.objective_function)
-
-        self.n_inits_norm = min(
-            (self.init.n_inits - self.n_init_total), self.n_iter
-        )
+        """
+        self.n_inits_norm = min((self.init.n_inits - self.n_init_total), self.n_iter)
 
     def finish_search(self):
-        self.search_data = self.results_mang.search_data
+        self.search_data = self.results.dataframe
 
         self.best_score = self.p_bar.score_best
         self.best_value = self.conv.position2value(self.p_bar.pos_best)
         self.best_para = self.conv.value2para(self.best_value)
-
+        """
         if self.memory not in [False, None]:
             self.memory_dict = self.mem.memory_dict
         else:
             self.memory_dict = {}
-
+        """
         self.p_bar.close()
 
         print_info(
