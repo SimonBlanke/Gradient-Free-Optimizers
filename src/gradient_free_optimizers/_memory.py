@@ -23,21 +23,13 @@ class Memory:
             return
 
         if not isinstance(warm_start, pd.DataFrame):
-            logging.warning(
-                "Memory warm start must be of type pandas.DataFrame"
-            )
-            logging.warning(
-                "Optimization will continue without memory warm start"
-            )
+            logging.warning("Memory warm start must be of type pandas.DataFrame")
+            logging.warning("Optimization will continue without memory warm start")
             return
 
         if warm_start.empty:
-            logging.warning(
-                "Memory warm start has no values in current search space"
-            )
-            logging.warning(
-                "Optimization will continue without memory warm start"
-            )
+            logging.warning("Memory warm start has no values in current search space")
+            logging.warning("Optimization will continue without memory warm start")
             return
 
         self.memory_dict.update(self.conv.dataframe2memory_dict(warm_start))
