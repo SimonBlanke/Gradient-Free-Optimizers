@@ -13,7 +13,6 @@ from ._stop_run import StopRun
 from ._results_manager import ResultsManager
 
 from ._objective_adapter import ObjectiveAdapter
-from ._trial_result import TrialResult
 
 
 class Search(TimesTracker, SearchStatistics):
@@ -104,8 +103,8 @@ class Search(TimesTracker, SearchStatistics):
         self.finish_search()
 
     def _evaluate_position(self, pos: list[int]) -> float:
-        score, metrics, params = self.adapter(pos)
-        self.results.add(TrialResult(self._iter, pos, params, score, metrics))
+        score, add_results_d, params = self.adapter(pos)
+        self.results.add(score, add_results_d, params)
         self._iter += 1
         return score
 

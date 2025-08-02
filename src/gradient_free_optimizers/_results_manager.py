@@ -1,19 +1,20 @@
 import pandas as pd
 from collections.abc import Sequence
 
-from ._trial_result import TrialResult
-
 
 class ResultsManager:
     def __init__(self):
-        self._results: list[TrialResult] = []
+        self._results_l = []
 
-    def add(self, result: TrialResult) -> None:
-        self._results.append(result)
+    def add(self, score, add_results_d, params) -> None:
+        score_d = {"score": score}
+        results_dict = {**score_d, **add_results_d}
+
+        self._results_l.append({**results_dict, **params})
 
     @property
     def dataframe(self) -> pd.DataFrame:
-        return pd.DataFrame(r.asdict() for r in self._results)
+        return pd.DataFrame(self._results_l)
 
-    def best(self) -> TrialResult | None:
+    def best(self):
         return max(self._results, key=lambda r: r.score, default=None)
