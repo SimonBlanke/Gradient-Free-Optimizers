@@ -11,7 +11,6 @@ from ._memory import Memory
 from ._print_info import print_info
 from ._stop_run import StopRun
 from ._results_manager import ResultsManager
-
 from ._objective_adapter import ObjectiveAdapter
 
 
@@ -27,7 +26,7 @@ class Search(TimesTracker, SearchStatistics):
         self.pos_l = []
         self.random_seed = None
 
-        self.results_mang = ResultsManager()
+        self.results_manager = ResultsManager()
 
     @TimesTracker.eval_time
     def _score(self, pos):
@@ -104,7 +103,7 @@ class Search(TimesTracker, SearchStatistics):
 
     def _evaluate_position(self, pos: list[int]) -> float:
         score, add_results_d, params = self.adapter(pos)
-        self.results.add(score, add_results_d, params)
+        self.results_manager.add(score, add_results_d, params)
         self._iter += 1
         return score
 
@@ -133,7 +132,6 @@ class Search(TimesTracker, SearchStatistics):
         self.verbosity = verbosity
 
         self.adapter = ObjectiveAdapter(self.conv, objective_function)
-        self.results = ResultsManager()
         self._iter = 0
 
         if self.verbosity is False:
@@ -167,7 +165,7 @@ class Search(TimesTracker, SearchStatistics):
         self.n_inits_norm = min((self.init.n_inits - self.n_init_total), self.n_iter)
 
     def finish_search(self):
-        self.search_data = self.results.dataframe
+        self.search_data = self.results_manager.dataframe
 
         self.best_score = self.p_bar.score_best
         self.best_value = self.conv.position2value(self.p_bar.pos_best)
