@@ -7,11 +7,11 @@ import time
 from ._progress_bar import ProgressBarLVL0, ProgressBarLVL1
 from ._times_tracker import TimesTracker
 from ._search_statistics import SearchStatistics
-from ._memory import Memory
 from ._print_info import print_info
 from ._stop_run import StopRun
 from ._results_manager import ResultsManager
 from ._objective_adapter import ObjectiveAdapter
+from ._memory import CachedObjectiveAdapter
 
 
 class Search(TimesTracker, SearchStatistics):
@@ -131,7 +131,6 @@ class Search(TimesTracker, SearchStatistics):
         self.memory_warm_start = memory_warm_start
         self.verbosity = verbosity
 
-        self.adapter = ObjectiveAdapter(self.conv, objective_function)
         self._iter = 0
 
         if self.verbosity is False:
@@ -151,17 +150,12 @@ class Search(TimesTracker, SearchStatistics):
                 self.nth_process, self.n_iter, self.objective_function
             )
 
-        """
-        self.mem = Memory(self.memory_warm_start, self.conv, memory=self.memory)
-        self.results_mang.conv = self.conv
-
         if self.memory not in [False, None]:
-            self.score = self.results_mang.score(
-                self.mem.memory(self.objective_function)
-            )
+            self.adapter = CachedObjectiveAdapter(self.conv, objective_function)
+            self.adapter.memory(memory_warm_start, memory)
         else:
-            self.score = self.results_mang.score(self.objective_function)
-        """
+            self.adapter = ObjectiveAdapter(self.conv, objective_function)
+
         self.n_inits_norm = min((self.init.n_inits - self.n_init_total), self.n_iter)
 
     def finish_search(self):
