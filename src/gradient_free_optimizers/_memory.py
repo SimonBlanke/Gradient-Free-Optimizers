@@ -9,13 +9,17 @@ import pandas as pd
 from typing import Callable, Any, List
 from multiprocessing.managers import DictProxy
 
+from ._objective_adapter import ObjectiveAdapter
 
-class Memory:
-    def __init__(self, warm_start: pd.DataFrame, conv: Any, memory: Any = None):
-        self.memory_dict = {}
-        self.memory_dict_new = {}
-        self.conv = conv
 
+class CachedObjectiveAdapter(ObjectiveAdapter):
+    memory_dict = {}
+    memory_dict_new = {}
+
+    def __init__(self, conv, objective):
+        super().__init__(conv, objective)
+
+    def memory(self, warm_start: pd.DataFrame, memory: Any = None):
         if isinstance(memory, DictProxy):
             self.memory_dict = memory
 
@@ -32,14 +36,25 @@ class Memory:
             logging.warning("Optimization will continue without memory warm start")
             return
 
-        self.memory_dict.update(self.conv.dataframe2memory_dict(warm_start))
+        self.memory_dict.update(self._conv.dataframe2memory_dict(warm_start))
 
-    def memory(
+    def __call__(self, pos):
+        pos_t = tuple(pos)
+
+        if pos_t in self.memory_dict:
+            return self.memory_dict[pos_t]
+        else:
+            score, metrics, params = self._call_objective(pos)
+            self.memory_dict[pos_t] = score
+            self.memory_dict_new[pos_t] = score
+            return score, metrics, params
+
+    def _memory(
         self, objective_function: Callable[[List[float]], float]
     ) -> Callable[[List[float]], float]:
         def wrapper(para: List[float]) -> float:
-            value = self.conv.para2value(para)
-            position = self.conv.value2position(value)
+            value = self._conv.para2value(para)
+            position = self._conv.value2position(value)
             pos_tuple = tuple(position)
 
             if pos_tuple in self.memory_dict:

@@ -1,18 +1,22 @@
 class ObjectiveAdapter:
-    """Callable that maps *pos* ➝ (*score*, *metrics*, *params*)."""
+    """Maps *pos* → (score, metrics, params)."""
 
     def __init__(self, conv, objective):
-        self._conv = conv  # type: Converter
-        self._objective = objective  # user-supplied callable
+        self._conv = conv
+        self._objective = objective  # user callable
 
-    def __call__(self, pos: list[int]):
+    def _call_objective(self, pos):
+        """Run the underlying objective and normalise outputs."""
         params = self._conv.value2para(self._conv.position2value(pos))
         out = self._objective(params)
 
-        # normalise return type → (score, metrics)
         if isinstance(out, tuple):
-            score, add_results_d = out
+            score, metrics = out
         else:
-            score, add_results_d = float(out), {}
+            score, metrics = float(out), {}
 
-        return score, add_results_d, params
+        return score, metrics, params
+
+    # keep one public entry point so subclasses can override cleanly
+    def __call__(self, pos):
+        return self._call_objective(pos)
