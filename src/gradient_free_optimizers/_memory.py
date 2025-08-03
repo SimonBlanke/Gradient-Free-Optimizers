@@ -42,12 +42,14 @@ class CachedObjectiveAdapter(ObjectiveAdapter):
         pos_t = tuple(pos)
 
         if pos_t in self.memory_dict:
-            return self.memory_dict[pos_t]
+            params = self._conv.value2para(self._conv.position2value(pos))
+
+            return self.memory_dict[pos_t], params
         else:
-            score, metrics, params = self._call_objective(pos)
-            self.memory_dict[pos_t] = score
-            self.memory_dict_new[pos_t] = score
-            return score, metrics, params
+            result, params = self._call_objective(pos)
+            self.memory_dict[pos_t] = result
+            self.memory_dict_new[pos_t] = result
+            return result, params
 
     def _memory(
         self, objective_function: Callable[[List[float]], float]

@@ -102,10 +102,10 @@ class Search(TimesTracker, SearchStatistics):
         self.finish_search()
 
     def _evaluate_position(self, pos: list[int]) -> float:
-        score, add_results_d, params = self.adapter(pos)
-        self.results_manager.add(score, add_results_d, params)
+        result, params = self.adapter(pos)
+        self.results_manager.add(result, params)
         self._iter += 1
-        return score
+        return result.score
 
     @SearchStatistics.init_stats
     def init_search(

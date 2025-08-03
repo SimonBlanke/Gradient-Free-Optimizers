@@ -6,9 +6,9 @@ class ResultsManager:
     def __init__(self):
         self._results_l = []
 
-    def add(self, score, add_results_d, params) -> None:
-        score_d = {"score": score}
-        results_dict = {**score_d, **add_results_d}
+    def add(self, result, params) -> None:
+        score_d = {"score": result.score}
+        results_dict = {**score_d, **result.metrics}
 
         self._results_l.append({**results_dict, **params})
 

@@ -1,3 +1,6 @@
+from ._result import Result
+
+
 class ObjectiveAdapter:
     """Maps *pos* → (score, metrics, params)."""
 
@@ -15,7 +18,9 @@ class ObjectiveAdapter:
         else:
             score, metrics = float(out), {}
 
-        return score, metrics, params
+        result = Result(score, metrics)
+
+        return result, params
 
     # keep one public entry point so subclasses can override cleanly
     def __call__(self, pos):
