@@ -12,6 +12,7 @@ from ._stop_run import StopRun
 from ._results_manager import ResultsManager
 from ._objective_adapter import ObjectiveAdapter
 from ._memory import CachedObjectiveAdapter
+from ._stopping_conditions import OptimizationStopper
 
 
 class Search(TimesTracker, SearchStatistics):
@@ -49,8 +50,6 @@ class Search(TimesTracker, SearchStatistics):
         self.n_init_total += 1
         self.n_init_search += 1
 
-        self.stop.update(self.p_bar.score_best, self.score_l)
-
     @TimesTracker.iter_time
     def _iteration(self):
         self.best_score = self.p_bar.score_best
@@ -67,8 +66,6 @@ class Search(TimesTracker, SearchStatistics):
 
         self.n_iter_total += 1
         self.n_iter_search += 1
-
-        self.stop.update(self.p_bar.score_best, self.score_l)
 
     def search(
         self,
@@ -96,7 +93,18 @@ class Search(TimesTracker, SearchStatistics):
 
         for nth_trial in range(n_iter):
             self.search_step(nth_trial)
-            if self.stop.check():
+
+            # Update stopper with current state
+            current_score = self.score_l[-1] if self.score_l else -np.inf
+            best_score = self.p_bar.score_best
+            self.stopper.update(current_score, best_score, nth_trial)
+
+            if self.stopper.should_stop():
+                # Log debugging information when stopping
+                if "debug_stop" in self.verbosity:
+                    debug_info = self.stopper.get_debug_info()
+                    print("\nStopping condition debug info:")
+                    print(json.dumps(debug_info, indent=2))
                 break
 
         self.finish_search()
@@ -137,8 +145,11 @@ class Search(TimesTracker, SearchStatistics):
             self.verbosity = []
 
         start_time = time.time()
-        self.stop = StopRun(
-            start_time, self.max_time, self.max_score, self.early_stopping
+        self.stopper = OptimizationStopper(
+            start_time=start_time,
+            max_time=max_time,
+            max_score=max_score,
+            early_stopping=early_stopping,
         )
 
         if "progress_bar" in self.verbosity:
