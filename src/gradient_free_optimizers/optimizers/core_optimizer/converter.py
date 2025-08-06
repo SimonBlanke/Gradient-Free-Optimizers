@@ -8,6 +8,8 @@ import pandas as pd
 from functools import reduce
 from typing import Optional
 
+from ..._result import Result
+
 
 def check_numpy_array(search_space):
     for para_name, dim_values in search_space.items():
@@ -149,14 +151,18 @@ class Converter:
         self, positions: Optional[list], scores: Optional[list]
     ) -> Optional[dict]:
         value_tuple_list = list(map(tuple, positions))
-        memory_dict = dict(zip(value_tuple_list, scores))
+        # Convert scores to Result objects
+        result_objects = [Result(float(score), {}) for score in scores]
+        memory_dict = dict(zip(value_tuple_list, result_objects))
 
         return memory_dict
 
     @returnNoneIfArgNone
     def memory_dict2positions_scores(self, memory_dict: Optional[dict]):
         positions = [np.array(pos).astype(int) for pos in list(memory_dict.keys())]
-        scores = list(memory_dict.values())
+        # Extract scores from Result objects
+        scores = [result.score if isinstance(result, Result) else result 
+                 for result in memory_dict.values()]
 
         return positions, scores
 
