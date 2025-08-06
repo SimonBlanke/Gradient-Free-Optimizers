@@ -10,14 +10,15 @@ from typing import Callable, Any, List
 from multiprocessing.managers import DictProxy
 
 from ._objective_adapter import ObjectiveAdapter
+from ._result import Result
 
 
 class CachedObjectiveAdapter(ObjectiveAdapter):
-    memory_dict = {}
-    memory_dict_new = {}
-
     def __init__(self, conv, objective):
         super().__init__(conv, objective)
+
+        self.memory_dict = {}
+        self.memory_dict_new = {}
 
     def memory(self, warm_start: pd.DataFrame, memory: Any = None):
         if isinstance(memory, DictProxy):
@@ -50,21 +51,3 @@ class CachedObjectiveAdapter(ObjectiveAdapter):
             self.memory_dict[pos_t] = result
             self.memory_dict_new[pos_t] = result
             return result, params
-
-    def _memory(
-        self, objective_function: Callable[[List[float]], float]
-    ) -> Callable[[List[float]], float]:
-        def wrapper(para: List[float]) -> float:
-            value = self._conv.para2value(para)
-            position = self._conv.value2position(value)
-            pos_tuple = tuple(position)
-
-            if pos_tuple in self.memory_dict:
-                return self.memory_dict[pos_tuple]
-            else:
-                score = objective_function(para)
-                self.memory_dict[pos_tuple] = score
-                self.memory_dict_new[pos_tuple] = score
-                return score
-
-        return wrapper
