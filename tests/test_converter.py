@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 
 from gradient_free_optimizers.optimizers.core_optimizer import Converter
+from gradient_free_optimizers._result import Result
 
 
 def equal_arraysInList(list1, list2):
@@ -471,9 +472,9 @@ scores_0 = [0.1, 0.2, 0.3]
 
 
 memory_dict_0 = {
-    (0, 10): 0.1,
-    (20, 10): 0.2,
-    (10, 0): 0.3,
+    (0, 10): Result(0.1, {}),
+    (20, 10): Result(0.2, {}),
+    (10, 0): Result(0.3, {}),
 }
 
 positions_scores2memory_dict_test_para_0 = [
@@ -512,9 +513,9 @@ scores_0 = [0.1, 0.2, 0.3]
 
 
 memory_dict_0 = {
-    (0, 10): 0.1,
-    (20, 10): 0.2,
-    (10, 0): 0.3,
+    (0, 10): Result(0.1, {}),
+    (20, 10): Result(0.2, {}),
+    (10, 0): Result(0.3, {}),
 }
 
 memory_dict2positions_scores_test_para_0 = [
@@ -556,9 +557,9 @@ dataframe1 = pd.DataFrame(
 )
 
 memory_dict_0 = {
-    (0, 10): 0.1,
-    (20, 10): 0.2,
-    (10, 0): 0.3,
+    (0, 10): Result(0.1, {}),
+    (20, 10): Result(0.2, {}),
+    (10, 0): Result(0.3, {}),
 }
 
 dataframe2memory_dict_test_para_0 = [
@@ -593,9 +594,9 @@ dataframe = pd.DataFrame(
 
 
 memory_dict_0 = {
-    (0, 10): 0.1,
-    (20, 10): 0.2,
-    (10, 0): 0.3,
+    (0, 10): Result(0.1, {}),
+    (20, 10): Result(0.2, {}),
+    (10, 0): Result(0.3, {}),
 }
 
 memory_dict2dataframe_test_para_0 = [
