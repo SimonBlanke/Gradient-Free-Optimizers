@@ -154,3 +154,45 @@ class EvolutionStrategyOptimizer(EvolutionaryAlgorithmOptimizer):
     @EvolutionaryAlgorithmOptimizer.track_new_score
     def evaluate(self, score_new):
         self.p_current.evaluate(score_new)
+
+    def _get_population_adaptation_info(self):
+        """Return adaptation info for all individuals in the population."""
+        if not self.self_adaptation:
+            return {"self_adaptation": False, "population_size": len(self.individuals)}
+
+        adaptation_info = {
+            "self_adaptation": True,
+            "population_size": len(self.individuals),
+            "individuals": [],
+        }
+
+        for i, individual in enumerate(self.individuals):
+            individual_info = individual.get_adaptation_info()
+            individual_info["individual_id"] = i
+            adaptation_info["individuals"].append(individual_info)
+
+        # Calculate population statistics
+        if adaptation_info["individuals"]:
+            mutation_strengths = [
+                ind["mutation_strength"]
+                for ind in adaptation_info["individuals"]
+                if "mutation_strength" in ind
+            ]
+            success_rates = [
+                ind["success_rate"]
+                for ind in adaptation_info["individuals"]
+                if "success_rate" in ind
+            ]
+
+            if mutation_strengths:
+                adaptation_info["population_stats"] = {
+                    "avg_mutation_strength": sum(mutation_strengths)
+                    / len(mutation_strengths),
+                    "min_mutation_strength": min(mutation_strengths),
+                    "max_mutation_strength": max(mutation_strengths),
+                    "avg_success_rate": (
+                        sum(success_rates) / len(success_rates) if success_rates else 0
+                    ),
+                }
+
+        return adaptation_info
