@@ -32,6 +32,8 @@ MANIFEST
 
 # Dev
 **/_dev_scripts
+*.code-workspace
+CLAUDE.md
 
 # temp data
 **/temp/
