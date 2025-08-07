@@ -45,6 +45,14 @@ class EvolutionStrategyOptimizer(_EvolutionStrategyOptimizer, Search):
         The mutation rate for the mutation operator.
     crossover_rate : float
         The crossover rate for the crossover operator.
+    self_adaptation : bool
+        If True, enables self-adaptation of mutation strength using the 1/5th success rule.
+    adaptation_window : int
+        The number of recent mutations to consider for success rate calculation.
+    adaptation_factor : float
+        The factor by which mutation strength is increased/decreased during adaptation.
+    target_success_rate : float
+        The target success rate for the 1/5th rule (typically 0.2).
     """
 
     def __init__(
@@ -63,6 +71,10 @@ class EvolutionStrategyOptimizer(_EvolutionStrategyOptimizer, Search):
         replace_parents=False,
         mutation_rate=0.7,
         crossover_rate=0.3,
+        self_adaptation=True,
+        adaptation_window=10,
+        adaptation_factor=1.22,
+        target_success_rate=0.2,
     ):
         super().__init__(
             search_space=search_space,
@@ -76,4 +88,8 @@ class EvolutionStrategyOptimizer(_EvolutionStrategyOptimizer, Search):
             replace_parents=replace_parents,
             mutation_rate=mutation_rate,
             crossover_rate=crossover_rate,
+            self_adaptation=self_adaptation,
+            adaptation_window=adaptation_window,
+            adaptation_factor=adaptation_factor,
+            target_success_rate=target_success_rate,
         )

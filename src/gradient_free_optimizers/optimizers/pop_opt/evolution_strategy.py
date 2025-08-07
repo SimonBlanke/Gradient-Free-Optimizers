@@ -30,6 +30,10 @@ class EvolutionStrategyOptimizer(EvolutionaryAlgorithmOptimizer):
         replace_parents=False,
         mutation_rate=0.7,
         crossover_rate=0.3,
+        self_adaptation=True,
+        adaptation_window=10,
+        adaptation_factor=1.22,
+        target_success_rate=0.2,
     ):
         super().__init__(
             search_space=search_space,
@@ -46,18 +50,60 @@ class EvolutionStrategyOptimizer(EvolutionaryAlgorithmOptimizer):
         self.mutation_rate = mutation_rate
         self.crossover_rate = crossover_rate
 
+        # Self-adaptation parameters
+        self.self_adaptation = self_adaptation
+        self.adaptation_window = adaptation_window
+        self.adaptation_factor = adaptation_factor
+        self.target_success_rate = target_success_rate
+
         self.individuals = self._create_population(Individual)
         self.optimizers = self.individuals
+
+    def _create_population(self, Optimizer):
+        """Override to pass self-adaptation parameters to Individual instances."""
+        if isinstance(self.population, int):
+            pop_size = self.population
+        else:
+            pop_size = len(self.population)
+        diff_init = pop_size - self.init.n_inits
+
+        if diff_init > 0:
+            self.init.add_n_random_init_pos(diff_init)
+
+        if isinstance(self.population, int):
+            from .base_population_optimizer import split
+
+            distributed_init_positions = split(
+                self.init.init_positions_l, self.population
+            )
+
+            population = []
+            for init_positions in distributed_init_positions:
+                init_values = self.conv.positions2values(init_positions)
+                init_paras = self.conv.values2paras(init_values)
+
+                population.append(
+                    Optimizer(
+                        self.conv.search_space,
+                        rand_rest_p=self.rand_rest_p,
+                        initialize={"warm_start": init_paras},
+                        constraints=self.constraints,
+                        self_adaptation=self.self_adaptation,
+                        adaptation_window=self.adaptation_window,
+                        adaptation_factor=self.adaptation_factor,
+                        target_success_rate=self.target_success_rate,
+                    )
+                )
+        else:
+            population = self.population
+
+        return population
 
     def _cross(self):
         while True:
             if len(self.individuals) > 2:
                 rnd_int2 = random.choice(
-                    [
-                        i
-                        for i in range(0, self.n_ind - 1)
-                        if i not in [self.rnd_int]
-                    ]
+                    [i for i in range(0, self.n_ind - 1) if i not in [self.rnd_int]]
                 )
             else:
                 rnd_int2 = random.choice(
