@@ -7,10 +7,12 @@ import time
 from ._progress_bar import ProgressBarLVL0, ProgressBarLVL1
 from ._times_tracker import TimesTracker
 from ._search_statistics import SearchStatistics
-from ._memory import Memory
 from ._print_info import print_info
 from ._stop_run import StopRun
 from ._results_manager import ResultsManager
+from ._objective_adapter import ObjectiveAdapter
+from ._memory import CachedObjectiveAdapter
+from ._stopping_conditions import OptimizationStopper
 
 
 class Search(TimesTracker, SearchStatistics):
@@ -25,7 +27,7 @@ class Search(TimesTracker, SearchStatistics):
         self.pos_l = []
         self.random_seed = None
 
-        self.results_mang = ResultsManager()
+        self.results_manager = ResultsManager()
 
     @TimesTracker.eval_time
     def _score(self, pos):
@@ -37,7 +39,7 @@ class Search(TimesTracker, SearchStatistics):
 
         init_pos = self.init_pos()
 
-        score_new = self._score(init_pos)
+        score_new = self._evaluate_position(init_pos)
         self.evaluate_init(score_new)
 
         self.pos_l.append(init_pos)
@@ -48,15 +50,13 @@ class Search(TimesTracker, SearchStatistics):
         self.n_init_total += 1
         self.n_init_search += 1
 
-        self.stop.update(self.p_bar.score_best, self.score_l)
-
     @TimesTracker.iter_time
     def _iteration(self):
         self.best_score = self.p_bar.score_best
 
         pos_new = self.iterate()
 
-        score_new = self._score(pos_new)
+        score_new = self._evaluate_position(pos_new)
         self.evaluate(score_new)
 
         self.pos_l.append(pos_new)
@@ -66,8 +66,6 @@ class Search(TimesTracker, SearchStatistics):
 
         self.n_iter_total += 1
         self.n_iter_search += 1
-
-        self.stop.update(self.p_bar.score_best, self.score_l)
 
     def search(
         self,
@@ -79,7 +77,7 @@ class Search(TimesTracker, SearchStatistics):
         memory=True,
         memory_warm_start=None,
         verbosity=["progress_bar", "print_results", "print_times"],
-        optimum = "maximum",
+        optimum="maximum",
     ):
         self.optimum = optimum
         self.init_search(
@@ -95,10 +93,27 @@ class Search(TimesTracker, SearchStatistics):
 
         for nth_trial in range(n_iter):
             self.search_step(nth_trial)
-            if self.stop.check():
+
+            # Update stopper with current state
+            current_score = self.score_l[-1] if self.score_l else -np.inf
+            best_score = self.p_bar.score_best
+            self.stopper.update(current_score, best_score, nth_trial)
+
+            if self.stopper.should_stop():
+                # Log debugging information when stopping
+                if "debug_stop" in self.verbosity:
+                    debug_info = self.stopper.get_debug_info()
+                    print("\nStopping condition debug info:")
+                    print(json.dumps(debug_info, indent=2))
                 break
 
         self.finish_search()
+
+    def _evaluate_position(self, pos: list[int]) -> float:
+        result, params = self.adapter(pos)
+        self.results_manager.add(result, params)
+        self._iter += 1
+        return result.score
 
     @SearchStatistics.init_stats
     def init_search(
@@ -124,14 +139,17 @@ class Search(TimesTracker, SearchStatistics):
         self.memory_warm_start = memory_warm_start
         self.verbosity = verbosity
 
-        self.results_mang.conv = self.conv
+        self._iter = 0
 
         if self.verbosity is False:
             self.verbosity = []
 
         start_time = time.time()
-        self.stop = StopRun(
-            start_time, self.max_time, self.max_score, self.early_stopping
+        self.stopper = OptimizationStopper(
+            start_time=start_time,
+            max_time=max_time,
+            max_score=max_score,
+            early_stopping=early_stopping,
         )
 
         if "progress_bar" in self.verbosity:
@@ -143,31 +161,26 @@ class Search(TimesTracker, SearchStatistics):
                 self.nth_process, self.n_iter, self.objective_function
             )
 
-        self.mem = Memory(self.memory_warm_start, self.conv, memory=self.memory)
-
         if self.memory not in [False, None]:
-            self.score = self.results_mang.score(
-                self.mem.memory(self.objective_function)
-            )
+            self.adapter = CachedObjectiveAdapter(self.conv, objective_function)
+            self.adapter.memory(memory_warm_start, memory)
         else:
-            self.score = self.results_mang.score(self.objective_function)
+            self.adapter = ObjectiveAdapter(self.conv, objective_function)
 
-        self.n_inits_norm = min(
-            (self.init.n_inits - self.n_init_total), self.n_iter
-        )
+        self.n_inits_norm = min((self.init.n_inits - self.n_init_total), self.n_iter)
 
     def finish_search(self):
-        self.search_data = self.results_mang.search_data
+        self.search_data = self.results_manager.dataframe
 
         self.best_score = self.p_bar.score_best
         self.best_value = self.conv.position2value(self.p_bar.pos_best)
         self.best_para = self.conv.value2para(self.best_value)
-
+        """
         if self.memory not in [False, None]:
             self.memory_dict = self.mem.memory_dict
         else:
             self.memory_dict = {}
-
+        """
         self.p_bar.close()
 
         print_info(

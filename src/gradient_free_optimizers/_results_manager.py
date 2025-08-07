@@ -1,43 +1,20 @@
-# Author: Simon Blanke
-# Email: simon.blanke@yahoo.com
-# License: MIT License
-
 import pandas as pd
+from collections.abc import Sequence
 
 
 class ResultsManager:
     def __init__(self):
-        super().__init__()
-        self.conv = None
+        self._results_l = []
 
-        self.results_list = []
+    def add(self, result, params) -> None:
+        score_d = {"score": result.score}
+        results_dict = {**score_d, **result.metrics}
 
-    def _obj_func_results(self, objective_function, para):
-        results = objective_function(para)
-
-        if isinstance(results, tuple):
-            score = results[0]
-            results_dict = results[1]
-        else:
-            score = results
-            results_dict = {}
-
-        results_dict["score"] = score
-
-        return results_dict
-
-    def score(self, objective_function):
-        def _wrapper(pos):
-            value = self.conv.position2value(pos)
-            para = self.conv.value2para(value)
-            results_dict = self._obj_func_results(objective_function, para)
-
-            self.results_list.append({**results_dict, **para})
-
-            return results_dict["score"]
-
-        return _wrapper
+        self._results_l.append({**results_dict, **params})
 
     @property
-    def search_data(self):
-        return pd.DataFrame(self.results_list)
+    def dataframe(self) -> pd.DataFrame:
+        return pd.DataFrame(self._results_l)
+
+    def best(self):
+        return max(self._results, key=lambda r: r.score, default=None)
