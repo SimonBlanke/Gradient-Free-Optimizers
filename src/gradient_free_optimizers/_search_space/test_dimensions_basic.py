@@ -28,7 +28,7 @@ def test_real_dimension_mapping_and_perturb():
 
 
 def test_integer_dimension_rounding_and_grid():
-    d = IntegerDimension(2, 6)
+    d = IntegerDimension(2, 6, brackets="[]")
     assert d.z_to_value(0.0) == 2
     assert d.z_to_value(1.0) == 6
     # Middle should be around 4
@@ -58,3 +58,28 @@ def test_distribution_dimension_quantile_mapping():
     val = d.z_to_value(0.2)
     z = d.value_to_z(val)
     assert 0.0 <= z <= 1.0
+
+
+def test_real_dimension_brackets_affect_grid_and_sample():
+    d1 = RealDimension(-1.0, 1.0, brackets="[]")
+    d2 = RealDimension(-1.0, 1.0, brackets="()")
+    g1 = d1.grid(5)
+    g2 = d2.grid(5)
+    assert min(g1) == -1.0 and max(g1) == 1.0
+    assert min(g2) > -1.0 and max(g2) < 1.0
+    # sample does not hit excluded endpoints
+    rng = np.random.default_rng(0)
+    for _ in range(100):
+        s = d2.sample(rng)
+        assert -1.0 < s < 1.0
+
+
+def test_integer_dimension_brackets_exact():
+    d = IntegerDimension(2, 6, brackets="()")
+    assert d.size == 3  # 3,4,5
+    vals = set(d.grid(10))
+    assert vals == {3, 4, 5}
+    rng = np.random.default_rng(1)
+    for _ in range(50):
+        s = d.sample(rng)
+        assert s in {3, 4, 5}

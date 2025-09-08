@@ -135,62 +135,98 @@ class CategoricalDimension(BaseDimension):
 class RealDimension(BaseDimension):
     low: float
     high: float
+    brackets: str = "[]"  # one of: [], [), (], ()
 
     kind: str = "real"
 
     def __post_init__(self) -> None:
         if not np.isfinite(self.low) or not np.isfinite(self.high) or self.high <= self.low:
             raise ValueError("RealDimension requires finite low < high")
+        if self.brackets not in ("[]", "[)", "(]", "()"):
+            raise ValueError("Invalid brackets for RealDimension; use one of [], [), (], ()")
+        self._include_low = self.brackets[0] == "["
+        self._include_high = self.brackets[1] == ")" and False or True  # keep clarity
+        self._include_high = self.brackets[1] == "]"
 
     def value_to_z(self, value: float) -> float:
+        # Permissive mapping: accept endpoints regardless of brackets
         return float((value - self.low) / (self.high - self.low))
 
     def z_to_value(self, z: float) -> float:
+        # Permissive mapping: z in [0,1] maps linearly; brackets handled in sampling/grid/perturb
         zz = float(np.clip(z, 0.0, 1.0))
         return float(self.low + zz * (self.high - self.low))
 
+    def _nudge_inside(self, z: float) -> float:
+        # Push exactly-at-boundary z into interior if corresponding side is open
+        if z <= 0.0 and not self._include_low:
+            return float(np.nextafter(0.0, 1.0))
+        if z >= 1.0 and not self._include_high:
+            return float(np.nextafter(1.0, 0.0))
+        return z
+
     def sample(self, rng: Optional[Generator] = None) -> float:
         r = _ensure_rng(rng)
-        z = r.random()
-        return self.z_to_value(float(z))
+        z = float(r.random())  # [0,1)
+        z = self._nudge_inside(z)
+        return self.z_to_value(z)
 
     def perturb(self, value: float, scale: float, rng: Optional[Generator] = None) -> float:
         r = _ensure_rng(rng)
         z = self.value_to_z(value)
         step = float(r.normal(0.0, max(1e-12, float(scale))))
-        return self.z_to_value(float(np.clip(z + step, 0.0, 1.0)))
+        z_new = float(np.clip(z + step, 0.0, 1.0))
+        z_new = self._nudge_inside(z_new)
+        return self.z_to_value(z_new)
 
     def grid(self, max_points: int) -> List[float]:
-        zz = np.linspace(0.0, 1.0, num=max(2, max_points))
-        return [self.z_to_value(z) for z in zz]
+        n = max(2, int(max_points))
+        if self.brackets == "[]":
+            zz = np.linspace(0.0, 1.0, num=n)
+        elif self.brackets == "[)":
+            zz = np.linspace(0.0, 1.0, num=n + 1)[:-1]
+        elif self.brackets == "(]":
+            zz = np.linspace(0.0, 1.0, num=n + 1)[1:]
+        else:  # ()
+            zz = np.linspace(0.0, 1.0, num=n + 2)[1:-1]
+        return [self.z_to_value(float(z)) for z in zz]
 
 
 @dataclass
 class IntegerDimension(BaseDimension):
     low: int
     high: int  # inclusive
+    brackets: str = "[]"  # one of: [], [), (], ()
 
     kind: str = "integer"
 
     def __post_init__(self) -> None:
         if self.high < self.low:
             raise ValueError("IntegerDimension requires low <= high")
+        if self.brackets not in ("[]", "[)", "(]", "()"):
+            raise ValueError("Invalid brackets for IntegerDimension; use one of [], [), (], ()")
+        include_low = self.brackets[0] == "["
+        include_high = self.brackets[1] == "]"
+        self._lo_eff = int(self.low + (0 if include_low else 1))
+        self._hi_eff = int(self.high - (0 if include_high else 1))
+        if self._hi_eff < self._lo_eff:
+            raise ValueError("IntegerDimension has empty set under given brackets")
 
     def value_to_z(self, value: int) -> float:
-        if self.low == self.high:
+        if self._lo_eff == self._hi_eff:
             return 0.0
-        return float((int(value) - self.low) / (self.high - self.low))
+        return float((int(value) - self._lo_eff) / (self._hi_eff - self._lo_eff))
 
     def z_to_value(self, z: float) -> int:
-        if self.low == self.high:
-            return int(self.low)
+        if self._lo_eff == self._hi_eff:
+            return int(self._lo_eff)
         zz = float(np.clip(z, 0.0, 1.0))
-        x = self.low + zz * (self.high - self.low)
-        return int(np.clip(int(np.round(x)), self.low, self.high))
+        x = self._lo_eff + zz * (self._hi_eff - self._lo_eff)
+        return int(np.clip(int(np.round(x)), self._lo_eff, self._hi_eff))
 
     def sample(self, rng: Optional[Generator] = None) -> int:
         r = _ensure_rng(rng)
-        return int(r.integers(self.low, self.high + 1))
+        return int(r.integers(self._lo_eff, self._hi_eff + 1))
 
     def perturb(self, value: int, scale: float, rng: Optional[Generator] = None) -> int:
         r = _ensure_rng(rng)
@@ -201,7 +237,7 @@ class IntegerDimension(BaseDimension):
     def grid(self, max_points: int) -> List[int]:
         n = self.size or 0
         if n <= max_points:
-            return list(range(self.low, self.high + 1))
+            return list(range(self._lo_eff, self._hi_eff + 1))
         zz = np.linspace(0.0, 1.0, num=max_points)
         vals = [self.z_to_value(z) for z in zz]
         # Ensure uniqueness and sorting
@@ -209,7 +245,7 @@ class IntegerDimension(BaseDimension):
 
     @property
     def size(self) -> Optional[int]:
-        return self.high - self.low + 1
+        return self._hi_eff - self._lo_eff + 1
 
 
 @dataclass
@@ -263,4 +299,3 @@ class DistributionDimension(BaseDimension):
     def grid(self, max_points: int) -> List[float]:
         zz = np.linspace(0.0, 1.0, num=max(2, max_points))
         return [self.z_to_value(z) for z in zz]
-

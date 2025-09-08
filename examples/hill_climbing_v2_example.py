@@ -12,7 +12,7 @@ class MySpace(BaseSearchSpace):
     # Continuous real
     x: tuple = (-5.0, 5.0)
     # Integer range
-    k: tuple = (1, 10)
+    k: tuple = (1, 10, "[)")
     # Distribution (bounded log-uniform)
     lr: object = st.loguniform(1e-4, 1e-1)
     # Categorical with mixed types (str, bool)

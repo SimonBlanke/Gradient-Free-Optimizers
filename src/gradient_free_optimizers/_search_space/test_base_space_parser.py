@@ -41,3 +41,22 @@ def test_build_dimensions_and_sampling():
     assert isinstance(params["x"], float)
     assert isinstance(params["filters"], (int, float))
     assert params["seed"] == 42
+
+
+def test_three_tuple_brackets_parsing():
+    @dataclass
+    class S(BaseSearchSpace):
+        a: tuple = (0.0, 1.0, "()")
+        b: tuple = (1, 5, "[)")
+
+    space = S()
+    names, dims = space._build_dimensions()
+    kinds = [d.kind for d in dims]
+    assert kinds == ["real", "integer"]
+    # integer with [) should exclude high
+    from gradient_free_optimizers._search_space.dimensions import IntegerDimension
+
+    d_b = dims[1]
+    assert isinstance(d_b, IntegerDimension)
+    vals = d_b.grid(10)
+    assert max(vals) == 4
