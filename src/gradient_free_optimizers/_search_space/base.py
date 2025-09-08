@@ -47,22 +47,39 @@ class BaseSearchSpace:
 
     @staticmethod
     def _infer_dimension(value: Any) -> BaseDimension:
-        # list -> categorical
-        if isinstance(value, list):
-            return CategoricalDimension(values=value)
+        # list/tuple of arbitrary values -> categorical (unless a 2-tuple of numbers)
+        if isinstance(value, (list, tuple)):
+            if (
+                isinstance(value, tuple)
+                and len(value) == 2
+                and all(isinstance(v, (int, float, np.floating, np.integer)) for v in value)
+            ):
+                pass  # handled below as real/integer
+            else:
+                return CategoricalDimension(values=list(value))
 
         # numpy array -> discrete numeric grid (categorical over values)
         if isinstance(value, np.ndarray):
             return CategoricalDimension(values=value.tolist())
 
-        # tuple of (low, high) numbers -> real
+        # tuple of (low, high) numbers -> real/integer
         if (
             isinstance(value, tuple)
             and len(value) == 2
             and all(isinstance(v, (int, float, np.floating, np.integer)) for v in value)
         ):
-            low, high = float(value[0]), float(value[1])
-            return RealDimension(low=low, high=high)
+            lo, hi = value
+            # Integer vs real detection
+            if isinstance(lo, (int, np.integer)) and isinstance(hi, (int, np.integer)):
+                lo_i, hi_i = int(lo), int(hi)
+                if hi_i < lo_i:
+                    lo_i, hi_i = hi_i, lo_i
+                return IntegerDimension(low=lo_i, high=hi_i)
+            else:
+                lo_f, hi_f = float(lo), float(hi)
+                if hi_f < lo_f:
+                    lo_f, hi_f = hi_f, lo_f
+                return RealDimension(low=lo_f, high=hi_f)
 
         # scipy rv_frozen -> distribution (bounded by support)
         if isinstance(value, rv_frozen):
@@ -114,4 +131,3 @@ def _space_add(self: BaseSearchSpace, other: BaseSearchSpace) -> CombinedSpace:
 
 
 setattr(BaseSearchSpace, "__add__", _space_add)
-
