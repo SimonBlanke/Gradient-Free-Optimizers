@@ -196,3 +196,9 @@ class V2Initializer:
             out.append(np.array(z, dtype=float))
         return out
 
+    # Compatibility with legacy Initializer API
+    def add_n_random_init_pos(self, n: int) -> None:
+        if n <= 0:
+            return
+        self.init_positions_l.extend(self._random(n))
+        self.n_inits = len(self.init_positions_l)
