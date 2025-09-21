@@ -33,7 +33,7 @@ test-examples:
 		python _test_examples.py
 
 test-hyper:
-	# test if new version of gfo works with current release of hyperactive 
+	# test if new version of gfo works with current release of hyperactive
 	pip install --upgrade --force-reinstall hyperactive; \
 	make install; \
 	cd ../Hyperactive; \
@@ -50,3 +50,6 @@ test:
 	make test-examples
 	make test-hyper
 
+# Run pre-commit on all files
+pre-commit-all:
+	pre-commit run --all-files
