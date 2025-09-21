@@ -3,6 +3,7 @@
 # License: MIT License
 
 import time
+import numpy as np
 
 from ._progress_bar import ProgressBarLVL0, ProgressBarLVL1
 from ._times_tracker import TimesTracker
