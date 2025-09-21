@@ -3,11 +3,11 @@ name: Windows
 on:
   push:
     branches:
-      - master
+      - main
       - dev
   pull_request:
     branches:
-      - master
+      - main
       - dev
 
 concurrency:
@@ -25,7 +25,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@main
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
