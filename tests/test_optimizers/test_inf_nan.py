@@ -51,7 +51,15 @@ def test_inf_nan_0(Optimizer, objective):
     objective_function = objective
     initialize = {"random": 20}
 
-    opt = Optimizer(search_space, initialize=initialize)
+    opt_para = {
+        "search_space": search_space,
+        "initialize": initialize,
+    }
+
+    if Optimizer.__name__ == "PowellsMethod":
+        opt_para["iters_p_dim"] = 80
+
+    opt = Optimizer(**opt_para)
     opt.search(
         objective_function,
         n_iter=80,
