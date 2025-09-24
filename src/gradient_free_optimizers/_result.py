@@ -3,7 +3,7 @@ from array import array
 from typing import Tuple
 
 
-@dataclass(slots=True)
+@dataclass
 class Result:
     score: float
     metrics: dict
