@@ -8,6 +8,7 @@ from .local_opt import (
     RepulsingHillClimbingOptimizer,
     SimulatedAnnealingOptimizer,
     DownhillSimplexOptimizer,
+    COBYLA,
 )
 
 from .global_opt import (
@@ -68,4 +69,5 @@ __all__ = [
     "TreeStructuredParzenEstimators",
     "ForestOptimizer",
     "EnsembleOptimizer",
+    "COBYLA"
 ]
