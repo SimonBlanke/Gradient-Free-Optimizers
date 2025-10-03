@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from gradient_free_optimizers.optimizers.core_optimizer import Converter
+from gradient_free_optimizers.core._optimizers.core_optimizer import Converter
 from gradient_free_optimizers._result import Result
 
 
@@ -552,9 +552,7 @@ dataframe0 = pd.DataFrame(
     [[-10, 10, 0.1], [10, 10, 0.2], [0, 0, 0.3]], columns=["x1", "x2", "score"]
 )
 
-dataframe1 = pd.DataFrame(
-    [[-10, 0.1], [10, 0.2], [0, 0.3]], columns=["x1", "score"]
-)
+dataframe1 = pd.DataFrame([[-10, 0.1], [10, 0.2], [0, 0.3]], columns=["x1", "score"])
 
 memory_dict_0 = {
     (0, 10): Result(0.1, {}),
@@ -568,9 +566,7 @@ dataframe2memory_dict_test_para_0 = [
 ]
 
 
-@pytest.mark.parametrize(
-    "test_input,expected", dataframe2memory_dict_test_para_0
-)
+@pytest.mark.parametrize("test_input,expected", dataframe2memory_dict_test_para_0)
 def test_dataframe2memory_dict_0(test_input, expected):
     search_space = {
         "x1": np.arange(-10, 11, 1),
@@ -604,9 +600,7 @@ memory_dict2dataframe_test_para_0 = [
 ]
 
 
-@pytest.mark.parametrize(
-    "test_input,expected", memory_dict2dataframe_test_para_0
-)
+@pytest.mark.parametrize("test_input,expected", memory_dict2dataframe_test_para_0)
 def test_memory_dict2dataframe_0(test_input, expected):
     search_space = {
         "x1": np.arange(-10, 11, 1),

@@ -2,7 +2,7 @@ import pytest
 import random
 import numpy as np
 
-from gradient_free_optimizers.optimizers.core_optimizer.converter import Converter
+from gradient_free_optimizers.core._optimizers.core_optimizer.converter import Converter
 
 from ._parametrize import optimizers
 
