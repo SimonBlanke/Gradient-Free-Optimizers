@@ -6,7 +6,7 @@ from typing import List, Dict, Literal, Union
 
 from ..search import Search
 from ..core import BayesianOptimizer as _BayesianOptimizer
-from ..core.smb_opt.bayesian_optimization import gaussian_process
+from ..core._optimizers.smb_opt.bayesian_optimization import gaussian_process
 
 
 class BayesianOptimizer(_BayesianOptimizer, Search):
