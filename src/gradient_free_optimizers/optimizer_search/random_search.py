@@ -5,7 +5,7 @@
 from typing import List, Dict, Literal, Union
 
 from ..search import Search
-from ..optimizers import RandomSearchOptimizer as _RandomSearchOptimizer
+from ..core import RandomSearchOptimizer as _RandomSearchOptimizer
 
 
 class RandomSearchOptimizer(_RandomSearchOptimizer, Search):

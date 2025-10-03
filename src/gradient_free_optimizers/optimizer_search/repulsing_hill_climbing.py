@@ -5,7 +5,7 @@
 from typing import List, Dict, Literal, Union
 
 from ..search import Search
-from ..optimizers import (
+from ..core import (
     RepulsingHillClimbingOptimizer as _RepulsingHillClimbingOptimizer,
 )
 
@@ -56,9 +56,7 @@ class RepulsingHillClimbingOptimizer(_RepulsingHillClimbingOptimizer, Search):
         rand_rest_p: float = 0,
         nth_process: int = None,
         epsilon: float = 0.03,
-        distribution: Literal[
-            "normal", "laplace", "gumbel", "logistic"
-        ] = "normal",
+        distribution: Literal["normal", "laplace", "gumbel", "logistic"] = "normal",
         n_neighbours: int = 3,
         repulsion_factor: float = 5,
     ):

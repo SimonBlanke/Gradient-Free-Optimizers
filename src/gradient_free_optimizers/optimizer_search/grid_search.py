@@ -5,7 +5,7 @@
 from typing import List, Dict, Literal, Union
 
 from ..search import Search
-from ..optimizers import GridSearchOptimizer as _GridSearchOptimizer
+from ..core import GridSearchOptimizer as _GridSearchOptimizer
 
 
 class GridSearchOptimizer(_GridSearchOptimizer, Search):

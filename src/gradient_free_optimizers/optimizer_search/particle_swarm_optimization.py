@@ -5,7 +5,7 @@
 from typing import List, Dict, Literal, Union
 
 from ..search import Search
-from ..optimizers import ParticleSwarmOptimizer as _ParticleSwarmOptimizer
+from ..core import ParticleSwarmOptimizer as _ParticleSwarmOptimizer
 
 
 class ParticleSwarmOptimizer(_ParticleSwarmOptimizer, Search):

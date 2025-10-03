@@ -5,7 +5,7 @@
 from typing import List, Dict, Literal, Union
 
 from ..search import Search
-from ..optimizers import DirectAlgorithm as _DirectAlgorithm
+from ..core import DirectAlgorithm as _DirectAlgorithm
 
 
 class DirectAlgorithm(_DirectAlgorithm, Search):

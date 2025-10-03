@@ -5,14 +5,12 @@
 from typing import List, Dict, Literal, Union
 
 from ..search import Search
-from ..optimizers import (
+from ..core import (
     RandomRestartHillClimbingOptimizer as _RandomRestartHillClimbingOptimizer,
 )
 
 
-class RandomRestartHillClimbingOptimizer(
-    _RandomRestartHillClimbingOptimizer, Search
-):
+class RandomRestartHillClimbingOptimizer(_RandomRestartHillClimbingOptimizer, Search):
     """
     A class implementing the **random restart hill climbing optimizer** for the public API.
     Inheriting from the `Search`-class to get the `search`-method and from
@@ -58,9 +56,7 @@ class RandomRestartHillClimbingOptimizer(
         rand_rest_p: float = 0,
         nth_process: int = None,
         epsilon: float = 0.03,
-        distribution: Literal[
-            "normal", "laplace", "gumbel", "logistic"
-        ] = "normal",
+        distribution: Literal["normal", "laplace", "gumbel", "logistic"] = "normal",
         n_neighbours: int = 3,
         n_iter_restart: int = 10,
     ):

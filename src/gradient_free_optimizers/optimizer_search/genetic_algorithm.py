@@ -5,7 +5,7 @@
 from typing import List, Dict, Literal, Union
 
 from ..search import Search
-from ..optimizers import GeneticAlgorithmOptimizer as _GeneticAlgorithmOptimizer
+from ..core import GeneticAlgorithmOptimizer as _GeneticAlgorithmOptimizer
 
 
 class GeneticAlgorithmOptimizer(_GeneticAlgorithmOptimizer, Search):

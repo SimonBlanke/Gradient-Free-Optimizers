@@ -5,8 +5,8 @@
 from typing import List, Dict, Literal, Union
 
 from ..search import Search
-from ..optimizers import BayesianOptimizer as _BayesianOptimizer
-from ..optimizers.smb_opt.bayesian_optimization import gaussian_process
+from ..core import BayesianOptimizer as _BayesianOptimizer
+from ..core.smb_opt.bayesian_optimization import gaussian_process
 
 
 class BayesianOptimizer(_BayesianOptimizer, Search):

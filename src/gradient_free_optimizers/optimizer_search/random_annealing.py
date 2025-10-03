@@ -5,7 +5,7 @@
 from typing import List, Dict, Literal, Union
 
 from ..search import Search
-from ..optimizers import RandomAnnealingOptimizer as _RandomAnnealingOptimizer
+from ..core import RandomAnnealingOptimizer as _RandomAnnealingOptimizer
 
 
 class RandomAnnealingOptimizer(_RandomAnnealingOptimizer, Search):
@@ -56,9 +56,7 @@ class RandomAnnealingOptimizer(_RandomAnnealingOptimizer, Search):
         rand_rest_p: float = 0,
         nth_process: int = None,
         epsilon: float = 0.03,
-        distribution: Literal[
-            "normal", "laplace", "gumbel", "logistic"
-        ] = "normal",
+        distribution: Literal["normal", "laplace", "gumbel", "logistic"] = "normal",
         n_neighbours: int = 3,
         annealing_rate=0.98,
         start_temp=10,

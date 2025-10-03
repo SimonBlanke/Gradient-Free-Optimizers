@@ -5,7 +5,7 @@
 from typing import List, Dict, Literal, Union
 
 from ..search import Search
-from ..optimizers import EnsembleOptimizer as _EnsembleOptimizer
+from ..core import EnsembleOptimizer as _EnsembleOptimizer
 
 
 class EnsembleOptimizer(_EnsembleOptimizer, Search):

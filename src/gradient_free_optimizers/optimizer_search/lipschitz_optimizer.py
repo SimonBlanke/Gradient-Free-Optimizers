@@ -5,7 +5,7 @@
 from typing import List, Dict, Literal, Union
 
 from ..search import Search
-from ..optimizers import LipschitzOptimizer as _LipschitzOptimizer
+from ..core import LipschitzOptimizer as _LipschitzOptimizer
 
 
 class LipschitzOptimizer(_LipschitzOptimizer, Search):

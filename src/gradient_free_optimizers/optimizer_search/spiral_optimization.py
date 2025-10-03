@@ -5,7 +5,7 @@
 from typing import List, Dict, Literal, Union
 
 from ..search import Search
-from ..optimizers import SpiralOptimization as _SpiralOptimization
+from ..core import SpiralOptimization as _SpiralOptimization
 
 
 class SpiralOptimization(_SpiralOptimization, Search):

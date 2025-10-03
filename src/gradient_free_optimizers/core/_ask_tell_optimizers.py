@@ -2,53 +2,53 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-from .optimizers.local_opt import (
-    HillClimbingOptimizer,
-    StochasticHillClimbingOptimizer,
-    RepulsingHillClimbingOptimizer,
-    SimulatedAnnealingOptimizer,
-    DownhillSimplexOptimizer,
+from ._optimizers.local_opt import (
+    HillClimbingOptimizer as _HillClimbingOptimizer_,
+    StochasticHillClimbingOptimizer as _StochasticHillClimbingOptimizer_,
+    RepulsingHillClimbingOptimizer as _RepulsingHillClimbingOptimizer_,
+    SimulatedAnnealingOptimizer as _SimulatedAnnealingOptimizer_,
+    DownhillSimplexOptimizer as _DownhillSimplexOptimizer_,
 )
 
-from .optimizers.global_opt import (
-    RandomSearchOptimizer,
-    RandomRestartHillClimbingOptimizer,
-    PowellsMethod,
-    PatternSearch,
-    LipschitzOptimizer,
-    DirectAlgorithm,
+from ._optimizers.global_opt import (
+    RandomSearchOptimizer as _RandomSearchOptimizer_,
+    RandomRestartHillClimbingOptimizer as _RandomRestartHillClimbingOptimizer_,
+    PowellsMethod as _PowellsMethod_,
+    PatternSearch as _PatternSearch_,
+    LipschitzOptimizer as _LipschitzOptimizer_,
+    DirectAlgorithm as _DirectAlgorithm_,
 )
 
 
-from .optimizers.pop_opt import (
-    ParallelTemperingOptimizer,
-    ParticleSwarmOptimizer,
-    SpiralOptimization,
-    GeneticAlgorithmOptimizer,
-    EvolutionStrategyOptimizer,
-    DifferentialEvolutionOptimizer,
+from ._optimizers.pop_opt import (
+    ParallelTemperingOptimizer as _ParallelTemperingOptimizer_,
+    ParticleSwarmOptimizer as _ParticleSwarmOptimizer_,
+    SpiralOptimization as _SpiralOptimization_,
+    GeneticAlgorithmOptimizer as _GeneticAlgorithmOptimizer_,
+    EvolutionStrategyOptimizer as _EvolutionStrategyOptimizer_,
+    DifferentialEvolutionOptimizer as _DifferentialEvolutionOptimizer_,
 )
 
-from .optimizers.smb_opt import (
-    BayesianOptimizer,
-    TreeStructuredParzenEstimators,
-    ForestOptimizer,
+from ._optimizers.smb_opt import (
+    BayesianOptimizer as _BayesianOptimizer_,
+    TreeStructuredParzenEstimators as _TreeStructuredParzenEstimators_,
+    ForestOptimizer as _ForestOptimizer_,
 )
 
-from .optimizers.exp_opt import (
-    RandomAnnealingOptimizer,
-    EnsembleOptimizer,
+from ._optimizers.exp_opt import (
+    RandomAnnealingOptimizer as _RandomAnnealingOptimizer_,
+    EnsembleOptimizer as _EnsembleOptimizer_,
 )
 
-from .optimizers.grid import (
-    GridSearchOptimizer,
+from ._optimizers.grid import (
+    GridSearchOptimizer as _GridSearchOptimizer_,
 )
 
-from .ask_tell_base_optimizer import AskTellOptimizer
+from ._ask_tell_base_optimizer import AskTellOptimizer
 
 
 # Create ask/tell wrapper classes for each optimizer
-class HillClimbing(AskTellOptimizer):
+class HillClimbingOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
@@ -59,7 +59,7 @@ class HillClimbing(AskTellOptimizer):
         **kwargs,
     ):
         super().__init__(
-            HillClimbingOptimizer,
+            _HillClimbingOptimizer_,
             search_space,
             init_positions,
             init_scores,
@@ -69,7 +69,7 @@ class HillClimbing(AskTellOptimizer):
         )
 
 
-class StochasticHillClimbing(AskTellOptimizer):
+class StochasticHillClimbingOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
@@ -80,7 +80,7 @@ class StochasticHillClimbing(AskTellOptimizer):
         **kwargs,
     ):
         super().__init__(
-            StochasticHillClimbingOptimizer,
+            _StochasticHillClimbingOptimizer_,
             search_space,
             init_positions,
             init_scores,
@@ -90,7 +90,7 @@ class StochasticHillClimbing(AskTellOptimizer):
         )
 
 
-class RepulsingHillClimbing(AskTellOptimizer):
+class RepulsingHillClimbingOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
@@ -101,7 +101,7 @@ class RepulsingHillClimbing(AskTellOptimizer):
         **kwargs,
     ):
         super().__init__(
-            RepulsingHillClimbingOptimizer,
+            _RepulsingHillClimbingOptimizer_,
             search_space,
             init_positions,
             init_scores,
@@ -111,7 +111,7 @@ class RepulsingHillClimbing(AskTellOptimizer):
         )
 
 
-class SimulatedAnnealing(AskTellOptimizer):
+class SimulatedAnnealingOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
@@ -122,7 +122,7 @@ class SimulatedAnnealing(AskTellOptimizer):
         **kwargs,
     ):
         super().__init__(
-            SimulatedAnnealingOptimizer,
+            _SimulatedAnnealingOptimizer_,
             search_space,
             init_positions,
             init_scores,
@@ -132,7 +132,7 @@ class SimulatedAnnealing(AskTellOptimizer):
         )
 
 
-class DownhillSimplex(AskTellOptimizer):
+class DownhillSimplexOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
@@ -143,7 +143,7 @@ class DownhillSimplex(AskTellOptimizer):
         **kwargs,
     ):
         super().__init__(
-            DownhillSimplexOptimizer,
+            _DownhillSimplexOptimizer_,
             search_space,
             init_positions,
             init_scores,
@@ -153,7 +153,7 @@ class DownhillSimplex(AskTellOptimizer):
         )
 
 
-class RandomSearch(AskTellOptimizer):
+class RandomSearchOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
@@ -164,7 +164,7 @@ class RandomSearch(AskTellOptimizer):
         **kwargs,
     ):
         super().__init__(
-            RandomSearchOptimizer,
+            _RandomSearchOptimizer_,
             search_space,
             init_positions,
             init_scores,
@@ -174,7 +174,7 @@ class RandomSearch(AskTellOptimizer):
         )
 
 
-class GridSearch(AskTellOptimizer):
+class GridSearchOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
@@ -185,7 +185,7 @@ class GridSearch(AskTellOptimizer):
         **kwargs,
     ):
         super().__init__(
-            GridSearchOptimizer,
+            _GridSearchOptimizer_,
             search_space,
             init_positions,
             init_scores,
@@ -195,7 +195,7 @@ class GridSearch(AskTellOptimizer):
         )
 
 
-class RandomRestartHillClimbing(AskTellOptimizer):
+class RandomRestartHillClimbingOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
@@ -206,7 +206,7 @@ class RandomRestartHillClimbing(AskTellOptimizer):
         **kwargs,
     ):
         super().__init__(
-            RandomRestartHillClimbingOptimizer,
+            _RandomRestartHillClimbingOptimizer_,
             search_space,
             init_positions,
             init_scores,
@@ -216,7 +216,7 @@ class RandomRestartHillClimbing(AskTellOptimizer):
         )
 
 
-class Powell(AskTellOptimizer):
+class PowellsMethod(AskTellOptimizer):
     def __init__(
         self,
         search_space,
@@ -227,7 +227,7 @@ class Powell(AskTellOptimizer):
         **kwargs,
     ):
         super().__init__(
-            PowellsMethod,
+            _PowellsMethod_,
             search_space,
             init_positions,
             init_scores,
@@ -237,7 +237,7 @@ class Powell(AskTellOptimizer):
         )
 
 
-class Pattern(AskTellOptimizer):
+class PatternSearch(AskTellOptimizer):
     def __init__(
         self,
         search_space,
@@ -248,7 +248,7 @@ class Pattern(AskTellOptimizer):
         **kwargs,
     ):
         super().__init__(
-            PatternSearch,
+            _PatternSearch_,
             search_space,
             init_positions,
             init_scores,
@@ -258,7 +258,7 @@ class Pattern(AskTellOptimizer):
         )
 
 
-class Lipschitz(AskTellOptimizer):
+class LipschitzOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
@@ -269,7 +269,7 @@ class Lipschitz(AskTellOptimizer):
         **kwargs,
     ):
         super().__init__(
-            LipschitzOptimizer,
+            _LipschitzOptimizer_,
             search_space,
             init_positions,
             init_scores,
@@ -279,7 +279,7 @@ class Lipschitz(AskTellOptimizer):
         )
 
 
-class Direct(AskTellOptimizer):
+class DirectAlgorithm(AskTellOptimizer):
     def __init__(
         self,
         search_space,
@@ -290,7 +290,7 @@ class Direct(AskTellOptimizer):
         **kwargs,
     ):
         super().__init__(
-            DirectAlgorithm,
+            _DirectAlgorithm_,
             search_space,
             init_positions,
             init_scores,
@@ -300,7 +300,7 @@ class Direct(AskTellOptimizer):
         )
 
 
-class RandomAnnealing(AskTellOptimizer):
+class RandomAnnealingOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
@@ -311,7 +311,7 @@ class RandomAnnealing(AskTellOptimizer):
         **kwargs,
     ):
         super().__init__(
-            RandomAnnealingOptimizer,
+            _RandomAnnealingOptimizer_,
             search_space,
             init_positions,
             init_scores,
@@ -321,7 +321,7 @@ class RandomAnnealing(AskTellOptimizer):
         )
 
 
-class ParallelTempering(AskTellOptimizer):
+class ParallelTemperingOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
@@ -332,7 +332,7 @@ class ParallelTempering(AskTellOptimizer):
         **kwargs,
     ):
         super().__init__(
-            ParallelTemperingOptimizer,
+            _ParallelTemperingOptimizer_,
             search_space,
             init_positions,
             init_scores,
@@ -342,7 +342,7 @@ class ParallelTempering(AskTellOptimizer):
         )
 
 
-class ParticleSwarm(AskTellOptimizer):
+class ParticleSwarmOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
@@ -353,7 +353,7 @@ class ParticleSwarm(AskTellOptimizer):
         **kwargs,
     ):
         super().__init__(
-            ParticleSwarmOptimizer,
+            _ParticleSwarmOptimizer_,
             search_space,
             init_positions,
             init_scores,
@@ -363,7 +363,7 @@ class ParticleSwarm(AskTellOptimizer):
         )
 
 
-class Spiral(AskTellOptimizer):
+class SpiralOptimization(AskTellOptimizer):
     def __init__(
         self,
         search_space,
@@ -374,7 +374,7 @@ class Spiral(AskTellOptimizer):
         **kwargs,
     ):
         super().__init__(
-            SpiralOptimization,
+            _SpiralOptimization_,
             search_space,
             init_positions,
             init_scores,
@@ -384,7 +384,7 @@ class Spiral(AskTellOptimizer):
         )
 
 
-class GeneticAlgorithm(AskTellOptimizer):
+class GeneticAlgorithmOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
@@ -395,7 +395,7 @@ class GeneticAlgorithm(AskTellOptimizer):
         **kwargs,
     ):
         super().__init__(
-            GeneticAlgorithmOptimizer,
+            _GeneticAlgorithmOptimizer_,
             search_space,
             init_positions,
             init_scores,
@@ -405,7 +405,7 @@ class GeneticAlgorithm(AskTellOptimizer):
         )
 
 
-class EvolutionStrategy(AskTellOptimizer):
+class EvolutionStrategyOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
@@ -416,7 +416,7 @@ class EvolutionStrategy(AskTellOptimizer):
         **kwargs,
     ):
         super().__init__(
-            EvolutionStrategyOptimizer,
+            _EvolutionStrategyOptimizer_,
             search_space,
             init_positions,
             init_scores,
@@ -426,7 +426,7 @@ class EvolutionStrategy(AskTellOptimizer):
         )
 
 
-class DifferentialEvolution(AskTellOptimizer):
+class DifferentialEvolutionOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
@@ -437,7 +437,7 @@ class DifferentialEvolution(AskTellOptimizer):
         **kwargs,
     ):
         super().__init__(
-            DifferentialEvolutionOptimizer,
+            _DifferentialEvolutionOptimizer_,
             search_space,
             init_positions,
             init_scores,
@@ -447,7 +447,7 @@ class DifferentialEvolution(AskTellOptimizer):
         )
 
 
-class BayesianOptimization(AskTellOptimizer):
+class BayesianOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
@@ -458,7 +458,7 @@ class BayesianOptimization(AskTellOptimizer):
         **kwargs,
     ):
         super().__init__(
-            BayesianOptimizer,
+            _BayesianOptimizer_,
             search_space,
             init_positions,
             init_scores,
@@ -468,7 +468,7 @@ class BayesianOptimization(AskTellOptimizer):
         )
 
 
-class TPE(AskTellOptimizer):
+class TreeStructuredParzenEstimators(AskTellOptimizer):
     def __init__(
         self,
         search_space,
@@ -479,7 +479,7 @@ class TPE(AskTellOptimizer):
         **kwargs,
     ):
         super().__init__(
-            TreeStructuredParzenEstimators,
+            _TreeStructuredParzenEstimators_,
             search_space,
             init_positions,
             init_scores,
@@ -489,7 +489,7 @@ class TPE(AskTellOptimizer):
         )
 
 
-class Forest(AskTellOptimizer):
+class ForestOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
@@ -500,7 +500,7 @@ class Forest(AskTellOptimizer):
         **kwargs,
     ):
         super().__init__(
-            ForestOptimizer,
+            _ForestOptimizer_,
             search_space,
             init_positions,
             init_scores,
@@ -510,7 +510,7 @@ class Forest(AskTellOptimizer):
         )
 
 
-class Ensemble(AskTellOptimizer):
+class EnsembleOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
@@ -521,7 +521,7 @@ class Ensemble(AskTellOptimizer):
         **kwargs,
     ):
         super().__init__(
-            EnsembleOptimizer,
+            _EnsembleOptimizer_,
             search_space,
             init_positions,
             init_scores,
@@ -555,29 +555,4 @@ __all__ = [
     "TreeStructuredParzenEstimators",
     "ForestOptimizer",
     "EnsembleOptimizer",
-    # Ask/Tell Interface
-    "AskTellOptimizer",
-    "HillClimbing",
-    "StochasticHillClimbing",
-    "RepulsingHillClimbing",
-    "SimulatedAnnealing",
-    "DownhillSimplex",
-    "RandomSearch",
-    "GridSearch",
-    "RandomRestartHillClimbing",
-    "Powell",
-    "Pattern",
-    "Lipschitz",
-    "Direct",
-    "RandomAnnealing",
-    "ParallelTempering",
-    "ParticleSwarm",
-    "Spiral",
-    "GeneticAlgorithm",
-    "EvolutionStrategy",
-    "DifferentialEvolution",
-    "BayesianOptimization",
-    "TPE",
-    "Forest",
-    "Ensemble",
 ]

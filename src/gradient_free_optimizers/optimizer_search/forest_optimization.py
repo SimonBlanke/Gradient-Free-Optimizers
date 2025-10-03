@@ -5,7 +5,7 @@
 from typing import List, Dict, Literal, Union
 
 from ..search import Search
-from ..optimizers import ForestOptimizer as _ForestOptimizer
+from ..core import ForestOptimizer as _ForestOptimizer
 
 
 class ForestOptimizer(_ForestOptimizer, Search):

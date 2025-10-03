@@ -5,7 +5,7 @@
 from typing import List, Dict, Literal, Union
 
 from ..search import Search
-from ..optimizers import PatternSearch as _PatternSearch
+from ..core import PatternSearch as _PatternSearch
 
 
 class PatternSearch(_PatternSearch, Search):

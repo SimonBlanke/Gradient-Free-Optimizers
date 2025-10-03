@@ -5,7 +5,7 @@
 from typing import List, Dict, Literal, Union
 
 from ..search import Search
-from ..optimizers import DownhillSimplexOptimizer as _DownhillSimplexOptimizer
+from ..core import DownhillSimplexOptimizer as _DownhillSimplexOptimizer
 
 
 class DownhillSimplexOptimizer(_DownhillSimplexOptimizer, Search):

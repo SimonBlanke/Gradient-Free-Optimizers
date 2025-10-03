@@ -5,7 +5,7 @@
 from typing import List, Dict, Literal, Union
 
 from ..search import Search
-from ..optimizers import (
+from ..core import (
     EvolutionStrategyOptimizer as _EvolutionStrategyOptimizer,
 )
 
