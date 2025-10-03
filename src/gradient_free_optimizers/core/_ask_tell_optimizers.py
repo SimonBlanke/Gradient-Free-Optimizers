@@ -52,8 +52,7 @@ class HillClimbingOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
-        init_positions,
-        init_scores,
+        initialize,
         random_state=None,
         constraints=None,
         **kwargs,
@@ -61,8 +60,7 @@ class HillClimbingOptimizer(AskTellOptimizer):
         super().__init__(
             _HillClimbingOptimizer_,
             search_space,
-            init_positions,
-            init_scores,
+            initialize,
             random_state=random_state,
             constraints=constraints,
             **kwargs,
@@ -73,8 +71,7 @@ class StochasticHillClimbingOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
-        init_positions,
-        init_scores,
+        initialize,
         random_state=None,
         constraints=None,
         **kwargs,
@@ -82,8 +79,7 @@ class StochasticHillClimbingOptimizer(AskTellOptimizer):
         super().__init__(
             _StochasticHillClimbingOptimizer_,
             search_space,
-            init_positions,
-            init_scores,
+            initialize,
             random_state=random_state,
             constraints=constraints,
             **kwargs,
@@ -94,8 +90,7 @@ class RepulsingHillClimbingOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
-        init_positions,
-        init_scores,
+        initialize,
         random_state=None,
         constraints=None,
         **kwargs,
@@ -103,8 +98,7 @@ class RepulsingHillClimbingOptimizer(AskTellOptimizer):
         super().__init__(
             _RepulsingHillClimbingOptimizer_,
             search_space,
-            init_positions,
-            init_scores,
+            initialize,
             random_state=random_state,
             constraints=constraints,
             **kwargs,
@@ -115,8 +109,7 @@ class SimulatedAnnealingOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
-        init_positions,
-        init_scores,
+        initialize,
         random_state=None,
         constraints=None,
         **kwargs,
@@ -124,8 +117,7 @@ class SimulatedAnnealingOptimizer(AskTellOptimizer):
         super().__init__(
             _SimulatedAnnealingOptimizer_,
             search_space,
-            init_positions,
-            init_scores,
+            initialize,
             random_state=random_state,
             constraints=constraints,
             **kwargs,
@@ -136,8 +128,7 @@ class DownhillSimplexOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
-        init_positions,
-        init_scores,
+        initialize,
         random_state=None,
         constraints=None,
         **kwargs,
@@ -145,8 +136,7 @@ class DownhillSimplexOptimizer(AskTellOptimizer):
         super().__init__(
             _DownhillSimplexOptimizer_,
             search_space,
-            init_positions,
-            init_scores,
+            initialize,
             random_state=random_state,
             constraints=constraints,
             **kwargs,
@@ -157,8 +147,7 @@ class RandomSearchOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
-        init_positions,
-        init_scores,
+        initialize,
         random_state=None,
         constraints=None,
         **kwargs,
@@ -166,8 +155,7 @@ class RandomSearchOptimizer(AskTellOptimizer):
         super().__init__(
             _RandomSearchOptimizer_,
             search_space,
-            init_positions,
-            init_scores,
+            initialize,
             random_state=random_state,
             constraints=constraints,
             **kwargs,
@@ -178,8 +166,7 @@ class GridSearchOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
-        init_positions,
-        init_scores,
+        initialize,
         random_state=None,
         constraints=None,
         **kwargs,
@@ -187,8 +174,7 @@ class GridSearchOptimizer(AskTellOptimizer):
         super().__init__(
             _GridSearchOptimizer_,
             search_space,
-            init_positions,
-            init_scores,
+            initialize,
             random_state=random_state,
             constraints=constraints,
             **kwargs,
@@ -199,8 +185,7 @@ class RandomRestartHillClimbingOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
-        init_positions,
-        init_scores,
+        initialize,
         random_state=None,
         constraints=None,
         **kwargs,
@@ -208,8 +193,7 @@ class RandomRestartHillClimbingOptimizer(AskTellOptimizer):
         super().__init__(
             _RandomRestartHillClimbingOptimizer_,
             search_space,
-            init_positions,
-            init_scores,
+            initialize,
             random_state=random_state,
             constraints=constraints,
             **kwargs,
@@ -220,8 +204,7 @@ class PowellsMethod(AskTellOptimizer):
     def __init__(
         self,
         search_space,
-        init_positions,
-        init_scores,
+        initialize,
         random_state=None,
         constraints=None,
         **kwargs,
@@ -229,8 +212,7 @@ class PowellsMethod(AskTellOptimizer):
         super().__init__(
             _PowellsMethod_,
             search_space,
-            init_positions,
-            init_scores,
+            initialize,
             random_state=random_state,
             constraints=constraints,
             **kwargs,
@@ -241,8 +223,7 @@ class PatternSearch(AskTellOptimizer):
     def __init__(
         self,
         search_space,
-        init_positions,
-        init_scores,
+        initialize,
         random_state=None,
         constraints=None,
         **kwargs,
@@ -250,8 +231,7 @@ class PatternSearch(AskTellOptimizer):
         super().__init__(
             _PatternSearch_,
             search_space,
-            init_positions,
-            init_scores,
+            initialize,
             random_state=random_state,
             constraints=constraints,
             **kwargs,
@@ -262,8 +242,7 @@ class LipschitzOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
-        init_positions,
-        init_scores,
+        initialize,
         random_state=None,
         constraints=None,
         **kwargs,
@@ -271,8 +250,7 @@ class LipschitzOptimizer(AskTellOptimizer):
         super().__init__(
             _LipschitzOptimizer_,
             search_space,
-            init_positions,
-            init_scores,
+            initialize,
             random_state=random_state,
             constraints=constraints,
             **kwargs,
@@ -283,8 +261,7 @@ class DirectAlgorithm(AskTellOptimizer):
     def __init__(
         self,
         search_space,
-        init_positions,
-        init_scores,
+        initialize,
         random_state=None,
         constraints=None,
         **kwargs,
@@ -292,8 +269,7 @@ class DirectAlgorithm(AskTellOptimizer):
         super().__init__(
             _DirectAlgorithm_,
             search_space,
-            init_positions,
-            init_scores,
+            initialize,
             random_state=random_state,
             constraints=constraints,
             **kwargs,
@@ -304,8 +280,7 @@ class RandomAnnealingOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
-        init_positions,
-        init_scores,
+        initialize,
         random_state=None,
         constraints=None,
         **kwargs,
@@ -313,8 +288,7 @@ class RandomAnnealingOptimizer(AskTellOptimizer):
         super().__init__(
             _RandomAnnealingOptimizer_,
             search_space,
-            init_positions,
-            init_scores,
+            initialize,
             random_state=random_state,
             constraints=constraints,
             **kwargs,
@@ -325,8 +299,7 @@ class ParallelTemperingOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
-        init_positions,
-        init_scores,
+        initialize,
         random_state=None,
         constraints=None,
         **kwargs,
@@ -334,8 +307,7 @@ class ParallelTemperingOptimizer(AskTellOptimizer):
         super().__init__(
             _ParallelTemperingOptimizer_,
             search_space,
-            init_positions,
-            init_scores,
+            initialize,
             random_state=random_state,
             constraints=constraints,
             **kwargs,
@@ -346,8 +318,7 @@ class ParticleSwarmOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
-        init_positions,
-        init_scores,
+        initialize,
         random_state=None,
         constraints=None,
         **kwargs,
@@ -355,8 +326,7 @@ class ParticleSwarmOptimizer(AskTellOptimizer):
         super().__init__(
             _ParticleSwarmOptimizer_,
             search_space,
-            init_positions,
-            init_scores,
+            initialize,
             random_state=random_state,
             constraints=constraints,
             **kwargs,
@@ -367,8 +337,7 @@ class SpiralOptimization(AskTellOptimizer):
     def __init__(
         self,
         search_space,
-        init_positions,
-        init_scores,
+        initialize,
         random_state=None,
         constraints=None,
         **kwargs,
@@ -376,8 +345,7 @@ class SpiralOptimization(AskTellOptimizer):
         super().__init__(
             _SpiralOptimization_,
             search_space,
-            init_positions,
-            init_scores,
+            initialize,
             random_state=random_state,
             constraints=constraints,
             **kwargs,
@@ -388,8 +356,7 @@ class GeneticAlgorithmOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
-        init_positions,
-        init_scores,
+        initialize,
         random_state=None,
         constraints=None,
         **kwargs,
@@ -397,8 +364,7 @@ class GeneticAlgorithmOptimizer(AskTellOptimizer):
         super().__init__(
             _GeneticAlgorithmOptimizer_,
             search_space,
-            init_positions,
-            init_scores,
+            initialize,
             random_state=random_state,
             constraints=constraints,
             **kwargs,
@@ -409,8 +375,7 @@ class EvolutionStrategyOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
-        init_positions,
-        init_scores,
+        initialize,
         random_state=None,
         constraints=None,
         **kwargs,
@@ -418,8 +383,7 @@ class EvolutionStrategyOptimizer(AskTellOptimizer):
         super().__init__(
             _EvolutionStrategyOptimizer_,
             search_space,
-            init_positions,
-            init_scores,
+            initialize,
             random_state=random_state,
             constraints=constraints,
             **kwargs,
@@ -430,8 +394,7 @@ class DifferentialEvolutionOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
-        init_positions,
-        init_scores,
+        initialize,
         random_state=None,
         constraints=None,
         **kwargs,
@@ -439,8 +402,7 @@ class DifferentialEvolutionOptimizer(AskTellOptimizer):
         super().__init__(
             _DifferentialEvolutionOptimizer_,
             search_space,
-            init_positions,
-            init_scores,
+            initialize,
             random_state=random_state,
             constraints=constraints,
             **kwargs,
@@ -451,8 +413,7 @@ class BayesianOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
-        init_positions,
-        init_scores,
+        initialize,
         random_state=None,
         constraints=None,
         **kwargs,
@@ -460,8 +421,7 @@ class BayesianOptimizer(AskTellOptimizer):
         super().__init__(
             _BayesianOptimizer_,
             search_space,
-            init_positions,
-            init_scores,
+            initialize,
             random_state=random_state,
             constraints=constraints,
             **kwargs,
@@ -472,8 +432,7 @@ class TreeStructuredParzenEstimators(AskTellOptimizer):
     def __init__(
         self,
         search_space,
-        init_positions,
-        init_scores,
+        initialize,
         random_state=None,
         constraints=None,
         **kwargs,
@@ -481,8 +440,7 @@ class TreeStructuredParzenEstimators(AskTellOptimizer):
         super().__init__(
             _TreeStructuredParzenEstimators_,
             search_space,
-            init_positions,
-            init_scores,
+            initialize,
             random_state=random_state,
             constraints=constraints,
             **kwargs,
@@ -493,8 +451,7 @@ class ForestOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
-        init_positions,
-        init_scores,
+        initialize,
         random_state=None,
         constraints=None,
         **kwargs,
@@ -502,8 +459,7 @@ class ForestOptimizer(AskTellOptimizer):
         super().__init__(
             _ForestOptimizer_,
             search_space,
-            init_positions,
-            init_scores,
+            initialize,
             random_state=random_state,
             constraints=constraints,
             **kwargs,
@@ -514,8 +470,7 @@ class EnsembleOptimizer(AskTellOptimizer):
     def __init__(
         self,
         search_space,
-        init_positions,
-        init_scores,
+        initialize,
         random_state=None,
         constraints=None,
         **kwargs,
@@ -523,8 +478,7 @@ class EnsembleOptimizer(AskTellOptimizer):
         super().__init__(
             _EnsembleOptimizer_,
             search_space,
-            init_positions,
-            init_scores,
+            initialize,
             random_state=random_state,
             constraints=constraints,
             **kwargs,

@@ -35,41 +35,27 @@ class AskTellOptimizer:
         self,
         optimizer_class,
         search_space,
-        init_positions,
-        init_scores,
+        initialize,
         random_state=None,
         constraints=None,
-        **optimizer_params
+        **optimizer_params,
     ):
         if constraints is None:
             constraints = []
 
-        # Validate inputs
-        if not isinstance(init_positions, list):
-            init_positions = [init_positions]
-        if not isinstance(init_scores, list):
-            init_scores = [init_scores]
-
-        if len(init_positions) != len(init_scores):
-            raise ValueError(
-                f"init_positions and init_scores must have same length. "
-                f"Got {len(init_positions)} and {len(init_scores)}"
-            )
-
         self.search_space = search_space
-        self.init_positions = init_positions
-        self.init_scores = init_scores
+        self.initialize = initialize
         self.constraints = constraints
 
         # Create the underlying optimizer without initialization
         self.optimizer = optimizer_class(
             search_space=search_space,
-            initialize={},  # No automatic initialization
+            initialize=initialize,
             constraints=constraints,
             random_state=random_state,
             rand_rest_p=0,
             nth_process=None,
-            **optimizer_params
+            **optimizer_params,
         )
 
         # Initialize with provided positions and scores
@@ -78,28 +64,6 @@ class AskTellOptimizer:
         # Track current iteration state
         self._asked = False
         self._current_position = None
-
-    def _initialize_with_positions(self):
-        """Initialize optimizer with provided positions and scores."""
-        # Convert parameter dictionaries to position arrays
-        for para_dict, score in zip(self.init_positions, self.init_scores):
-            # Convert dict to position array (para -> value -> position)
-            value = self.optimizer.conv.para2value(para_dict)
-            position = self.optimizer.conv.value2position(value)
-
-            # Track the position
-            self.optimizer.pos_new = position
-            self.optimizer.nth_trial += 1
-
-            # Evaluate with the provided score
-            self.optimizer.evaluate(score)
-
-        # Set optimizer to iteration mode
-        try:
-            self.optimizer.finish_initialization()
-        except AttributeError:
-            # Some optimizers may not have this method
-            self.optimizer.search_state = "iter"
 
     def ask(self):
         """
@@ -111,9 +75,7 @@ class AskTellOptimizer:
             Parameter dictionary to evaluate
         """
         if self._asked:
-            raise RuntimeError(
-                "Must call tell() before asking for next position"
-            )
+            raise RuntimeError("Must call tell() before asking for next position")
 
         # Get next position from optimizer
         position = self.optimizer.iterate()
@@ -136,9 +98,7 @@ class AskTellOptimizer:
             Score/fitness value for the position from ask()
         """
         if not self._asked:
-            raise RuntimeError(
-                "Must call ask() before providing a score with tell()"
-            )
+            raise RuntimeError("Must call ask() before providing a score with tell()")
 
         # Update optimizer with score
         self.optimizer.pos_new = self._current_position
