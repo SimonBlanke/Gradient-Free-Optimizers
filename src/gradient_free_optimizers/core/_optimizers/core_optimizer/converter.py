@@ -3,12 +3,9 @@
 # License: MIT License
 
 import numpy as np
-import pandas as pd
 
 from functools import reduce
 from typing import Optional
-
-from ..._result import Result
 
 
 def check_numpy_array(search_space):
@@ -145,62 +142,3 @@ class Converter:
         for value in values:
             paras.append(self.value2para(value))
         return paras
-
-    @returnNoneIfArgNone
-    def positions_scores2memory_dict(
-        self, positions: Optional[list], scores: Optional[list]
-    ) -> Optional[dict]:
-        value_tuple_list = list(map(tuple, positions))
-        # Convert scores to Result objects
-        result_objects = [Result(float(score), {}) for score in scores]
-        memory_dict = dict(zip(value_tuple_list, result_objects))
-
-        return memory_dict
-
-    @returnNoneIfArgNone
-    def memory_dict2positions_scores(self, memory_dict: Optional[dict]):
-        positions = [np.array(pos).astype(int) for pos in list(memory_dict.keys())]
-        # Extract scores from Result objects
-        scores = [result.score if isinstance(result, Result) else result 
-                 for result in memory_dict.values()]
-
-        return positions, scores
-
-    @returnNoneIfArgNone
-    def dataframe2memory_dict(
-        self, dataframe: Optional[pd.DataFrame]
-    ) -> Optional[dict]:
-        parameter = set(self.search_space.keys())
-        memory_para = set(dataframe.columns)
-
-        if parameter <= memory_para:
-            values = list(dataframe[self.para_names].values)
-            positions = self.values2positions(values)
-            scores = dataframe["score"]
-
-            memory_dict = self.positions_scores2memory_dict(positions, scores)
-
-            return memory_dict
-        else:
-            missing = parameter - memory_para
-
-            print(
-                "\nWarning:",
-                '"{}"'.format(*missing),
-                "is in search_space but not in memory dataframe",
-            )
-            print("Optimization run will continue without memory warm start\n")
-
-            return {}
-
-    @returnNoneIfArgNone
-    def memory_dict2dataframe(
-        self, memory_dict: Optional[dict]
-    ) -> Optional[pd.DataFrame]:
-        positions, score = self.memory_dict2positions_scores(memory_dict)
-        values = self.positions2values(positions)
-
-        dataframe = pd.DataFrame(values, columns=self.para_names)
-        dataframe["score"] = score
-
-        return dataframe

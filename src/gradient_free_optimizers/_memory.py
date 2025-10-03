@@ -11,6 +11,7 @@ from multiprocessing.managers import DictProxy
 
 from ._objective_adapter import ObjectiveAdapter
 from ._result import Result
+from ._memory_converter import MemoryConverter
 
 
 class CachedObjectiveAdapter(ObjectiveAdapter):
@@ -19,6 +20,7 @@ class CachedObjectiveAdapter(ObjectiveAdapter):
 
         self.memory_dict = {}
         self.memory_dict_new = {}
+        self.memory_converter = MemoryConverter(conv)
 
     def memory(self, warm_start: pd.DataFrame, memory: Any = None):
         if isinstance(memory, DictProxy):
@@ -37,7 +39,7 @@ class CachedObjectiveAdapter(ObjectiveAdapter):
             logging.warning("Optimization will continue without memory warm start")
             return
 
-        self.memory_dict.update(self._conv.dataframe2memory_dict(warm_start))
+        self.memory_dict.update(self.memory_converter.dataframe2memory_dict(warm_start))
 
     def __call__(self, pos):
         pos_t = tuple(pos)
