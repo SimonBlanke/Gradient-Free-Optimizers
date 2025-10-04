@@ -38,14 +38,19 @@ class AskTellOptimizer:
         initialize,
         random_state=None,
         constraints=None,
+        nth_process=None,
         **optimizer_params,
     ):
+        # Call super().__init__() to continue MRO chain (needed for Search class)
+        super().__init__()
+
         if constraints is None:
             constraints = []
 
         self.search_space = search_space
         self.initialize = initialize
         self.constraints = constraints
+        self.nth_process = nth_process
 
         # Create the underlying optimizer without initialization
         self.optimizer = optimizer_class(
@@ -53,13 +58,9 @@ class AskTellOptimizer:
             initialize=initialize,
             constraints=constraints,
             random_state=random_state,
-            rand_rest_p=0,
-            nth_process=None,
+            nth_process=nth_process,
             **optimizer_params,
         )
-
-        # Initialize with provided positions and scores
-        self._initialize_with_positions()
 
         # Track current iteration state
         self._asked = False
@@ -121,3 +122,56 @@ class AskTellOptimizer:
     def best_score(self):
         """Get best score found so far."""
         return self.optimizer.score_best
+
+    def __getattr__(self, name):
+        """
+        Delegate attribute access to the wrapped optimizer.
+
+        This allows the Search class to access optimizer attributes like
+        'conv', 'init_pos', 'iterate', 'evaluate', etc. through the wrapper.
+        """
+        # Avoid infinite recursion by checking __dict__ directly
+        if name in ("optimizer", "_asked", "_current_position"):
+            raise AttributeError(
+                f"'{type(self).__name__}' object has no attribute '{name}'"
+            )
+
+        # Delegate to the wrapped optimizer
+        return getattr(self.optimizer, name)
+
+    def __setattr__(self, name, value):
+        """
+        Delegate attribute setting to the wrapped optimizer when appropriate.
+
+        Attributes that belong to AskTellOptimizer itself are set normally.
+        Other attributes (used by Search) are delegated to the wrapped optimizer.
+        """
+        # These attributes belong to the AskTellOptimizer itself
+        if name in (
+            "optimizer",
+            "_asked",
+            "_current_position",
+            "search_space",
+            "initialize",
+            "constraints",
+            "nth_process",
+            "optimizers",
+            "new_results_list",
+            "all_results_list",
+            "score_l",
+            "pos_l",
+            "random_seed",
+            "results_manager",
+            "n_init_total",
+            "n_iter_total",
+            "nth_iter",
+            "n_init_search",
+            "n_iter_search",
+        ):
+            object.__setattr__(self, name, value)
+        # If optimizer doesn't exist yet (during __init__), set normally
+        elif "optimizer" not in self.__dict__:
+            object.__setattr__(self, name, value)
+        # Otherwise delegate to the wrapped optimizer
+        else:
+            setattr(self.optimizer, name, value)
