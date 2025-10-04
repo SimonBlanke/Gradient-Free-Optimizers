@@ -16,7 +16,6 @@ class DiagonalGridSearchOptimizer(BaseOptimizer):
     def __init__(
         self,
         search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
         constraints=[],
         random_state=None,
         rand_rest_p=0,
@@ -25,7 +24,6 @@ class DiagonalGridSearchOptimizer(BaseOptimizer):
     ):
         super().__init__(
             search_space=search_space,
-            initialize=initialize,
             constraints=constraints,
             random_state=random_state,
             rand_rest_p=rand_rest_p,
@@ -73,9 +71,7 @@ class DiagonalGridSearchOptimizer(BaseOptimizer):
         # the quotient of the pointer by the product of remaining dimensions
         # Describes a bijection from Z/search_space_size*Z -> (Z/dim_1*Z)x...x(Z/dim_n*Z)
         for dim in range(len(dim_sizes) - 1):
-            new_pos.append(
-                pointer // np.prod(dim_sizes[dim + 1 :]) % dim_sizes[dim]
-            )
+            new_pos.append(pointer // np.prod(dim_sizes[dim + 1 :]) % dim_sizes[dim])
             pointer = pointer % np.prod(dim_sizes[dim + 1 :])
         new_pos.append(pointer)
 
@@ -106,9 +102,7 @@ class DiagonalGridSearchOptimizer(BaseOptimizer):
                 self.high_dim_pointer % self.step_size,
             )
             current_pass_finished = (
-                (self.nth_trial + 1)
-                * self.step_size
-                // self.conv.search_space_size
+                (self.nth_trial + 1) * self.step_size // self.conv.search_space_size
                 > self.nth_trial * self.step_size // self.conv.search_space_size
             )
             # Begin the next pass if current is finished.

@@ -27,7 +27,6 @@ class CoreOptimizer(SearchTracker):
     def __init__(
         self,
         search_space,
-        initialize,
         constraints,
         random_state,
         rand_rest_p,
@@ -36,7 +35,6 @@ class CoreOptimizer(SearchTracker):
         super().__init__()
 
         self.search_space = search_space
-        self.initialize = initialize
         self.constraints = constraints
         self.random_state = random_state
         self.rand_rest_p = rand_rest_p
@@ -45,7 +43,6 @@ class CoreOptimizer(SearchTracker):
         self.random_seed = set_random_seed(self.nth_process, self.random_state)
 
         self.conv = Converter(self.search_space, self.constraints)
-        self.init = Initializer(self.conv, self.initialize)
 
         self.nth_init = 0
         self.nth_trial = 0
@@ -60,9 +57,7 @@ class CoreOptimizer(SearchTracker):
 
         return wrapper
 
-    def move_climb(
-        self, pos, epsilon=0.03, distribution="normal", epsilon_mod=1
-    ):
+    def move_climb(self, pos, epsilon=0.03, distribution="normal", epsilon_mod=1):
         while True:
             sigma = self.conv.max_positions * epsilon * epsilon_mod
             pos_normal = dist_dict[distribution](pos, sigma, pos.shape)
@@ -80,9 +75,7 @@ class CoreOptimizer(SearchTracker):
         # clip into search space boundaries
         pos = np.clip(r_pos, n_zeros, self.conv.max_positions).astype(int)
 
-        dist = scipy.spatial.distance.cdist(
-            r_pos.reshape(1, -1), pos.reshape(1, -1)
-        )
+        dist = scipy.spatial.distance.cdist(r_pos.reshape(1, -1), pos.reshape(1, -1))
         threshold = self.conv.search_space_size / (100**self.conv.n_dimensions)
 
         if dist > threshold:
@@ -96,9 +89,13 @@ class CoreOptimizer(SearchTracker):
             if self.conv.not_in_constraint(pos):
                 return pos
 
+    def init_step(self, pos_new, score_new):
+        self.init_pos(pos_new)
+        self.evaluate_init(score_new)
+
     @SearchTracker.track_new_pos
-    def init_pos(self):
-        init_pos = self.init.init_positions_l[self.nth_init]
+    def init_pos(self, init_pos):
+        # init_pos = self.init.init_positions_l[self.nth_init]
         return init_pos
 
     @SearchTracker.track_new_score

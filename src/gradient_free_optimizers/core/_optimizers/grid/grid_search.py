@@ -18,7 +18,6 @@ class GridSearchOptimizer(BaseOptimizer):
     def __init__(
         self,
         search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
         constraints=[],
         random_state=None,
         rand_rest_p=0,
@@ -28,7 +27,6 @@ class GridSearchOptimizer(BaseOptimizer):
     ):
         super().__init__(
             search_space=search_space,
-            initialize=initialize,
             constraints=constraints,
             random_state=random_state,
             rand_rest_p=rand_rest_p,
@@ -41,7 +39,6 @@ class GridSearchOptimizer(BaseOptimizer):
         if direction == "orthogonal":
             self.grid_search_opt = OrthogonalGridSearchOptimizer(
                 search_space=search_space,
-                initialize=initialize,
                 constraints=constraints,
                 random_state=random_state,
                 rand_rest_p=rand_rest_p,
@@ -51,7 +48,6 @@ class GridSearchOptimizer(BaseOptimizer):
         elif direction == "diagonal":
             self.grid_search_opt = DiagonalGridSearchOptimizer(
                 search_space=search_space,
-                initialize=initialize,
                 constraints=constraints,
                 random_state=random_state,
                 rand_rest_p=rand_rest_p,

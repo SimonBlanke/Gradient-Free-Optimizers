@@ -59,9 +59,7 @@ class SubSpace:
             furthest_pos_.append(dim_array[0])
         furthest_pos = np.array(furthest_pos_)
 
-        dist = cdist(
-            furthest_pos.reshape(1, -1), self.center_pos.reshape(1, -1)
-        )
+        dist = cdist(furthest_pos.reshape(1, -1), self.center_pos.reshape(1, -1))
 
         self.lipschitz_bound = score + K * dist
 
@@ -77,7 +75,6 @@ class DirectAlgorithm(SMBO):
     def __init__(
         self,
         search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
         constraints=[],
         random_state=None,
         rand_rest_p=0,
@@ -89,7 +86,6 @@ class DirectAlgorithm(SMBO):
     ):
         super().__init__(
             search_space=search_space,
-            initialize=initialize,
             constraints=constraints,
             random_state=random_state,
             rand_rest_p=rand_rest_p,

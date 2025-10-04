@@ -20,7 +20,6 @@ class DifferentialEvolutionOptimizer(EvolutionaryAlgorithmOptimizer):
     def __init__(
         self,
         search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
         constraints=[],
         random_state=None,
         rand_rest_p=0,
@@ -31,7 +30,6 @@ class DifferentialEvolutionOptimizer(EvolutionaryAlgorithmOptimizer):
     ):
         super().__init__(
             search_space=search_space,
-            initialize=initialize,
             constraints=constraints,
             random_state=random_state,
             rand_rest_p=rand_rest_p,
@@ -68,9 +66,7 @@ class DifferentialEvolutionOptimizer(EvolutionaryAlgorithmOptimizer):
 
     @EvolutionaryAlgorithmOptimizer.track_new_pos
     def iterate(self):
-        self.p_current = self.individuals[
-            self.nth_trial % len(self.individuals)
-        ]
+        self.p_current = self.individuals[self.nth_trial % len(self.individuals)]
         target_vector = self.p_current.pos_new
 
         mutant_vector = self.mutation()

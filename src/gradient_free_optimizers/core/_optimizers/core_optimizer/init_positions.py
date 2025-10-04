@@ -6,11 +6,12 @@ import random
 import numpy as np
 
 from .utils import move_random
+from .converter import Converter
 
 
 class Initializer:
-    def __init__(self, conv, initialize):
-        self.conv = conv
+    def __init__(self, search_space, constraints, initialize):
+        self.conv = Converter(search_space, constraints)
         self.initialize = initialize
 
         self.n_inits = 0

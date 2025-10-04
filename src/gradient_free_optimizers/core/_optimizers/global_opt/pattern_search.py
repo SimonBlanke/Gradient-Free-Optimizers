@@ -26,7 +26,6 @@ class PatternSearch(BaseOptimizer):
     def __init__(
         self,
         search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
         constraints=[],
         random_state=None,
         rand_rest_p=0,
@@ -37,7 +36,6 @@ class PatternSearch(BaseOptimizer):
     ):
         super().__init__(
             search_space=search_space,
-            initialize=initialize,
             constraints=constraints,
             random_state=random_state,
             rand_rest_p=rand_rest_p,
@@ -80,9 +78,7 @@ class PatternSearch(BaseOptimizer):
             pattern_pos_l.append(pos_pattern_p)
             pattern_pos_l.append(pos_pattern_n)
 
-        self.pattern_pos_l = list(
-            random.sample(pattern_pos_l, self.n_positions_)
-        )
+        self.pattern_pos_l = list(random.sample(pattern_pos_l, self.n_positions_))
 
     @BaseOptimizer.track_new_pos
     @BaseOptimizer.random_iteration

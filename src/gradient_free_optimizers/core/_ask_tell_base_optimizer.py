@@ -35,27 +35,22 @@ class AskTellOptimizer:
         self,
         optimizer_class,
         search_space,
-        initialize,
         random_state=None,
         constraints=None,
         nth_process=None,
         **optimizer_params,
     ):
-        # Call super().__init__() to continue MRO chain (needed for Search class)
         super().__init__()
 
         if constraints is None:
             constraints = []
 
         self.search_space = search_space
-        self.initialize = initialize
         self.constraints = constraints
         self.nth_process = nth_process
 
-        # Create the underlying optimizer without initialization
         self.optimizer = optimizer_class(
             search_space=search_space,
-            initialize=initialize,
             constraints=constraints,
             random_state=random_state,
             nth_process=nth_process,
@@ -87,7 +82,7 @@ class AskTellOptimizer:
         value = self.optimizer.conv.position2value(position)
         para_dict = self.optimizer.conv.value2para(value)
 
-        return para_dict
+        return position
 
     def tell(self, score):
         """

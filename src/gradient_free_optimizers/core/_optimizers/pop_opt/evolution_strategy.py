@@ -20,7 +20,6 @@ class EvolutionStrategyOptimizer(EvolutionaryAlgorithmOptimizer):
     def __init__(
         self,
         search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
         constraints=[],
         random_state=None,
         rand_rest_p=0,
@@ -33,7 +32,6 @@ class EvolutionStrategyOptimizer(EvolutionaryAlgorithmOptimizer):
     ):
         super().__init__(
             search_space=search_space,
-            initialize=initialize,
             constraints=constraints,
             random_state=random_state,
             rand_rest_p=rand_rest_p,
@@ -53,11 +51,7 @@ class EvolutionStrategyOptimizer(EvolutionaryAlgorithmOptimizer):
         while True:
             if len(self.individuals) > 2:
                 rnd_int2 = random.choice(
-                    [
-                        i
-                        for i in range(0, self.n_ind - 1)
-                        if i not in [self.rnd_int]
-                    ]
+                    [i for i in range(0, self.n_ind - 1) if i not in [self.rnd_int]]
                 )
             else:
                 rnd_int2 = random.choice(

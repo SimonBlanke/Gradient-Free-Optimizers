@@ -20,7 +20,6 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
     def __init__(
         self,
         search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
         constraints=[],
         random_state=None,
         rand_rest_p=0,
@@ -33,7 +32,6 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
     ):
         super().__init__(
             search_space=search_space,
-            initialize=initialize,
             constraints=constraints,
             random_state=random_state,
             rand_rest_p=rand_rest_p,
@@ -68,9 +66,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
     @BasePopulationOptimizer.track_new_pos
     def iterate(self):
         while True:
-            self.p_current = self.particles[
-                self.nth_trial % len(self.particles)
-            ]
+            self.p_current = self.particles[self.nth_trial % len(self.particles)]
 
             self.sort_pop_best_score()
             self.p_current.global_pos_best = self.pop_sorted[0].pos_best

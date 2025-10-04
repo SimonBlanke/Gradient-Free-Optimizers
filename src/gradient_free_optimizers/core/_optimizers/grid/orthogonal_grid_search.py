@@ -11,7 +11,6 @@ class OrthogonalGridSearchOptimizer(BaseOptimizer):
     def __init__(
         self,
         search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
         constraints=[],
         random_state=None,
         rand_rest_p=0,
@@ -20,7 +19,6 @@ class OrthogonalGridSearchOptimizer(BaseOptimizer):
     ):
         super().__init__(
             search_space=search_space,
-            initialize=initialize,
             constraints=constraints,
             random_state=random_state,
             rand_rest_p=rand_rest_p,

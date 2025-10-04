@@ -16,7 +16,6 @@ class SMBO(BaseOptimizer):
     def __init__(
         self,
         search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
         constraints=[],
         random_state=None,
         rand_rest_p=0,
@@ -28,7 +27,6 @@ class SMBO(BaseOptimizer):
     ):
         super().__init__(
             search_space=search_space,
-            initialize=initialize,
             constraints=constraints,
             random_state=random_state,
             rand_rest_p=rand_rest_p,
@@ -57,9 +55,7 @@ class SMBO(BaseOptimizer):
                 search_data_dim = warm_start_smbo[para_name].values
                 search_space_dim = self.conv.search_space[para_name]
 
-                int_idx = np.nonzero(
-                    np.isin(search_data_dim, search_space_dim)
-                )[0]
+                int_idx = np.nonzero(np.isin(search_data_dim, search_space_dim))[0]
                 int_idx_list.append(int_idx)
 
             intersec = int_idx_list[0]
@@ -137,12 +133,8 @@ class SMBO(BaseOptimizer):
                 + str(self.conv.search_space_size)
                 + " exceeding recommended limit."
             )
-            warning_message3 = (
-                "\n Reduce search space size for better performance."
-            )
-            logging.warning(
-                warning_message0 + warning_message1 + warning_message3
-            )
+            warning_message3 = "\n Reduce search space size for better performance."
+            logging.warning(warning_message0 + warning_message1 + warning_message3)
 
     @track_X_sample
     def init_pos(self):
