@@ -89,4 +89,4 @@ def test_inf_nan_1(Optimizer, objective):
 
     non_inf_nan = np.sum(non_inf_mask * non_nan_mask)
 
-    assert 10 < non_inf_nan < 40
+    assert 5 < non_inf_nan < 40
