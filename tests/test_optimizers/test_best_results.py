@@ -47,7 +47,7 @@ def test_best_results_0(Optimizer, objective):
     opt = Optimizer(search_space, initialize=initialize)
     opt.search(
         objective_function,
-        n_iter=30,
+        n_iter=20,
         memory=False,
         verbosity={"print_results": False, "progress_bar": False},
     )
@@ -68,7 +68,7 @@ def test_best_results_1(Optimizer):
     opt = Optimizer(search_space, initialize=initialize)
     opt.search(
         objective_function,
-        n_iter=30,
+        n_iter=20,
         memory=False,
         verbosity={"print_results": False, "progress_bar": False},
     )

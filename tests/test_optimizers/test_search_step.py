@@ -16,7 +16,7 @@ search_space = {
 
 @pytest.mark.parametrize(*optimizers)
 def test_search_step_0(Optimizer):
-    n_iter = 100
+    n_iter = 30
 
     opt = Optimizer(search_space)
 

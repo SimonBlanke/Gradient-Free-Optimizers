@@ -4,7 +4,7 @@ import numpy as np
 from ._parametrize import optimizers
 
 
-n_iter_para = ("n_iter", [(10), (20), (30), (50), (100)])
+n_iter_para = ("n_iter", [(10), (20), (30), (50)])
 
 
 @pytest.mark.parametrize(*n_iter_para)

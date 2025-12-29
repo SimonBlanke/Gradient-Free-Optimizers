@@ -219,3 +219,16 @@ optimizers_smbo = (
         (ForestOptimizer),
     ],
 )
+
+optimizers_representative = (
+    "Optimizer",
+    [
+        (HillClimbingOptimizer),
+        (RandomSearchOptimizer),
+        (SimulatedAnnealingOptimizer),
+        (ParticleSwarmOptimizer),
+        (EvolutionStrategyOptimizer),
+        (BayesianOptimizer),
+        (TreeStructuredParzenEstimators),
+    ],
+)

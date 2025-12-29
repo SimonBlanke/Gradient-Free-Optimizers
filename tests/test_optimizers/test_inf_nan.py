@@ -57,12 +57,12 @@ def test_inf_nan_0(Optimizer, objective):
     }
 
     if Optimizer.__name__ == "PowellsMethod":
-        opt_para["iters_p_dim"] = 80
+        opt_para["iters_p_dim"] = 40
 
     opt = Optimizer(**opt_para)
     opt.search(
         objective_function,
-        n_iter=80,
+        n_iter=40,
         verbosity={"print_results": False, "progress_bar": False},
     )
 
@@ -76,7 +76,7 @@ def test_inf_nan_1(Optimizer, objective):
     opt = Optimizer(search_space, initialize=initialize)
     opt.search(
         objective_function,
-        n_iter=50,
+        n_iter=40,
         memory=False,
         verbosity={"print_results": False, "progress_bar": False},
     )

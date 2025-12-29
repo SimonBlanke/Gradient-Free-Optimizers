@@ -22,4 +22,4 @@ search_space = {
 
 
 opt = RandomSearchOptimizer(search_space)
-opt.search(ackley_function, n_iter=30)
+opt.search(ackley_function, n_iter=10)

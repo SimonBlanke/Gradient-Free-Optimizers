@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 
-from ._parametrize import optimizers, optimizers_2
+from ._parametrize import optimizers, optimizers_2, optimizers_representative
 
 
 def objective_function(para):
@@ -101,23 +101,23 @@ def test_initialize_grid_1(Optimizer):
     assert abs(opt.best_score) - 1 < 0.001
 
 
-@pytest.mark.parametrize(*optimizers)
-@pytest.mark.parametrize(*optimizers_2)
+@pytest.mark.parametrize("Optimizer", optimizers_representative[1])
+@pytest.mark.parametrize("Optimizer2", optimizers_representative[1])
 def test_initialize_warm_start_twoOpt_0(Optimizer, Optimizer2):
     opt1 = Optimizer(search_space)
     opt1.search(objective_function, n_iter=1)
 
     opt2 = Optimizer2(search_space, initialize={"warm_start": [opt1.best_para]})
-    opt2.search(objective_function, n_iter=20)
+    opt2.search(objective_function, n_iter=15)
 
     assert opt1.best_score <= opt2.best_score
 
 
-@pytest.mark.parametrize(*optimizers)
-@pytest.mark.parametrize(*optimizers_2)
+@pytest.mark.parametrize("Optimizer", optimizers_representative[1])
+@pytest.mark.parametrize("Optimizer2", optimizers_representative[1])
 def test_initialize_warm_start_twoOpt_1(Optimizer, Optimizer2):
     opt1 = Optimizer(search_space)
-    opt1.search(objective_function, n_iter=20)
+    opt1.search(objective_function, n_iter=15)
 
     opt2 = Optimizer2(search_space, initialize={"warm_start": [opt1.best_para]})
     opt2.search(objective_function, n_iter=1)

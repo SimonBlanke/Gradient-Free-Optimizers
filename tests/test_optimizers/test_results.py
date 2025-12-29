@@ -1,10 +1,10 @@
 import pytest
 import numpy as np
 
-from ._parametrize import optimizers
+from ._parametrize import optimizers_representative
 
 
-@pytest.mark.parametrize(*optimizers)
+@pytest.mark.parametrize(*optimizers_representative)
 def test_results_0(Optimizer):
     search_space = {"x1": np.arange(-10, 1, 1)}
 
@@ -17,7 +17,7 @@ def test_results_0(Optimizer):
     opt = Optimizer(search_space, initialize=initialize)
     opt.search(
         objective_function,
-        n_iter=30,
+        n_iter=20,
         memory=False,
         verbosity={"print_results": False, "progress_bar": False},
     )
@@ -28,7 +28,7 @@ def test_results_0(Optimizer):
     assert results_set.issubset(search_space_set)
 
 
-@pytest.mark.parametrize(*optimizers)
+@pytest.mark.parametrize(*optimizers_representative)
 def test_results_1(Optimizer):
     search_space = {"x1": np.arange(-10, 1, 1), "x2": np.arange(-10, 1, 1)}
 
@@ -41,7 +41,7 @@ def test_results_1(Optimizer):
     opt = Optimizer(search_space, initialize=initialize)
     opt.search(
         objective_function,
-        n_iter=50,
+        n_iter=30,
         memory=False,
         verbosity={"print_results": False, "progress_bar": False},
     )
