@@ -12,7 +12,27 @@ description = "Simple and reliable optimization with local, global, population-b
 readme = "README.md"
 requires-python = ">=3.10"
 license = {file = "LICENSE"}
-keywords = ["visualization", "data-science"]
+keywords = [
+  "optimization",
+  "hyperparameter-optimization",
+  "hyperparameter-tuning",
+  "machine-learning",
+  "meta-heuristic",
+  "bayesian-optimization",
+  "genetic-algorithm",
+  "particle-swarm",
+  "evolution-strategy",
+  "hill-climbing",
+  "simulated-annealing",
+  "gradient-free",
+  "black-box-optimization",
+  "numerical-optimization",
+  "automl",
+  "search-algorithms",
+  "optimization-algorithms",
+  "data-science",
+  "visualization",
+]
 authors = [
   {name = "Simon Blanke", email = "simon.blanke@yahoo.com" }
 ]
@@ -20,6 +40,7 @@ maintainers = [
   {name = "Simon Blanke", email = "simon.blanke@yahoo.com" }
 ]
 classifiers=[
+    "Development Status :: 5 - Production/Stable",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -28,10 +49,15 @@ classifiers=[
     "Programming Language :: Python :: 3.14",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+    "Natural Language :: English",
+    "Topic :: Scientific/Engineering",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
     "Topic :: Scientific/Engineering :: Information Analysis",
     "Topic :: Scientific/Engineering :: Mathematics",
+    "Topic :: Software Development :: Libraries",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Intended Audience :: Developers",
+    "Intended Audience :: Education",
     "Intended Audience :: Information Technology",
     "Intended Audience :: Science/Research",
 ]
