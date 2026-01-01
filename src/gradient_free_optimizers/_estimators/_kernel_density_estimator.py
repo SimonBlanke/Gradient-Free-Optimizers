@@ -39,10 +39,15 @@ class KernelDensityEstimator:
         """
         X = np.asarray(X, dtype=float)
         if X.ndim == 1:
-            X = X[:, None]  # promote 1-D → 2-D
+            X = X[:, None]  # promote 1-D -> 2-D
 
         self.X_train = X
         self.n_samples, self.n_features = X.shape
+
+        # Handle empty training data
+        if self.n_samples == 0:
+            self._fitted = True
+            return self
 
         if self.bandwidth is None:
             # Silverman's rule (vectorised across dimensions)
@@ -83,6 +88,15 @@ class KernelDensityEstimator:
         X = np.asarray(X, dtype=float)
         if X.ndim == 1:
             X = X[:, None]
+
+        n_queries = X.shape[0]
+
+        # Handle empty training data - return -inf for log density (0 for density)
+        if self.n_samples == 0:
+            if log:
+                return np.full(n_queries, -np.inf)
+            else:
+                return np.zeros(n_queries)
 
         # Pairwise squared Euclidean distances
         diff = (X[:, None, :] - self.X_train[None, :, :]) / self.bandwidth
