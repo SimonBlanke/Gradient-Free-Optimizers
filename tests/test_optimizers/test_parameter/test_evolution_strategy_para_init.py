@@ -54,3 +54,24 @@ pytest_wrapper = ("opt_para", parallel_tempering_para)
 @pytest.mark.parametrize(*pytest_wrapper)
 def test_hill_climbing_para(opt_para):
     _base_para_test_func(opt_para, EvolutionStrategyOptimizer)
+
+
+def test_sigma_self_adaptation():
+    """Test that sigma values adapt during optimization."""
+    search_space = {"x1": np.arange(-10, 11, 1), "x2": np.arange(-10, 11, 1)}
+
+    opt = EvolutionStrategyOptimizer(search_space, population=5)
+
+    # All individuals should have sigma attribute initialized to epsilon
+    for ind in opt.individuals:
+        assert hasattr(ind, "sigma")
+        assert ind.sigma == ind.epsilon
+
+    initial_sigmas = [ind.sigma for ind in opt.individuals]
+
+    opt.search(objective_function, n_iter=50, verbosity=False)
+
+    final_sigmas = [ind.sigma for ind in opt.individuals]
+
+    # At least one sigma should have changed (self-adaptation working)
+    assert initial_sigmas != final_sigmas
