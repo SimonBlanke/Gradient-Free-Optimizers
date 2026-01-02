@@ -5,8 +5,17 @@
 
 import numpy as np
 
-from sklearn.neighbors import KernelDensity
 from .smbo import SMBO
+
+# Use sklearn's KDE if available, otherwise native implementation
+try:
+    from sklearn.neighbors import KernelDensity
+
+    SKLEARN_AVAILABLE = True
+except ImportError:
+    from ..._estimators import KernelDensityEstimator as KernelDensity
+
+    SKLEARN_AVAILABLE = False
 
 
 class TreeStructuredParzenEstimators(SMBO):
@@ -46,14 +55,14 @@ class TreeStructuredParzenEstimators(SMBO):
 
         self.gamma_tpe = gamma_tpe
 
-        kde_para = {
-            "kernel": "gaussian",
-            "bandwidth": 1,
-            "rtol": 0.001,
-        }
+        # Initialize KDE - sklearn and native have different interfaces
+        if SKLEARN_AVAILABLE:
+            kde_params = {"kernel": "gaussian", "bandwidth": 1.0}
+        else:
+            kde_params = {"bandwidth": 1.0}
 
-        self.kd_best = KernelDensity(**kde_para)
-        self.kd_worst = KernelDensity(**kde_para)
+        self.kd_best = KernelDensity(**kde_params)
+        self.kd_worst = KernelDensity(**kde_params)
 
     def finish_initialization(self):
         self.all_pos_comb = self._all_possible_pos()
