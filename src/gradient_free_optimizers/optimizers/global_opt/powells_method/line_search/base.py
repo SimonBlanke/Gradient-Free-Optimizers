@@ -137,8 +137,17 @@ class LineSearch(ABC):
 
         max_t = min(max_t_positive, max_t_negative)
 
-        if max_t < 1:
-            max_t = max(max_positions) * 0.5
+        if max_t == float("inf"):
+            # Direction is zero vector (shouldn't happen with normalized directions)
+            # Fall back to average dimension size
+            max_t = float(np.mean(max_positions))
+        elif max_t < 0:
+            # Numerical issue or at boundary corner
+            max_t = 1.0
+
+        # Ensure at least one grid step is possible (but respect actual bounds)
+        # max_t can legitimately be small if we're near a boundary
+        max_t = max(max_t, 1.0)
 
         return max_t
 
