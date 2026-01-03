@@ -6,9 +6,18 @@
 Native Gradient Boosting Regressor implementation.
 
 Sequential ensemble where each tree corrects the errors of the previous ones.
+
+This implementation uses the GFO array backend, enabling it to work
+without NumPy when needed (though it will be slower).
 """
 
-import numpy as np
+from gradient_free_optimizers._array_backend import (
+    array,
+    asarray,
+    mean,
+    full,
+    random as np_random,
+)
 from ._decision_tree_regressor import DecisionTreeRegressor
 
 
@@ -73,20 +82,17 @@ class GradientBoostingRegressor:
         self : GradientBoostingRegressor
             Fitted estimator.
         """
-        X = np.asarray(X, dtype=np.float64)
-        y = np.asarray(y, dtype=np.float64).ravel()
+        X = asarray(X, dtype=float)
+        y = asarray(y, dtype=float).ravel()
 
         n_samples = X.shape[0]
 
         # Setup random state
-        if self.random_state is not None:
-            rng = np.random.RandomState(self.random_state)
-        else:
-            rng = np.random.RandomState()
+        rng = np_random.RandomState(self.random_state)
 
         # Initialize with mean
-        self._init_prediction = np.mean(y)
-        current_prediction = np.full(n_samples, self._init_prediction)
+        self._init_prediction = float(mean(y))
+        current_prediction = full(n_samples, self._init_prediction)
 
         # Build trees sequentially
         self.estimators_ = []
@@ -98,8 +104,9 @@ class GradientBoostingRegressor:
             if self.subsample < 1.0:
                 n_subsample = max(1, int(self.subsample * n_samples))
                 indices = rng.choice(n_samples, n_subsample, replace=False)
-                X_sample = X[indices]
-                residuals_sample = residuals[indices]
+                indices_list = list(indices) if hasattr(indices, '__iter__') else [indices]
+                X_sample = array([X[i] for i in indices_list])
+                residuals_sample = array([residuals[i] for i in indices_list])
             else:
                 X_sample = X
                 residuals_sample = residuals
@@ -114,11 +121,12 @@ class GradientBoostingRegressor:
             tree.fit(X_sample, residuals_sample)
 
             # Update predictions
-            update = self.learning_rate * tree.predict(X)
-            current_prediction += update
+            tree_pred = tree.predict(X)
+            for j in range(n_samples):
+                current_prediction[j] = float(current_prediction[j]) + self.learning_rate * float(tree_pred[j])
 
-            # Store as nested array for sklearn compatibility
-            self.estimators_.append(np.array([tree]))
+            # Store as list for sklearn compatibility
+            self.estimators_.append([tree])
 
         return self
 
@@ -136,12 +144,15 @@ class GradientBoostingRegressor:
         y_pred : ndarray of shape (n_samples,)
             Predicted values.
         """
-        X = np.asarray(X, dtype=np.float64)
+        X = asarray(X, dtype=float)
 
-        prediction = np.full(X.shape[0], self._init_prediction)
+        n_samples = len(X)
+        prediction = [self._init_prediction] * n_samples
 
-        for tree_array in self.estimators_:
-            tree = tree_array[0]
-            prediction += self.learning_rate * tree.predict(X)
+        for tree_list in self.estimators_:
+            tree = tree_list[0]
+            tree_pred = tree.predict(X)
+            for i in range(n_samples):
+                prediction[i] += self.learning_rate * float(tree_pred[i])
 
-        return prediction
+        return array(prediction)

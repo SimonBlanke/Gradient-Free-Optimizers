@@ -1,5 +1,25 @@
-import numpy as np
-from scipy.special import logsumexp
+# Author: Simon Blanke
+# Email: simon.blanke@yahoo.com
+# License: MIT License
+
+"""
+Native Kernel Density Estimator implementation.
+
+Isotropic-bandwidth Gaussian Kernel Density Estimator for TPE.
+
+This implementation uses the GFO array/math backend, enabling it to work
+without NumPy/SciPy when needed (though it will be slower).
+"""
+
+import math
+
+from gradient_free_optimizers._array_backend import (
+    array,
+    asarray,
+    zeros,
+    full,
+)
+from gradient_free_optimizers._math_backend import logsumexp
 
 
 class KernelDensityEstimator:
@@ -22,7 +42,7 @@ class KernelDensityEstimator:
         self.atol = atol
         self._fitted = False
 
-    def fit(self, X: np.ndarray) -> "KernelDensityEstimator":
+    def fit(self, X) -> "KernelDensityEstimator":
         """
         Memorise the training samples and, if necessary, estimate a
         bandwidth.
@@ -37,12 +57,16 @@ class KernelDensityEstimator:
         self : KernelDensityEstimator
             Reference to the estimator (scikit-learn style).
         """
-        X = np.asarray(X, dtype=float)
-        if X.ndim == 1:
-            X = X[:, None]  # promote 1-D -> 2-D
+        X = asarray(X, dtype=float)
 
-        self.X_train = X
-        self.n_samples, self.n_features = X.shape
+        # Handle 1D arrays
+        if X.ndim == 1:
+            # Reshape to 2D
+            self.X_train = array([[x] for x in X])
+        else:
+            self.X_train = X
+
+        self.n_samples, self.n_features = self.X_train.shape
 
         # Handle empty training data
         if self.n_samples == 0:
@@ -51,8 +75,19 @@ class KernelDensityEstimator:
 
         if self.bandwidth is None:
             # Silverman's rule (vectorised across dimensions)
-            std = X.std(axis=0, ddof=1)
-            sigma = std.mean()  # geometric/arith mean
+            # Compute std for each feature
+            stds = []
+            for j in range(self.n_features):
+                col = [float(self.X_train[i, j]) for i in range(self.n_samples)]
+                mean_val = sum(col) / len(col)
+                variance = (
+                    sum((x - mean_val) ** 2 for x in col) / (len(col) - 1)
+                    if len(col) > 1
+                    else 0
+                )
+                stds.append(math.sqrt(variance) if variance > 0 else 0)
+
+            sigma = sum(stds) / len(stds) if stds else 0
             factor = (4 / (self.n_features + 2)) ** (1 / (self.n_features + 4))
             self.bandwidth = (
                 factor * sigma * self.n_samples ** (-1 / (self.n_features + 4))
@@ -62,11 +97,13 @@ class KernelDensityEstimator:
             raise ValueError("bandwidth must be positive")
 
         d = self.n_features
-        self._log_norm_const = -0.5 * d * np.log(2 * np.pi) - d * np.log(self.bandwidth)
+        self._log_norm_const = -0.5 * d * math.log(2 * math.pi) - d * math.log(
+            self.bandwidth
+        )
         self._fitted = True
         return self
 
-    def score_samples(self, X: np.ndarray, log: bool = True) -> np.ndarray:
+    def score_samples(self, X, log: bool = True):
         """
         Evaluate (log-)density for each query point.
 
@@ -85,33 +122,48 @@ class KernelDensityEstimator:
         if not self._fitted:
             raise RuntimeError("Estimator must be fitted before calling score_samples.")
 
-        X = np.asarray(X, dtype=float)
-        if X.ndim == 1:
-            X = X[:, None]
+        X = asarray(X, dtype=float)
 
-        n_queries = X.shape[0]
+        # Handle 1D arrays
+        if X.ndim == 1:
+            X = array([[x] for x in X])
+
+        n_queries = len(X)
 
         # Handle empty training data - return -inf for log density (0 for density)
         if self.n_samples == 0:
             if log:
-                return np.full(n_queries, -np.inf)
+                return full(n_queries, float("-inf"))
             else:
-                return np.zeros(n_queries)
+                return zeros(n_queries)
 
-        # Pairwise squared Euclidean distances
-        diff = (X[:, None, :] - self.X_train[None, :, :]) / self.bandwidth
-        sq_dist = np.sum(diff * diff, axis=-1)  # shape: (n_queries, n_samples)
+        # Compute log kernel values for each query-train pair
+        log_density_values = []
 
-        # Log-kernel values
-        log_kernel = self._log_norm_const - 0.5 * sq_dist
+        for i in range(n_queries):
+            # Compute log kernel values for this query against all training samples
+            log_kernels = []
+            for j in range(self.n_samples):
+                # Compute squared distance between query[i] and train[j]
+                sq_dist = 0.0
+                for k in range(self.n_features):
+                    diff = (float(X[i, k]) - float(self.X_train[j, k])) / self.bandwidth
+                    sq_dist += diff * diff
 
-        # Numerically stable summation via logsumexp
-        log_density = logsumexp(log_kernel, axis=1) - np.log(self.n_samples)
+                log_kernel = self._log_norm_const - 0.5 * sq_dist
+                log_kernels.append(log_kernel)
+
+            # Numerically stable summation via logsumexp
+            log_sum = logsumexp(log_kernels)
+            log_density = log_sum - math.log(self.n_samples)
+            log_density_values.append(log_density)
 
         if log:
-            return log_density
+            return array(log_density_values)
         else:
             # Avoid exponentiating extremely small values
-            density = np.exp(log_density)
-            density[density < self.atol] = 0.0
-            return density
+            density = []
+            for ld in log_density_values:
+                d = math.exp(ld)
+                density.append(0.0 if d < self.atol else d)
+            return array(density)

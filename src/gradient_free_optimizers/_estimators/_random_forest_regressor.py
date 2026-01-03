@@ -6,9 +6,19 @@
 Native Random Forest Regressor implementation.
 
 An ensemble of decision trees with bootstrap sampling and feature subsampling.
+
+This implementation uses the GFO array backend, enabling it to work
+without NumPy when needed (though it will be slower).
 """
 
-import numpy as np
+import math
+
+from gradient_free_optimizers._array_backend import (
+    array,
+    asarray,
+    mean,
+    random as np_random,
+)
 from ._decision_tree_regressor import DecisionTreeRegressor
 
 
@@ -79,16 +89,13 @@ class RandomForestRegressor:
         self : RandomForestRegressor
             Fitted estimator.
         """
-        X = np.asarray(X, dtype=np.float64)
-        y = np.asarray(y, dtype=np.float64).ravel()
+        X = asarray(X, dtype=float)
+        y = asarray(y, dtype=float).ravel()
 
         n_samples, n_features = X.shape
 
         # Setup random state
-        if self.random_state is not None:
-            rng = np.random.RandomState(self.random_state)
-        else:
-            rng = np.random.RandomState()
+        rng = np_random.RandomState(self.random_state)
 
         # Determine max_features
         max_features = self._get_max_features(n_features)
@@ -108,8 +115,10 @@ class RandomForestRegressor:
             # Bootstrap sample
             if self.bootstrap:
                 indices = rng.randint(0, n_samples, n_samples)
-                X_sample = X[indices]
-                y_sample = y[indices]
+                # Convert indices to list for indexing
+                indices_list = list(indices) if hasattr(indices, '__iter__') else [indices]
+                X_sample = array([X[i] for i in indices_list])
+                y_sample = array([y[i] for i in indices_list])
             else:
                 X_sample = X
                 y_sample = y
@@ -124,9 +133,9 @@ class RandomForestRegressor:
         if self.max_features is None:
             return n_features
         elif self.max_features == "sqrt":
-            return max(1, int(np.sqrt(n_features)))
+            return max(1, int(math.sqrt(n_features)))
         elif self.max_features == "log2":
-            return max(1, int(np.log2(n_features)))
+            return max(1, int(math.log2(n_features)))
         elif isinstance(self.max_features, float):
             return max(1, int(self.max_features * n_features))
         else:
@@ -146,7 +155,13 @@ class RandomForestRegressor:
         y_pred : ndarray of shape (n_samples,)
             Predicted values (mean of all trees).
         """
-        X = np.asarray(X, dtype=np.float64)
+        X = asarray(X, dtype=float)
 
-        predictions = np.array([tree.predict(X) for tree in self.estimators_])
-        return np.mean(predictions, axis=0)
+        # Collect predictions from all trees and average
+        all_preds = [tree.predict(X) for tree in self.estimators_]
+        n_samples = len(X)
+        result = []
+        for i in range(n_samples):
+            sample_preds = [float(preds[i]) for preds in all_preds]
+            result.append(sum(sample_preds) / len(sample_preds))
+        return array(result)

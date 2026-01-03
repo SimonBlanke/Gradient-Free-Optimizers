@@ -6,9 +6,20 @@
 Native Decision Tree Regressor implementation.
 
 A simple CART-style regression tree that is compatible with sklearn's interface.
+
+This implementation uses the GFO array backend, enabling it to work
+without NumPy when needed (though it will be slower).
 """
 
-import numpy as np
+from gradient_free_optimizers._array_backend import (
+    array,
+    asarray,
+    mean,
+    var,
+    sum as arr_sum,
+    unique,
+    random as np_random,
+)
 
 
 class TreeNode:
@@ -106,16 +117,13 @@ class DecisionTreeRegressor:
         self : DecisionTreeRegressor
             Fitted estimator.
         """
-        X = np.asarray(X, dtype=np.float64)
-        y = np.asarray(y, dtype=np.float64).ravel()
+        X = asarray(X, dtype=float)
+        y = asarray(y, dtype=float).ravel()
 
         n_samples, self._n_features = X.shape
 
         # Setup random state
-        if self.random_state is not None:
-            self._rng = np.random.RandomState(self.random_state)
-        else:
-            self._rng = np.random.RandomState()
+        self._rng = np_random.RandomState(self.random_state)
 
         # Determine max_features
         if self.max_features is None:
@@ -138,8 +146,8 @@ class DecisionTreeRegressor:
         """Recursively build the tree."""
         node = TreeNode()
         node.n_samples = len(y)
-        node.value = np.mean(y)
-        node.impurity = np.var(y) if len(y) > 0 else 0.0
+        node.value = float(mean(y))
+        node.impurity = float(var(y)) if len(y) > 0 else 0.0
 
         self._nodes.append(node)
 
@@ -157,7 +165,10 @@ class DecisionTreeRegressor:
         left_mask = X[:, feature] <= threshold
         right_mask = ~left_mask
 
-        if np.sum(left_mask) < self.min_samples_leaf or np.sum(right_mask) < self.min_samples_leaf:
+        n_left = int(arr_sum(left_mask))
+        n_right = int(arr_sum(right_mask))
+
+        if n_left < self.min_samples_leaf or n_right < self.min_samples_leaf:
             return node
 
         node.feature = feature
@@ -173,7 +184,7 @@ class DecisionTreeRegressor:
             return True
         if self.max_depth is not None and depth >= self.max_depth:
             return True
-        if len(np.unique(y)) == 1:
+        if len(unique(y)) == 1:
             return True
         return False
 
@@ -184,17 +195,18 @@ class DecisionTreeRegressor:
         best_feature = None
         best_threshold = None
 
-        current_impurity = np.var(y) * n_samples
+        current_impurity = float(var(y)) * n_samples
 
         # Select features to consider
         if self._max_features < n_features:
             features = self._rng.choice(n_features, self._max_features, replace=False)
+            features = list(features) if hasattr(features, '__iter__') else [features]
         else:
             features = range(n_features)
 
         for feature in features:
             values = X[:, feature]
-            thresholds = np.unique(values)
+            thresholds = unique(values)
 
             if len(thresholds) <= 1:
                 continue
@@ -206,29 +218,29 @@ class DecisionTreeRegressor:
                 left_mask = values <= threshold
                 right_mask = ~left_mask
 
-                n_left = np.sum(left_mask)
-                n_right = np.sum(right_mask)
+                n_left = int(arr_sum(left_mask))
+                n_right = int(arr_sum(right_mask))
 
                 if n_left < self.min_samples_leaf or n_right < self.min_samples_leaf:
                     continue
 
                 # Calculate impurity reduction (variance reduction)
-                left_impurity = np.var(y[left_mask]) * n_left if n_left > 0 else 0
-                right_impurity = np.var(y[right_mask]) * n_right if n_right > 0 else 0
+                left_impurity = float(var(y[left_mask])) * n_left if n_left > 0 else 0
+                right_impurity = float(var(y[right_mask])) * n_right if n_right > 0 else 0
 
                 gain = current_impurity - left_impurity - right_impurity
 
                 if gain > best_gain:
                     best_gain = gain
                     best_feature = feature
-                    best_threshold = threshold
+                    best_threshold = float(threshold)
 
         return best_feature, best_threshold
 
     def _build_tree_structure(self):
         """Build the tree_ structure for sklearn compatibility."""
         impurities = [node.impurity for node in self._nodes]
-        self.tree_.impurity = np.array(impurities)
+        self.tree_.impurity = array(impurities)
 
         # Map nodes to indices
         for i, node in enumerate(self._nodes):
@@ -248,8 +260,8 @@ class DecisionTreeRegressor:
         y_pred : ndarray of shape (n_samples,)
             Predicted values.
         """
-        X = np.asarray(X, dtype=np.float64)
-        return np.array([self._predict_one(x) for x in X])
+        X = asarray(X, dtype=float)
+        return array([self._predict_one(x) for x in X])
 
     def _predict_one(self, x):
         """Predict for a single sample."""
@@ -275,8 +287,8 @@ class DecisionTreeRegressor:
         leaf_indices : ndarray of shape (n_samples,)
             Index of the leaf node for each sample.
         """
-        X = np.asarray(X, dtype=np.float64)
-        return np.array([self._apply_one(x) for x in X])
+        X = asarray(X, dtype=float)
+        return array([self._apply_one(x) for x in X])
 
     def _apply_one(self, x):
         """Return leaf index for a single sample."""
