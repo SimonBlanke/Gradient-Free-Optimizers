@@ -8,13 +8,23 @@ consistent with NumPy/SciPy implementations.
 import pytest
 import math
 
-# Import both backends for comparison testing
 from gradient_free_optimizers._array_backend import _pure as pure_array
-from gradient_free_optimizers._array_backend import _numpy as numpy_array
+from gradient_free_optimizers._array_backend import HAS_NUMPY
 from gradient_free_optimizers._math_backend import _pure as pure_math
-from gradient_free_optimizers._math_backend import _scipy as scipy_math
+from gradient_free_optimizers._math_backend import HAS_SCIPY
 
-import numpy as np
+# Conditionally import backends
+if HAS_NUMPY:
+    from gradient_free_optimizers._array_backend import _numpy as numpy_array
+    import numpy as np
+else:
+    numpy_array = None
+    np = None
+
+if HAS_SCIPY:
+    from gradient_free_optimizers._math_backend import _scipy as scipy_math
+else:
+    scipy_math = None
 
 
 # =============================================================================
@@ -341,6 +351,7 @@ class TestSolveTriangular:
             for j in range(2):
                 assert abs(check[i, j] - B[i, j]) < 1e-10
 
+    @pytest.mark.skipif(not HAS_SCIPY, reason="SciPy not available")
     def test_solve_triangular_matches_scipy(self):
         """Pure Python solve_triangular should match SciPy results."""
         L = np.array([[3.0, 0.0, 0.0], [2.0, 4.0, 0.0], [1.0, 5.0, 6.0]])
@@ -383,6 +394,7 @@ class TestSolveAssumeA:
         for i in range(2):
             assert abs(check[i] - b[i]) < 1e-8
 
+    @pytest.mark.skipif(not HAS_SCIPY, reason="SciPy not available")
     def test_solve_matches_scipy_with_assume_a(self):
         """solve with assume_a should match SciPy."""
         A = np.array([[5.0, 2.0, 1.0], [2.0, 4.0, 2.0], [1.0, 2.0, 3.0]])

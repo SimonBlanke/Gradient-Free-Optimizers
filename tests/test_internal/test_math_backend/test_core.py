@@ -8,9 +8,19 @@ they produce equivalent results.
 import math
 import pytest
 
-from gradient_free_optimizers._math_backend import _scipy as scipy_backend
 from gradient_free_optimizers._math_backend import _pure as pure_math
 from gradient_free_optimizers._math_backend import HAS_SCIPY
+
+# Conditionally import scipy backend
+if HAS_SCIPY:
+    from gradient_free_optimizers._math_backend import _scipy as scipy_backend
+else:
+    scipy_backend = None
+
+# Skip all tests in this module if scipy is not available
+pytestmark = pytest.mark.skipif(
+    not HAS_SCIPY, reason="SciPy not available for comparison tests"
+)
 
 
 # =============================================================================

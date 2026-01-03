@@ -2,9 +2,14 @@
 
 import pytest
 
-from gradient_free_optimizers._array_backend import _numpy as np_backend
 from gradient_free_optimizers._array_backend import _pure as pure_backend
 from gradient_free_optimizers._array_backend import HAS_NUMPY
+
+# Only import numpy backend if numpy is available
+if HAS_NUMPY:
+    from gradient_free_optimizers._array_backend import _numpy as np_backend
+else:
+    np_backend = None
 
 
 def arrays_close(a, b, rtol=1e-5, atol=1e-8):
