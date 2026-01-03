@@ -46,6 +46,10 @@ class PowellsMethod(_PowellsMethod, Search):
         Number of evaluations per direction during line search.
     line_search : str
         Line search method: "grid" (default), "golden", or "hill_climb".
+    convergence_threshold : float
+        Minimum total improvement per cycle to continue. If the sum of
+        improvements across all directions falls below this threshold,
+        the optimizer switches to random exploration.
     """
 
     def __init__(
@@ -64,6 +68,7 @@ class PowellsMethod(_PowellsMethod, Search):
         n_neighbours: int = 3,
         iters_per_direction: int = 10,
         line_search: Literal["grid", "golden", "hill_climb"] = "grid",
+        convergence_threshold: float = 1e-8,
     ):
         super().__init__(
             search_space=search_space,
@@ -77,4 +82,5 @@ class PowellsMethod(_PowellsMethod, Search):
             n_neighbours=n_neighbours,
             iters_per_direction=iters_per_direction,
             line_search=line_search,
+            convergence_threshold=convergence_threshold,
         )

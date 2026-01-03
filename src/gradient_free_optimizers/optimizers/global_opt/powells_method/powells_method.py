@@ -47,6 +47,7 @@ class PowellsMethod(HillClimbingOptimizer):
         n_neighbours=3,
         iters_per_direction=10,
         line_search="grid",
+        convergence_threshold=1e-8,
     ):
         """
         Initialize Powell's Method optimizer.
@@ -75,6 +76,10 @@ class PowellsMethod(HillClimbingOptimizer):
             Number of evaluations per direction during line search.
         line_search : str, optional
             Line search method: "grid", "golden", or "hill_climb".
+        convergence_threshold : float, optional
+            Minimum total improvement per cycle to continue. If the sum of
+            improvements across all directions falls below this threshold,
+            the optimizer switches to random exploration.
         """
         super().__init__(
             search_space=search_space,
@@ -92,6 +97,7 @@ class PowellsMethod(HillClimbingOptimizer):
         self.line_search_method = line_search
         self.epsilon = epsilon
         self.distribution = distribution
+        self.convergence_threshold = convergence_threshold
 
         if line_search not in ("grid", "golden", "hill_climb"):
             raise ValueError(
@@ -116,6 +122,7 @@ class PowellsMethod(HillClimbingOptimizer):
         self.cycle_start_pos = None
         self.direction_start_score = None
         self.direction_improvements = []
+        self.converged = False
 
     def _create_line_searcher(self):
         """Create the appropriate line search strategy."""
@@ -163,6 +170,13 @@ class PowellsMethod(HillClimbingOptimizer):
         if self.cycle_start_pos is None:
             return
 
+        # Check for convergence based on total improvement this cycle
+        if self.direction_improvements:
+            total_improvement = sum(self.direction_improvements)
+            if total_improvement < self.convergence_threshold:
+                self.converged = True
+                return
+
         displacement = self.pos_current - self.cycle_start_pos
         displacement_norm = np.linalg.norm(displacement)
 
@@ -178,6 +192,14 @@ class PowellsMethod(HillClimbingOptimizer):
     @HillClimbingOptimizer.random_iteration
     def iterate(self):
         """Generate the next position to evaluate."""
+        # If converged, fall back to hill climbing exploration
+        if self.converged:
+            return self.move_climb(
+                self.pos_current,
+                epsilon=self.epsilon,
+                distribution=self.distribution,
+            )
+
         n_dims = self.conv.n_dimensions
 
         # Handle state transitions
@@ -185,6 +207,13 @@ class PowellsMethod(HillClimbingOptimizer):
             # Check if we completed all directions in current cycle
             if self.current_direction_idx >= n_dims:
                 self._complete_cycle()
+                # Check if we just converged
+                if self.converged:
+                    return self.move_climb(
+                        self.pos_current,
+                        epsilon=self.epsilon,
+                        distribution=self.distribution,
+                    )
                 self._start_new_cycle()
                 self._start_direction_search()
                 break
