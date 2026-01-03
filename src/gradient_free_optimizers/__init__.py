@@ -30,7 +30,6 @@ from .optimizer_search import (
     BayesianOptimizer,
     TreeStructuredParzenEstimators,
     ForestOptimizer,
-    EnsembleOptimizer,
 )
 
 
@@ -57,5 +56,4 @@ __all__ = [
     "BayesianOptimizer",
     "TreeStructuredParzenEstimators",
     "ForestOptimizer",
-    "EnsembleOptimizer",
 ]
