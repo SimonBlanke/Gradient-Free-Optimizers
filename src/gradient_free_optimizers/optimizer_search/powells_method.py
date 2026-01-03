@@ -42,7 +42,7 @@ class PowellsMethod(_PowellsMethod, Search):
     n_neighbours : int
         The number of neighbours to sample and evaluate before moving to the best
         of those neighbours.
-    iters_per_direction : int
+    iters_p_dim : int
         Number of evaluations per direction during line search.
     line_search : str
         Line search method: "grid" (default), "golden", or "hill_climb".
@@ -66,7 +66,7 @@ class PowellsMethod(_PowellsMethod, Search):
         epsilon: float = 0.03,
         distribution: str = "normal",
         n_neighbours: int = 3,
-        iters_per_direction: int = 10,
+        iters_p_dim: int = 10,
         line_search: Literal["grid", "golden", "hill_climb"] = "grid",
         convergence_threshold: float = 1e-8,
     ):
@@ -80,7 +80,7 @@ class PowellsMethod(_PowellsMethod, Search):
             epsilon=epsilon,
             distribution=distribution,
             n_neighbours=n_neighbours,
-            iters_per_direction=iters_per_direction,
+            iters_p_dim=iters_p_dim,
             line_search=line_search,
             convergence_threshold=convergence_threshold,
         )

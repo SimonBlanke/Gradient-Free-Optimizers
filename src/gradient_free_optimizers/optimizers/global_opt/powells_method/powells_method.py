@@ -45,7 +45,7 @@ class PowellsMethod(HillClimbingOptimizer):
         epsilon=0.03,
         distribution="normal",
         n_neighbours=3,
-        iters_per_direction=10,
+        iters_p_dim=10,
         line_search="grid",
         convergence_threshold=1e-8,
     ):
@@ -72,7 +72,7 @@ class PowellsMethod(HillClimbingOptimizer):
             Distribution for hill climbing perturbations.
         n_neighbours : int, optional
             Number of neighbors for hill climbing.
-        iters_per_direction : int, optional
+        iters_p_dim : int, optional
             Number of evaluations per direction during line search.
         line_search : str, optional
             Line search method: "grid", "golden", or "hill_climb".
@@ -93,7 +93,7 @@ class PowellsMethod(HillClimbingOptimizer):
             n_neighbours=n_neighbours,
         )
 
-        self.iters_per_direction = iters_per_direction
+        self.iters_p_dim = iters_p_dim
         self.line_search_method = line_search
         self.epsilon = epsilon
         self.distribution = distribution
@@ -143,7 +143,7 @@ class PowellsMethod(HillClimbingOptimizer):
         self.line_searcher.start(
             origin=self.pos_current.copy(),
             direction=direction.direction,
-            max_iters=self.iters_per_direction,
+            max_iters=self.iters_p_dim,
         )
 
     def _finish_direction_search(self):
