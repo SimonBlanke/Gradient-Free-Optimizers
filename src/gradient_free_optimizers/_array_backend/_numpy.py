@@ -11,6 +11,7 @@ import numpy as np
 array = np.array
 asarray = np.asarray
 zeros = np.zeros
+zeros_like = np.zeros_like
 ones = np.ones
 empty = np.empty
 full = np.full
@@ -90,6 +91,8 @@ vstack = np.vstack
 hstack = np.hstack
 tile = np.tile
 repeat = np.repeat
+array_split = np.array_split
+split = np.split
 
 # === Linear Algebra ===
 dot = np.dot

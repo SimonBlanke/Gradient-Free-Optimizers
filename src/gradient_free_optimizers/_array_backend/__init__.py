@@ -38,6 +38,7 @@ __all__ = [
     "array",
     "asarray",
     "zeros",
+    "zeros_like",
     "ones",
     "empty",
     "full",
@@ -105,6 +106,8 @@ __all__ = [
     "hstack",
     "tile",
     "repeat",
+    "array_split",
+    "split",
     # Linear algebra
     "dot",
     "matmul",

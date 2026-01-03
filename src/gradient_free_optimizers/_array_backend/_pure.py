@@ -139,6 +139,12 @@ class GFOArray:
                 if idx_list and isinstance(idx_list[0], bool):
                     return GFOArray([self._data[i] for i, b in enumerate(idx_list) if b])
                 return GFOArray([self._data[i] for i in idx_list])
+            elif self._ndim == 2:
+                # 2D boolean indexing - select rows where mask is True
+                if idx_list and isinstance(idx_list[0], bool):
+                    return GFOArray([self._data[i] for i, b in enumerate(idx_list) if b])
+                # Integer indexing for 2D
+                return GFOArray([self._data[i] for i in idx_list])
         return self._data[idx]
 
     def __setitem__(self, idx, value):
@@ -203,6 +209,11 @@ class GFOArray:
     def __neg__(self): return GFOArray([-x for x in self._get_flat()])
     def __pos__(self): return GFOArray(self._data)
     def __abs__(self): return GFOArray([builtins_abs(x) for x in self._get_flat()])
+    def __invert__(self):
+        """Boolean negation (~arr) for boolean arrays."""
+        if self._ndim == 1:
+            return GFOArray([not x for x in self._data])
+        return GFOArray([[not x for x in row] for row in self._data])
 
     # === Comparison Operations ===
 
@@ -348,6 +359,21 @@ def zeros(shape: Shape, dtype=float) -> GFOArray:
     elif len(shape) == 2:
         return GFOArray([[dtype(0)] * shape[1] for _ in range(shape[0])])
     raise ValueError(f"Shape {shape} not supported")
+
+
+def zeros_like(a, dtype=None) -> GFOArray:
+    """Create array of zeros with same shape as input."""
+    if isinstance(a, GFOArray):
+        shape = a.shape
+    elif hasattr(a, 'shape'):
+        shape = a.shape
+    else:
+        # Assume 1D list/tuple
+        shape = (len(a),)
+    if dtype is None:
+        dtype = float
+    return zeros(shape, dtype)
+
 
 def ones(shape: Shape, dtype=float) -> GFOArray:
     """Create array of ones."""
@@ -847,6 +873,44 @@ def repeat(x, repeats, axis=None):
             result.extend([v] * repeats)
         return GFOArray(result)
     raise NotImplementedError("Variable repeats not supported")
+
+
+def array_split(x, indices_or_sections, axis=0):
+    """Split array into sub-arrays."""
+    if isinstance(x, GFOArray):
+        flat = x._get_flat()
+    else:
+        flat = list(x)
+
+    n = len(flat)
+    if isinstance(indices_or_sections, int):
+        # Split into n equal parts
+        n_sections = indices_or_sections
+        section_size = n // n_sections
+        remainder = n % n_sections
+
+        result = []
+        start = 0
+        for i in range(n_sections):
+            # Distribute remainder across first sections
+            end = start + section_size + (1 if i < remainder else 0)
+            result.append(GFOArray(flat[start:end]))
+            start = end
+        return result
+    else:
+        # Split at specified indices
+        result = []
+        prev = 0
+        for idx in indices_or_sections:
+            result.append(GFOArray(flat[prev:idx]))
+            prev = idx
+        result.append(GFOArray(flat[prev:]))
+        return result
+
+
+def split(x, indices_or_sections, axis=0):
+    """Split array into sub-arrays (equal-sized splits only)."""
+    return array_split(x, indices_or_sections, axis)
 
 
 # === Linear Algebra ===
