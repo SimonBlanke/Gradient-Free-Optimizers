@@ -4,8 +4,10 @@
 
 
 from .powells_method import PowellsMethod
+from .direction import Direction
 
 
 __all__ = [
     "PowellsMethod",
+    "Direction",
 ]

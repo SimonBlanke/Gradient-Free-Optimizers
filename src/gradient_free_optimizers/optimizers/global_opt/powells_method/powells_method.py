@@ -3,18 +3,33 @@
 # License: MIT License
 
 import numpy as np
-from collections import OrderedDict
 
 from ...local_opt import HillClimbingOptimizer
+from .direction import Direction
 
 
-def sort_list_idx(list_):
-    list_np = np.array(list_)
-    idx_sorted = list(list_np.argsort()[::-1])
-    return idx_sorted
+# Golden ratio for golden section search
+GOLDEN_RATIO = (np.sqrt(5) - 1) / 2
 
 
 class PowellsMethod(HillClimbingOptimizer):
+    """
+    Powell's conjugate direction method for gradient-free optimization.
+
+    This optimizer performs sequential line searches along a set of directions,
+    updating the directions after each complete cycle to form conjugate directions.
+    This leads to faster convergence than simple coordinate descent.
+
+    Algorithm:
+    1. Initialize with coordinate axis directions
+    2. For each cycle:
+       a. Save starting position
+       b. Perform line search along each direction
+       c. Compute displacement from cycle start to end
+       d. Replace direction with largest improvement with the displacement direction
+    3. Repeat until convergence
+    """
+
     name = "Powell's Method"
     _name_ = "powells_method"
     __name__ = "PowellsMethod"
@@ -33,8 +48,37 @@ class PowellsMethod(HillClimbingOptimizer):
         epsilon=0.03,
         distribution="normal",
         n_neighbours=3,
-        iters_p_dim=10,
+        iters_per_direction=10,
+        line_search="grid",
     ):
+        """
+        Initialize Powell's Method optimizer.
+
+        Parameters
+        ----------
+        search_space : dict
+            Dictionary defining the search space for each parameter
+        initialize : dict, optional
+            Initialization strategy
+        constraints : list, optional
+            List of constraint functions
+        random_state : int, optional
+            Random seed for reproducibility
+        rand_rest_p : float, optional
+            Probability of random restart
+        nth_process : int, optional
+            Process number for parallel execution
+        epsilon : float, optional
+            Step size for hill climbing line search
+        distribution : str, optional
+            Distribution for hill climbing perturbations
+        n_neighbours : int, optional
+            Number of neighbors for hill climbing
+        iters_per_direction : int, optional
+            Number of evaluations per direction during line search
+        line_search : str, optional
+            Line search method: "grid", "golden", or "hill_climb"
+        """
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -47,91 +91,356 @@ class PowellsMethod(HillClimbingOptimizer):
             n_neighbours=n_neighbours,
         )
 
-        self.iters_p_dim = iters_p_dim
+        self.iters_per_direction = iters_per_direction
+        self.line_search_method = line_search
 
-        self.current_search_dim = -1
+        if line_search not in ("grid", "golden", "hill_climb"):
+            raise ValueError(
+                f"line_search must be 'grid', 'golden', or 'hill_climb', got '{line_search}'"
+            )
 
     def finish_initialization(self):
-        self.nth_iter_ = -1
-        self.nth_iter_current_dim = 0
-        self.search_state = "iter"
+        """Set up the direction matrix and state after initialization phase."""
+        n_dims = self.conv.n_dimensions
 
-    def new_dim(self):
-        self.current_search_dim += 1
+        # Initialize directions as coordinate unit vectors
+        self.directions = []
+        for i in range(n_dims):
+            self.directions.append(Direction.coordinate_axis(i, n_dims))
 
-        if self.current_search_dim >= self.conv.n_dimensions:
-            self.current_search_dim = 0
+        # State tracking
+        self.current_direction_idx = 0
+        self.cycle_start_pos = None
+        self.direction_start_pos = None
+        self.direction_start_score = None
+        self.direction_improvements = []
 
-        idx_sorted = sort_list_idx(self.scores_valid)
+        # Line search state
+        self.line_search_step = 0
+        self.grid_positions = []  # Pre-generated positions for grid search
+        self.evaluated_positions = []  # Positions that have been evaluated
+        self.evaluated_scores = []  # Corresponding scores
 
-        self.powells_pos = [self.positions_valid[idx] for idx in idx_sorted][0]
-        self.powells_scores = [self.scores_valid[idx] for idx in idx_sorted][0]
+        # For golden section search
+        self.golden_state = None
 
-        self.nth_iter_current_dim = 0
+    def _compute_max_step(self, origin, direction):
+        """
+        Compute the maximum step size along a direction that stays within bounds.
 
-        min_pos = []
-        max_pos = []
-        center_pos = []
+        Parameters
+        ----------
+        origin : np.ndarray
+            Starting position
+        direction : np.ndarray
+            Normalized direction vector
 
-        search_space_1D = OrderedDict()
-        for idx, para_name in enumerate(self.conv.para_names):
-            if self.current_search_dim == idx:
-                # fill with range of values
-                search_space_pos = self.conv.search_space_positions[idx]
-                search_space_1D[para_name] = np.array(search_space_pos)
+        Returns
+        -------
+        float
+            Maximum step size (positive direction)
+        """
+        max_t_positive = float("inf")
+        max_t_negative = float("inf")
 
-                min_pos.append(int(np.amin(search_space_pos)))
-                max_pos.append(int(np.amax(search_space_pos)))
-                center_pos.append(int(np.median(search_space_pos)))
+        for i, (d, o, max_pos) in enumerate(
+            zip(direction, origin, self.conv.max_positions)
+        ):
+            if abs(d) < 1e-10:
+                continue
+
+            if d > 0:
+                # Steps to reach max boundary
+                t_to_max = (max_pos - o) / d
+                # Steps to reach 0 boundary (negative direction)
+                t_to_zero = -o / d
+                max_t_positive = min(max_t_positive, t_to_max)
+                max_t_negative = min(max_t_negative, -t_to_zero)
             else:
-                # fill with single value
-                search_space_1D[para_name] = np.array([self.powells_pos[idx]])
+                # d < 0
+                t_to_zero = -o / d
+                t_to_max = (max_pos - o) / d
+                max_t_positive = min(max_t_positive, t_to_zero)
+                max_t_negative = min(max_t_negative, -t_to_max)
 
-                min_pos.append(self.powells_pos[idx])
-                max_pos.append(self.powells_pos[idx])
-                center_pos.append(self.powells_pos[idx])
+        # Use the smaller of the two to get symmetric bounds
+        max_t = min(max_t_positive, max_t_negative)
 
-        self.init_positions_ = [min_pos, center_pos, max_pos]
+        # Ensure we have at least some range to search
+        if max_t < 1:
+            max_t = max(self.conv.max_positions) * 0.5
 
-        self.hill_climb = HillClimbingOptimizer(
-            search_space=search_space_1D,
-            initialize={"random": 5},
-            epsilon=self.epsilon,
-            distribution=self.distribution,
-            n_neighbours=self.n_neighbours,
+        return max_t
+
+    def _get_grid_positions(self, origin, direction, n_steps):
+        """
+        Generate grid positions along a direction for line search.
+
+        Parameters
+        ----------
+        origin : np.ndarray
+            Starting position
+        direction : Direction
+            Search direction
+        n_steps : int
+            Number of positions to generate
+
+        Returns
+        -------
+        list of np.ndarray
+            Valid positions along the line
+        """
+        max_t = self._compute_max_step(origin, direction.direction)
+
+        positions = []
+        t_values = np.linspace(-max_t, max_t, n_steps)
+
+        for t in t_values:
+            pos_float = direction.get_position_at(origin, t)
+            pos_valid = self.conv2pos(pos_float)
+
+            # Avoid duplicates
+            is_duplicate = any(np.array_equal(pos_valid, p) for p in positions)
+            if not is_duplicate and self.conv.not_in_constraint(pos_valid):
+                positions.append(pos_valid)
+
+        return positions
+
+    def _start_direction_search(self):
+        """Initialize state for searching along the current direction."""
+        self.direction_start_pos = self.pos_current.copy()
+        self.direction_start_score = self.score_current
+        self.line_search_step = 0
+
+        # Separate lists: positions to evaluate vs evaluated results
+        self.grid_positions = []  # Pre-generated positions for grid search
+        self.evaluated_positions = []  # Positions that have been evaluated
+        self.evaluated_scores = []  # Corresponding scores
+
+        if self.line_search_method == "grid":
+            # Pre-generate all positions for grid search
+            direction = self.directions[self.current_direction_idx]
+            self.grid_positions = self._get_grid_positions(
+                self.direction_start_pos, direction, self.iters_per_direction
+            )
+        elif self.line_search_method == "golden":
+            # Initialize golden section state
+            direction = self.directions[self.current_direction_idx]
+            max_t = self._compute_max_step(
+                self.direction_start_pos, direction.direction
+            )
+            self.golden_state = {
+                "a": -max_t,
+                "b": max_t,
+                "c": -max_t + GOLDEN_RATIO * (2 * max_t),
+                "d": max_t - GOLDEN_RATIO * (2 * max_t),
+                "fc": None,
+                "fd": None,
+                "phase": "eval_c",
+            }
+
+    def _finish_direction_search(self):
+        """Complete the search along current direction and move to best position."""
+        if self.evaluated_scores:
+            best_idx = np.argmax(self.evaluated_scores)
+            best_score = self.evaluated_scores[best_idx]
+            best_pos = self.evaluated_positions[best_idx]
+
+            # Calculate improvement for this direction
+            improvement = best_score - self.direction_start_score
+            self.direction_improvements.append(improvement)
+
+            # Update current position to best found
+            self._eval2current(best_pos, best_score)
+        else:
+            # No valid positions found, no improvement
+            self.direction_improvements.append(0.0)
+
+        # Move to next direction
+        self.current_direction_idx += 1
+
+    def _start_new_cycle(self):
+        """Start a new cycle through all directions."""
+        self.cycle_start_pos = self.pos_current.copy()
+        self.current_direction_idx = 0
+        self.direction_improvements = []
+
+    def _complete_cycle(self):
+        """Complete a cycle and update directions with conjugate direction."""
+        if self.cycle_start_pos is None:
+            return
+
+        # Compute displacement from cycle start to end
+        displacement = self.pos_current - self.cycle_start_pos
+        displacement_norm = np.linalg.norm(displacement)
+
+        if displacement_norm > 1e-10 and self.direction_improvements:
+            # Find direction with largest improvement
+            max_improve_idx = np.argmax(self.direction_improvements)
+
+            # Replace that direction with the new conjugate direction
+            try:
+                new_direction = Direction(displacement)
+                self.directions[max_improve_idx] = new_direction
+            except ValueError:
+                # Displacement was too small, keep old direction
+                pass
+
+    def _iterate_grid(self):
+        """Generate next position for grid-based line search."""
+        if self.line_search_step < len(self.grid_positions):
+            pos = self.grid_positions[self.line_search_step]
+            self.line_search_step += 1
+            return pos
+        else:
+            # Exhausted grid positions, finish this direction
+            return None
+
+    def _iterate_golden(self):
+        """Generate next position for golden section line search."""
+        direction = self.directions[self.current_direction_idx]
+        state = self.golden_state
+
+        if state["phase"] == "eval_c":
+            pos_float = direction.get_position_at(self.direction_start_pos, state["c"])
+            pos = self.conv2pos(pos_float)
+            return pos
+        elif state["phase"] == "eval_d":
+            pos_float = direction.get_position_at(self.direction_start_pos, state["d"])
+            pos = self.conv2pos(pos_float)
+            return pos
+        else:
+            return None
+
+    def _update_golden_state(self, score):
+        """Update golden section search state after evaluation."""
+        state = self.golden_state
+
+        if state["phase"] == "eval_c":
+            state["fc"] = score
+            if state["fd"] is None:
+                state["phase"] = "eval_d"
+            else:
+                self._golden_narrow_bracket()
+        elif state["phase"] == "eval_d":
+            state["fd"] = score
+            if state["fc"] is None:
+                state["phase"] = "eval_c"
+            else:
+                self._golden_narrow_bracket()
+
+    def _golden_narrow_bracket(self):
+        """Narrow the bracket in golden section search."""
+        state = self.golden_state
+
+        if state["fc"] > state["fd"]:
+            # Maximum is in [a, d], narrow from right
+            state["b"] = state["d"]
+            state["d"] = state["c"]
+            state["fd"] = state["fc"]
+            state["c"] = state["a"] + GOLDEN_RATIO * (state["b"] - state["a"])
+            state["fc"] = None
+            state["phase"] = "eval_c"
+        else:
+            # Maximum is in [c, b], narrow from left
+            state["a"] = state["c"]
+            state["c"] = state["d"]
+            state["fc"] = state["fd"]
+            state["d"] = state["b"] - GOLDEN_RATIO * (state["b"] - state["a"])
+            state["fd"] = None
+            state["phase"] = "eval_d"
+
+        self.line_search_step += 1
+
+    def _iterate_hill_climb(self):
+        """Generate next position for hill climbing along direction."""
+        direction = self.directions[self.current_direction_idx]
+
+        # Perturb along the direction only
+        t = np.random.normal(0, self.epsilon * np.max(self.conv.max_positions))
+        pos_float = direction.get_position_at(self.pos_current, t)
+        pos = self.conv2pos(pos_float)
+
+        if self.conv.not_in_constraint(pos):
+            self.line_search_step += 1
+            return pos
+
+        # Fallback to standard move_climb if constrained
+        return self.move_climb(
+            self.pos_current, epsilon=self.epsilon, distribution=self.distribution
         )
 
     @HillClimbingOptimizer.track_new_pos
     @HillClimbingOptimizer.random_iteration
     def iterate(self):
-        self.nth_iter_ += 1
-        self.nth_iter_current_dim += 1
+        """Generate the next position to evaluate."""
+        n_dims = self.conv.n_dimensions
 
-        modZero = self.nth_iter_ % self.iters_p_dim == 0
-        # nonZero = self.nth_iter_ != 0
+        # Check if we need to start a new cycle
+        if self.current_direction_idx >= n_dims:
+            self._complete_cycle()
+            self._start_new_cycle()
+            self._start_direction_search()
 
-        if modZero:
-            self.new_dim()
+        # Check if we need to start searching a new direction
+        if self.line_search_step == 0 and not self.grid_positions:
+            if self.cycle_start_pos is None:
+                self._start_new_cycle()
+            self._start_direction_search()
 
-        if self.nth_iter_current_dim < 5:
-            pos_new = self.hill_climb.init_pos()
-            pos_new = self.hill_climb.conv.position2value(pos_new)
+        # Generate next position based on line search method
+        pos_new = None
 
-        else:
-            pos_new = self.hill_climb.iterate()
-            pos_new = self.hill_climb.conv.position2value(pos_new)
-        pos_new = np.array(pos_new)
+        if self.line_search_method == "grid":
+            pos_new = self._iterate_grid()
+        elif self.line_search_method == "golden":
+            if self.line_search_step < self.iters_per_direction:
+                pos_new = self._iterate_golden()
+        elif self.line_search_method == "hill_climb":
+            if self.line_search_step < self.iters_per_direction:
+                pos_new = self._iterate_hill_climb()
 
-        if self.conv.not_in_constraint(pos_new):
-            return pos_new
-        return self.move_climb(
-            pos_new, epsilon=self.epsilon, distribution=self.distribution
-        )
+        # If line search for current direction is complete, move to next
+        if pos_new is None:
+            self._finish_direction_search()
+
+            # Start next direction if available
+            if self.current_direction_idx < n_dims:
+                self._start_direction_search()
+
+                if self.line_search_method == "grid":
+                    pos_new = self._iterate_grid()
+                elif self.line_search_method == "golden":
+                    pos_new = self._iterate_golden()
+                elif self.line_search_method == "hill_climb":
+                    pos_new = self._iterate_hill_climb()
+
+        # Fallback if still no position
+        if pos_new is None:
+            pos_new = self.move_climb(
+                self.pos_current, epsilon=self.epsilon, distribution=self.distribution
+            )
+
+        return pos_new
 
     @HillClimbingOptimizer.track_new_score
     def evaluate(self, score_new):
-        if self.current_search_dim == -1:
-            super(HillClimbingOptimizer, self).evaluate(score_new)
-        else:
-            self.hill_climb.evaluate(score_new)
-            super(HillClimbingOptimizer, self).evaluate(score_new)
+        """
+        Evaluate a new score and update tracking.
+
+        Parameters
+        ----------
+        score_new : float
+            The score for the most recently evaluated position
+        """
+        # Track for line search
+        if self.pos_new is not None:
+            self.evaluated_positions.append(self.pos_new.copy())
+            self.evaluated_scores.append(score_new)
+
+        # Update golden section state if applicable
+        if self.line_search_method == "golden" and self.golden_state is not None:
+            self._update_golden_state(score_new)
+
+        # Call parent evaluate
+        super(HillClimbingOptimizer, self).evaluate(score_new)
