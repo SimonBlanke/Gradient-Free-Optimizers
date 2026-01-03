@@ -13,7 +13,7 @@ try:
     import numpy as np
     HAS_NUMPY = True
 except ImportError:
-    from .._array_backend import _pure as np
+    from gradient_free_optimizers._array_backend import _pure as np
     HAS_NUMPY = False
 
 
