@@ -117,6 +117,7 @@ class PowellsMethod(HillClimbingOptimizer):
 
         # Line search state
         self.line_search_step = 0
+        self.direction_search_active = False  # Flag to track if search is in progress
         self.grid_positions = []  # Pre-generated positions for grid search
         self.evaluated_positions = []  # Positions that have been evaluated
         self.evaluated_scores = []  # Corresponding scores
@@ -211,6 +212,7 @@ class PowellsMethod(HillClimbingOptimizer):
         self.direction_start_pos = self.pos_current.copy()
         self.direction_start_score = self.score_current
         self.line_search_step = 0
+        self.direction_search_active = True  # Flag to track if search is in progress
 
         # Separate lists: positions to evaluate vs evaluated results
         self.grid_positions = []  # Pre-generated positions for grid search
@@ -225,15 +227,22 @@ class PowellsMethod(HillClimbingOptimizer):
             )
         elif self.line_search_method == "golden":
             # Initialize golden section state
+            # Standard golden section: a < c < d < b
+            # c = a + (1-phi)(b-a), d = a + phi(b-a) where phi ≈ 0.618
             direction = self.directions[self.current_direction_idx]
             max_t = self._compute_max_step(
                 self.direction_start_pos, direction.direction
             )
+            a = -max_t
+            b = max_t
+            # Use 1-GOLDEN_RATIO for c so that c < d
+            c = a + (1 - GOLDEN_RATIO) * (b - a)  # ≈ a + 0.382*(b-a)
+            d = a + GOLDEN_RATIO * (b - a)        # ≈ a + 0.618*(b-a)
             self.golden_state = {
-                "a": -max_t,
-                "b": max_t,
-                "c": -max_t + GOLDEN_RATIO * (2 * max_t),
-                "d": max_t - GOLDEN_RATIO * (2 * max_t),
+                "a": a,
+                "b": b,
+                "c": c,
+                "d": d,
                 "fc": None,
                 "fd": None,
                 "phase": "eval_c",
@@ -241,6 +250,8 @@ class PowellsMethod(HillClimbingOptimizer):
 
     def _finish_direction_search(self):
         """Complete the search along current direction and move to best position."""
+        self.direction_search_active = False  # Mark search as complete
+
         if self.evaluated_scores:
             best_idx = np.argmax(self.evaluated_scores)
             best_score = self.evaluated_scores[best_idx]
@@ -330,23 +341,32 @@ class PowellsMethod(HillClimbingOptimizer):
                 self._golden_narrow_bracket()
 
     def _golden_narrow_bracket(self):
-        """Narrow the bracket in golden section search."""
+        """Narrow the bracket in golden section search.
+
+        With c < d (standard golden section layout):
+        - If f(c) > f(d): maximum in [a, d], narrow right side
+        - If f(d) >= f(c): maximum in [c, b], narrow left side
+        """
         state = self.golden_state
 
         if state["fc"] > state["fd"]:
             # Maximum is in [a, d], narrow from right
+            # New bracket: [a, d], reuse c as new d
             state["b"] = state["d"]
             state["d"] = state["c"]
             state["fd"] = state["fc"]
-            state["c"] = state["a"] + GOLDEN_RATIO * (state["b"] - state["a"])
+            # Calculate new c: c = a + (1-phi)(b-a)
+            state["c"] = state["a"] + (1 - GOLDEN_RATIO) * (state["b"] - state["a"])
             state["fc"] = None
             state["phase"] = "eval_c"
         else:
             # Maximum is in [c, b], narrow from left
+            # New bracket: [c, b], reuse d as new c
             state["a"] = state["c"]
             state["c"] = state["d"]
             state["fc"] = state["fd"]
-            state["d"] = state["b"] - GOLDEN_RATIO * (state["b"] - state["a"])
+            # Calculate new d: d = a + phi(b-a)
+            state["d"] = state["a"] + GOLDEN_RATIO * (state["b"] - state["a"])
             state["fd"] = None
             state["phase"] = "eval_d"
 
@@ -383,7 +403,7 @@ class PowellsMethod(HillClimbingOptimizer):
             self._start_direction_search()
 
         # Check if we need to start searching a new direction
-        if self.line_search_step == 0 and not self.grid_positions:
+        if not self.direction_search_active:
             if self.cycle_start_pos is None:
                 self._start_new_cycle()
             self._start_direction_search()
