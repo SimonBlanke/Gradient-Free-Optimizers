@@ -2,7 +2,6 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import numpy as np
 
 indent = "  "
 
@@ -99,8 +98,8 @@ def print_info(
     random_seed,
 ):
 
-    eval_time = np.array(eval_times).sum()
-    iter_time = np.array(iter_times).sum()
+    eval_time = sum(eval_times)
+    iter_time = sum(iter_times)
 
     if "print_results" in verbosity:
         _print_results(objective_function, score_best, para_best, random_seed)

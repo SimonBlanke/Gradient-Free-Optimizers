@@ -5,7 +5,6 @@
 
 import logging
 import time
-import numpy as np
 
 
 def time_exceeded(start_time, max_time):
@@ -28,10 +27,8 @@ def no_change(score_new_list, early_stopping):
     if len(score_new_list) <= n_iter_no_change:
         return False
 
-    scores_np = np.array(score_new_list)
-
     max_score = max(score_new_list)
-    max_index = np.argmax(scores_np)
+    max_index = score_new_list.index(max_score)
     length_pos = len(score_new_list)
 
     diff = length_pos - max_index
