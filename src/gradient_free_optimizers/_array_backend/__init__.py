@@ -41,11 +41,13 @@ __all__ = [
     "zeros_like",
     "ones",
     "empty",
+    "empty_like",
     "full",
     "arange",
     "linspace",
     "meshgrid",
     "eye",
+    "diag",
     # Type conversion
     "int32",
     "int64",

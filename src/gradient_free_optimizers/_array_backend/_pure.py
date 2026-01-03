@@ -215,6 +215,47 @@ class GFOArray:
             return GFOArray([not x for x in self._data])
         return GFOArray([[not x for x in row] for row in self._data])
 
+    def __matmul__(self, other):
+        """Matrix multiplication (@ operator)."""
+        if not isinstance(other, GFOArray):
+            other = GFOArray(other)
+
+        # 1D @ 1D = dot product (scalar)
+        if self._ndim == 1 and other._ndim == 1:
+            return builtins_sum(a * b for a, b in zip(self._data, other._data))
+
+        # 2D @ 1D = matrix-vector product
+        if self._ndim == 2 and other._ndim == 1:
+            result = []
+            for row in self._data:
+                result.append(builtins_sum(a * b for a, b in zip(row, other._data)))
+            return GFOArray(result)
+
+        # 1D @ 2D = vector-matrix product
+        if self._ndim == 1 and other._ndim == 2:
+            cols = other._shape[1]
+            result = []
+            for j in range(cols):
+                result.append(builtins_sum(self._data[i] * other._data[i][j]
+                                          for i in range(len(self._data))))
+            return GFOArray(result)
+
+        # 2D @ 2D = matrix multiplication
+        if self._ndim == 2 and other._ndim == 2:
+            m, k1 = self._shape
+            k2, n = other._shape
+            if k1 != k2:
+                raise ValueError(f"Incompatible dimensions for matmul: {self._shape} @ {other._shape}")
+            result = [[builtins_sum(self._data[i][k] * other._data[k][j] for k in range(k1))
+                      for j in range(n)] for i in range(m)]
+            return GFOArray(result)
+
+        raise ValueError(f"Cannot matmul arrays with shapes {self._shape} and {other._shape}")
+
+    def __rmatmul__(self, other):
+        """Right matrix multiplication."""
+        return GFOArray(other).__matmul__(self)
+
     # === Comparison Operations ===
 
     def __eq__(self, other): return self._apply_binary_op(other, lambda a, b: a == b)
@@ -439,6 +480,45 @@ def eye(n: int, m: int = None, dtype=float) -> GFOArray:
     result = [[dtype(1) if i == j else dtype(0) for j in range(m)] for i in range(n)]
     return GFOArray(result)
 
+
+def diag(v, k=0) -> GFOArray:
+    """Extract diagonal or construct diagonal matrix.
+
+    If v is 2D, extract the k-th diagonal.
+    If v is 1D, construct a diagonal matrix with v on the k-th diagonal.
+    """
+    if isinstance(v, GFOArray):
+        if v._ndim == 2:
+            # Extract diagonal from matrix
+            rows, cols = v._shape
+            result = []
+            if k >= 0:
+                for i in range(min(rows, cols - k)):
+                    result.append(v._data[i][i + k])
+            else:
+                for i in range(min(rows + k, cols)):
+                    result.append(v._data[i - k][i])
+            return GFOArray(result)
+        else:
+            # Construct diagonal matrix from vector
+            n = len(v._data) + builtins_abs(k)
+            result = [[0.0] * n for _ in range(n)]
+            if k >= 0:
+                for i, val in enumerate(v._data):
+                    result[i][i + k] = val
+            else:
+                for i, val in enumerate(v._data):
+                    result[i - k][i] = val
+            return GFOArray(result)
+    else:
+        return diag(GFOArray(v), k)
+
+
+def empty_like(a, dtype=None) -> GFOArray:
+    """Create uninitialized array with same shape as input."""
+    return zeros_like(a, dtype=dtype)
+
+
 def meshgrid(*arrays, indexing="xy"):
     """Create coordinate matrices from coordinate vectors."""
     if len(arrays) != 2:
@@ -480,48 +560,49 @@ def shape(x) -> Tuple[int, ...]:
 
 # === Element-wise Math Functions ===
 
-def exp(x):
+def _apply_elementwise(x, func):
+    """Apply a function elementwise, preserving array shape."""
     if isinstance(x, GFOArray):
-        return GFOArray([math.exp(v) for v in x._get_flat()])
-    return math.exp(x)
+        if x._ndim == 1:
+            return GFOArray([func(v) for v in x._data])
+        else:
+            return GFOArray([[func(v) for v in row] for row in x._data])
+    return func(x)
+
+
+def exp(x):
+    return _apply_elementwise(x, math.exp)
+
 
 def log(x):
-    if isinstance(x, GFOArray):
-        return GFOArray([math.log(v) for v in x._get_flat()])
-    return math.log(x)
+    return _apply_elementwise(x, math.log)
+
 
 def log10(x):
-    if isinstance(x, GFOArray):
-        return GFOArray([math.log10(v) for v in x._get_flat()])
-    return math.log10(x)
+    return _apply_elementwise(x, math.log10)
+
 
 def sqrt(x):
-    if isinstance(x, GFOArray):
-        return GFOArray([math.sqrt(v) for v in x._get_flat()])
-    return math.sqrt(x)
+    return _apply_elementwise(x, math.sqrt)
 
 def abs(x):
-    if isinstance(x, GFOArray):
-        return GFOArray([builtins_abs(v) for v in x._get_flat()])
-    return builtins_abs(x)
+    return _apply_elementwise(x, builtins_abs)
+
 
 def power(x, p):
-    if isinstance(x, GFOArray):
-        return GFOArray([v ** p for v in x._get_flat()])
-    return x ** p
+    return _apply_elementwise(x, lambda v: v ** p)
+
 
 def square(x):
     return power(x, 2)
 
+
 def sin(x):
-    if isinstance(x, GFOArray):
-        return GFOArray([math.sin(v) for v in x._get_flat()])
-    return math.sin(x)
+    return _apply_elementwise(x, math.sin)
+
 
 def cos(x):
-    if isinstance(x, GFOArray):
-        return GFOArray([math.cos(v) for v in x._get_flat()])
-    return math.cos(x)
+    return _apply_elementwise(x, math.cos)
 
 
 # === Rounding and Clipping ===
