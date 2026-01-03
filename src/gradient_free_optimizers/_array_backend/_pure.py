@@ -849,6 +849,44 @@ def repeat(x, repeats, axis=None):
     raise NotImplementedError("Variable repeats not supported")
 
 
+def array_split(x, indices_or_sections, axis=0):
+    """Split array into sub-arrays."""
+    if isinstance(x, GFOArray):
+        flat = x._get_flat()
+    else:
+        flat = list(x)
+
+    n = len(flat)
+    if isinstance(indices_or_sections, int):
+        # Split into n equal parts
+        n_sections = indices_or_sections
+        section_size = n // n_sections
+        remainder = n % n_sections
+
+        result = []
+        start = 0
+        for i in range(n_sections):
+            # Distribute remainder across first sections
+            end = start + section_size + (1 if i < remainder else 0)
+            result.append(GFOArray(flat[start:end]))
+            start = end
+        return result
+    else:
+        # Split at specified indices
+        result = []
+        prev = 0
+        for idx in indices_or_sections:
+            result.append(GFOArray(flat[prev:idx]))
+            prev = idx
+        result.append(GFOArray(flat[prev:]))
+        return result
+
+
+def split(x, indices_or_sections, axis=0):
+    """Split array into sub-arrays (equal-sized splits only)."""
+    return array_split(x, indices_or_sections, axis)
+
+
 # === Linear Algebra ===
 
 def dot(a, b):

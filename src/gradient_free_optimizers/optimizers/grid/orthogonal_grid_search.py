@@ -2,7 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import numpy as np
+from ..._array_backend import array
 
 from ..base_optimizer import BaseOptimizer
 
@@ -47,7 +47,7 @@ class OrthogonalGridSearchOptimizer(BaseOptimizer):
             mod_tmp = div
             div_tmp = div
 
-        return np.array(flipped_new_pos)
+        return array(flipped_new_pos)
 
     @BaseOptimizer.track_new_pos
     def iterate(self):

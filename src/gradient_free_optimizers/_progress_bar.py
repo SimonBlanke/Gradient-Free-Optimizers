@@ -2,7 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import numpy as np
+import math
 
 try:
     from tqdm import tqdm
@@ -61,7 +61,7 @@ class SimpleProgressBar:
 class ProgressBarBase:
     def __init__(self, nth_process, n_iter, objective_function):
         self.pos_best = None
-        self._score_best = -np.inf
+        self._score_best = -math.inf
         self.score_best_list = []
 
         self.convergence_data = []

@@ -3,8 +3,8 @@
 # License: MIT License
 
 import json
+import math
 import time
-import numpy as np
 
 from ._progress_bar import ProgressBarLVL0, ProgressBarLVL1
 from ._times_tracker import TimesTracker
@@ -97,7 +97,7 @@ class Search(TimesTracker, SearchStatistics):
             self.search_step(nth_trial)
 
             # Update stopper with current state
-            current_score = self.score_l[-1] if self.score_l else -np.inf
+            current_score = self.score_l[-1] if self.score_l else -math.inf
             best_score = self.p_bar.score_best
             self.stopper.update(current_score, best_score, nth_trial)
 

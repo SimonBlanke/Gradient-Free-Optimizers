@@ -1,9 +1,9 @@
+import math
 import time
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from typing import List, Optional, Dict, Any
-import numpy as np
 
 
 @dataclass
@@ -31,7 +31,9 @@ class StoppingContext:
         if not self.score_history:
             return 0
 
-        best_score_idx = np.argmax(self.score_history)
+        # Find index of maximum score
+        max_score = max(self.score_history)
+        best_score_idx = self.score_history.index(max_score)
         return len(self.score_history) - best_score_idx - 1
 
 
@@ -261,7 +263,7 @@ class OptimizationStopper:
         self.start_time = start_time
         self.conditions: List[StoppingCondition] = []
         self.score_history: List[float] = []
-        self.score_best = -np.inf
+        self.score_best = -math.inf
         self.iteration = 0
         self.logger = logging.getLogger(f"{__name__}.OptimizationStopper")
 
@@ -295,7 +297,7 @@ class OptimizationStopper:
         """Check if optimization should stop."""
         context = StoppingContext(
             iteration=self.iteration,
-            score_current=self.score_history[-1] if self.score_history else -np.inf,
+            score_current=self.score_history[-1] if self.score_history else -math.inf,
             score_best=self.score_best,
             score_history=self.score_history,
             start_time=self.start_time,
@@ -308,7 +310,7 @@ class OptimizationStopper:
         """Get comprehensive debugging information about stopping conditions."""
         context = StoppingContext(
             iteration=self.iteration,
-            score_current=self.score_history[-1] if self.score_history else -np.inf,
+            score_current=self.score_history[-1] if self.score_history else -math.inf,
             score_best=self.score_best,
             score_history=self.score_history,
             start_time=self.start_time,

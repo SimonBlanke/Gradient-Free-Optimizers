@@ -1,13 +1,10 @@
-# Author: ...
-# Email: ...
+# Author: Simon Blanke
+# Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import numpy as np
+from math import gcd
 
-try:
-    from fractions import gcd
-except:
-    from math import gcd
+from ..._array_backend import array, zeros, prod, power
 
 from ..base_optimizer import BaseOptimizer
 
@@ -31,7 +28,7 @@ class DiagonalGridSearchOptimizer(BaseOptimizer):
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
         )
-        self.initial_position = np.zeros((self.conv.n_dimensions,), dtype=int)
+        self.initial_position = zeros((self.conv.n_dimensions,)).astype(int)
         # current position mapped in [|0,search_space_size-1|] (1D)
         self.high_dim_pointer = 0
         # direction is a generator of our search space (prime with search_space_size)
@@ -49,7 +46,7 @@ class DiagonalGridSearchOptimizer(BaseOptimizer):
         search_space_size = self.conv.search_space_size
 
         # Find prime number near search_space_size ** (1/n_dims)
-        dim_root = int(np.round(np.power(search_space_size, 1 / n_dims)))
+        dim_root = int(round(power(search_space_size, 1 / n_dims)))
         is_prime = False
 
         while not is_prime:
@@ -73,13 +70,14 @@ class DiagonalGridSearchOptimizer(BaseOptimizer):
         # the quotient of the pointer by the product of remaining dimensions
         # Describes a bijection from Z/search_space_size*Z -> (Z/dim_1*Z)x...x(Z/dim_n*Z)
         for dim in range(len(dim_sizes) - 1):
+            remaining_prod = prod(dim_sizes[dim + 1 :])
             new_pos.append(
-                pointer // np.prod(dim_sizes[dim + 1 :]) % dim_sizes[dim]
+                pointer // remaining_prod % dim_sizes[dim]
             )
-            pointer = pointer % np.prod(dim_sizes[dim + 1 :])
+            pointer = pointer % remaining_prod
         new_pos.append(pointer)
 
-        return np.array(new_pos)
+        return array(new_pos)
 
     @BaseOptimizer.track_new_pos
     def iterate(self):

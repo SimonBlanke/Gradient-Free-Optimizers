@@ -90,6 +90,8 @@ vstack = np.vstack
 hstack = np.hstack
 tile = np.tile
 repeat = np.repeat
+array_split = np.array_split
+split = np.split
 
 # === Linear Algebra ===
 dot = np.dot

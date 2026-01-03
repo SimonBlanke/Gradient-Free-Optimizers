@@ -105,6 +105,8 @@ __all__ = [
     "hstack",
     "tile",
     "repeat",
+    "array_split",
+    "split",
     # Linear algebra
     "dot",
     "matmul",
