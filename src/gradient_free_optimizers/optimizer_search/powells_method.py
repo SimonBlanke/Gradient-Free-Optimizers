@@ -10,9 +10,13 @@ from ..optimizers import PowellsMethod as _PowellsMethod
 
 class PowellsMethod(_PowellsMethod, Search):
     """
-    A class implementing **pattern search** for the public API.
+    A class implementing **Powell's conjugate direction method** for the public API.
     Inheriting from the `Search`-class to get the `search`-method and from
     the `PowellsMethod`-backend to get the underlying algorithm.
+
+    Powell's method performs sequential line searches along a set of directions,
+    updating the directions after each complete cycle to form conjugate directions.
+    This leads to faster convergence than simple coordinate descent.
 
     Parameters
     ----------
@@ -32,12 +36,16 @@ class PowellsMethod(_PowellsMethod, Search):
     rand_rest_p : float
         The probability of a random iteration during the search process.
     epsilon : float
-        The step-size for the climbing.
+        The step-size for hill climbing line search.
     distribution : str
-        The type of distribution to sample from.
+        The type of distribution to sample from for hill climbing.
     n_neighbours : int
         The number of neighbours to sample and evaluate before moving to the best
         of those neighbours.
+    iters_per_direction : int
+        Number of evaluations per direction during line search.
+    line_search : str
+        Line search method: "grid" (default), "golden", or "hill_climb".
     """
 
     def __init__(
@@ -51,7 +59,11 @@ class PowellsMethod(_PowellsMethod, Search):
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,
-        iters_p_dim: int = 10,
+        epsilon: float = 0.03,
+        distribution: str = "normal",
+        n_neighbours: int = 3,
+        iters_per_direction: int = 10,
+        line_search: Literal["grid", "golden", "hill_climb"] = "grid",
     ):
         super().__init__(
             search_space=search_space,
@@ -60,5 +72,9 @@ class PowellsMethod(_PowellsMethod, Search):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
-            iters_p_dim=iters_p_dim,
+            epsilon=epsilon,
+            distribution=distribution,
+            n_neighbours=n_neighbours,
+            iters_per_direction=iters_per_direction,
+            line_search=line_search,
         )
