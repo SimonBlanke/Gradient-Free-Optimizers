@@ -263,8 +263,8 @@ class PowellsMethod(HillClimbingOptimizer):
         score_new : float
             The score for the most recently evaluated position.
         """
-        # Update line searcher with the result
-        if self.pos_new is not None:
+        # Update line searcher with the result (only during iteration phase)
+        if hasattr(self, "line_searcher") and self.pos_new is not None:
             self.line_searcher.update(self.pos_new, score_new)
 
         # Call parent evaluate
