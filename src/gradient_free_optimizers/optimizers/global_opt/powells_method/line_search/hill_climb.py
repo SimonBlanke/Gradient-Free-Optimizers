@@ -4,7 +4,7 @@
 
 from typing import Optional, Tuple, List
 
-import numpy as np
+from gradient_free_optimizers._array_backend import array, maximum, argmax, random as np_random
 
 from .base import LineSearch
 
@@ -35,40 +35,40 @@ class HillClimbLineSearch(LineSearch):
         self.epsilon = epsilon
         self.distribution = distribution
 
-        self.origin: Optional[np.ndarray] = None
-        self.direction: Optional[np.ndarray] = None
+        self.origin = None
+        self.direction = None
         self.max_iters: int = 0
         self.current_step: int = 0
         self.active: bool = False
 
         # Track current best position for hill climbing
-        self.current_pos: Optional[np.ndarray] = None
+        self.current_pos = None
         self.current_score: Optional[float] = None
 
         # Track all evaluations
-        self.evaluated_positions: List[np.ndarray] = []
+        self.evaluated_positions: List = []
         self.evaluated_scores: List[float] = []
 
     def start(
         self,
-        origin: np.ndarray,
-        direction: np.ndarray,
+        origin,
+        direction,
         max_iters: int,
     ) -> None:
         """Initialize hill climb search along the direction."""
-        self.origin = origin.copy()
-        self.direction = direction.copy()
+        self.origin = array(origin).copy()
+        self.direction = array(direction).copy()
         self.max_iters = max_iters
         self.current_step = 0
         self.active = True
 
-        self.current_pos = origin.copy()
+        self.current_pos = array(origin).copy()
         self.current_score = None
 
         self.evaluated_positions = []
         self.evaluated_scores = []
 
-    def get_next_position(self) -> Optional[np.ndarray]:
+    def get_next_position(self):
         """Generate next position by perturbing along the direction."""
         if not self.active or self.current_step >= self.max_iters:
             self.active = False
@@ -76,8 +76,8 @@ class HillClimbLineSearch(LineSearch):
 
         # Generate random step along direction
         max_positions = self.optimizer.conv.max_positions
-        sigma = self.epsilon * np.max(max_positions)
-        t = np.random.normal(0, sigma)
+        sigma = self.epsilon * float(maximum(max_positions, 0))
+        t = np_random.normal(0, sigma)
 
         pos_float = self.current_pos + t * self.direction
         pos = self._snap_to_grid(pos_float)
@@ -97,22 +97,22 @@ class HillClimbLineSearch(LineSearch):
         self.current_step += 1
         return pos
 
-    def update(self, position: np.ndarray, score: float) -> None:
+    def update(self, position, score: float) -> None:
         """Update current position if new score is better."""
-        self.evaluated_positions.append(position.copy())
+        self.evaluated_positions.append(array(position).copy())
         self.evaluated_scores.append(score)
 
         # Hill climbing: move to new position if it's better
         if self.current_score is None or score > self.current_score:
-            self.current_pos = position.copy()
+            self.current_pos = array(position).copy()
             self.current_score = score
 
-    def get_best_result(self) -> Tuple[Optional[np.ndarray], Optional[float]]:
+    def get_best_result(self) -> Tuple:
         """Return the best position found during hill climbing."""
         if not self.evaluated_scores:
             return None, None
 
-        best_idx = np.argmax(self.evaluated_scores)
+        best_idx = argmax(self.evaluated_scores)
         return self.evaluated_positions[best_idx], self.evaluated_scores[best_idx]
 
     def is_active(self) -> bool:

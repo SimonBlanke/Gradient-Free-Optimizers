@@ -3,9 +3,10 @@
 # License: MIT License
 
 
-import scipy
 import random
-import numpy as np
+
+from gradient_free_optimizers._array_backend import rint, clip, array, random as np_random
+from gradient_free_optimizers._math_backend import cdist
 
 from .search_tracker import SearchTracker
 from .converter import Converter
@@ -13,14 +14,16 @@ from .init_positions import Initializer
 
 from .utils import set_random_seed, move_random
 
-from numpy.random import normal, laplace, logistic, gumbel
 
-dist_dict = {
-    "normal": normal,
-    "laplace": laplace,
-    "logistic": logistic,
-    "gumbel": gumbel,
-}
+def _get_dist_func(name):
+    """Get distribution function from array backend."""
+    dist_map = {
+        "normal": np_random.normal,
+        "laplace": np_random.laplace,
+        "logistic": np_random.logistic,
+        "gumbel": np_random.gumbel,
+    }
+    return dist_map[name]
 
 
 class CoreOptimizer(SearchTracker):
@@ -63,9 +66,10 @@ class CoreOptimizer(SearchTracker):
     def move_climb(
         self, pos, epsilon=0.03, distribution="normal", epsilon_mod=1
     ):
+        dist_func = _get_dist_func(distribution)
         while True:
             sigma = self.conv.max_positions * epsilon * epsilon_mod
-            pos_normal = dist_dict[distribution](pos, sigma, pos.shape)
+            pos_normal = dist_func(pos, sigma, pos.shape)
             pos = self.conv2pos(pos_normal)
 
             if self.conv.not_in_constraint(pos):
@@ -74,18 +78,18 @@ class CoreOptimizer(SearchTracker):
 
     def conv2pos(self, pos):
         # position to int
-        r_pos = np.rint(pos)
+        r_pos = rint(pos)
 
         n_zeros = [0] * len(self.conv.max_positions)
         # clip into search space boundaries
-        pos = np.clip(r_pos, n_zeros, self.conv.max_positions).astype(int)
+        pos = clip(r_pos, n_zeros, self.conv.max_positions).astype(int)
 
-        dist = scipy.spatial.distance.cdist(
-            r_pos.reshape(1, -1), pos.reshape(1, -1)
-        )
+        r_pos_2d = array(r_pos).reshape((1, -1))
+        pos_2d = array(pos).reshape((1, -1))
+        dist = cdist(r_pos_2d, pos_2d)
         threshold = self.conv.search_space_size / (100**self.conv.n_dimensions)
 
-        if dist > threshold:
+        if dist[0][0] > threshold:
             return self.move_random()
 
         return pos

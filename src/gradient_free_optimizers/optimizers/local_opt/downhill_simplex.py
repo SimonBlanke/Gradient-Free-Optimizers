@@ -4,29 +4,37 @@
 
 
 import random
-import numpy as np
 
 from .hill_climbing_optimizer import HillClimbingOptimizer
 
 
+def _arrays_equal(a, b):
+    """Check if two arrays are element-wise equal."""
+    if hasattr(a, '__len__') and hasattr(b, '__len__'):
+        if len(a) != len(b):
+            return False
+        return all(x == y for x, y in zip(a, b))
+    return a == b
+
+
 def sort_list_idx(list_):
-    list_np = np.array(list_)
-    idx_sorted = list(list_np.argsort()[::-1])
-    return idx_sorted
+    """Return indices that would sort the list in descending order."""
+    indexed = list(enumerate(list_))
+    indexed.sort(key=lambda x: x[1], reverse=True)
+    return [i for i, _ in indexed]
 
 
 def centeroid(array_list):
-    centeroid = []
+    """Calculate centroid of a list of arrays."""
+    n_dims = len(array_list[0])
+    centroid = []
 
-    for idx in range(array_list[0].shape[0]):
-        center_dim_pos = []
-        for array in array_list:
-            center_dim_pos.append(array[idx])
+    for idx in range(n_dims):
+        center_dim_pos = [arr[idx] for arr in array_list]
+        center_dim_mean = sum(center_dim_pos) / len(center_dim_pos)
+        centroid.append(center_dim_mean)
 
-        center_dim_mean = np.array(center_dim_pos).mean()
-        centeroid.append(center_dim_mean)
-
-    return centeroid
+    return centroid
 
 
 class DownhillSimplexOptimizer(HillClimbingOptimizer):
@@ -89,10 +97,8 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
     @HillClimbingOptimizer.track_new_pos
     def iterate(self):
         simplex_stale = all(
-            [
-                np.array_equal(self.simplex_pos[0], array)
-                for array in self.simplex_pos
-            ]
+            _arrays_equal(self.simplex_pos[0], array)
+            for array in self.simplex_pos
         )
 
         if simplex_stale:

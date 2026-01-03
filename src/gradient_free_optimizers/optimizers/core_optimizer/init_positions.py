@@ -3,9 +3,20 @@
 # License: MIT License
 
 import random
-import numpy as np
+from itertools import product
+
+from gradient_free_optimizers._array_backend import array, power
 
 from .utils import move_random
+
+
+def _arrays_equal(a, b):
+    """Check if two arrays are element-wise equal."""
+    if hasattr(a, '__len__') and hasattr(b, '__len__'):
+        if len(a) != len(b):
+            return False
+        return all(x == y for x, y in zip(a, b))
+    return a == b
 
 
 class Initializer:
@@ -115,16 +126,16 @@ class Initializer:
         if n_dim > 30:
             positions = []
         else:
-            p_per_dim = int(np.power(n_pos, 1 / n_dim))
+            p_per_dim = int(power(n_pos, 1 / n_dim))
 
+            dim_points = []
             for dim in self.conv.max_positions:
                 dim_dist = int(dim / (p_per_dim + 1))
                 n_points = [n * dim_dist for n in range(1, p_per_dim + 1)]
+                dim_points.append(n_points)
 
-                positions.append(n_points)
-
-            pos_mesh = np.array(np.meshgrid(*positions))
-            positions = list(pos_mesh.T.reshape(-1, n_dim))
+            # Use itertools.product instead of meshgrid for n-dimensional grid
+            positions = [array(combo) for combo in product(*dim_points)]
 
         positions_constr = []
         for pos in positions:
@@ -144,7 +155,7 @@ class Initializer:
                 dim_pos = dim_positions[-1]
 
             vertex.append(dim_pos)
-        return np.array(vertex)
+        return array(vertex)
 
     def _init_vertices(self, n_pos):
         positions = []
@@ -152,7 +163,8 @@ class Initializer:
             for _ in range(100):
                 vertex = self._get_random_vertex()
 
-                vert_in_list = any((vertex == pos).all() for pos in positions)
+                # Check if vertex already exists in positions list
+                vert_in_list = any(_arrays_equal(vertex, pos) for pos in positions)
                 if not vert_in_list:
                     positions.append(vertex)
                     break

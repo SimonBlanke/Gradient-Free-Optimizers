@@ -2,9 +2,11 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+import math
 import random
-import numpy as np
-from scipy.spatial.distance import cdist
+
+from gradient_free_optimizers._array_backend import array, array_split
+from gradient_free_optimizers._math_backend import cdist
 
 from ..smb_opt.smbo import SMBO
 from ..local_opt import HillClimbingOptimizer
@@ -28,7 +30,7 @@ class SubSpace:
 
             center_pos.append(dim_array[center_idx])
 
-        return np.array(center_pos).astype(int)
+        return array(center_pos).astype(int)
 
     def biggest_dim_(self):
         largest_dim = None
@@ -57,7 +59,7 @@ class SubSpace:
         for dim in list(self.search_space.keys()):
             dim_array = self.search_space[dim]
             furthest_pos_.append(dim_array[0])
-        furthest_pos = np.array(furthest_pos_)
+        furthest_pos = array(furthest_pos_)
 
         dist = cdist(
             furthest_pos.reshape(1, -1), self.center_pos.reshape(1, -1)
@@ -111,7 +113,7 @@ class DirectAlgorithm(SMBO):
         search_space = subspace.search_space
         dim_array = search_space[subspace.biggest_dim]
 
-        sub_arrays = np.array_split(dim_array, n_splits)
+        sub_arrays = array_split(dim_array, n_splits)
 
         sub_search_space_l = []
         for sub_array in sub_arrays:
@@ -129,7 +131,7 @@ class DirectAlgorithm(SMBO):
         self.subspace_l.remove(subspace)
 
     def select_subspace(self):
-        lipschitz_bound_max = -np.inf
+        lipschitz_bound_max = -math.inf
         next_subspace = None
 
         for subspace in self.subspace_l:

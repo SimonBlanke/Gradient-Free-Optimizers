@@ -2,7 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import numpy as np
+from gradient_free_optimizers._array_backend import array, zeros, linalg
 
 
 class Direction:
@@ -13,48 +13,49 @@ class Direction:
     search space, supporting line searches for 1D optimization.
     """
 
-    def __init__(self, direction_vector: np.ndarray):
+    def __init__(self, direction_vector):
         """
         Initialize a direction for line search.
 
         Parameters
         ----------
-        direction_vector : np.ndarray
+        direction_vector : array-like
             The direction vector to search along. Will be normalized.
         """
-        norm = np.linalg.norm(direction_vector)
+        direction_vector = array(direction_vector)
+        norm = linalg.norm(direction_vector)
         if norm < 1e-10:
             raise ValueError("Direction vector cannot be zero")
         self.direction = direction_vector / norm
 
-    def get_position_at(self, origin: np.ndarray, t: float) -> np.ndarray:
+    def get_position_at(self, origin, t: float):
         """
         Calculate position along the direction from an origin point.
 
         Parameters
         ----------
-        origin : np.ndarray
+        origin : array-like
             Starting position in search space
         t : float
             Step size along the direction (can be negative)
 
         Returns
         -------
-        np.ndarray
+        array
             New position: origin + t * direction
         """
-        return origin + t * self.direction
+        return array(origin) + t * self.direction
 
     @classmethod
-    def from_two_points(cls, position_1: np.ndarray, position_2: np.ndarray):
+    def from_two_points(cls, position_1, position_2):
         """
         Create a Direction from two points in the search space.
 
         Parameters
         ----------
-        position_1 : np.ndarray
+        position_1 : array-like
             Starting point
-        position_2 : np.ndarray
+        position_2 : array-like
             End point
 
         Returns
@@ -62,7 +63,7 @@ class Direction:
         Direction
             Direction pointing from position_1 to position_2
         """
-        direction_vector = position_2 - position_1
+        direction_vector = array(position_2) - array(position_1)
         return cls(direction_vector)
 
     @classmethod
@@ -82,6 +83,6 @@ class Direction:
         Direction
             Unit vector along the specified axis
         """
-        direction_vector = np.zeros(n_dimensions)
+        direction_vector = zeros(n_dimensions)
         direction_vector[dimension] = 1.0
         return cls(direction_vector)

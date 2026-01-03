@@ -3,7 +3,7 @@
 # License: MIT License
 
 
-import numpy as np
+import math
 
 from ..local_opt import StochasticHillClimbingOptimizer
 
@@ -48,7 +48,10 @@ class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer):
 
     def _p_accept_default(self):
         # the 'minus' is omitted, because we maximize a score
-        return np.exp(self._exponent)
+        try:
+            return math.exp(self._exponent)
+        except OverflowError:
+            return math.inf
 
     def evaluate(self, score_new):
         StochasticHillClimbingOptimizer.evaluate(self, score_new)

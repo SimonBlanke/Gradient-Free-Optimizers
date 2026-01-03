@@ -3,7 +3,8 @@
 # License: MIT License
 
 import random
-import numpy as np
+
+from gradient_free_optimizers._array_backend import array
 
 from ._evolutionary_algorithm import EvolutionaryAlgorithmOptimizer
 from ._individual import Individual
@@ -51,7 +52,7 @@ class DifferentialEvolutionOptimizer(EvolutionaryAlgorithmOptimizer):
         ind_selected = random.sample(self.individuals, 3)
 
         x_1, x_2, x_3 = [ind.pos_best for ind in ind_selected]
-        return x_1 + self.mutation_rate * np.subtract(x_2, x_3)
+        return array(x_1) + self.mutation_rate * (array(x_2) - array(x_3))
 
     def _constraint_loop(self, position):
         while True:

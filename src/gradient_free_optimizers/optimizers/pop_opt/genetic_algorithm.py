@@ -3,7 +3,8 @@
 # License: MIT License
 
 import random
-import numpy as np
+
+from gradient_free_optimizers._array_backend import random as np_random
 
 from ._evolutionary_algorithm import EvolutionaryAlgorithmOptimizer
 from ._individual import Individual
@@ -103,7 +104,7 @@ class GeneticAlgorithmOptimizer(EvolutionaryAlgorithmOptimizer):
         self.p_current = self.pop_sorted[rnd_int]
 
         total_rate = self.mutation_rate + self.crossover_rate
-        rand = np.random.uniform(low=0, high=total_rate)
+        rand = np_random.uniform(low=0, high=total_rate)
 
         if rand <= self.mutation_rate:
             return self.p_current.iterate()

@@ -2,7 +2,9 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import numpy as np
+import math
+
+from gradient_free_optimizers._array_backend import isinf, isnan
 
 
 class SearchTracker:
@@ -10,13 +12,13 @@ class SearchTracker:
         super().__init__()
 
         self._pos_new = None
-        self._score_new = -np.inf
+        self._score_new = -math.inf
 
         self._pos_current = None
-        self._score_current = -np.inf
+        self._score_current = -math.inf
 
         self._pos_best = None
-        self._score_best = -np.inf
+        self._score_best = -math.inf
 
         self.pos_new_list = []
         self.score_new_list = []
@@ -103,7 +105,7 @@ class SearchTracker:
         self.score_new_list.append(score)
         self._score_new = score
 
-        if ~np.isinf(score) and ~np.isnan(score):
+        if not isinf(score) and not isnan(score):
             self.positions_valid.append(self.pos_new)
             self.scores_valid.append(self.score_new)
 

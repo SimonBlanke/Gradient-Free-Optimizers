@@ -2,7 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import numpy as np
+from gradient_free_optimizers._array_backend import mean
 
 from .base_population_optimizer import BasePopulationOptimizer
 from ._spiral import Spiral
@@ -10,12 +10,12 @@ from ._spiral import Spiral
 
 def centeroid(array_list):
     centeroid = []
-    for idx in range(array_list[0].shape[0]):
+    for idx in range(len(array_list[0])):
         center_dim_pos = []
-        for array in array_list:
-            center_dim_pos.append(array[idx])
+        for arr in array_list:
+            center_dim_pos.append(arr[idx])
 
-        center_dim_mean = np.array(center_dim_pos).mean()
+        center_dim_mean = mean(center_dim_pos)
         centeroid.append(center_dim_mean)
 
     return centeroid

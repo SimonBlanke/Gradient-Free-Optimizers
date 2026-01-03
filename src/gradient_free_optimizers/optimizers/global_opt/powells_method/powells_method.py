@@ -2,7 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import numpy as np
+from gradient_free_optimizers._array_backend import array, argmax, linalg
 
 from ...local_opt import HillClimbingOptimizer
 from .direction import Direction
@@ -177,11 +177,11 @@ class PowellsMethod(HillClimbingOptimizer):
                 self.converged = True
                 return
 
-        displacement = self.pos_current - self.cycle_start_pos
-        displacement_norm = np.linalg.norm(displacement)
+        displacement = array(self.pos_current) - array(self.cycle_start_pos)
+        displacement_norm = linalg.norm(displacement)
 
         if displacement_norm > 1e-10 and self.direction_improvements:
-            max_improve_idx = np.argmax(self.direction_improvements)
+            max_improve_idx = argmax(self.direction_improvements)
             try:
                 new_direction = Direction(displacement)
                 self.directions[max_improve_idx] = new_direction

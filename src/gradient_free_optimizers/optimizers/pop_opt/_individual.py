@@ -2,7 +2,9 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import numpy as np
+import math
+
+from gradient_free_optimizers._array_backend import sqrt, clip, random as np_random
 
 from ..local_opt import HillClimbingOptimizer
 from ..base_optimizer import BaseOptimizer
@@ -19,7 +21,7 @@ class Individual(HillClimbingOptimizer):
 
         # Learning rate: tau = 1/sqrt(n) where n = number of dimensions
         n_dimensions = len(self.search_space)
-        self.tau = 1.0 / np.sqrt(n_dimensions)
+        self.tau = 1.0 / math.sqrt(n_dimensions)
 
         # Bounds to prevent sigma collapse or divergence
         self.sigma_min = 0.001
@@ -29,8 +31,8 @@ class Individual(HillClimbingOptimizer):
     @BaseOptimizer.random_iteration
     def iterate(self):
         # Mutate sigma (log-normal distribution)
-        self.sigma_new = self.sigma * np.exp(self.tau * np.random.normal())
-        self.sigma_new = np.clip(self.sigma_new, self.sigma_min, self.sigma_max)
+        self.sigma_new = self.sigma * math.exp(self.tau * np_random.normal())
+        self.sigma_new = max(self.sigma_min, min(self.sigma_new, self.sigma_max))
 
         return self.move_climb(
             self.pos_current,

@@ -3,7 +3,8 @@
 # License: MIT License
 
 import random
-import numpy as np
+
+from gradient_free_optimizers._array_backend import array, random as np_random
 
 from .base_population_optimizer import BasePopulationOptimizer
 
@@ -31,9 +32,14 @@ class EvolutionaryAlgorithmOptimizer(BasePopulationOptimizer):
         n_parents = len(parent_pos_l)
         size = parent_pos_l[0].size
 
+        # Select parent index for each position (replaces np.random.choice)
         choice = []
         for _ in range(size):
             choices = list(range(n_parents))
-            choice.append(np.random.choice(choices, p=crossover_rates))
+            choice.append(np_random.choice(choices, p=crossover_rates))
 
-        return np.choose(choice, parent_pos_l)
+        # Build result by selecting from parents (replaces np.choose)
+        result = []
+        for i, parent_idx in enumerate(choice):
+            result.append(parent_pos_l[parent_idx][i])
+        return array(result)

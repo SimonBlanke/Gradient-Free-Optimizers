@@ -2,8 +2,6 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import numpy as np
-
 from ..base_optimizer import BaseOptimizer
 
 

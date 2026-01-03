@@ -3,7 +3,7 @@
 # License: MIT License
 
 
-import numpy as np
+import math
 from random import random
 
 from . import HillClimbingOptimizer
@@ -63,7 +63,7 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer, ParameterTracker):
 
         if denom == 0:
             return 1
-        elif abs(denom) == np.inf:
+        elif math.isinf(abs(denom)):
             return 0
         else:
             return (self.score_new - self.score_current) / denom
@@ -71,12 +71,16 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer, ParameterTracker):
     @property
     def _exponent(self):
         if self.temp == 0:
-            return -np.inf
+            return -math.inf
         else:
             return self._normalized_energy_state / self.temp
 
     def _p_accept_default(self):
-        return self.p_accept * 2 / (1 + np.exp(self._exponent))
+        try:
+            exp_val = math.exp(self._exponent)
+        except OverflowError:
+            exp_val = math.inf
+        return self.p_accept * 2 / (1 + exp_val)
 
     @HillClimbingOptimizer.track_new_score
     def _transition(self, score_new):

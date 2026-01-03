@@ -5,7 +5,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional, Tuple
 
-import numpy as np
+from gradient_free_optimizers._array_backend import mean
 
 
 class LineSearch(ABC):
@@ -31,8 +31,8 @@ class LineSearch(ABC):
     @abstractmethod
     def start(
         self,
-        origin: np.ndarray,
-        direction: np.ndarray,
+        origin,
+        direction,
         max_iters: int,
     ) -> None:
         """
@@ -50,7 +50,7 @@ class LineSearch(ABC):
         pass
 
     @abstractmethod
-    def get_next_position(self) -> Optional[np.ndarray]:
+    def get_next_position(self):
         """
         Get the next position to evaluate.
 
@@ -62,7 +62,7 @@ class LineSearch(ABC):
         pass
 
     @abstractmethod
-    def update(self, position: np.ndarray, score: float) -> None:
+    def update(self, position, score: float) -> None:
         """
         Update the line search state after an evaluation.
 
@@ -76,7 +76,7 @@ class LineSearch(ABC):
         pass
 
     @abstractmethod
-    def get_best_result(self) -> Tuple[Optional[np.ndarray], Optional[float]]:
+    def get_best_result(self) -> Tuple:
         """
         Get the best result found during this line search.
 
@@ -99,7 +99,7 @@ class LineSearch(ABC):
         """
         pass
 
-    def _compute_max_step(self, origin: np.ndarray, direction: np.ndarray) -> float:
+    def _compute_max_step(self, origin, direction) -> float:
         """
         Compute the maximum step size along a direction that stays within bounds.
 
@@ -140,7 +140,7 @@ class LineSearch(ABC):
         if max_t == float("inf"):
             # Direction is zero vector (shouldn't happen with normalized directions)
             # Fall back to average dimension size
-            max_t = float(np.mean(max_positions))
+            max_t = float(mean(max_positions))
         elif max_t < 0:
             # Numerical issue or at boundary corner
             max_t = 1.0
@@ -151,7 +151,7 @@ class LineSearch(ABC):
 
         return max_t
 
-    def _snap_to_grid(self, position: np.ndarray) -> np.ndarray:
+    def _snap_to_grid(self, position):
         """
         Snap a floating-point position to valid grid indices.
 
@@ -167,7 +167,7 @@ class LineSearch(ABC):
         """
         return self.optimizer.conv2pos(position)
 
-    def _is_valid(self, position: np.ndarray) -> bool:
+    def _is_valid(self, position) -> bool:
         """
         Check if a position satisfies constraints.
 

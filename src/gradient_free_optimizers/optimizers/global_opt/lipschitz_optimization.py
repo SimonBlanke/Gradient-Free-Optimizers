@@ -2,11 +2,13 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+# NOTE: This optimizer uses numpy directly due to complex array operations.
+# TODO: Refactor to use backend when numpy masked arrays are supported.
 import numpy as np
 
 from ..smb_opt.smbo import SMBO
 
-from scipy.spatial.distance import cdist
+from gradient_free_optimizers._math_backend import cdist
 
 
 class LipschitzFunction:

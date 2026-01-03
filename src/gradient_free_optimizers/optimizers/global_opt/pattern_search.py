@@ -3,10 +3,20 @@
 # License: MIT License
 
 import random
-import numpy as np
+
+from gradient_free_optimizers._array_backend import array
 
 from ..base_optimizer import BaseOptimizer
 from ..local_opt.hill_climbing_optimizer import HillClimbingOptimizer
+
+
+def _arrays_equal(a, b):
+    """Check if two arrays are element-wise equal."""
+    if hasattr(a, '__len__') and hasattr(b, '__len__'):
+        if len(a) != len(b):
+            return False
+        return all(x == y for x, y in zip(a, b))
+    return a == b
 
 
 def max_list_idx(list_):
@@ -60,7 +70,7 @@ class PatternSearch(BaseOptimizer):
         n_pos_min = min(n_valid_pos, n_pattern_pos)
 
         best_in_recent_pos = any(
-            np.array_equal(np.array(self.pos_best), pos)
+            _arrays_equal(array(self.pos_best), pos)
             for pos in self.positions_valid[n_pos_min:]
         )
         if best_in_recent_pos:
@@ -68,8 +78,8 @@ class PatternSearch(BaseOptimizer):
         pattern_size = self.pattern_size_tmp
 
         for idx, dim_size in enumerate(self.conv.dim_sizes):
-            pos_pattern_p = np.array(current_position)
-            pos_pattern_n = np.array(current_position)
+            pos_pattern_p = array(current_position)
+            pos_pattern_n = array(current_position)
 
             pos_pattern_p[idx] += pattern_size * dim_size
             pos_pattern_n[idx] -= pattern_size * dim_size

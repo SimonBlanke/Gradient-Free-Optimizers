@@ -3,9 +3,10 @@
 # License: MIT License
 
 import copy
+import math
 import random
 
-import numpy as np
+from gradient_free_optimizers._array_backend import exp, inf, isinf, random as np_random
 
 from .base_population_optimizer import BasePopulationOptimizer
 from ..local_opt import SimulatedAnnealingOptimizer
@@ -54,7 +55,7 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
                 _systems_temp.remove(_p1_)
 
             rand = random.uniform(0, 1) * 100
-            _p2_ = np.random.choice(_systems_temp)
+            _p2_ = np_random.choice(_systems_temp)
 
             p_accept = self._accept_swap(_p1_, _p2_)
             if p_accept > rand:
@@ -65,13 +66,17 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
 
         if denom == 0:
             return 100
-        elif abs(denom) == np.inf:
+        elif isinf(abs(denom)):
             return 0
         else:
             score_diff_norm = (_p1_.score_current - _p2_.score_current) / denom
 
             temp = (1 / _p1_.temp) - (1 / _p2_.temp)
-            return np.exp(score_diff_norm * temp) * 100
+            exponent = score_diff_norm * temp
+            try:
+                return math.exp(exponent) * 100
+            except OverflowError:
+                return math.inf
 
     @BasePopulationOptimizer.track_new_pos
     def init_pos(self):

@@ -2,16 +2,25 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import numpy as np
+from gradient_free_optimizers._array_backend import (
+    array,
+    arange,
+    abs as np_abs,
+    take,
+)
+
+# Pandas is still required for DataFrame operations
+# TODO: Make pandas optional in Phase 3
 import pandas as pd
 
 from functools import reduce
 from typing import Optional
 
-from ..._result import Result
+from gradient_free_optimizers._result import Result
 
 
 def check_numpy_array(search_space):
+    """Check that search space values are array-like."""
     for para_name, dim_values in search_space.items():
 
         def error_message(wrong_type):
@@ -19,7 +28,10 @@ def check_numpy_array(search_space):
                 para_name, wrong_type
             )
 
-        if not isinstance(dim_values, np.ndarray):
+        # Accept numpy arrays or our GFOArray
+        has_shape = hasattr(dim_values, "shape")
+        has_len = hasattr(dim_values, "__len__")
+        if not (has_shape and has_len):
             raise ValueError(error_message(type(dim_values)))
 
 
@@ -37,20 +49,20 @@ class Converter:
 
         self.para_names = list(search_space.keys())
 
-        dim_sizes_list = [len(array) for array in search_space.values()]
-        self.dim_sizes = np.array(dim_sizes_list)
+        dim_sizes_list = [len(arr) for arr in search_space.values()]
+        self.dim_sizes = array(dim_sizes_list)
 
         # product of list
         self.search_space_size = reduce((lambda x, y: x * y), dim_sizes_list)
-        self.max_dim = np.amax(self.dim_sizes)
+        self.max_dim = max(dim_sizes_list)
 
         self.search_space_positions = [
-            list(range(len(array))) for array in search_space.values()
+            list(range(len(arr))) for arr in search_space.values()
         ]
         self.pos_space = dict(
             zip(
                 self.para_names,
-                [np.arange(len(array)) for array in search_space.values()],
+                [arange(len(arr)) for arr in search_space.values()],
             )
         )
 
@@ -88,10 +100,16 @@ class Converter:
     def value2position(self, value: Optional[list]) -> Optional[list]:
         position = []
         for n, space_dim in enumerate(self.search_space_values):
-            pos = np.abs(value[n] - np.array(space_dim)).argmin()
-            position.append(int(pos))
+            # Find index of closest value
+            diffs = np_abs(array([value[n] - v for v in space_dim]))
+            pos = (
+                int(diffs.argmin())
+                if hasattr(diffs, "argmin")
+                else diffs.tolist().index(min(diffs.tolist()))
+            )
+            position.append(pos)
 
-        return np.array(position)
+        return array(position)
 
     @returnNoneIfArgNone
     def value2para(self, value: Optional[list]) -> Optional[dict]:
@@ -112,28 +130,55 @@ class Converter:
     @returnNoneIfArgNone
     def values2positions(self, values: Optional[list]) -> Optional[list]:
         positions_temp = []
-        values_np = np.array(values)
+        values_arr = array(values)
 
         for n, space_dim in enumerate(self.search_space_values):
-            values_1d = values_np[:, n]
-            # m_conv = np.abs(values_1d - space_dim[:, np.newaxis])
-            # pos_list = m_conv.argmin(0)
-            pos_list = space_dim.searchsorted(values_1d)
+            # Get column n from 2D array
+            if hasattr(values_arr, "shape") and len(values_arr.shape) > 1:
+                values_1d = [values_arr[i, n] for i in range(len(values_arr))]
+            else:
+                values_1d = [v[n] for v in values]
+
+            # Use searchsorted if available, otherwise manual search
+            if hasattr(space_dim, "searchsorted"):
+                pos_list = space_dim.searchsorted(values_1d)
+            else:
+                pos_list = [self._find_position(space_dim, v) for v in values_1d]
 
             positions_temp.append(pos_list)
 
-        positions = list(np.array(positions_temp).T.astype(int))
+        # Transpose and convert to list of arrays
+        positions = [
+            array(
+                [positions_temp[dim][i] for dim in range(len(positions_temp))]
+            ).astype(int)
+            for i in range(len(positions_temp[0]))
+        ]
 
         return positions
+
+    def _find_position(self, space_dim, value):
+        """Find position using binary search."""
+        arr = list(space_dim) if not isinstance(space_dim, list) else space_dim
+        lo, hi = 0, len(arr)
+        while lo < hi:
+            mid = (lo + hi) // 2
+            if arr[mid] < value:
+                lo = mid + 1
+            else:
+                hi = mid
+        return lo
 
     @returnNoneIfArgNone
     def positions2values(self, positions: Optional[list]) -> Optional[list]:
         values = []
-        positions_np = np.array(positions)
 
         for n, space_dim in enumerate(self.search_space_values):
-            pos_1d = positions_np[:, n]
-            value_ = np.take(space_dim, pos_1d, axis=0)
+            pos_1d = [pos[n] for pos in positions]
+            if hasattr(space_dim, "__getitem__"):
+                value_ = [space_dim[p] for p in pos_1d]
+            else:
+                value_ = take(space_dim, pos_1d)
             values.append(value_)
 
         values = [list(t) for t in zip(*values)]
@@ -159,10 +204,12 @@ class Converter:
 
     @returnNoneIfArgNone
     def memory_dict2positions_scores(self, memory_dict: Optional[dict]):
-        positions = [np.array(pos).astype(int) for pos in list(memory_dict.keys())]
+        positions = [array(pos).astype(int) for pos in list(memory_dict.keys())]
         # Extract scores from Result objects
-        scores = [result.score if isinstance(result, Result) else result 
-                 for result in memory_dict.values()]
+        scores = [
+            result.score if isinstance(result, Result) else result
+            for result in memory_dict.values()
+        ]
 
         return positions, scores
 

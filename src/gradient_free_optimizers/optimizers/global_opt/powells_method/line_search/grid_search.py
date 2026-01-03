@@ -4,9 +4,19 @@
 
 from typing import Optional, Tuple, List
 
-import numpy as np
+from gradient_free_optimizers._array_backend import array, linspace, argmax
 
 from .base import LineSearch
+
+
+def _arrays_equal(a, b):
+    """Check if two arrays are equal element-wise."""
+    if len(a) != len(b):
+        return False
+    for i in range(len(a)):
+        if a[i] != b[i]:
+            return False
+    return True
 
 
 class GridLineSearch(LineSearch):
@@ -19,16 +29,16 @@ class GridLineSearch(LineSearch):
 
     def __init__(self, optimizer):
         super().__init__(optimizer)
-        self.grid_positions: List[np.ndarray] = []
-        self.evaluated_positions: List[np.ndarray] = []
+        self.grid_positions: List = []
+        self.evaluated_positions: List = []
         self.evaluated_scores: List[float] = []
         self.current_step: int = 0
         self.active: bool = False
 
     def start(
         self,
-        origin: np.ndarray,
-        direction: np.ndarray,
+        origin,
+        direction,
         max_iters: int,
     ) -> None:
         """Generate grid positions along the direction."""
@@ -43,44 +53,47 @@ class GridLineSearch(LineSearch):
 
     def _generate_grid_positions(
         self,
-        origin: np.ndarray,
-        direction: np.ndarray,
+        origin,
+        direction,
         n_steps: int,
-    ) -> List[np.ndarray]:
+    ) -> List:
         """
         Generate evenly spaced positions along the direction.
 
         Parameters
         ----------
-        origin : np.ndarray
+        origin : array-like
             Starting position.
-        direction : np.ndarray
+        direction : array-like
             Normalized direction vector.
         n_steps : int
             Number of positions to generate.
 
         Returns
         -------
-        List[np.ndarray]
+        List
             List of valid positions along the line.
         """
         max_t = self._compute_max_step(origin, direction)
 
         positions = []
-        t_values = np.linspace(-max_t, max_t, n_steps)
+        t_values = linspace(-max_t, max_t, n_steps)
+
+        origin_arr = array(origin)
+        direction_arr = array(direction)
 
         for t in t_values:
-            pos_float = origin + t * direction
+            pos_float = origin_arr + float(t) * direction_arr
             pos_valid = self._snap_to_grid(pos_float)
 
             # Avoid duplicates
-            is_duplicate = any(np.array_equal(pos_valid, p) for p in positions)
+            is_duplicate = any(_arrays_equal(pos_valid, p) for p in positions)
             if not is_duplicate and self._is_valid(pos_valid):
                 positions.append(pos_valid)
 
         return positions
 
-    def get_next_position(self) -> Optional[np.ndarray]:
+    def get_next_position(self):
         """Return the next grid position to evaluate."""
         if self.current_step < len(self.grid_positions):
             pos = self.grid_positions[self.current_step]
@@ -90,17 +103,17 @@ class GridLineSearch(LineSearch):
             self.active = False
             return None
 
-    def update(self, position: np.ndarray, score: float) -> None:
+    def update(self, position, score: float) -> None:
         """Record the evaluation result."""
-        self.evaluated_positions.append(position.copy())
+        self.evaluated_positions.append(array(position).copy())
         self.evaluated_scores.append(score)
 
-    def get_best_result(self) -> Tuple[Optional[np.ndarray], Optional[float]]:
+    def get_best_result(self) -> Tuple:
         """Return the position with the highest score."""
         if not self.evaluated_scores:
             return None, None
 
-        best_idx = np.argmax(self.evaluated_scores)
+        best_idx = argmax(self.evaluated_scores)
         return self.evaluated_positions[best_idx], self.evaluated_scores[best_idx]
 
     def is_active(self) -> bool:

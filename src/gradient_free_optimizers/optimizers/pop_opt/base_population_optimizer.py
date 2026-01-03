@@ -3,7 +3,6 @@
 # License: MIT License
 
 import math
-import numpy as np
 
 from ..core_optimizer import CoreOptimizer
 
@@ -60,8 +59,10 @@ class BasePopulationOptimizer(CoreOptimizer):
         for _p_ in self.optimizers:
             scores_list.append(_p_.score_current)
 
-        scores_np = np.array(scores_list)
-        idx_sorted_ind = list(scores_np.argsort()[::-1])
+        # Sort indices by score descending (pure Python)
+        indexed = list(enumerate(scores_list))
+        indexed.sort(key=lambda x: x[1], reverse=True)
+        idx_sorted_ind = [i for i, _ in indexed]
 
         self.pop_sorted = [self.optimizers[i] for i in idx_sorted_ind]
 

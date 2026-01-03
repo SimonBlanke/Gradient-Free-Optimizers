@@ -3,7 +3,7 @@
 # License: MIT License
 
 
-import numpy as np
+from gradient_free_optimizers._array_backend import array, exp, zeros_like
 
 from .smbo import SMBO
 
@@ -13,7 +13,7 @@ try:
 
     SKLEARN_AVAILABLE = True
 except ImportError:
-    from ..._estimators import KernelDensityEstimator as KernelDensity
+    from gradient_free_optimizers._estimators import KernelDensityEstimator as KernelDensity
 
     SKLEARN_AVAILABLE = False
 
@@ -72,7 +72,7 @@ class TreeStructuredParzenEstimators(SMBO):
         n_samples = len(self.X_sample)
         n_best = max(round(n_samples * self.gamma_tpe), 1)
 
-        Y_sample = np.array(self.Y_sample)
+        Y_sample = array(self.Y_sample)
         index_best = Y_sample.argsort()[-n_best:]
         n_worst = int(n_samples - n_best)
         index_worst = Y_sample.argsort()[:n_worst]
@@ -88,15 +88,19 @@ class TreeStructuredParzenEstimators(SMBO):
         logprob_best = self.kd_best.score_samples(self.pos_comb)
         logprob_worst = self.kd_worst.score_samples(self.pos_comb)
 
-        prob_best = np.exp(logprob_best)
-        prob_worst = np.exp(logprob_worst)
+        prob_best = exp(array(logprob_best))
+        prob_worst = exp(array(logprob_worst))
 
-        WorstOverbest = np.divide(
-            prob_worst,
-            prob_best,
-            out=np.zeros_like(prob_worst),
-            where=prob_worst != 0,
-        )
+        # Match original np.divide(prob_worst, prob_best, out=zeros, where=prob_worst != 0)
+        # Only divide where prob_worst != 0; output 0 otherwise
+        WorstOverbest = zeros_like(prob_worst)
+        for i in range(len(prob_worst)):
+            if prob_worst[i] != 0:
+                if prob_best[i] != 0:
+                    WorstOverbest[i] = prob_worst[i] / prob_best[i]
+                else:
+                    # prob_best == 0 but prob_worst != 0 -> inf (like numpy)
+                    WorstOverbest[i] = float('inf')
 
         exp_imp_inv = self.gamma_tpe + WorstOverbest * (1 - self.gamma_tpe)
         exp_imp = 1 / exp_imp_inv

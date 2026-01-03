@@ -2,9 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import numpy as np
-from scipy.stats import norm
-
+from gradient_free_optimizers._array_backend import array as gfo_array, random as np_random
 
 from .smbo import SMBO
 from .surrogate_models import (
@@ -22,15 +20,16 @@ tree_regressor_dict = {
 }
 
 
-def normalize(array):
-    min_val = array.min()
-    max_val = array.max()
+def normalize(arr):
+    arr = gfo_array(arr)
+    min_val = arr.min()
+    max_val = arr.max()
     den = max_val - min_val
 
     if den == 0:
-        return np.random.random_sample(array.shape)
+        return np_random.uniform(0, 1, size=arr.shape)
     else:
-        return (array - min_val) / den
+        return (arr - min_val) / den
 
 
 class ForestOptimizer(SMBO):
@@ -88,8 +87,8 @@ class ForestOptimizer(SMBO):
         return acqu_func.calculate(self.X_sample, self.Y_sample)
 
     def _training(self):
-        X_sample = np.array(self.X_sample)
-        Y_sample = np.array(self.Y_sample)
+        X_sample = gfo_array(self.X_sample)
+        Y_sample = gfo_array(self.Y_sample)
 
         if len(Y_sample) == 0:
             return self.move_random()
