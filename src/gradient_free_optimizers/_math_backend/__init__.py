@@ -42,6 +42,7 @@ __all__ = [
     "cholesky",
     "cho_solve",
     "solve",
+    "solve_triangular",
     # Optimization
     "minimize",
     # Distance functions

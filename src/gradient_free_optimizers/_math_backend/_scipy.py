@@ -31,9 +31,17 @@ def cho_solve(c_and_lower, b):
     """Solve using Cholesky decomposition."""
     return linalg.cho_solve(c_and_lower, b)
 
-def solve(a, b):
+def solve(a, b, assume_a=None):
     """Solve linear system."""
+    if assume_a is not None:
+        return linalg.solve(a, b, assume_a=assume_a)
     return linalg.solve(a, b)
+
+
+def solve_triangular(a, b, lower=True):
+    """Solve triangular linear system."""
+    return linalg.solve_triangular(a, b, lower=lower)
+
 
 # === Optimization ===
 
