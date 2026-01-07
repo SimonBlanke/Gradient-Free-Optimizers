@@ -10,9 +10,30 @@ from ..optimizers import SpiralOptimization as _SpiralOptimization
 
 class SpiralOptimization(_SpiralOptimization, Search):
     """
-    A class implementing the **spiral optimizer** for the public API.
-    Inheriting from the `Search`-class to get the `search`-method and from
-    the `SpiralOptimization`-backend to get the underlying algorithm.
+    Population-based optimizer using spiral movement patterns toward the best solution.
+
+    Spiral Optimization Algorithm (SOA) is a metaheuristic inspired by spiral
+    phenomena in nature, such as spiral galaxies and hurricanes. The algorithm
+    maintains a population of search agents that move in spiral trajectories
+    toward the current best solution. This spiral movement provides a natural
+    balance between exploration (wider spiral paths) and exploitation (tighter
+    convergence).
+
+    At each iteration, particles rotate around and move toward the best-known
+    position following a logarithmic spiral pattern. The decay rate controls
+    how quickly the spiral tightens, determining the transition from global
+    exploration to local refinement.
+
+    The algorithm is well-suited for:
+
+    - Continuous optimization problems
+    - Multimodal functions with multiple local optima
+    - Problems requiring smooth convergence behavior
+    - Situations where controlled exploration-exploitation balance is needed
+
+    The `decay_rate` is the key parameter: values below 1 cause the spiral
+    to contract (convergent behavior), while values above 1 cause expansion
+    (divergent exploration).
 
     Parameters
     ----------
@@ -32,10 +53,29 @@ class SpiralOptimization(_SpiralOptimization, Search):
     rand_rest_p : float
         The probability of a random iteration during the the search process.
     population : int
-        The number of particles in the swarm.
+        The number of search agents in the population. More agents provide
+        better coverage but require more function evaluations. Default is 10.
     decay_rate : float
-        This parameter is a factor, that influences the radius of the particles during their spiral movement.
-        Lower values accelerates the convergence of the particles to the best known position, while values above 1 eventually lead to a movement where the particles spiral away from each other.
+        Controls the spiral trajectory behavior. Values below 1.0 cause
+        convergent spiraling toward the best position (recommended for
+        exploitation). Values above 1.0 cause divergent spiraling (more
+        exploration). Default is 0.99.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from gradient_free_optimizers import SpiralOptimization
+
+    >>> def sphere(para):
+    ...     return -(para["x"] ** 2 + para["y"] ** 2)
+
+    >>> search_space = {
+    ...     "x": np.linspace(-10, 10, 100),
+    ...     "y": np.linspace(-10, 10, 100),
+    ... }
+
+    >>> opt = SpiralOptimization(search_space, population=15, decay_rate=0.95)
+    >>> opt.search(sphere, n_iter=300)
     """
 
     def __init__(

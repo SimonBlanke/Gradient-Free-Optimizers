@@ -12,9 +12,30 @@ from ..optimizers import (
 
 class DifferentialEvolutionOptimizer(_DifferentialEvolutionOptimizer, Search):
     """
-    A class implementing the **differential evolution** for the public API.
-    Inheriting from the `Search`-class to get the `search`-method and from
-    the `DifferentialEvolutionOptimizer`-backend to get the underlying algorithm.
+    Evolutionary optimizer using vector differences for mutation.
+
+    Differential Evolution (DE) is a powerful population-based optimizer
+    particularly effective for continuous optimization problems. The key
+    innovation is using weighted differences between population members to
+    generate mutations, which automatically adapts the search scale to the
+    current population distribution.
+
+    For each individual, DE creates a trial vector by adding a weighted
+    difference of two random population members to a third member (mutation),
+    then applying crossover with the original individual. If the trial vector
+    improves upon the original, it replaces it in the next generation. This
+    simple yet effective scheme provides robust global optimization.
+
+    The algorithm is well-suited for:
+
+    - Continuous optimization problems with real-valued parameters
+    - Multimodal functions with many local optima
+    - Non-separable problems where parameters interact
+    - Black-box optimization without gradient information
+
+    DE is known for its simplicity, few control parameters, and robust
+    performance across a wide range of problems. The `mutation_rate` (often
+    called F) controls the amplification of differential variation.
 
     Parameters
     ----------
@@ -33,12 +54,36 @@ class DifferentialEvolutionOptimizer(_DifferentialEvolutionOptimizer, Search):
         seeded with the value.
     rand_rest_p : float
         The probability of a random iteration during the the search process.
-    population  : int
-        The number of individuals in the population.
+    population : int
+        Number of individuals in the population. Should be at least 4 for
+        the differential mutation to work. Default is 10.
     mutation_rate : float
-        The mutation rate.
+        Scaling factor F for the differential mutation. Controls the
+        amplification of the difference vector. Values typically range from
+        0.5 to 1.0. Higher values increase exploration. Default is 0.9.
     crossover_rate : float
-        The crossover rate.
+        Probability CR of inheriting each parameter from the mutant vector
+        vs. the original. Higher values increase the influence of mutation.
+        Default is 0.9.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from gradient_free_optimizers import DifferentialEvolutionOptimizer
+
+    >>> def rosenbrock(para):
+    ...     x, y = para["x"], para["y"]
+    ...     return -((1 - x) ** 2 + 100 * (y - x ** 2) ** 2)
+
+    >>> search_space = {
+    ...     "x": np.linspace(-5, 5, 100),
+    ...     "y": np.linspace(-5, 5, 100),
+    ... }
+
+    >>> opt = DifferentialEvolutionOptimizer(
+    ...     search_space, population=20, mutation_rate=0.8, crossover_rate=0.9
+    ... )
+    >>> opt.search(rosenbrock, n_iter=500)
     """
 
     def __init__(

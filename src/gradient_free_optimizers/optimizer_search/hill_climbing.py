@@ -10,9 +10,25 @@ from ..optimizers import HillClimbingOptimizer as _HillClimbingOptimizer
 
 class HillClimbingOptimizer(_HillClimbingOptimizer, Search):
     """
-    A class implementing the **hill climbing optimizer** for the public API.
-    Inheriting from the `Search`-class to get the `search`-method and from
-    the `HillClimbingOptimizer`-backend to get the underlying algorithm.
+    Local search optimizer that iteratively moves towards better neighboring solutions.
+
+    Hill Climbing is a simple yet effective local search algorithm that starts from
+    an initial position and iteratively moves to neighboring positions that improve
+    the objective function. At each step, the algorithm samples a set of neighboring
+    positions and moves to the best one found. This greedy approach makes it fast
+    and memory-efficient, but susceptible to getting stuck in local optima.
+
+    The algorithm is well-suited for:
+
+    - Unimodal optimization problems with a single global optimum
+    - Fine-tuning solutions found by other optimizers
+    - Problems where function evaluations are expensive (due to low overhead)
+    - Situations requiring a simple, interpretable optimization process
+
+    The `epsilon` parameter controls the step size: smaller values lead to finer
+    local search but slower convergence, while larger values enable broader
+    exploration but may overshoot optima. The `n_neighbours` parameter determines
+    how many candidate positions are evaluated before making a move.
 
     Parameters
     ----------
@@ -32,12 +48,32 @@ class HillClimbingOptimizer(_HillClimbingOptimizer, Search):
     rand_rest_p : float
         The probability of a random iteration during the the search process.
     epsilon : float
-        The step-size for the climbing.
+        The step-size for the climbing. Controls how far the optimizer looks
+        for neighboring positions. Values typically range from 0.01 to 0.1.
     distribution : str
-        The type of distribution to sample from.
+        The type of distribution to sample neighbors from. Options are
+        "normal", "laplace", "gumbel", or "logistic". Different distributions
+        affect the shape of the neighborhood sampling.
     n_neighbours : int
         The number of neighbours to sample and evaluate before moving to the best
-        of those neighbours.
+        of those neighbours. Higher values increase exploration but require more
+        function evaluations per iteration.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from gradient_free_optimizers import HillClimbingOptimizer
+
+    >>> def parabola(para):
+    ...     return -(para["x"] ** 2 + para["y"] ** 2)
+
+    >>> search_space = {
+    ...     "x": np.linspace(-10, 10, 100),
+    ...     "y": np.linspace(-10, 10, 100),
+    ... }
+
+    >>> opt = HillClimbingOptimizer(search_space)
+    >>> opt.search(parabola, n_iter=100)
     """
 
     def __init__(

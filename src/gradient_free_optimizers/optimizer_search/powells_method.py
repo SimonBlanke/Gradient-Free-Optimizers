@@ -10,13 +10,31 @@ from ..optimizers import PowellsMethod as _PowellsMethod
 
 class PowellsMethod(_PowellsMethod, Search):
     """
-    A class implementing **Powell's conjugate direction method** for the public API.
-    Inheriting from the `Search`-class to get the `search`-method and from
-    the `PowellsMethod`-backend to get the underlying algorithm.
+    Derivative-free optimizer using sequential line searches along conjugate directions.
 
-    Powell's method performs sequential line searches along a set of directions,
-    updating the directions after each complete cycle to form conjugate directions.
-    This leads to faster convergence than simple coordinate descent.
+    Powell's method is a powerful derivative-free optimization algorithm that
+    performs sequential one-dimensional line searches along a set of directions.
+    Starting with the coordinate axes as initial search directions, the algorithm
+    updates these directions after each complete cycle to form conjugate directions.
+    This strategy leads to faster convergence than simple coordinate descent,
+    particularly for functions with elliptical contours.
+
+    The algorithm proceeds in cycles: during each cycle, it performs a line search
+    along each direction, finding the optimal step in that direction. After
+    completing all directions, it updates the direction set by replacing one
+    direction with the overall displacement vector. This builds up information
+    about the function's curvature without requiring explicit gradient or Hessian
+    computation.
+
+    The algorithm is well-suited for:
+
+    - Smooth, unimodal objective functions
+    - Problems where function evaluations are expensive (efficient per iteration)
+    - Moderate dimensional problems (scales reasonably up to ~50 dimensions)
+    - Situations where gradient-based methods cannot be applied
+
+    Multiple line search strategies are available: "grid" for systematic evaluation,
+    "golden" for golden-section search, and "hill_climb" for local optimization.
 
     Parameters
     ----------
@@ -36,20 +54,45 @@ class PowellsMethod(_PowellsMethod, Search):
     rand_rest_p : float
         The probability of a random iteration during the search process.
     epsilon : float
-        The step-size for hill climbing line search.
+        The step-size for hill climbing line search. Only used when
+        line_search="hill_climb".
     distribution : str
-        The type of distribution to sample from for hill climbing.
+        The type of distribution to sample from for hill climbing line search.
+        Options are "normal", "laplace", "gumbel", or "logistic".
     n_neighbours : int
-        The number of neighbours to sample and evaluate before moving to the best
-        of those neighbours.
+        The number of neighbours to sample and evaluate during hill climbing
+        line search.
     iters_p_dim : int
-        Number of evaluations per direction during line search.
+        Number of evaluations per direction during line search. Higher values
+        provide more accurate line searches but increase function evaluations.
+        Default is 10.
     line_search : str
-        Line search method: "grid" (default), "golden", or "hill_climb".
+        Line search method to use. Options are "grid" (systematic evaluation),
+        "golden" (golden-section search), or "hill_climb" (local search).
+        Default is "grid".
     convergence_threshold : float
-        Minimum total improvement per cycle to continue. If the sum of
-        improvements across all directions falls below this threshold,
-        the optimizer switches to random exploration.
+        Minimum total improvement per cycle required to continue. If the
+        sum of improvements across all directions falls below this threshold,
+        the optimizer considers itself converged and switches to random
+        exploration. Default is 1e-8.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from gradient_free_optimizers import PowellsMethod
+
+    >>> def quadratic(para):
+    ...     x, y, z = para["x"], para["y"], para["z"]
+    ...     return -(x**2 + 2*y**2 + 3*z**2 + x*y + y*z)
+
+    >>> search_space = {
+    ...     "x": np.linspace(-10, 10, 100),
+    ...     "y": np.linspace(-10, 10, 100),
+    ...     "z": np.linspace(-10, 10, 100),
+    ... }
+
+    >>> opt = PowellsMethod(search_space, iters_p_dim=15, line_search="golden")
+    >>> opt.search(quadratic, n_iter=300)
     """
 
     def __init__(

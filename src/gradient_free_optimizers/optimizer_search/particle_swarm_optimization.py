@@ -10,9 +10,31 @@ from ..optimizers import ParticleSwarmOptimizer as _ParticleSwarmOptimizer
 
 class ParticleSwarmOptimizer(_ParticleSwarmOptimizer, Search):
     """
-    A class implementing **particle swarm optimization** for the public API.
-    Inheriting from the `Search`-class to get the `search`-method and from
-    the `ParticleSwarmOptimizer`-backend to get the underlying algorithm.
+    Swarm intelligence optimizer inspired by collective behavior of bird flocks.
+
+    Particle Swarm Optimization (PSO) is a population-based metaheuristic that
+    simulates the social behavior of birds flocking or fish schooling. Each
+    particle in the swarm represents a candidate solution that moves through
+    the search space influenced by its own best-known position (cognitive
+    component) and the swarm's best-known position (social component).
+
+    The velocity update equation balances three components: inertia (tendency
+    to continue in the current direction), cognitive attraction (pull toward
+    personal best), and social attraction (pull toward global best). This
+    creates emergent optimization behavior where particles explore promising
+    regions while sharing information about good solutions.
+
+    The algorithm is well-suited for:
+
+    - Continuous optimization problems
+    - Multimodal functions where multiple regions need exploration
+    - Problems where gradient information is unavailable
+    - Real-time optimization where quick convergence is needed
+
+    The balance between `cognitive_weight` and `social_weight` controls
+    exploration vs exploitation. Higher cognitive weight promotes individual
+    exploration, while higher social weight accelerates convergence toward
+    the best-known solution.
 
     Parameters
     ----------
@@ -32,15 +54,41 @@ class ParticleSwarmOptimizer(_ParticleSwarmOptimizer, Search):
     rand_rest_p : float
         The probability of a random iteration during the the search process.
     population : int
-        The number of particles in the swarm.
+        The number of particles in the swarm. Larger populations explore more
+        but require more function evaluations per iteration. Default is 10.
     inertia : float
-        The inertia of the swarm.
+        Weight applied to the particle's current velocity. Controls momentum
+        and tendency to continue in the current direction. Values typically
+        range from 0.4 to 0.9. Default is 0.5.
     cognitive_weight : float
-        A factor of the movement towards the personal best position of the individual optimizers in the population.
+        Attraction strength toward each particle's personal best position.
+        Higher values increase individual exploration. Default is 0.5.
     social_weight : float
-        A factor of the movement towards the personal best position of the individual optimizers in the population.
+        Attraction strength toward the swarm's global best position.
+        Higher values increase convergence speed but may cause premature
+        convergence. Default is 0.5.
     temp_weight : float
-        The temperature weight of the swarm.
+        Temperature-like parameter adding randomness to the velocity update.
+        Helps escape local optima. Default is 0.2.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from gradient_free_optimizers import ParticleSwarmOptimizer
+
+    >>> def rastrigin(para):
+    ...     x, y = para["x"], para["y"]
+    ...     return -(20 + x**2 + y**2 - 10 * (np.cos(2*np.pi*x) + np.cos(2*np.pi*y)))
+
+    >>> search_space = {
+    ...     "x": np.linspace(-5.12, 5.12, 100),
+    ...     "y": np.linspace(-5.12, 5.12, 100),
+    ... }
+
+    >>> opt = ParticleSwarmOptimizer(
+    ...     search_space, population=20, inertia=0.7, cognitive_weight=1.5, social_weight=1.5
+    ... )
+    >>> opt.search(rastrigin, n_iter=500)
     """
 
     def __init__(

@@ -10,9 +10,31 @@ from ..optimizers import DownhillSimplexOptimizer as _DownhillSimplexOptimizer
 
 class DownhillSimplexOptimizer(_DownhillSimplexOptimizer, Search):
     """
-    A class implementing the **downhill simplex optimizer** for the public API.
-    Inheriting from the `Search`-class to get the `search`-method and from
-    the `DownhillSimplexOptimizer`-backend to get the underlying algorithm.
+    Derivative-free optimizer using geometric simplex transformations.
+
+    The Downhill Simplex method (also known as Nelder-Mead) is a classic
+    derivative-free optimization algorithm that maintains a simplex of n+1 points
+    in n-dimensional space. The algorithm iteratively transforms this simplex
+    through reflection, expansion, contraction, and shrinking operations to
+    move towards better regions of the search space.
+
+    At each iteration, the worst point of the simplex is identified and replaced
+    through one of four operations: reflection (moving away from the worst point),
+    expansion (extending further in a promising direction), contraction (pulling
+    back toward the centroid), or shrinking (contracting the entire simplex toward
+    the best point). This adaptive behavior allows efficient navigation without
+    gradient information.
+
+    The algorithm is well-suited for:
+
+    - Low to moderate dimensional problems (typically < 20 dimensions)
+    - Smooth objective functions without too many local optima
+    - Problems where derivatives are unavailable or expensive to compute
+    - Initial exploration before applying gradient-based methods
+
+    The simplex parameters (alpha, gamma, beta, sigma) control the aggressiveness
+    of each transformation. The default values are well-established and work
+    well for most problems.
 
     Parameters
     ----------
@@ -32,13 +54,34 @@ class DownhillSimplexOptimizer(_DownhillSimplexOptimizer, Search):
     rand_rest_p : float
         The probability of a random iteration during the the search process.
     alpha : float
-        The reflection parameter of the simplex algorithm.
+        Reflection coefficient. Controls how far the reflected point is placed
+        from the centroid, opposite to the worst point. Default is 1.
     gamma : float
-        The expansion parameter of the simplex algorithm.
+        Expansion coefficient. When reflection yields a new best point, expansion
+        stretches further in that direction. Default is 2.
     beta : float
-        The contraction parameter of the simplex algorithm.
+        Contraction coefficient. Used when reflection does not improve, pulling
+        the worst point toward the centroid. Default is 0.5.
     sigma : float
-        The shrinking parameter of the simplex algorithm.
+        Shrinking coefficient. When contraction fails, the entire simplex shrinks
+        toward the best point by this factor. Default is 0.5.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from gradient_free_optimizers import DownhillSimplexOptimizer
+
+    >>> def rosenbrock(para):
+    ...     x, y = para["x"], para["y"]
+    ...     return -((1 - x) ** 2 + 100 * (y - x ** 2) ** 2)
+
+    >>> search_space = {
+    ...     "x": np.linspace(-2, 2, 100),
+    ...     "y": np.linspace(-1, 3, 100),
+    ... }
+
+    >>> opt = DownhillSimplexOptimizer(search_space)
+    >>> opt.search(rosenbrock, n_iter=500)
     """
 
     def __init__(

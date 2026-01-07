@@ -10,9 +10,30 @@ from ..optimizers import LipschitzOptimizer as _LipschitzOptimizer
 
 class LipschitzOptimizer(_LipschitzOptimizer, Search):
     """
-    A class implementing the **lipschitz optimizer** for the public API.
-    Inheriting from the `Search`-class to get the `search`-method and from
-    the `LipschitzOptimizer`-backend to get the underlying algorithm.
+    Global optimizer using Lipschitz continuity bounds for deterministic search.
+
+    Lipschitz Optimization exploits the Lipschitz continuity property of objective
+    functions to provide deterministic bounds on the optimum. If a function is
+    Lipschitz continuous with constant L, the function value at any point cannot
+    differ from nearby points by more than L times the distance. This property
+    allows the algorithm to rule out regions that provably cannot contain the
+    global optimum.
+
+    The algorithm estimates the Lipschitz constant from observed data and uses
+    it to compute upper bounds on the objective function across the search space.
+    Points with the highest potential (according to these bounds) are selected
+    for evaluation, gradually tightening the bounds until convergence.
+
+    The algorithm is well-suited for:
+
+    - Lipschitz continuous objective functions
+    - Problems requiring global optimality guarantees
+    - Low-dimensional optimization (bounds become loose in high dimensions)
+    - Deterministic optimization without relying on random sampling
+
+    This method provides theoretical guarantees for finding the global optimum
+    but requires the objective function to satisfy Lipschitz continuity. The
+    estimated Lipschitz constant adapts as more observations are collected.
 
     Parameters
     ----------
@@ -31,14 +52,32 @@ class LipschitzOptimizer(_LipschitzOptimizer, Search):
         seeded with the value.
     rand_rest_p : float
         The probability of a random iteration during the the search process.
-    warm_start_smbo
-        The warm start for SMBO.
+    warm_start_smbo : object, optional
+        Previous SMBO state for warm starting optimization.
     max_sample_size : int
-        The maximum number of points to sample.
+        Maximum number of candidate points for bound computation.
+        Default is 10000000.
     sampling : dict
-        The sampling method to use.
+        Configuration for candidate sampling. Default is {"random": 1000000}.
     replacement : bool
-        Whether to sample with replacement.
+        Whether to sample candidates with replacement. Default is True.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from gradient_free_optimizers import LipschitzOptimizer
+
+    >>> def smooth_function(para):
+    ...     x, y = para["x"], para["y"]
+    ...     return -(x**2 + y**2)  # Lipschitz continuous
+
+    >>> search_space = {
+    ...     "x": np.linspace(-5, 5, 100),
+    ...     "y": np.linspace(-5, 5, 100),
+    ... }
+
+    >>> opt = LipschitzOptimizer(search_space)
+    >>> opt.search(smooth_function, n_iter=100)
     """
 
     def __init__(

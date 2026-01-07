@@ -12,9 +12,29 @@ from ..optimizers import (
 
 class TreeStructuredParzenEstimators(_TreeStructuredParzenEstimators, Search):
     """
-    A class implementing **tree structured parzen estimators** for the public API.
-    Inheriting from the `Search`-class to get the `search`-method and from
-    the `TreeStructuredParzenEstimators`-backend to get the underlying algorithm.
+    Sequential model-based optimizer using kernel density estimation.
+
+    Tree-structured Parzen Estimator (TPE) is an efficient sequential model-based
+    optimization algorithm that models the probability of good and bad parameter
+    configurations separately. Unlike Bayesian Optimization which models P(y|x),
+    TPE models P(x|y) by maintaining two density estimators: one for parameters
+    that led to good results (l) and one for poor results (g).
+
+    The algorithm selects the next point by maximizing the ratio l(x)/g(x), which
+    is equivalent to optimizing Expected Improvement but is computationally more
+    efficient. TPE uses kernel density estimation (Parzen estimators) to model
+    these distributions, with a tree structure for handling conditional parameters.
+
+    The algorithm is well-suited for:
+
+    - Hyperparameter optimization of machine learning models
+    - High-dimensional optimization problems (scales better than GP-based methods)
+    - Problems with conditional or hierarchical parameter spaces
+    - Situations requiring fast surrogate model updates
+
+    The `gamma_tpe` parameter controls the quantile threshold for splitting
+    observations into good and bad groups. A value of 0.2 means the top 20%
+    of observations are considered "good".
 
     Parameters
     ----------
@@ -33,16 +53,38 @@ class TreeStructuredParzenEstimators(_TreeStructuredParzenEstimators, Search):
         seeded with the value.
     rand_rest_p : float
         The probability of a random iteration during the search process.
-    warm_start_smbo
-        The warm start for SMBO.
+    warm_start_smbo : object, optional
+        Previous SMBO state for warm starting optimization.
     max_sample_size : int
-        The maximum number of points to sample.
+        Maximum number of candidate points for acquisition optimization.
+        Default is 10000000.
     sampling : dict
-        The sampling method to use.
+        Configuration for candidate sampling. Default is {"random": 1000000}.
     replacement : bool
-        Whether to sample with replacement.
+        Whether to sample candidates with replacement. Default is True.
     gamma_tpe : float
-        The parameter for the Tree Structured Parzen Estimators
+        Quantile threshold for splitting observations into good/bad groups.
+        Value between 0 and 1, where 0.2 means top 20% are "good".
+        Lower values are more selective. Default is 0.2.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from gradient_free_optimizers import TreeStructuredParzenEstimators
+
+    >>> def ml_hyperparameter_objective(para):
+    ...     # Simulating ML model performance
+    ...     learning_rate = para["learning_rate"]
+    ...     n_estimators = para["n_estimators"]
+    ...     return -(0.9 - abs(learning_rate - 0.1) - abs(n_estimators - 100) / 1000)
+
+    >>> search_space = {
+    ...     "learning_rate": np.logspace(-4, 0, 100),
+    ...     "n_estimators": np.arange(10, 500, 10),
+    ... }
+
+    >>> opt = TreeStructuredParzenEstimators(search_space, gamma_tpe=0.25)
+    >>> opt.search(ml_hyperparameter_objective, n_iter=100)
     """
 
     def __init__(

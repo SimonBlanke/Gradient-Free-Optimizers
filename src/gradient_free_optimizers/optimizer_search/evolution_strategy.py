@@ -12,9 +12,30 @@ from ..optimizers import (
 
 class EvolutionStrategyOptimizer(_EvolutionStrategyOptimizer, Search):
     """
-    A class implementing the **evolution strategy** for the public API.
-    Inheriting from the `Search`-class to get the `search`-method and from
-    the `EvolutionStrategyOptimizer`-backend to get the underlying algorithm.
+    Evolutionary optimizer focused on self-adaptive mutation for continuous domains.
+
+    Evolution Strategy (ES) is an evolutionary algorithm originally designed
+    for continuous parameter optimization. Unlike genetic algorithms that
+    emphasize crossover, ES primarily relies on mutation as the main variation
+    operator. The algorithm generates offspring by adding random perturbations
+    to parent solutions, then selects the best individuals for the next
+    generation.
+
+    Two main selection schemes exist: (mu, lambda) where only offspring compete
+    for selection (replace_parents=True), and (mu + lambda) where parents and
+    offspring compete together (replace_parents=False). The comma strategy
+    provides stronger selection pressure and better escapes from local optima,
+    while the plus strategy preserves good solutions.
+
+    The algorithm is well-suited for:
+
+    - Continuous optimization problems
+    - Real-valued parameter tuning
+    - Problems where fine-grained mutation control is beneficial
+    - Situations requiring self-adaptive step sizes
+
+    The `mutation_rate` controls the probability of perturbing each parameter,
+    while `crossover_rate` determines how often recombination is applied.
 
     Parameters
     ----------
@@ -34,17 +55,39 @@ class EvolutionStrategyOptimizer(_EvolutionStrategyOptimizer, Search):
     rand_rest_p : float
         The probability of a random iteration during the the search process.
     population : int
-        The number of individuals in the population.
+        Number of parent individuals (mu). Default is 10.
     offspring : int
-        The number of offspring to generate in each generation.
+        Number of offspring to generate each generation (lambda). Should be
+        larger than population for effective selection. Default is 20.
     replace_parents : bool
-        If True, the parents are replaced with the offspring in the next
-        generation. If False, the parents are kept in the next generation and the
-        offspring are added to the population.
+        Selection scheme. If True, uses (mu, lambda) strategy where only
+        offspring can become parents. If False, uses (mu + lambda) where
+        parents compete with offspring. Default is False.
     mutation_rate : float
-        The mutation rate for the mutation operator.
+        Probability of mutating each parameter in an offspring. Higher values
+        increase exploration. Default is 0.7.
     crossover_rate : float
-        The crossover rate for the crossover operator.
+        Probability of recombining parent solutions. ES traditionally
+        emphasizes mutation, so this is often lower. Default is 0.3.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from gradient_free_optimizers import EvolutionStrategyOptimizer
+
+    >>> def sphere(para):
+    ...     return -(para["x"] ** 2 + para["y"] ** 2 + para["z"] ** 2)
+
+    >>> search_space = {
+    ...     "x": np.linspace(-5, 5, 100),
+    ...     "y": np.linspace(-5, 5, 100),
+    ...     "z": np.linspace(-5, 5, 100),
+    ... }
+
+    >>> opt = EvolutionStrategyOptimizer(
+    ...     search_space, population=15, offspring=30, replace_parents=True
+    ... )
+    >>> opt.search(sphere, n_iter=500)
     """
 
     def __init__(

@@ -14,9 +14,26 @@ class RandomRestartHillClimbingOptimizer(
     _RandomRestartHillClimbingOptimizer, Search
 ):
     """
-    A class implementing the **random restart hill climbing optimizer** for the public API.
-    Inheriting from the `Search`-class to get the `search`-method and from
-    the `RandomRestartHillClimbingOptimizer`-backend to get the underlying algorithm.
+    Hill climbing variant that periodically restarts from random positions.
+
+    Random Restart Hill Climbing addresses the local optima problem by periodically
+    resetting the search to a new random position after a fixed number of iterations.
+    This simple yet effective strategy allows the algorithm to explore multiple
+    regions of the search space, increasing the probability of finding the global
+    optimum. The best solution found across all restarts is retained.
+
+    The algorithm is well-suited for:
+
+    - Multimodal optimization problems with many local optima
+    - Problems where the location of the global optimum is unknown
+    - Scenarios where multiple independent searches are beneficial
+    - Situations requiring a simple, parallelizable approach
+
+    The `n_iter_restart` parameter controls the frequency of restarts. Shorter
+    intervals lead to more exploration but less exploitation of each local region,
+    while longer intervals allow more thorough local search before restarting.
+    The optimal value depends on the problem's landscape and the expected basin
+    of attraction size.
 
     Parameters
     ----------
@@ -36,14 +53,35 @@ class RandomRestartHillClimbingOptimizer(
     rand_rest_p : float
         The probability of a random iteration during the the search process.
     epsilon : float
-        The step-size for the climbing.
+        The step-size for the climbing. Controls how far the optimizer looks
+        for neighboring positions.
     distribution : str
-        The type of distribution to sample from.
+        The type of distribution to sample neighbors from. Options are
+        "normal", "laplace", "gumbel", or "logistic".
     n_neighbours : int
         The number of neighbours to sample and evaluate before moving to the best
         of those neighbours.
     n_iter_restart : int
-        The number of iterations after which to restart at a random position.
+        Number of iterations between random restarts. After this many iterations,
+        the optimizer jumps to a new random position. Default is 10.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from gradient_free_optimizers import RandomRestartHillClimbingOptimizer
+
+    >>> def schwefel(para):
+    ...     x, y = para["x"], para["y"]
+    ...     return -(418.9829 * 2 - x * np.sin(np.sqrt(abs(x)))
+    ...              - y * np.sin(np.sqrt(abs(y))))
+
+    >>> search_space = {
+    ...     "x": np.linspace(-500, 500, 1000),
+    ...     "y": np.linspace(-500, 500, 1000),
+    ... }
+
+    >>> opt = RandomRestartHillClimbingOptimizer(search_space, n_iter_restart=20)
+    >>> opt.search(schwefel, n_iter=500)
     """
 
     def __init__(

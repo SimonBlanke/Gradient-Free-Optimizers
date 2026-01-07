@@ -12,9 +12,31 @@ from ..optimizers import (
 
 class SimulatedAnnealingOptimizer(_SimulatedAnnealingOptimizer, Search):
     """
-    A class implementing **simulated annealing** for the public API.
-    Inheriting from the `Search`-class to get the `search`-method and from
-    the `SimulatedAnnealingOptimizer`-backend to get the underlying algorithm.
+    Probabilistic optimizer inspired by the annealing process in metallurgy.
+
+    Simulated Annealing is a classic metaheuristic that mimics the physical process
+    of heating and slowly cooling a material to reduce defects. The algorithm starts
+    with a high "temperature" that allows accepting worse solutions with high
+    probability, enabling broad exploration. As the temperature decreases according
+    to the annealing schedule, the acceptance probability for worse solutions
+    decreases, and the algorithm gradually focuses on exploitation.
+
+    The acceptance probability follows the Metropolis criterion: worse solutions
+    are accepted with probability exp(-delta/T), where delta is the score
+    difference and T is the current temperature. This allows the algorithm to
+    escape local optima early in the search while converging to good solutions
+    later.
+
+    The algorithm is well-suited for:
+
+    - Combinatorial optimization problems
+    - Multimodal functions with many local optima
+    - Problems where a good balance of exploration and exploitation is needed
+    - Situations where solution quality matters more than speed
+
+    The `annealing_rate` controls how fast the temperature decreases. Values close
+    to 1.0 cool slowly (more exploration), while smaller values cool faster
+    (quicker convergence but risk of premature convergence).
 
     Parameters
     ----------
@@ -34,16 +56,40 @@ class SimulatedAnnealingOptimizer(_SimulatedAnnealingOptimizer, Search):
     rand_rest_p : float
         The probability of a random iteration during the the search process.
     epsilon : float
-        The step-size for the climbing.
+        The step-size for generating neighbor solutions. Controls how far
+        from the current position neighbors are sampled.
     distribution : str
-        The type of distribution to sample from.
+        The type of distribution to sample neighbors from. Options are
+        "normal", "laplace", "gumbel", or "logistic".
     n_neighbours : int
-        The number of neighbours to sample and evaluate before moving to the best
-        of those neighbours.
+        The number of neighbours to sample and evaluate before selecting
+        the best candidate for the acceptance decision.
     annealing_rate : float
-        The rate at which the temperature is annealed.
+        The multiplicative factor applied to temperature each iteration.
+        Values should be between 0 and 1. Higher values (e.g., 0.99) result
+        in slower cooling. Default is 0.97.
     start_temp : float
-        The initial temperature.
+        The initial temperature. Higher values allow more exploration at the
+        start. Default is 1.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from gradient_free_optimizers import SimulatedAnnealingOptimizer
+
+    >>> def rosenbrock(para):
+    ...     x, y = para["x"], para["y"]
+    ...     return -((1 - x) ** 2 + 100 * (y - x ** 2) ** 2)
+
+    >>> search_space = {
+    ...     "x": np.linspace(-2, 2, 100),
+    ...     "y": np.linspace(-1, 3, 100),
+    ... }
+
+    >>> opt = SimulatedAnnealingOptimizer(
+    ...     search_space, annealing_rate=0.98, start_temp=10
+    ... )
+    >>> opt.search(rosenbrock, n_iter=1000)
     """
 
     def __init__(

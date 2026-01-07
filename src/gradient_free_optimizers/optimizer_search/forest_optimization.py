@@ -10,9 +10,27 @@ from ..optimizers import ForestOptimizer as _ForestOptimizer
 
 class ForestOptimizer(_ForestOptimizer, Search):
     """
-    A class implementing the **forest optimizer** for the public API.
-    Inheriting from the `Search`-class to get the `search`-method and from
-    the `ForestOptimizer`-backend to get the underlying algorithm.
+    Sequential model-based optimizer using tree ensemble surrogate models.
+
+    Forest Optimizer uses tree-based ensemble models (Random Forest or Extra
+    Trees) as surrogate models instead of Gaussian Processes. This approach
+    scales better to high-dimensional problems and large datasets while
+    providing uncertainty estimates through the variance of tree predictions.
+
+    The algorithm follows the same sequential model-based optimization framework:
+    (1) fit a tree ensemble to observed data, (2) use the ensemble to predict
+    mean and variance at candidate points, (3) select the next point using an
+    acquisition function, and (4) update the model with new observations.
+
+    The algorithm is well-suited for:
+
+    - High-dimensional optimization problems (>20 dimensions)
+    - Problems with many observations where GP fitting becomes slow
+    - Categorical or mixed parameter spaces
+    - Situations where tree-based models naturally fit the problem structure
+
+    Tree ensembles handle categorical variables naturally and can capture
+    non-smooth objective functions better than GPs in some cases.
 
     Parameters
     ----------
@@ -31,20 +49,41 @@ class ForestOptimizer(_ForestOptimizer, Search):
         seeded with the value.
     rand_rest_p : float
         The probability of a random iteration during the the search process.
-    warm_start_smbo
-        The warm start for SMBO.
+    warm_start_smbo : object, optional
+        Previous SMBO state for warm starting optimization.
     max_sample_size : int
-        The maximum number of points to sample.
+        Maximum number of candidate points for acquisition optimization.
+        Default is 10000000.
     sampling : dict
-        The sampling method to use.
+        Configuration for candidate sampling. Default is {"random": 1000000}.
     replacement : bool
-        Whether to sample with replacement.
+        Whether to sample candidates with replacement. Default is True.
     tree_regressor : str
-        The tree regressor model to use.
+        The tree ensemble type to use. Options are "extra_tree" for Extra Trees
+        or "random_forest" for Random Forest. Default is "extra_tree".
     tree_para : dict
-        The model specific parameters for the tree regressor.
+        Parameters passed to the tree regressor. Common options include
+        n_estimators, max_depth, etc. Default is {"n_estimators": 100}.
     xi : float
-        The xi parameter for the tree regressor.
+        Exploration-exploitation trade-off parameter for the acquisition
+        function. Higher values favor exploration. Default is 0.03.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from gradient_free_optimizers import ForestOptimizer
+
+    >>> def high_dim_function(para):
+    ...     return -sum(para[f"x{i}"] ** 2 for i in range(5))
+
+    >>> search_space = {f"x{i}": np.linspace(-5, 5, 50) for i in range(5)}
+
+    >>> opt = ForestOptimizer(
+    ...     search_space,
+    ...     tree_regressor="extra_tree",
+    ...     tree_para={"n_estimators": 50},
+    ... )
+    >>> opt.search(high_dim_function, n_iter=200)
     """
 
     def __init__(

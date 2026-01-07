@@ -10,9 +10,30 @@ from ..optimizers import GridSearchOptimizer as _GridSearchOptimizer
 
 class GridSearchOptimizer(_GridSearchOptimizer, Search):
     """
-    A class implementing **grid search** for the public API.
-    Inheriting from the `Search`-class to get the `search`-method and from
-    the `GridSearchOptimizer`-backend to get the underlying algorithm.
+    Exhaustive search optimizer that systematically evaluates a grid of points.
+
+    Grid Search is a brute-force optimization method that systematically
+    evaluates the objective function at regularly spaced points across the
+    search space. Starting from an initial position, the algorithm traverses
+    the search space in a structured manner, evaluating every grid point within
+    the specified step size. This guarantees finding the global optimum within
+    the evaluated grid resolution.
+
+    Unlike random or heuristic methods, grid search provides deterministic
+    coverage of the search space. The direction parameter controls whether
+    the search proceeds along coordinate axes (orthogonal) or across all
+    dimensions simultaneously (diagonal).
+
+    The algorithm is well-suited for:
+
+    - Low-dimensional problems where exhaustive search is feasible
+    - Situations requiring guaranteed coverage of the search space
+    - Baseline comparisons for other optimization methods
+    - Problems where the objective function is fast to evaluate
+
+    The main limitation is the exponential growth of evaluations with
+    dimensionality (curse of dimensionality). For high-dimensional problems,
+    consider using random search or more sophisticated methods instead.
 
     Parameters
     ----------
@@ -32,9 +53,30 @@ class GridSearchOptimizer(_GridSearchOptimizer, Search):
     rand_rest_p : float
         The probability of a random iteration during the the search process.
     step_size : int
-        The step-size for the grid search.
-    direction : "diagonal" or "orthogonal"
-        The direction of the grid search.
+        The step size between grid points in index space. A step_size of 1
+        evaluates every point, while larger values skip points for faster
+        but coarser search. Default is 1.
+    direction : str
+        The traversal direction through the grid. "diagonal" moves across
+        all dimensions simultaneously, while "orthogonal" proceeds along
+        one axis at a time. Default is "diagonal".
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from gradient_free_optimizers import GridSearchOptimizer
+
+    >>> def objective(para):
+    ...     return -(para["x"] ** 2 + para["y"] ** 2)
+
+    >>> search_space = {
+    ...     "x": np.linspace(-5, 5, 50),
+    ...     "y": np.linspace(-5, 5, 50),
+    ... }
+
+    >>> # Evaluate every point in the grid
+    >>> opt = GridSearchOptimizer(search_space, step_size=1)
+    >>> opt.search(objective, n_iter=2500)
     """
 
     def __init__(

@@ -12,9 +12,26 @@ from ..optimizers import (
 
 class StochasticHillClimbingOptimizer(_StochasticHillClimbingOptimizer, Search):
     """
-    A class implementing the **stochastic hill climbing optimizer** for the public API.
-    Inheriting from the `Search`-class to get the `search`-method and from
-    the `StochasticHillClimbingOptimizer`-backend to get the underlying algorithm.
+    Hill climbing variant that probabilistically accepts worse solutions to escape local optima.
+
+    Stochastic Hill Climbing extends the basic hill climbing algorithm by introducing
+    a probability of accepting solutions that are worse than the current one. This
+    stochastic acceptance mechanism helps the optimizer escape local optima and
+    explore a broader region of the search space. Unlike standard hill climbing,
+    which always moves to better positions, this variant can temporarily accept
+    inferior solutions, enabling it to "climb down" from local peaks.
+
+    The algorithm is well-suited for:
+
+    - Multimodal optimization problems with multiple local optima
+    - Problems where standard hill climbing gets stuck frequently
+    - Situations requiring a balance between local refinement and exploration
+    - Optimization landscapes with many plateaus or ridges
+
+    The `p_accept` parameter controls the probability of accepting worse solutions.
+    Higher values increase exploration but may slow convergence, while lower values
+    make the algorithm behave more like standard hill climbing. A value of 0.0
+    reduces this to deterministic hill climbing.
 
     Parameters
     ----------
@@ -34,14 +51,35 @@ class StochasticHillClimbingOptimizer(_StochasticHillClimbingOptimizer, Search):
     rand_rest_p : float
         The probability of a random iteration during the the search process.
     epsilon : float
-        The step-size for the climbing.
+        The step-size for the climbing. Controls how far the optimizer looks
+        for neighboring positions.
     distribution : str
-        The type of distribution to sample from.
+        The type of distribution to sample neighbors from. Options are
+        "normal", "laplace", "gumbel", or "logistic".
     n_neighbours : int
         The number of neighbours to sample and evaluate before moving to the best
         of those neighbours.
-    p_accept : float, default=0.5
-        probability to accept a worse solution
+    p_accept : float
+        Probability of accepting a worse solution. Values range from 0.0 (never
+        accept worse) to 1.0 (always accept). Default is 0.5, providing moderate
+        exploration capability.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from gradient_free_optimizers import StochasticHillClimbingOptimizer
+
+    >>> def rastrigin(para):
+    ...     x, y = para["x"], para["y"]
+    ...     return -(20 + x**2 + y**2 - 10 * (np.cos(2*np.pi*x) + np.cos(2*np.pi*y)))
+
+    >>> search_space = {
+    ...     "x": np.linspace(-5.12, 5.12, 100),
+    ...     "y": np.linspace(-5.12, 5.12, 100),
+    ... }
+
+    >>> opt = StochasticHillClimbingOptimizer(search_space, p_accept=0.3)
+    >>> opt.search(rastrigin, n_iter=200)
     """
 
     def __init__(

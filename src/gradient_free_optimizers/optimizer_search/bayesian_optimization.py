@@ -11,9 +11,30 @@ from ..optimizers.smb_opt.bayesian_optimization import gaussian_process
 
 class BayesianOptimizer(_BayesianOptimizer, Search):
     """
-    A class implementing the **bayesian optimizer** for the public API.
-    Inheriting from the `Search`-class to get the `search`-method and from
-    the `BayesianOptimizer`-backend to get the underlying algorithm.
+    Sequential model-based optimizer using Gaussian Process surrogate models.
+
+    Bayesian Optimization is a powerful technique for optimizing expensive
+    black-box functions. It builds a probabilistic surrogate model (Gaussian
+    Process) of the objective function and uses an acquisition function to
+    determine the most promising points to evaluate next. This approach is
+    sample-efficient, requiring fewer function evaluations than many other
+    methods to find good solutions.
+
+    The algorithm works by: (1) fitting a Gaussian Process to observed data,
+    (2) using the GP to predict mean and uncertainty at unobserved points,
+    (3) selecting the next point to evaluate based on an acquisition function
+    (Expected Improvement), and (4) updating the model with the new observation.
+
+    The algorithm is well-suited for:
+
+    - Expensive objective functions (e.g., ML model training, simulations)
+    - Low to moderate dimensional problems (typically < 20 dimensions)
+    - Problems where sample efficiency is critical
+    - Hyperparameter optimization of machine learning models
+
+    The `xi` parameter controls the exploration-exploitation trade-off in the
+    Expected Improvement acquisition function. Higher values encourage more
+    exploration of uncertain regions.
 
     Parameters
     ----------
@@ -32,18 +53,40 @@ class BayesianOptimizer(_BayesianOptimizer, Search):
         seeded with the value.
     rand_rest_p : float
         The probability of a random iteration during the search process.
-    warm_start_smbo
-        The warm start for SMBO.
+    warm_start_smbo : object, optional
+        Previous SMBO state for warm starting. Allows continuing optimization
+        from a previous run.
     max_sample_size : int
-        The maximum number of points to sample.
+        Maximum number of candidate points to consider when optimizing the
+        acquisition function. Default is 10000000.
     sampling : dict
-        The sampling method to use.
+        Configuration for candidate sampling. Default is {"random": 1000000}.
     replacement : bool
-        Whether to sample with replacement.
-    gpr : dict
-        The Gaussian Process Regressor to use.
+        Whether to sample candidates with replacement. Default is True.
+    gpr : object
+        The Gaussian Process Regressor configuration. Uses a nonlinear GP
+        by default, suitable for most optimization problems.
     xi : float
-        The exploration-exploitation trade-off parameter.
+        Exploration-exploitation trade-off parameter for Expected Improvement.
+        Higher values favor exploration of uncertain regions. Default is 0.03.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from gradient_free_optimizers import BayesianOptimizer
+
+    >>> def expensive_function(para):
+    ...     # Simulating an expensive evaluation
+    ...     x, y = para["x"], para["y"]
+    ...     return -((x - 0.5) ** 2 + (y - 0.5) ** 2)
+
+    >>> search_space = {
+    ...     "x": np.linspace(0, 1, 100),
+    ...     "y": np.linspace(0, 1, 100),
+    ... }
+
+    >>> opt = BayesianOptimizer(search_space, xi=0.01)
+    >>> opt.search(expensive_function, n_iter=50)
     """
 
     def __init__(
