@@ -3,6 +3,7 @@
 # License: MIT License
 
 import time
+from functools import wraps
 
 
 class TimesTracker:
@@ -13,6 +14,7 @@ class TimesTracker:
         self.iter_times = []
 
     def eval_time(func):
+        @wraps(func)
         def wrapper(self, *args, **kwargs):
             t = time.time()
             res = func(self, *args, **kwargs)
@@ -22,6 +24,7 @@ class TimesTracker:
         return wrapper
 
     def iter_time(func):
+        @wraps(func)
         def wrapper(self, *args, **kwargs):
             t = time.time()
             res = func(self, *args, **kwargs)
