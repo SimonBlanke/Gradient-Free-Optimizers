@@ -8,6 +8,12 @@ import numpy as np
 from ._evolutionary_algorithm import EvolutionaryAlgorithmOptimizer
 from ._individual import Individual
 
+# Selection parameters for genetic algorithm
+# Fraction of population selected as parents for crossover
+FITTEST_PARENTS_FRACTION = 0.5
+# Probability of replacing a fit parent with a random individual (diversity injection)
+DIVERSITY_INJECTION_PROB = 0.01
+
 
 class GeneticAlgorithmOptimizer(EvolutionaryAlgorithmOptimizer):
     """Genetic Algorithm inspired by biological evolution.
@@ -88,16 +94,14 @@ class GeneticAlgorithmOptimizer(EvolutionaryAlgorithmOptimizer):
         self.offspring_l = []
 
     def fittest_parents(self):
-        fittest_parents_f = 0.5
-
         self.sort_pop_best_score()
 
-        n_fittest = int(len(self.pop_sorted) * fittest_parents_f)
+        n_fittest = int(len(self.pop_sorted) * FITTEST_PARENTS_FRACTION)
 
         best_l = self.pop_sorted[:n_fittest]
         worst_l = self.pop_sorted[n_fittest:]
 
-        if 0.01 >= random.random():
+        if DIVERSITY_INJECTION_PROB >= random.random():
             best_l[random.randint(0, len(best_l) - 1)] = random.choice(worst_l)
 
         return best_l
