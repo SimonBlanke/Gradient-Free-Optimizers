@@ -1,0 +1,272 @@
+# Gradient-Free-Optimizers CI Pipeline
+#
+# Pipeline Structure:
+# 1. Code Quality (gate) - Must pass before anything else runs
+# 2. API Smoke Tests (gate) - Fast API freeze tests, must pass before main tests
+# 3. Main Tests (parallel):
+#    - OS Matrix Tests (Ubuntu, macOS, Windows × Python versions)
+#    - Dependency Isolation Tests (no-sklearn, no-scipy)
+# 4. Coverage - Runs after all tests pass
+
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - dev
+  pull_request:
+    branches:
+      - master
+      - dev
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ===========================================================================
+  # STAGE 1: Code Quality (gate)
+  # ===========================================================================
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install pre-commit
+        run: python -m pip install --no-cache-dir pre-commit
+
+      - name: Get changed files
+        id: changed-files
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            CHANGED_FILES=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.sha }} | tr '\n' ' ')
+          else
+            CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD | tr '\n' ' ')
+          fi
+          echo "CHANGED_FILES=${CHANGED_FILES}" >> $GITHUB_ENV
+
+      - name: Print changed files
+        run: |
+          echo "Changed files:" && echo "$CHANGED_FILES" | tr ' ' '\n'
+
+      - name: Run pre-commit on changed files
+        run: |
+          if [ -n "$CHANGED_FILES" ]; then
+            pre-commit run --color always --files $CHANGED_FILES --show-diff-on-failure
+          else
+            echo "No changed files to check."
+          fi
+
+  # ===========================================================================
+  # STAGE 2: API Smoke Tests (gate)
+  # ===========================================================================
+  api-smoke-tests:
+    name: API Smoke Tests
+    runs-on: ubuntu-latest
+    needs: code-quality
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build
+          make install
+          make install-test-requirements
+
+      - name: Run API smoke tests
+        run: |
+          python -m pytest tests/test_api/ -v --tb=short -p no:warnings
+
+  # ===========================================================================
+  # STAGE 3a: Main Tests - OS Matrix
+  # ===========================================================================
+  test-matrix:
+    name: Tests (${{ matrix.os }}, py${{ matrix.python-version }}, np${{ matrix.numpy-version }})
+    runs-on: ${{ matrix.os }}
+    needs: api-smoke-tests
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        numpy-version: ["1", "2"]
+        exclude:
+          # numpy 1.x not compatible with Python 3.13+
+          - python-version: "3.13"
+            numpy-version: "1"
+          - python-version: "3.14"
+            numpy-version: "1"
+          # Reduce macOS/Windows matrix to save CI minutes
+          - os: macos-latest
+            numpy-version: "1"
+          - os: windows-latest
+            numpy-version: "1"
+      fail-fast: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build
+          make install
+          make install-test-requirements
+
+      - name: Install specific numpy/pandas versions
+        shell: bash
+        run: |
+          if [ "${{ matrix.numpy-version }}" = "1" ]; then
+            python -m pip install "numpy>=1.18.1,<2.0.0" "pandas>=1.0,<2.0"
+          else
+            python -m pip install "numpy>=2.0,<3.0" "pandas>=2.0,<3.0"
+          fi
+
+      - name: Run main tests
+        run: |
+          python -m pytest tests/test_main/ -v --tb=short -p no:warnings
+
+  # ===========================================================================
+  # STAGE 3b: Dependency Isolation Tests - No sklearn
+  # ===========================================================================
+  test-no-sklearn:
+    name: Tests (no sklearn)
+    runs-on: ubuntu-latest
+    needs: api-smoke-tests
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install minimal dependencies (no sklearn)
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build numpy pandas pytest
+
+      - name: Build and install package
+        run: |
+          python -m pip install build
+          python -m build
+          pip install dist/*.whl
+
+      - name: Verify sklearn is NOT installed
+        run: |
+          python -c "
+          import sys
+          try:
+              import sklearn
+              print('ERROR: sklearn is installed but should not be!')
+              sys.exit(1)
+          except ImportError:
+              print('OK: sklearn is not installed')
+          "
+
+      - name: Run dependency isolation tests
+        run: |
+          python -m pytest tests/test_dependencies/test_no_sklearn.py -v --tb=short -p no:warnings
+
+  # ===========================================================================
+  # STAGE 3b: Dependency Isolation Tests - No scipy
+  # ===========================================================================
+  test-no-scipy:
+    name: Tests (no scipy)
+    runs-on: ubuntu-latest
+    needs: api-smoke-tests
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install minimal dependencies (no scipy)
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build numpy pandas pytest
+
+      - name: Build and install package
+        run: |
+          python -m pip install build
+          python -m build
+          pip install dist/*.whl
+
+      - name: Verify scipy is NOT installed
+        run: |
+          python -c "
+          import sys
+          try:
+              import scipy
+              print('ERROR: scipy is installed but should not be!')
+              sys.exit(1)
+          except ImportError:
+              print('OK: scipy is not installed')
+          "
+
+      - name: Run dependency isolation tests
+        run: |
+          python -m pytest tests/test_dependencies/test_no_scipy.py -v --tb=short -p no:warnings
+
+  # ===========================================================================
+  # STAGE 4: Coverage Report (only on Ubuntu with full dependencies)
+  # ===========================================================================
+  coverage:
+    name: Coverage Report
+    runs-on: ubuntu-latest
+    needs: [test-matrix, test-no-sklearn, test-no-scipy]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build
+          make install
+          make install-test-requirements
+
+      - name: Run tests with coverage
+        run: |
+          python -m pytest tests/test_main/ tests/test_api/ \
+            --cov=gradient_free_optimizers \
+            --cov-report=term-missing \
+            --cov-report=xml \
+            -p no:warnings
+
+      - name: Coverage Summary Report
+        uses: irongut/CodeCoverageSummary@v1.3.0
+        with:
+          filename: coverage.xml
+          badge: true

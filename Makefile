@@ -25,6 +25,22 @@ test-visual:
 	cd tests/local; \
 		python _visualize_search_paths.py
 
+# API smoke tests (fast, run first)
+test-api:
+	python -m pytest -x -p no:warnings -rfEX tests/test_api/
+
+# Main test suite
+test-main:
+	python -m pytest -x -p no:warnings -rfEX tests/test_main/
+
+# Dependency isolation tests (run in isolated environments)
+test-no-sklearn:
+	python -m pytest -x -p no:warnings -rfEX tests/test_dependencies/test_no_sklearn.py
+
+test-no-scipy:
+	python -m pytest -x -p no:warnings -rfEX tests/test_dependencies/test_no_scipy.py
+
+# Legacy target - runs all tests
 test-gfo:
 	python -m pytest -x -p no:warnings -rfEX tests/ src/gradient_free_optimizers/
 
@@ -41,11 +57,13 @@ test-hyper:
 
 test-timings:
 	python -m pytest -x -p no:warnings -rfEX tests/_test_memory.py
-	python -m pytest -x -p no:warnings -rfEX tests/test_optimizers/_test_max_time.py
-	python -m pytest -x -p no:warnings -rfEX tests/test_optimizers/_test_memory_warm_start.py
+	python -m pytest -x -p no:warnings -rfEX tests/test_main/test_optimizers/_test_max_time.py
+	python -m pytest -x -p no:warnings -rfEX tests/test_main/test_optimizers/_test_memory_warm_start.py
 
+# Full test suite (CI order)
 test:
-	make test-gfo
+	make test-api
+	make test-main
 	make test-timings
 	make test-examples
 	make test-hyper
