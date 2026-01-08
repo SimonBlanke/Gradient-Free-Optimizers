@@ -163,3 +163,26 @@ ignore=[
 
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
+
+[tool.ruff.lint.per-file-ignores]
+# Tests: require module docstrings, but not individual test function/method docstrings
+"tests/**/*.py" = ["D101", "D102", "D103", "D104", "D401", "S311", "S603", "S607", "F401"]
+# Docs scripts don't need docstrings
+"docs/**/*.py" = ["D100", "D103"]
+# Notebooks are exploratory, more relaxed rules
+"notebooks/**/*.py" = ["D100", "D103", "E501"]
+# Internal packages don't need package docstrings
+"src/gradient_free_optimizers/**/__init__.py" = ["D104"]
+# Private modules with underscore prefix don't need module docstrings
+"src/gradient_free_optimizers/_*.py" = ["D100", "D101", "D102", "D103", "D205", "D401"]
+"src/gradient_free_optimizers/**/_*.py" = ["D100", "D101", "D102", "D103", "D205", "D401"]
+# Array/math backends use star imports intentionally for numpy-like API
+"src/gradient_free_optimizers/_array_backend/__init__.py" = ["D104", "F403", "F405"]
+"src/gradient_free_optimizers/_math_backend/__init__.py" = ["D104", "F403", "F405"]
+# Pure Python backends use random for optimization, not crypto
+"src/gradient_free_optimizers/_array_backend/_pure.py" = ["D100", "S311"]
+"src/gradient_free_optimizers/_math_backend/_pure.py" = ["D100", "S311"]
+# Internal optimizer implementations - relaxed docstring rules, S311 for random
+"src/gradient_free_optimizers/optimizers/**/*.py" = ["D100", "D101", "D102", "D103", "D205", "D401", "S311"]
+# Search module - relaxed docstring rules
+"src/gradient_free_optimizers/search.py" = ["D100", "D101", "D102", "D103"]
