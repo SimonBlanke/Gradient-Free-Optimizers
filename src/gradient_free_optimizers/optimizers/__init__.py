@@ -35,10 +35,7 @@ from .smb_opt import (
     ForestOptimizer,
 )
 
-from .exp_opt import (
-    RandomAnnealingOptimizer,
-    EnsembleOptimizer,
-)
+from .exp_opt import RandomAnnealingOptimizer
 
 from .grid import (
     GridSearchOptimizer,
@@ -67,5 +64,4 @@ __all__ = [
     "BayesianOptimizer",
     "TreeStructuredParzenEstimators",
     "ForestOptimizer",
-    "EnsembleOptimizer",
 ]

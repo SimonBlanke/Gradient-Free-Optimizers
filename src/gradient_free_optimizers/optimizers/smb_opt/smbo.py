@@ -10,6 +10,7 @@ from ..base_optimizer import BaseOptimizer
 from .sampling import InitialSampler
 from ..core_optimizer.converter import ArrayLike
 
+import math
 import logging
 import numpy as np
 
@@ -17,6 +18,22 @@ if TYPE_CHECKING:
     import pandas as pd
 
 np.seterr(divide="ignore", invalid="ignore")
+from gradient_free_optimizers._array_backend import (
+    array,
+    meshgrid,
+    isnan,
+    isinf,
+    inf,
+    nonzero,
+    isin,
+    intersect1d,
+    random as np_random,
+    HAS_NUMPY,
+)
+
+# Import numpy only for warm_start pandas operations
+if HAS_NUMPY:
+    import numpy as np
 
 
 class SMBO(BaseOptimizer):
@@ -102,6 +119,10 @@ class SMBO(BaseOptimizer):
             DataFrame with parameter columns and a 'score' column.
         """
         if search_data is not None:
+            # Note: warm_start uses pandas DataFrame, which requires numpy
+            # This is expected since users providing warm_start data have dependencies
+            import numpy as np
+
             # filter out nan and inf
             warm_start_smbo = search_data[
                 ~search_data.isin([np.nan, np.inf, -np.inf]).any(axis=1)
@@ -113,9 +134,7 @@ class SMBO(BaseOptimizer):
                 search_data_dim = warm_start_smbo[para_name].values
                 search_space_dim = self.conv.search_space[para_name]
 
-                int_idx = np.nonzero(
-                    np.isin(search_data_dim, search_space_dim)
-                )[0]
+                int_idx = np.nonzero(np.isin(search_data_dim, search_space_dim))[0]
                 int_idx_list.append(int_idx)
 
             intersec = int_idx_list[0]
@@ -149,7 +168,9 @@ class SMBO(BaseOptimizer):
         def wrapper(self, score: float) -> None:
             evaluate(self, score)
 
-            if np.isnan(score) or np.isinf(score):
+            if math.isnan(score) if isinstance(score, float) else isnan(score):
+                del self.X_sample[-1]
+            elif math.isinf(score) if isinstance(score, float) else isinf(score):
                 del self.X_sample[-1]
             else:
                 self.Y_sample.append(score)
@@ -164,26 +185,36 @@ class SMBO(BaseOptimizer):
 
     def random_sampling(self, pos_comb: np.ndarray) -> np.ndarray:
         n_samples = self.sampling["random"]
-        n_pos_comb = pos_comb.shape[0]
+        n_pos_comb = (
+            len(pos_comb) if hasattr(pos_comb, "__len__") else pos_comb.shape[0]
+        )
 
         if n_pos_comb <= n_samples:
             return pos_comb
         else:
-            _idx_sample = np.random.choice(n_pos_comb, n_samples, replace=False)
-            pos_comb_sampled = pos_comb[_idx_sample, :]
+            _idx_sample = np_random.choice(n_pos_comb, n_samples, replace=False)
+            # Handle both numpy arrays and GFOArray
+            if hasattr(pos_comb, "shape"):
+                pos_comb_sampled = pos_comb[_idx_sample, :]
+            else:
+                pos_comb_sampled = array([pos_comb[i] for i in _idx_sample])
             return pos_comb_sampled
 
     def _all_possible_pos(self) -> np.ndarray:
         pos_space = self.sampler.get_pos_space()
         n_dim = len(pos_space)
-        all_pos_comb = np.array(np.meshgrid(*pos_space)).T.reshape(-1, n_dim)
+
+        # Create meshgrid and reshape
+        grids = meshgrid(*pos_space)
+        # Transpose and reshape to get all combinations
+        all_pos_comb = array(grids).T.reshape(-1, n_dim)
 
         all_pos_comb_constr = []
         for pos in all_pos_comb:
             if self.conv.not_in_constraint(pos):
                 all_pos_comb_constr.append(pos)
 
-        all_pos_comb_constr = np.array(all_pos_comb_constr)
+        all_pos_comb_constr = array(all_pos_comb_constr)
         return all_pos_comb_constr
 
     def memory_warning(self, max_sample_size: int) -> None:
@@ -197,12 +228,8 @@ class SMBO(BaseOptimizer):
                 + str(self.conv.search_space_size)
                 + " exceeding recommended limit."
             )
-            warning_message3 = (
-                "\n Reduce search space size for better performance."
-            )
-            logging.warning(
-                warning_message0 + warning_message1 + warning_message3
-            )
+            warning_message3 = "\n Reduce search space size for better performance."
+            logging.warning(warning_message0 + warning_message1 + warning_message3)
 
     @track_X_sample
     def init_pos(self) -> ArrayLike:

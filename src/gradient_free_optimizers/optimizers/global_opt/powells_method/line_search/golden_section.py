@@ -2,15 +2,16 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+import math
 from typing import Optional, Tuple, List
 
-import numpy as np
+from gradient_free_optimizers._array_backend import array, argmax
 
 from .base import LineSearch
 
 
 # Golden ratio: (sqrt(5) - 1) / 2 ≈ 0.618
-GOLDEN_RATIO = (np.sqrt(5) - 1) / 2
+GOLDEN_RATIO = (math.sqrt(5) - 1) / 2
 
 
 class GoldenSectionLineSearch(LineSearch):
@@ -24,8 +25,8 @@ class GoldenSectionLineSearch(LineSearch):
 
     def __init__(self, optimizer):
         super().__init__(optimizer)
-        self.origin: Optional[np.ndarray] = None
-        self.direction: Optional[np.ndarray] = None
+        self.origin = None
+        self.direction = None
         self.max_iters: int = 0
         self.current_step: int = 0
         self.active: bool = False
@@ -40,18 +41,18 @@ class GoldenSectionLineSearch(LineSearch):
         self.phase: str = "eval_c"
 
         # Track all evaluations for best result
-        self.evaluated_positions: List[np.ndarray] = []
+        self.evaluated_positions: List = []
         self.evaluated_scores: List[float] = []
 
     def start(
         self,
-        origin: np.ndarray,
-        direction: np.ndarray,
+        origin,
+        direction,
         max_iters: int,
     ) -> None:
         """Initialize golden section search with bracket [a, b]."""
-        self.origin = origin.copy()
-        self.direction = direction.copy()
+        self.origin = array(origin).copy()
+        self.direction = array(direction).copy()
         self.max_iters = max_iters
         self.current_step = 0
         self.active = True
@@ -73,7 +74,7 @@ class GoldenSectionLineSearch(LineSearch):
         self.fd = None
         self.phase = "eval_c"
 
-    def get_next_position(self) -> Optional[np.ndarray]:
+    def get_next_position(self):
         """Return the next position to evaluate based on current phase."""
         if not self.active or self.current_step >= self.max_iters:
             self.active = False
@@ -91,9 +92,9 @@ class GoldenSectionLineSearch(LineSearch):
         pos = self._snap_to_grid(pos_float)
         return pos
 
-    def update(self, position: np.ndarray, score: float) -> None:
+    def update(self, position, score: float) -> None:
         """Update bracket based on evaluation result."""
-        self.evaluated_positions.append(position.copy())
+        self.evaluated_positions.append(array(position).copy())
         self.evaluated_scores.append(score)
 
         if self.phase == "eval_c":
@@ -144,12 +145,12 @@ class GoldenSectionLineSearch(LineSearch):
 
         self.current_step += 1
 
-    def get_best_result(self) -> Tuple[Optional[np.ndarray], Optional[float]]:
+    def get_best_result(self) -> Tuple:
         """Return the position with the highest score."""
         if not self.evaluated_scores:
             return None, None
 
-        best_idx = np.argmax(self.evaluated_scores)
+        best_idx = argmax(self.evaluated_scores)
         return self.evaluated_positions[best_idx], self.evaluated_scores[best_idx]
 
     def is_active(self) -> bool:

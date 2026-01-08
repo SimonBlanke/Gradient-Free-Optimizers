@@ -13,7 +13,7 @@ try:
     import numpy as np
     HAS_NUMPY = True
 except ImportError:
-    from .._array_backend import _pure as np
+    from gradient_free_optimizers._array_backend import _pure as np
     HAS_NUMPY = False
 
 
@@ -141,7 +141,7 @@ def cho_solve(c_and_lower, b):
         )
 
 
-def solve(a, b):
+def solve(a, b, assume_a=None):
     """
     Solve linear system a @ x = b using Gaussian elimination.
 
@@ -186,6 +186,69 @@ def solve(a, b):
         raise NotImplementedError(
             "solve requires numpy. Install numpy or scipy for full functionality."
         )
+
+
+def solve_triangular(a, b, lower=True):
+    """
+    Solve triangular linear system.
+
+    Solves a @ x = b where a is triangular.
+
+    Parameters
+    ----------
+    a : (n, n) array
+        Triangular matrix (lower or upper)
+    b : (n,) or (n, m) array
+        Right-hand side vector(s)
+    lower : bool
+        True if a is lower triangular, False if upper triangular
+
+    Returns
+    -------
+    x : array
+        Solution vector(s)
+    """
+    if HAS_NUMPY:
+        a = np.asarray(a, dtype=float)
+        b = np.asarray(b, dtype=float)
+
+        # Handle 1D b
+        if b.ndim == 1:
+            return _solve_triangular_1d(a, b, lower)
+
+        # Handle 2D b (solve for each column)
+        n, m = b.shape
+        x = np.zeros((n, m))
+        for j in range(m):
+            x[:, j] = _solve_triangular_1d(a, b[:, j], lower)
+        return x
+    else:
+        raise NotImplementedError(
+            "solve_triangular requires numpy. Install numpy or scipy for full functionality."
+        )
+
+
+def _solve_triangular_1d(a, b, lower):
+    """Solve triangular system for 1D right-hand side."""
+    n = len(b)
+    x = np.zeros(n)
+
+    if lower:
+        # Forward substitution
+        for i in range(n):
+            s = b[i]
+            for j in range(i):
+                s -= a[i, j] * x[j]
+            x[i] = s / a[i, i]
+    else:
+        # Backward substitution
+        for i in range(n - 1, -1, -1):
+            s = b[i]
+            for j in range(i + 1, n):
+                s -= a[i, j] * x[j]
+            x[i] = s / a[i, i]
+
+    return x
 
 
 # === Optimization ===

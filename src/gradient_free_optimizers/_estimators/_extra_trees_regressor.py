@@ -6,9 +6,20 @@
 Native Extra Trees Regressor implementation.
 
 Extremely randomized trees - uses random splits instead of optimal splits.
+
+This implementation uses the GFO array backend, enabling it to work
+without NumPy when needed (though it will be slower).
 """
 
-import numpy as np
+import math
+
+from gradient_free_optimizers._array_backend import (
+    array,
+    asarray,
+    var,
+    sum as arr_sum,
+    random as np_random,
+)
 from ._decision_tree_regressor import DecisionTreeRegressor, TreeNode
 
 
@@ -29,17 +40,18 @@ class ExtraTreeRegressor(DecisionTreeRegressor):
         # Select features to consider
         if self._max_features < n_features:
             features = self._rng.choice(n_features, self._max_features, replace=False)
+            features = list(features) if hasattr(features, '__iter__') else [features]
         else:
             features = range(n_features)
 
         best_gain = 0.0
         best_feature = None
         best_threshold = None
-        current_impurity = np.var(y) * n_samples
+        current_impurity = float(var(y)) * n_samples
 
         for feature in features:
             values = X[:, feature]
-            min_val, max_val = values.min(), values.max()
+            min_val, max_val = float(values.min()), float(values.max())
 
             if min_val == max_val:
                 continue
@@ -50,22 +62,22 @@ class ExtraTreeRegressor(DecisionTreeRegressor):
             left_mask = values <= threshold
             right_mask = ~left_mask
 
-            n_left = np.sum(left_mask)
-            n_right = np.sum(right_mask)
+            n_left = int(arr_sum(left_mask))
+            n_right = int(arr_sum(right_mask))
 
             if n_left < self.min_samples_leaf or n_right < self.min_samples_leaf:
                 continue
 
             # Calculate impurity reduction
-            left_impurity = np.var(y[left_mask]) * n_left if n_left > 0 else 0
-            right_impurity = np.var(y[right_mask]) * n_right if n_right > 0 else 0
+            left_impurity = float(var(y[left_mask])) * n_left if n_left > 0 else 0
+            right_impurity = float(var(y[right_mask])) * n_right if n_right > 0 else 0
 
             gain = current_impurity - left_impurity - right_impurity
 
             if gain > best_gain:
                 best_gain = gain
                 best_feature = feature
-                best_threshold = threshold
+                best_threshold = float(threshold)
 
         return best_feature, best_threshold
 
@@ -134,16 +146,13 @@ class ExtraTreesRegressor:
         self : ExtraTreesRegressor
             Fitted estimator.
         """
-        X = np.asarray(X, dtype=np.float64)
-        y = np.asarray(y, dtype=np.float64).ravel()
+        X = asarray(X, dtype=float)
+        y = asarray(y, dtype=float).ravel()
 
         n_samples, n_features = X.shape
 
         # Setup random state
-        if self.random_state is not None:
-            rng = np.random.RandomState(self.random_state)
-        else:
-            rng = np.random.RandomState()
+        rng = np_random.RandomState(self.random_state)
 
         # Determine max_features
         max_features = self._get_max_features(n_features)
@@ -162,8 +171,9 @@ class ExtraTreesRegressor:
             # Bootstrap sample (usually False for Extra Trees)
             if self.bootstrap:
                 indices = rng.randint(0, n_samples, n_samples)
-                X_sample = X[indices]
-                y_sample = y[indices]
+                indices_list = list(indices) if hasattr(indices, '__iter__') else [indices]
+                X_sample = array([X[i] for i in indices_list])
+                y_sample = array([y[i] for i in indices_list])
             else:
                 X_sample = X
                 y_sample = y
@@ -178,9 +188,9 @@ class ExtraTreesRegressor:
         if self.max_features is None:
             return n_features
         elif self.max_features == "sqrt":
-            return max(1, int(np.sqrt(n_features)))
+            return max(1, int(math.sqrt(n_features)))
         elif self.max_features == "log2":
-            return max(1, int(np.log2(n_features)))
+            return max(1, int(math.log2(n_features)))
         elif isinstance(self.max_features, float):
             return max(1, int(self.max_features * n_features))
         else:
@@ -200,7 +210,13 @@ class ExtraTreesRegressor:
         y_pred : ndarray of shape (n_samples,)
             Predicted values (mean of all trees).
         """
-        X = np.asarray(X, dtype=np.float64)
+        X = asarray(X, dtype=float)
 
-        predictions = np.array([tree.predict(X) for tree in self.estimators_])
-        return np.mean(predictions, axis=0)
+        # Collect predictions from all trees and average
+        all_preds = [tree.predict(X) for tree in self.estimators_]
+        n_samples = len(X)
+        result = []
+        for i in range(n_samples):
+            sample_preds = [float(preds[i]) for preds in all_preds]
+            result.append(sum(sample_preds) / len(sample_preds))
+        return array(result)

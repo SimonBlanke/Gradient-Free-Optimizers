@@ -2,6 +2,8 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+from gradient_free_optimizers._array_backend import mean
+
 from .base_population_optimizer import BasePopulationOptimizer
 from ._spiral import Spiral
 
@@ -86,9 +88,7 @@ class SpiralOptimization(BasePopulationOptimizer):
     def iterate(self):
         """Move current particle in spiral pattern toward center."""
         while True:
-            self.p_current = self.particles[
-                self.nth_trial % len(self.particles)
-            ]
+            self.p_current = self.particles[self.nth_trial % len(self.particles)]
 
             self.sort_pop_best_score()
             self.p_current.global_pos_best = self.pop_sorted[0].pos_current

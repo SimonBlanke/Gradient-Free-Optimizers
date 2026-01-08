@@ -5,8 +5,8 @@
 import math
 import random
 
-from ..._array_backend import array, array_split
-from ..._math_backend import cdist
+from gradient_free_optimizers._array_backend import array, array_split
+from gradient_free_optimizers._math_backend import cdist
 
 from ..smb_opt.smbo import SMBO
 from ..local_opt import HillClimbingOptimizer
@@ -61,9 +61,7 @@ class SubSpace:
             furthest_pos_.append(dim_array[0])
         furthest_pos = array(furthest_pos_)
 
-        dist = cdist(
-            furthest_pos.reshape(1, -1), self.center_pos.reshape(1, -1)
-        )
+        dist = cdist(furthest_pos.reshape(1, -1), self.center_pos.reshape(1, -1))
 
         self.lipschitz_bound = score + K * dist
 

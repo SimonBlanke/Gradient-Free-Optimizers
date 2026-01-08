@@ -7,6 +7,20 @@ from scipy.stats import norm
 
 from .._normalize import normalize
 
+from gradient_free_optimizers._array_backend import array, zeros_like, random as np_random
+from gradient_free_optimizers._math_backend import norm_cdf, norm_pdf
+
+
+def normalize(arr):
+    arr = array(arr)
+    num = arr - arr.min()
+    den = arr.max() - arr.min()
+
+    if den == 0:
+        return np_random.uniform(0, 1, size=arr.shape)
+    else:
+        return ((num / den) + 0) / 1
+
 
 class ExpectedImprovement:
     def __init__(self, surrogate_model, position_l, xi):
@@ -17,19 +31,28 @@ class ExpectedImprovement:
     def calculate(self, X_sample, Y_sample):
         mu, sigma = self.surrogate_model.predict(self.position_l, return_std=True)
         # TODO mu_sample = self.surrogate_model.predict(X_sample)
-        mu = mu.reshape(-1, 1)
-        sigma = sigma.reshape(-1, 1)
+        mu = array(mu).reshape(-1, 1)
+        sigma = array(sigma).reshape(-1, 1)
 
         # with normalization this is always 1
-        Y_sample = normalize(np.array(Y_sample)).reshape(-1, 1)
+        Y_sample = normalize(array(Y_sample)).reshape(-1, 1)
 
-        imp = mu - np.max(Y_sample) - self.xi
-        Z = np.divide(imp, sigma, out=np.zeros_like(sigma), where=sigma != 0)
+        imp = mu - Y_sample.max() - self.xi
 
-        exploit = imp * norm.cdf(Z)
-        explore = sigma * norm.pdf(Z)
+        # Safe division: divide where sigma != 0, else 0
+        Z = zeros_like(sigma)
+        for i in range(len(sigma)):
+            if sigma[i, 0] != 0:
+                Z[i, 0] = imp[i, 0] / sigma[i, 0]
+
+        exploit = imp * norm_cdf(Z)
+        explore = sigma * norm_pdf(Z)
 
         aqu_func = exploit + explore
-        aqu_func[sigma == 0.0] = 0.0
+
+        # Set acquisition to 0 where sigma == 0
+        for i in range(len(sigma)):
+            if sigma[i, 0] == 0.0:
+                aqu_func[i, 0] = 0.0
 
         return aqu_func[:, 0]

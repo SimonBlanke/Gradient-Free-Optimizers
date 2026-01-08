@@ -8,7 +8,7 @@ import numpy as np
 
 from ..smb_opt.smbo import SMBO
 
-from scipy.spatial.distance import cdist
+from gradient_free_optimizers._math_backend import cdist
 
 
 class LipschitzFunction:

@@ -8,6 +8,8 @@ import random
 import numpy as np
 from typing import Any, Callable
 
+from gradient_free_optimizers._array_backend import random as np_random
+
 from ._evolutionary_algorithm import EvolutionaryAlgorithmOptimizer
 from ._individual import Individual
 from ..core_optimizer.converter import ArrayLike
@@ -135,7 +137,7 @@ class EvolutionStrategyOptimizer(EvolutionaryAlgorithmOptimizer):
         self.p_current = self.pop_sorted[self.rnd_int]
 
         total_rate = self.mutation_rate + self.crossover_rate
-        rand = np.random.uniform(low=0, high=total_rate)
+        rand = np_random.uniform(low=0, high=total_rate)
 
         if rand <= self.mutation_rate:
             return self.p_current.iterate()

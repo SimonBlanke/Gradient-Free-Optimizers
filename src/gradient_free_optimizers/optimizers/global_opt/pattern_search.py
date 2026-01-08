@@ -7,7 +7,7 @@ from __future__ import annotations
 import random
 from typing import Any, Callable
 
-from ..._array_backend import array
+from gradient_free_optimizers._array_backend import array
 
 from ..base_optimizer import BaseOptimizer
 from ..local_opt.hill_climbing_optimizer import HillClimbingOptimizer
@@ -16,7 +16,16 @@ from ..core_optimizer.converter import ArrayLike
 
 def _arrays_equal(a, b):
     """Check if two arrays are element-wise equal."""
-    if hasattr(a, '__len__') and hasattr(b, '__len__'):
+    if hasattr(a, "__len__") and hasattr(b, "__len__"):
+        if len(a) != len(b):
+            return False
+        return all(x == y for x, y in zip(a, b))
+    return a == b
+
+
+def _arrays_equal(a, b):
+    """Check if two arrays are element-wise equal."""
+    if hasattr(a, "__len__") and hasattr(b, "__len__"):
         if len(a) != len(b):
             return False
         return all(x == y for x, y in zip(a, b))
@@ -122,9 +131,7 @@ class PatternSearch(BaseOptimizer):
             pattern_pos_l.append(pos_pattern_p)
             pattern_pos_l.append(pos_pattern_n)
 
-        self.pattern_pos_l = list(
-            random.sample(pattern_pos_l, self.n_positions_)
-        )
+        self.pattern_pos_l = list(random.sample(pattern_pos_l, self.n_positions_))
 
     @BaseOptimizer.track_new_pos
     @BaseOptimizer.random_iteration

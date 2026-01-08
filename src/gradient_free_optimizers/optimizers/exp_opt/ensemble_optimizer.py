@@ -3,7 +3,6 @@
 # License: MIT License
 
 import numpy as np
-from scipy.stats import norm
 
 from ..smb_opt.smbo import SMBO
 from ..smb_opt.surrogate_models import EnsembleRegressor

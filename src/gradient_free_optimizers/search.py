@@ -129,7 +129,11 @@ class Search(TimesTracker, SearchStatistics):
         early_stopping: dict[str, Any] | None = None,
         memory: bool = True,
         memory_warm_start: pd.DataFrame | None = None,
-        verbosity: list[str] | Literal[False] = ["progress_bar", "print_results", "print_times"],
+        verbosity: list[str] | Literal[False] = [
+            "progress_bar",
+            "print_results",
+            "print_times",
+        ],
         optimum: Literal["maximum", "minimum"] = "maximum",
     ) -> None:
         self.optimum = optimum

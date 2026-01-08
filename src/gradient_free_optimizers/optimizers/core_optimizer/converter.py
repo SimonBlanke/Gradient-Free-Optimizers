@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from ..._array_backend import (
+from gradient_free_optimizers._array_backend import (
     array,
     arange,
     abs as np_abs,
@@ -18,7 +18,7 @@ import pandas as pd
 from functools import reduce
 from typing import Any, Callable, TypeVar
 
-from ..._result import Result
+from gradient_free_optimizers._result import Result
 
 # Type alias for array-like types (numpy arrays or GFOArray)
 ArrayLike = TypeVar("ArrayLike")
@@ -245,7 +245,9 @@ class Converter:
         return value
 
     @returnNoneIfArgNone
-    def values2positions(self, values: list[list[Any]] | None) -> list[ArrayLike] | None:
+    def values2positions(
+        self, values: list[list[Any]] | None
+    ) -> list[ArrayLike] | None:
         """Convert multiple value lists to position lists.
 
         Parameters
@@ -299,7 +301,9 @@ class Converter:
         return lo
 
     @returnNoneIfArgNone
-    def positions2values(self, positions: list[ArrayLike] | None) -> list[list[Any]] | None:
+    def positions2values(
+        self, positions: list[ArrayLike] | None
+    ) -> list[list[Any]] | None:
         """Convert multiple position lists to value lists.
 
         Parameters

@@ -5,7 +5,7 @@
 import math
 from functools import wraps
 
-from ..._array_backend import isinf, isnan
+from gradient_free_optimizers._array_backend import isinf, isnan
 
 
 class SearchTracker:

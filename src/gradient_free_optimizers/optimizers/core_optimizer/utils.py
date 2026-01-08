@@ -4,7 +4,7 @@
 
 import random
 
-from ..._array_backend import array, random as np_random, HAS_NUMPY
+from gradient_free_optimizers._array_backend import array, random as np_random
 
 
 def set_random_seed(nth_process, random_state):
@@ -34,6 +34,4 @@ def move_random(ss_positions):
     Returns:
     array: Array containing one randomly selected element from each sublist in ss_positions.
     """
-    return array(
-        [random.choice(search_space_pos) for search_space_pos in ss_positions]
-    )
+    return array([random.choice(search_space_pos) for search_space_pos in ss_positions])

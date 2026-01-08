@@ -8,8 +8,13 @@ import random
 from functools import wraps
 from typing import Any, Callable, Literal
 
-from ..._array_backend import rint, clip, array, random as np_random
-from ..._math_backend import cdist
+from gradient_free_optimizers._array_backend import (
+    rint,
+    clip,
+    array,
+    random as np_random,
+)
+from gradient_free_optimizers._math_backend import cdist
 
 from .search_tracker import SearchTracker
 from .converter import Converter, ArrayLike

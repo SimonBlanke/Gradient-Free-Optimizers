@@ -11,13 +11,16 @@ import numpy as np
 array = np.array
 asarray = np.asarray
 zeros = np.zeros
+zeros_like = np.zeros_like
 ones = np.ones
 empty = np.empty
+empty_like = np.empty_like
 full = np.full
 arange = np.arange
 linspace = np.linspace
 meshgrid = np.meshgrid
 eye = np.eye
+diag = np.diag
 
 # === Array Properties ===
 ndim = np.ndim

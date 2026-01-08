@@ -16,8 +16,12 @@ The backend automatically selects the fastest available implementation:
 
 try:
     import numpy
+    # Verify numpy is fully installed, not just a namespace stub
+    _ = numpy.__version__
+    from numpy import array as _test_array
+    del _test_array
     HAS_NUMPY = True
-except ImportError:
+except (ImportError, AttributeError):
     HAS_NUMPY = False
 
 
@@ -38,13 +42,16 @@ __all__ = [
     "array",
     "asarray",
     "zeros",
+    "zeros_like",
     "ones",
     "empty",
+    "empty_like",
     "full",
     "arange",
     "linspace",
     "meshgrid",
     "eye",
+    "diag",
     # Type conversion
     "int32",
     "int64",

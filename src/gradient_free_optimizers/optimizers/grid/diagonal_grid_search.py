@@ -4,7 +4,7 @@
 
 from math import gcd
 
-from ..._array_backend import array, zeros, prod, power
+from gradient_free_optimizers._array_backend import array, zeros, prod, power
 
 from ..base_optimizer import BaseOptimizer
 
@@ -95,9 +95,7 @@ class DiagonalGridSearchOptimizer(BaseOptimizer):
         # Describes a bijection from Z/search_space_size*Z -> (Z/dim_1*Z)x...x(Z/dim_n*Z)
         for dim in range(len(dim_sizes) - 1):
             remaining_prod = prod(dim_sizes[dim + 1 :])
-            new_pos.append(
-                pointer // remaining_prod % dim_sizes[dim]
-            )
+            new_pos.append(pointer // remaining_prod % dim_sizes[dim])
             pointer = pointer % remaining_prod
         new_pos.append(pointer)
 
@@ -129,9 +127,7 @@ class DiagonalGridSearchOptimizer(BaseOptimizer):
                 self.high_dim_pointer % self.step_size,
             )
             current_pass_finished = (
-                (self.nth_trial + 1)
-                * self.step_size
-                // self.conv.search_space_size
+                (self.nth_trial + 1) * self.step_size // self.conv.search_space_size
                 > self.nth_trial * self.step_size // self.conv.search_space_size
             )
             # Begin the next pass if current is finished.

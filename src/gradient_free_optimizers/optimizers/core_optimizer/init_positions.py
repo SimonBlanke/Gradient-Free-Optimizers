@@ -5,14 +5,14 @@
 import random
 from itertools import product
 
-from ..._array_backend import array, power
+from gradient_free_optimizers._array_backend import array, power
 
 from .utils import move_random
 
 
 def _arrays_equal(a, b):
     """Check if two arrays are element-wise equal."""
-    if hasattr(a, '__len__') and hasattr(b, '__len__'):
+    if hasattr(a, "__len__") and hasattr(b, "__len__"):
         if len(a) != len(b):
             return False
         return all(x == y for x, y in zip(a, b))

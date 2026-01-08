@@ -8,6 +8,10 @@ from typing import Any, Callable, Literal, TYPE_CHECKING
 
 import numpy as np
 from scipy.stats import norm
+from gradient_free_optimizers._array_backend import (
+    array as gfo_array,
+    random as np_random,
+)
 
 from .smbo import SMBO
 from .surrogate_models import (
@@ -93,7 +97,9 @@ class ForestOptimizer(SMBO):
         max_sample_size: int = 10000000,
         sampling: dict[str, int] | Literal[False] = {"random": 1000000},
         replacement: bool = True,
-        tree_regressor: Literal["random_forest", "extra_tree", "gradient_boost"] = "extra_tree",
+        tree_regressor: Literal[
+            "random_forest", "extra_tree", "gradient_boost"
+        ] = "extra_tree",
         tree_para: dict[str, Any] = {"n_estimators": 100},
         xi: float = 0.03,
     ) -> None:
@@ -126,10 +132,9 @@ class ForestOptimizer(SMBO):
         acqu_func = ExpectedImprovement(self.regr, self.pos_comb, self.xi)
         return acqu_func.calculate(self.X_sample, self.Y_sample)
 
-    def _training(self) -> None:
-        """Fit the tree ensemble on collected samples."""
-        X_sample = np.array(self.X_sample)
-        Y_sample = np.array(self.Y_sample)
+    def _training(self):
+        X_sample = gfo_array(self.X_sample)
+        Y_sample = gfo_array(self.Y_sample)
 
         if len(Y_sample) == 0:
             return self.move_random()

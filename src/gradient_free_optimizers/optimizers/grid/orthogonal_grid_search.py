@@ -2,7 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-from ..._array_backend import array
+from gradient_free_optimizers._array_backend import array
 
 from ..base_optimizer import BaseOptimizer
 

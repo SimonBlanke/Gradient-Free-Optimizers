@@ -2,8 +2,18 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+import math
 import random
-import numpy as np
+
+from gradient_free_optimizers._array_backend import (
+    array,
+    arange,
+    clip,
+    maximum,
+    prod,
+    inf,
+    random as np_random,
+)
 
 # Maximum supported dimensions for SMBO sampling
 # Limited by memory requirements for full position space enumeration
@@ -31,55 +41,46 @@ class InitialSampler:
             n_samples_array = self.get_n_samples_dims()
             return self.random_choices(n_samples_array)
         else:
-            if self.conv.max_dim < 255:
-                _dtype = np.uint8
-            elif self.conv.max_dim < 65535:
-                _dtype = np.uint16
-            elif self.conv.max_dim < 4294967295:
-                _dtype = np.uint32
-            else:
-                _dtype = np.uint64
-
             pos_space = []
             for dim_ in self.conv.dim_sizes:
-                pos_space.append(np.arange(dim_, dtype=_dtype))
+                pos_space.append(arange(int(dim_)))
 
             return pos_space
 
     def get_n_samples_dims(self):
-        dim_sizes_temp = self.conv.dim_sizes
-        dim_sizes_temp = np.clip(
-            dim_sizes_temp, a_min=1, a_max=self.dim_max_sample_size
-        )
-        search_space_size = self.conv.dim_sizes.prod()
+        dim_sizes_temp = array(list(self.conv.dim_sizes))
+        dim_sizes_temp = clip(dim_sizes_temp, 1, self.dim_max_sample_size)
+        search_space_size = prod(self.conv.dim_sizes)
         if search_space_size == 0:
-            search_space_size = np.inf
+            search_space_size = inf
 
         while abs(search_space_size) > self.max_sample_size:
             n_samples_array = []
-            for idx, dim_size in enumerate(np.nditer(dim_sizes_temp)):
+            for idx in range(len(dim_sizes_temp)):
+                dim_size = int(dim_sizes_temp[idx])
                 array_diff_ = random.randint(1, dim_size)
                 n_samples_array.append(array_diff_)
 
                 sub = max(int(dim_size - (dim_size**0.999)), 1)
-                dim_sizes_temp[idx] = np.maximum(1, dim_size - sub)
+                dim_sizes_temp[idx] = max(1, dim_size - sub)
 
-            search_space_size = np.array(n_samples_array).prod()
+            search_space_size = prod(array(n_samples_array))
             if search_space_size == 0:
-                search_space_size = np.inf
+                search_space_size = inf
 
         return n_samples_array
 
     def random_choices(self, n_samples_array):
         pos_space = []
         for n_samples, dim_size in zip(n_samples_array, self.conv.dim_sizes):
+            dim_size = int(dim_size)
             if dim_size > self.dim_max_sample_size:
                 pos_space.append(
-                    np.random.randint(low=1, high=dim_size, size=n_samples)
+                    np_random.randint(low=1, high=dim_size, size=n_samples)
                 )
             else:
                 pos_space.append(
-                    np.random.choice(dim_size, size=n_samples, replace=False)
+                    np_random.choice(dim_size, size=n_samples, replace=False)
                 )
 
         return pos_space

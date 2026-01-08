@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import numpy as np
 from typing import Any, Callable
+from gradient_free_optimizers._array_backend import zeros
 
 from .base_population_optimizer import BasePopulationOptimizer
 from ._particle import Particle
@@ -96,7 +97,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         self.p_current.temp_weight = self.temp_weight
         self.p_current.rand_rest_p = self.rand_rest_p
 
-        self.p_current.velo = np.zeros(len(self.conv.max_positions))
+        self.p_current.velo = zeros(len(self.conv.max_positions))
 
         return self.p_current.init_pos()
 

@@ -8,11 +8,21 @@ they produce equivalent results.
 import math
 import pytest
 
-from gradient_free_optimizers._array_backend import _numpy as np_backend
 from gradient_free_optimizers._array_backend import _pure as pure_backend
 from gradient_free_optimizers._array_backend import HAS_NUMPY
 
 from .conftest import arrays_close, to_list
+
+# Conditionally import numpy backend
+if HAS_NUMPY:
+    from gradient_free_optimizers._array_backend import _numpy as np_backend
+else:
+    np_backend = None
+
+# Skip all tests in this module if numpy is not available
+pytestmark = pytest.mark.skipif(
+    not HAS_NUMPY, reason="NumPy not available for comparison tests"
+)
 
 
 # =============================================================================

@@ -9,12 +9,11 @@ Uses sklearn implementations if available, otherwise falls back to native
 implementations that have no external dependencies beyond numpy/scipy.
 """
 
-import numpy as np
+from gradient_free_optimizers._array_backend import array, zeros, ravel, HAS_NUMPY
 
 # Import native implementations as fallbacks
 from gradient_free_optimizers._estimators import (
     GaussianProcessRegressor as NativeGPR,
-    BayesianRidge as NativeBayesianRidge,
     RandomForestRegressor as NativeRandomForestRegressor,
     ExtraTreesRegressor as NativeExtraTreesRegressor,
     GradientBoostingRegressor as NativeGradientBoostingRegressor,
@@ -22,7 +21,6 @@ from gradient_free_optimizers._estimators import (
 
 # Try to import sklearn implementations
 try:
-    from sklearn.linear_model import BayesianRidge as SklearnBayesianRidge
     from sklearn.gaussian_process import GaussianProcessRegressor as SklearnGPR
     from sklearn.gaussian_process.kernels import Matern, WhiteKernel
     from sklearn.ensemble import ExtraTreesRegressor as SklearnExtraTreesRegressor
@@ -30,6 +28,7 @@ try:
     from sklearn.ensemble import (
         GradientBoostingRegressor as SklearnGradientBoostingRegressor,
     )
+    import numpy as np
 
     SKLEARN_AVAILABLE = True
 except ImportError:
@@ -44,19 +43,24 @@ class EnsembleRegressor:
         self.min_std = min_std
 
     def fit(self, X, y):
+        y_flat = ravel(array(y))
         for estimator in self.estimators:
-            estimator.fit(X, np.ravel(y))
+            estimator.fit(X, y_flat)
 
     def predict(self, X, return_std=False):
         predictions = []
         for estimator in self.estimators:
-            predictions.append(estimator.predict(X).reshape(-1, 1))
+            pred = array(estimator.predict(X)).reshape(-1, 1)
+            predictions.append(pred)
 
-        predictions = np.array(predictions)
+        predictions = array(predictions)
         mean = predictions.mean(axis=0)
         std = predictions.std(axis=0)
 
-        std[std < self.min_std] = self.min_std
+        # Set minimum std
+        for i in range(len(std)):
+            if std[i] < self.min_std:
+                std[i] = self.min_std
 
         if return_std:
             return mean, std
@@ -69,7 +73,12 @@ def _return_std(X, trees, predictions, min_variance):
 
     Used from:
     https://github.com/scikit-optimize/scikit-optimize/blob/master/skopt/learning/forest.py
+
+    Note: This function requires sklearn trees with tree_ attribute,
+    so we keep numpy usage here for sklearn integration.
     """
+    import numpy as np
+
     variance = np.zeros(len(X))
     trees = list(trees)
 
@@ -96,7 +105,8 @@ class TreeEnsembleBase:
         self.min_variance = min_variance
 
     def fit(self, X, y):
-        self._estimator.fit(X, np.ravel(y))
+        y_flat = ravel(array(y))
+        self._estimator.fit(X, y_flat)
 
     def predict(self, X, return_std=False):
         mean = self._estimator.predict(X)
@@ -167,22 +177,3 @@ class GPR:
         return self.gpr.predict(X, return_std=return_std)
 
 
-class GPR_linear:
-    """
-    Linear Gaussian Process Regressor (Bayesian Ridge).
-
-    Uses sklearn's BayesianRidge if available,
-    otherwise falls back to native implementation.
-    """
-
-    def __init__(self):
-        if SKLEARN_AVAILABLE:
-            self.gpr = SklearnBayesianRidge()
-        else:
-            self.gpr = NativeBayesianRidge()
-
-    def fit(self, X, y):
-        self.gpr.fit(X, y)
-
-    def predict(self, X, return_std=False):
-        return self.gpr.predict(X, return_std=return_std)

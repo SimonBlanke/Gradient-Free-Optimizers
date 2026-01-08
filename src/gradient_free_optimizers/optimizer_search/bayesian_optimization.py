@@ -6,7 +6,6 @@ from typing import List, Dict, Literal, Union
 
 from ..search import Search
 from ..optimizers import BayesianOptimizer as _BayesianOptimizer
-from ..optimizers.smb_opt.bayesian_optimization import gaussian_process
 
 
 class BayesianOptimizer(_BayesianOptimizer, Search):
@@ -62,10 +61,17 @@ class BayesianOptimizer(_BayesianOptimizer, Search):
     sampling : dict
         Configuration for candidate sampling. Default is {"random": 1000000}.
     replacement : bool
+<<<<<<< HEAD
         Whether to sample candidates with replacement. Default is True.
     gpr : object
         The Gaussian Process Regressor configuration. Uses a nonlinear GP
         by default, suitable for most optimization problems.
+=======
+        Whether to sample with replacement.
+    gpr : object, optional
+        The Gaussian Process Regressor to use. Can be None (uses default GPR),
+        a class (instantiated automatically), or an instance.
+>>>>>>> feature/array_and_math_backends
     xi : float
         Exploration-exploitation trade-off parameter for Expected Improvement.
         Higher values favor exploration of uncertain regions. Default is 0.03.
@@ -104,7 +110,7 @@ class BayesianOptimizer(_BayesianOptimizer, Search):
         max_sample_size: int = 10000000,
         sampling: Dict[Literal["random"], int] = {"random": 1000000},
         replacement: bool = True,
-        gpr=gaussian_process["gp_nonlinear"],
+        gpr=None,
         xi: float = 0.03,
     ):
         super().__init__(

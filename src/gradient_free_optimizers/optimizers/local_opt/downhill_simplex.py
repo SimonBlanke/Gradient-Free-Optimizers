@@ -13,7 +13,7 @@ from ..core_optimizer.converter import ArrayLike
 
 def _arrays_equal(a: Any, b: Any) -> bool:
     """Check if two arrays are element-wise equal."""
-    if hasattr(a, '__len__') and hasattr(b, '__len__'):
+    if hasattr(a, "__len__") and hasattr(b, "__len__"):
         if len(a) != len(b):
             return False
         return all(x == y for x, y in zip(a, b))
@@ -131,8 +131,7 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
     def iterate(self) -> ArrayLike:
         """Generate next simplex position via reflection/expansion/contraction."""
         simplex_stale = all(
-            _arrays_equal(self.simplex_pos[0], array)
-            for array in self.simplex_pos
+            _arrays_equal(self.simplex_pos[0], array) for array in self.simplex_pos
         )
 
         if simplex_stale:
@@ -145,9 +144,7 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
         if self.simplex_step == 1:
             idx_sorted = sort_list_idx(self.simplex_scores)
             self.simplex_pos = [self.simplex_pos[idx] for idx in idx_sorted]
-            self.simplex_scores = [
-                self.simplex_scores[idx] for idx in idx_sorted
-            ]
+            self.simplex_scores = [self.simplex_scores[idx] for idx in idx_sorted]
 
             self.center_array = centroid(self.simplex_pos[:-1])
 
@@ -223,9 +220,7 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
             elif self.r_score > self.e_score:
                 self.simplex_scores[-1] = self.r_pos
             else:
-                self.simplex_scores[-1] = random.choice(
-                    [self.e_pos, self.r_pos]
-                )[0]
+                self.simplex_scores[-1] = random.choice([self.e_pos, self.r_pos])[0]
 
         elif self.simplex_step == 3:
             # eval Contraction

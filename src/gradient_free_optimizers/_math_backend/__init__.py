@@ -17,8 +17,12 @@ The backend automatically selects the fastest available implementation:
 
 try:
     import scipy
+    # Verify scipy is fully installed, not just a namespace stub
+    _ = scipy.__version__
+    from scipy.linalg import cholesky as _test_cholesky
+    del _test_cholesky
     HAS_SCIPY = True
-except ImportError:
+except (ImportError, AttributeError):
     HAS_SCIPY = False
 
 
@@ -42,6 +46,7 @@ __all__ = [
     "cholesky",
     "cho_solve",
     "solve",
+    "solve_triangular",
     # Optimization
     "minimize",
     # Distance functions
