@@ -10,6 +10,12 @@ import numpy as np
 from .base_population_optimizer import BasePopulationOptimizer
 from ..local_opt import SimulatedAnnealingOptimizer
 
+# Temperature initialization parameters for parallel tempering
+# temp = TEMP_BASE ** uniform(0, TEMP_MAX_EXPONENT) gives range [1.0, ~9.3]
+# This creates a geometric distribution of temperatures across replicas
+TEMP_BASE = 1.1
+TEMP_MAX_EXPONENT = 25
+
 
 class ParallelTemperingOptimizer(BasePopulationOptimizer):
     """Parallel Tempering (Replica Exchange) optimization.
@@ -70,7 +76,7 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
 
         self.systems = self._create_population(SimulatedAnnealingOptimizer)
         for system in self.systems:
-            system.temp = 1.1 ** random.uniform(0, 25)
+            system.temp = TEMP_BASE ** random.uniform(0, TEMP_MAX_EXPONENT)
         self.optimizers = self.systems
 
     def _swap_pos(self):
