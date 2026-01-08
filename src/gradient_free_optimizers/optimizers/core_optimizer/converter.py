@@ -34,6 +34,51 @@ def check_numpy_array(search_space):
 
 
 class Converter:
+    """Converts between position, value, and parameter representations.
+
+    The Converter handles the transformation between three data representations
+    used throughout the optimization process:
+
+    - **Position**: Integer indices into the search space arrays (e.g., [2, 5, 1])
+    - **Value**: Actual values from the search space (e.g., [0.5, 100, "adam"])
+    - **Parameter dict**: Named parameters (e.g., {"lr": 0.5, "batch": 100, "opt": "adam"})
+
+    This class also handles constraint validation and conversion between
+    memory dictionaries and DataFrames for warm-starting optimizations.
+
+    Parameters
+    ----------
+    search_space : dict
+        Dictionary mapping parameter names to arrays of possible values.
+        Each array defines the discrete search space for that parameter.
+    constraints : list, optional
+        List of constraint functions. Each function takes a parameter dict
+        and returns True if the constraint is satisfied.
+
+    Attributes
+    ----------
+    n_dimensions : int
+        Number of parameters in the search space.
+    search_space : dict
+        The original search space dictionary.
+    para_names : list
+        List of parameter names in order.
+    dim_sizes : array
+        Number of possible values for each dimension.
+    search_space_size : int
+        Total number of possible combinations in the search space.
+    max_positions : array
+        Maximum valid position index for each dimension (dim_sizes - 1).
+
+    Examples
+    --------
+    >>> search_space = {"x": np.linspace(-5, 5, 100), "y": np.arange(0, 10)}
+    >>> conv = Converter(search_space)
+    >>> position = [50, 5]
+    >>> value = conv.position2value(position)  # [0.0, 5]
+    >>> para = conv.value2para(value)  # {"x": 0.0, "y": 5}
+    """
+
     def __init__(self, search_space: dict, constraints: list = None) -> None:
         check_numpy_array(search_space)
 
@@ -67,7 +112,19 @@ class Converter:
         self.max_positions = self.dim_sizes - 1
         self.search_space_values = list(search_space.values())
 
-    def not_in_constraint(self, position):
+    def not_in_constraint(self, position) -> bool:
+        """Check if a position satisfies all constraints.
+
+        Parameters
+        ----------
+        position : list or array
+            Position indices to check.
+
+        Returns
+        -------
+        bool
+            True if all constraints are satisfied, False otherwise.
+        """
         para = self.value2para(self.position2value(position))
 
         for constraint in self.constraints:
@@ -76,6 +133,8 @@ class Converter:
         return True
 
     def returnNoneIfArgNone(func_):
+        """Decorator that returns None if any argument is None."""
+
         def wrapper(self, *args):
             for arg in [*args]:
                 if arg is None:
@@ -87,6 +146,18 @@ class Converter:
 
     @returnNoneIfArgNone
     def position2value(self, position: Optional[list]) -> Optional[list]:
+        """Convert position indices to actual values.
+
+        Parameters
+        ----------
+        position : list or array
+            Integer indices into each dimension of the search space.
+
+        Returns
+        -------
+        list
+            Values from the search space at the given position.
+        """
         value = []
 
         for n, space_dim in enumerate(self.search_space_values):
@@ -96,6 +167,21 @@ class Converter:
 
     @returnNoneIfArgNone
     def value2position(self, value: Optional[list]) -> Optional[list]:
+        """Convert values to position indices.
+
+        Finds the closest matching position for each value by minimizing
+        the absolute difference to search space entries.
+
+        Parameters
+        ----------
+        value : list
+            Values to convert to positions.
+
+        Returns
+        -------
+        array
+            Integer position indices corresponding to the values.
+        """
         position = []
         for n, space_dim in enumerate(self.search_space_values):
             # Find index of closest value
@@ -111,6 +197,18 @@ class Converter:
 
     @returnNoneIfArgNone
     def value2para(self, value: Optional[list]) -> Optional[dict]:
+        """Convert a value list to a parameter dictionary.
+
+        Parameters
+        ----------
+        value : list
+            List of values in parameter order.
+
+        Returns
+        -------
+        dict
+            Dictionary mapping parameter names to values.
+        """
         para = {}
         for key, p_ in zip(self.para_names, value):
             para[key] = p_
@@ -119,6 +217,18 @@ class Converter:
 
     @returnNoneIfArgNone
     def para2value(self, para: Optional[dict]) -> Optional[list]:
+        """Convert a parameter dictionary to a value list.
+
+        Parameters
+        ----------
+        para : dict
+            Dictionary mapping parameter names to values.
+
+        Returns
+        -------
+        list
+            List of values in parameter order.
+        """
         value = []
         for para_name in self.para_names:
             value.append(para[para_name])
@@ -127,6 +237,18 @@ class Converter:
 
     @returnNoneIfArgNone
     def values2positions(self, values: Optional[list]) -> Optional[list]:
+        """Convert multiple value lists to position lists.
+
+        Parameters
+        ----------
+        values : list
+            List of value lists to convert.
+
+        Returns
+        -------
+        list
+            List of position arrays.
+        """
         positions_temp = []
         values_arr = array(values)
 
@@ -169,6 +291,18 @@ class Converter:
 
     @returnNoneIfArgNone
     def positions2values(self, positions: Optional[list]) -> Optional[list]:
+        """Convert multiple position lists to value lists.
+
+        Parameters
+        ----------
+        positions : list
+            List of position arrays to convert.
+
+        Returns
+        -------
+        list
+            List of value lists.
+        """
         values = []
 
         for n, space_dim in enumerate(self.search_space_values):
@@ -184,6 +318,18 @@ class Converter:
 
     @returnNoneIfArgNone
     def values2paras(self, values: list) -> list:
+        """Convert multiple value lists to parameter dictionaries.
+
+        Parameters
+        ----------
+        values : list
+            List of value lists to convert.
+
+        Returns
+        -------
+        list
+            List of parameter dictionaries.
+        """
         paras = []
         for value in values:
             paras.append(self.value2para(value))
@@ -193,6 +339,20 @@ class Converter:
     def positions_scores2memory_dict(
         self, positions: Optional[list], scores: Optional[list]
     ) -> Optional[dict]:
+        """Convert positions and scores to a memory dictionary.
+
+        Parameters
+        ----------
+        positions : list
+            List of position arrays.
+        scores : list
+            List of corresponding scores.
+
+        Returns
+        -------
+        dict
+            Dictionary mapping position tuples to Result objects.
+        """
         value_tuple_list = list(map(tuple, positions))
         # Convert scores to Result objects
         result_objects = [Result(float(score), {}) for score in scores]
@@ -202,6 +362,19 @@ class Converter:
 
     @returnNoneIfArgNone
     def memory_dict2positions_scores(self, memory_dict: Optional[dict]):
+        """Convert a memory dictionary to positions and scores.
+
+        Parameters
+        ----------
+        memory_dict : dict
+            Dictionary mapping position tuples to Result objects.
+
+        Returns
+        -------
+        tuple
+            (positions, scores) where positions is a list of arrays
+            and scores is a list of floats.
+        """
         positions = [array(pos).astype(int) for pos in list(memory_dict.keys())]
         # Extract scores from Result objects
         scores = [
@@ -215,6 +388,20 @@ class Converter:
     def dataframe2memory_dict(
         self, dataframe: Optional[pd.DataFrame]
     ) -> Optional[dict]:
+        """Convert a pandas DataFrame to a memory dictionary.
+
+        Used for warm-starting from previous optimization results.
+
+        Parameters
+        ----------
+        dataframe : pd.DataFrame
+            DataFrame with columns for each parameter and a 'score' column.
+
+        Returns
+        -------
+        dict
+            Memory dictionary, or empty dict if parameters don't match.
+        """
         parameter = set(self.search_space.keys())
         memory_para = set(dataframe.columns)
 
@@ -242,6 +429,18 @@ class Converter:
     def memory_dict2dataframe(
         self, memory_dict: Optional[dict]
     ) -> Optional[pd.DataFrame]:
+        """Convert a memory dictionary to a pandas DataFrame.
+
+        Parameters
+        ----------
+        memory_dict : dict
+            Memory dictionary mapping position tuples to Result objects.
+
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame with columns for each parameter and a 'score' column.
+        """
         positions, score = self.memory_dict2positions_scores(memory_dict)
         values = self.positions2values(positions)
 

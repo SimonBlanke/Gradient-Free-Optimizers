@@ -7,6 +7,36 @@ from ..local_opt import HillClimbingOptimizer
 
 
 class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer):
+    """Hill climbing with periodic random restarts.
+
+    Combines local hill climbing with global exploration by periodically
+    restarting from a random position. This helps escape local optima
+    while still exploiting local structure.
+
+    Parameters
+    ----------
+    search_space : dict
+        Dictionary mapping parameter names to arrays of possible values.
+    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+        Strategy for generating initial positions.
+    constraints : list, optional
+        List of constraint functions.
+    random_state : int, optional
+        Seed for random number generation.
+    rand_rest_p : float, default=0
+        Probability of random restart.
+    nth_process : int, optional
+        Process index for parallel optimization.
+    epsilon : float, default=0.03
+        Step size for hill climbing.
+    distribution : str, default="normal"
+        Distribution for step sizes.
+    n_neighbours : int, default=3
+        Number of neighbors to evaluate.
+    n_iter_restart : int, default=10
+        Number of iterations between random restarts.
+    """
+
     name = "Random Restart Hill Climbing"
     _name_ = "random_restart_hill_climbing"
     __name__ = "RandomRestartHillClimbingOptimizer"
@@ -46,6 +76,7 @@ class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer):
     @HillClimbingOptimizer.track_new_pos
     @HillClimbingOptimizer.random_iteration
     def iterate(self):
+        """Hill climb or random restart based on iteration count."""
         notZero = self.nth_trial != 0
         modZero = self.nth_trial % self.n_iter_restart == 0
 

@@ -10,6 +10,38 @@ from ._individual import Individual
 
 
 class EvolutionStrategyOptimizer(EvolutionaryAlgorithmOptimizer):
+    """Evolution Strategy optimization algorithm.
+
+    Uses mutation and recombination to evolve a population. Can operate
+    in (mu, lambda) mode where parents are replaced, or (mu + lambda)
+    mode where parents compete with offspring.
+
+    Parameters
+    ----------
+    search_space : dict
+        Dictionary mapping parameter names to arrays of possible values.
+    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+        Strategy for generating initial positions.
+    constraints : list, optional
+        List of constraint functions.
+    random_state : int, optional
+        Seed for random number generation.
+    rand_rest_p : float, default=0
+        Probability of random restart.
+    nth_process : int, optional
+        Process index for parallel optimization.
+    population : int, default=10
+        Number of parent individuals (mu).
+    offspring : int, default=20
+        Number of offspring to generate (lambda).
+    replace_parents : bool, default=False
+        If True, use (mu, lambda); if False, use (mu + lambda).
+    mutation_rate : float, default=0.7
+        Probability of mutation operation.
+    crossover_rate : float, default=0.3
+        Probability of crossover operation.
+    """
+
     name = "Evolution Strategy"
     _name_ = "evolution_strategy"
     __name__ = "EvolutionStrategyOptimizer"
@@ -87,6 +119,7 @@ class EvolutionStrategyOptimizer(EvolutionaryAlgorithmOptimizer):
 
     @EvolutionaryAlgorithmOptimizer.track_new_pos
     def iterate(self):
+        """Generate next position via mutation or recombination."""
         self.n_ind = len(self.individuals)
 
         if self.n_ind == 1:

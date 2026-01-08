@@ -26,6 +26,34 @@ def max_list_idx(list_):
 
 
 class PatternSearch(BaseOptimizer):
+    """Pattern search optimizer using coordinate-wise exploration.
+
+    Explores the search space by evaluating positions along coordinate axes
+    from the current best position. The pattern size reduces when the best
+    position is found within recent evaluations.
+
+    Parameters
+    ----------
+    search_space : dict
+        Dictionary mapping parameter names to arrays of possible values.
+    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+        Strategy for generating initial positions.
+    constraints : list, optional
+        List of constraint functions.
+    random_state : int, optional
+        Seed for random number generation.
+    rand_rest_p : float, default=0
+        Probability of random restart.
+    nth_process : int, optional
+        Process index for parallel optimization.
+    n_positions : int, default=4
+        Number of pattern positions to evaluate per iteration.
+    pattern_size : float, default=0.25
+        Initial pattern size as fraction of dimension size.
+    reduction : float, default=0.9
+        Factor to reduce pattern size when converging.
+    """
+
     name = "Pattern Search"
     _name_ = "pattern_search"
     __name__ = "PatternSearch"
@@ -97,6 +125,7 @@ class PatternSearch(BaseOptimizer):
     @BaseOptimizer.track_new_pos
     @BaseOptimizer.random_iteration
     def iterate(self):
+        """Generate next position from the current pattern."""
         while True:
             pos_new = self.pattern_pos_l[0]
             self.pattern_pos_l.pop(0)
@@ -111,6 +140,7 @@ class PatternSearch(BaseOptimizer):
 
     @BaseOptimizer.track_new_score
     def evaluate(self, score_new):
+        """Evaluate score and regenerate pattern when needed."""
         BaseOptimizer.evaluate(self, score_new)
         if len(self.scores_valid) == 0:
             return

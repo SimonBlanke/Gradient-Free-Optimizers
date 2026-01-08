@@ -8,6 +8,31 @@ from .orthogonal_grid_search import OrthogonalGridSearchOptimizer
 
 
 class GridSearchOptimizer(BaseOptimizer):
+    """Systematic grid search over the entire search space.
+
+    Evaluates positions in a structured grid pattern, either diagonally
+    (visiting diverse regions early) or orthogonally (dimension by dimension).
+
+    Parameters
+    ----------
+    search_space : dict
+        Dictionary mapping parameter names to arrays of possible values.
+    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+        Strategy for generating initial positions.
+    constraints : list, optional
+        List of constraint functions.
+    random_state : int, optional
+        Seed for random number generation.
+    rand_rest_p : float, default=0
+        Probability of random restart.
+    nth_process : int, optional
+        Process index for parallel optimization.
+    step_size : int, default=1
+        Step size for grid traversal (1 = visit every point).
+    direction : str, default="diagonal"
+        Grid traversal direction: "diagonal" or "orthogonal".
+    """
+
     name = "Grid Search"
     _name_ = "grid_search"
     __name__ = "GridSearchOptimizer"
@@ -59,8 +84,9 @@ class GridSearchOptimizer(BaseOptimizer):
                 step_size=step_size,
             )
         else:
-            msg = ""
-            raise Exception(msg)
+            raise ValueError(
+                f"direction must be 'diagonal' or 'orthogonal', got '{direction}'"
+            )
 
     @BaseOptimizer.track_new_pos
     def iterate(self):

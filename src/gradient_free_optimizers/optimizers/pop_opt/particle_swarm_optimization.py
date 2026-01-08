@@ -10,6 +10,38 @@ from ._particle import Particle
 
 
 class ParticleSwarmOptimizer(BasePopulationOptimizer):
+    """Particle Swarm Optimization algorithm.
+
+    Simulates a swarm of particles moving through the search space. Each
+    particle is influenced by its own best position and the global best
+    position found by the swarm.
+
+    Parameters
+    ----------
+    search_space : dict
+        Dictionary mapping parameter names to arrays of possible values.
+    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+        Strategy for generating initial positions.
+    constraints : list, optional
+        List of constraint functions.
+    random_state : int, optional
+        Seed for random number generation.
+    rand_rest_p : float, default=0
+        Probability of random restart.
+    nth_process : int, optional
+        Process index for parallel optimization.
+    population : int, default=10
+        Number of particles in the swarm.
+    inertia : float, default=0.5
+        Weight for maintaining current velocity direction.
+    cognitive_weight : float, default=0.5
+        Weight for attraction toward personal best position.
+    social_weight : float, default=0.5
+        Weight for attraction toward global best position.
+    temp_weight : float, default=0.2
+        Temperature weight for exploration randomness.
+    """
+
     name = "Particle Swarm Optimization"
     _name_ = "particle_swarm_optimization"
     __name__ = "ParticleSwarmOptimizer"
@@ -67,6 +99,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
 
     @BasePopulationOptimizer.track_new_pos
     def iterate(self):
+        """Move current particle based on velocity update equations."""
         while True:
             self.p_current = self.particles[
                 self.nth_trial % len(self.particles)

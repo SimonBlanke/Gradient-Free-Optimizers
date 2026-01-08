@@ -12,6 +12,32 @@ from ..local_opt import SimulatedAnnealingOptimizer
 
 
 class ParallelTemperingOptimizer(BasePopulationOptimizer):
+    """Parallel Tempering (Replica Exchange) optimization.
+
+    Runs multiple simulated annealing instances at different temperatures.
+    Periodically swaps positions between systems to enable exploration
+    at high temperatures and exploitation at low temperatures.
+
+    Parameters
+    ----------
+    search_space : dict
+        Dictionary mapping parameter names to arrays of possible values.
+    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+        Strategy for generating initial positions.
+    constraints : list, optional
+        List of constraint functions.
+    random_state : int, optional
+        Seed for random number generation.
+    rand_rest_p : float, default=0
+        Probability of random restart.
+    nth_process : int, optional
+        Process index for parallel optimization.
+    population : int, default=5
+        Number of parallel tempering systems.
+    n_iter_swap : int, default=5
+        Iterations between temperature swap attempts.
+    """
+
     name = "Parallel Tempering"
     _name_ = "parallel_tempering"
     __name__ = "ParallelTemperingOptimizer"
@@ -82,6 +108,7 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
 
     @BasePopulationOptimizer.track_new_pos
     def iterate(self):
+        """Advance current system and periodically attempt temperature swaps."""
         self.p_current = self.systems[self.nth_trial % len(self.systems)]
         return self.p_current.iterate()
 

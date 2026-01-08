@@ -7,6 +7,38 @@ from ..local_opt import HillClimbingOptimizer
 
 
 class RandomAnnealingOptimizer(HillClimbingOptimizer):
+    """Random annealing with decreasing step size.
+
+    Similar to simulated annealing but without probabilistic acceptance.
+    The step size (epsilon) is multiplied by a decaying temperature,
+    causing large initial exploration that focuses over time.
+
+    Parameters
+    ----------
+    search_space : dict
+        Dictionary mapping parameter names to arrays of possible values.
+    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+        Strategy for generating initial positions.
+    constraints : list, optional
+        List of constraint functions.
+    random_state : int, optional
+        Seed for random number generation.
+    rand_rest_p : float, default=0
+        Probability of random restart.
+    nth_process : int, optional
+        Process index for parallel optimization.
+    epsilon : float, default=0.03
+        Base step size for generating neighbors.
+    distribution : str, default="normal"
+        Distribution for step sizes.
+    n_neighbours : int, default=3
+        Number of neighbors to evaluate.
+    annealing_rate : float, default=0.98
+        Temperature decay rate per iteration.
+    start_temp : float, default=10
+        Initial temperature (step size multiplier).
+    """
+
     name = "Random Annealing"
     _name_ = "random_annealing"
     __name__ = "RandomAnnealingOptimizer"
@@ -46,6 +78,7 @@ class RandomAnnealingOptimizer(HillClimbingOptimizer):
     @HillClimbingOptimizer.track_new_pos
     @HillClimbingOptimizer.random_iteration
     def iterate(self):
+        """Generate next position with temperature-scaled step size."""
         pos = self.move_climb(
             self.pos_current,
             epsilon=self.epsilon,

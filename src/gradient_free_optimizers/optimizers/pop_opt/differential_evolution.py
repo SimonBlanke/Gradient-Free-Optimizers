@@ -10,6 +10,34 @@ from ._individual import Individual
 
 
 class DifferentialEvolutionOptimizer(EvolutionaryAlgorithmOptimizer):
+    """Differential Evolution optimization algorithm.
+
+    Evolves a population using vector differences between randomly selected
+    individuals. The mutation creates donor vectors that are combined with
+    target vectors through crossover.
+
+    Parameters
+    ----------
+    search_space : dict
+        Dictionary mapping parameter names to arrays of possible values.
+    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+        Strategy for generating initial positions.
+    constraints : list, optional
+        List of constraint functions.
+    random_state : int, optional
+        Seed for random number generation.
+    rand_rest_p : float, default=0
+        Probability of random restart.
+    nth_process : int, optional
+        Process index for parallel optimization.
+    population : int, default=10
+        Number of individuals in the population.
+    mutation_rate : float, default=0.9
+        Scaling factor F for difference vectors.
+    crossover_rate : float, default=0.9
+        Probability of gene exchange in crossover.
+    """
+
     name = "Differential Evolution"
     _name_ = "differential_evolution"
     __name__ = "DifferentialEvolutionOptimizer"
@@ -68,6 +96,7 @@ class DifferentialEvolutionOptimizer(EvolutionaryAlgorithmOptimizer):
 
     @EvolutionaryAlgorithmOptimizer.track_new_pos
     def iterate(self):
+        """Generate trial vector via mutation and crossover."""
         self.p_current = self.individuals[
             self.nth_trial % len(self.individuals)
         ]

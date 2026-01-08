@@ -10,6 +10,30 @@ from ..base_optimizer import BaseOptimizer
 
 
 class DiagonalGridSearchOptimizer(BaseOptimizer):
+    """Diagonal grid search using number theory for space coverage.
+
+    Uses a prime generator to traverse the search space diagonally,
+    ensuring diverse coverage early in the search. The traversal visits
+    positions that are spread across multiple dimensions simultaneously.
+
+    Parameters
+    ----------
+    search_space : dict
+        Dictionary mapping parameter names to arrays of possible values.
+    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+        Strategy for generating initial positions.
+    constraints : list, optional
+        List of constraint functions.
+    random_state : int, optional
+        Seed for random number generation.
+    rand_rest_p : float, default=0
+        Probability of random restart.
+    nth_process : int, optional
+        Process index for parallel optimization.
+    step_size : int, default=1
+        Step multiplier for grid traversal.
+    """
+
     def __init__(
         self,
         search_space,
@@ -81,6 +105,7 @@ class DiagonalGridSearchOptimizer(BaseOptimizer):
 
     @BaseOptimizer.track_new_pos
     def iterate(self):
+        """Generate next diagonal grid position."""
         # while loop for constraint opt
         while True:
             # If this is the first iteration:

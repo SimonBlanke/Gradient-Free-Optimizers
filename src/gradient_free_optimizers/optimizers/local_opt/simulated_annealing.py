@@ -9,6 +9,38 @@ from ..local_opt import StochasticHillClimbingOptimizer
 
 
 class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer):
+    """Simulated annealing optimizer inspired by metallurgical annealing.
+
+    Uses a temperature parameter that decreases over time, controlling the
+    probability of accepting worse solutions. High temperature allows more
+    exploration; low temperature focuses on exploitation.
+
+    Parameters
+    ----------
+    search_space : dict
+        Dictionary mapping parameter names to arrays of possible values.
+    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+        Strategy for generating initial positions.
+    constraints : list, optional
+        List of constraint functions.
+    random_state : int, optional
+        Seed for random number generation.
+    rand_rest_p : float, default=0
+        Probability of random restart.
+    nth_process : int, optional
+        Process index for parallel optimization.
+    epsilon : float, default=0.03
+        Step size for generating neighbors.
+    distribution : str, default="normal"
+        Distribution for step sizes.
+    n_neighbours : int, default=3
+        Number of neighbors to evaluate.
+    annealing_rate : float, default=0.97
+        Temperature decay rate per iteration (temp *= annealing_rate).
+    start_temp : float, default=1
+        Initial temperature value.
+    """
+
     name = "Simulated Annealing"
     _name_ = "simulated_annealing"
     __name__ = "SimulatedAnnealingOptimizer"

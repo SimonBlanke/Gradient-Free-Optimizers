@@ -25,6 +25,35 @@ def split(positions_l, population):
 
 
 class BasePopulationOptimizer(CoreOptimizer):
+    """Base class for population-based optimization algorithms.
+
+    Manages a population of individual optimizers that explore the search
+    space in parallel. Provides common functionality for creating populations,
+    distributing initial positions, and tracking the best individual.
+
+    Parameters
+    ----------
+    search_space : dict
+        Dictionary mapping parameter names to arrays of possible values.
+    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+        Strategy for generating initial positions distributed across population.
+    constraints : list, optional
+        List of constraint functions.
+    random_state : int, optional
+        Seed for random number generation.
+    rand_rest_p : float, default=0
+        Probability of random restart.
+    nth_process : int, optional
+        Process index for parallel optimization.
+
+    Attributes
+    ----------
+    optimizers : list
+        List of individual optimizer instances in the population.
+    pop_sorted : list
+        Population sorted by score (best first).
+    """
+
     def __init__(
         self,
         search_space,

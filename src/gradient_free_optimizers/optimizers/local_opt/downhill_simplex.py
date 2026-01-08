@@ -38,6 +38,36 @@ def centeroid(array_list):
 
 
 class DownhillSimplexOptimizer(HillClimbingOptimizer):
+    """Nelder-Mead downhill simplex optimizer.
+
+    Maintains a simplex of n+1 points in n-dimensional space and iteratively
+    transforms it through reflection, expansion, contraction, and shrinkage
+    operations to find the optimum.
+
+    Parameters
+    ----------
+    search_space : dict
+        Dictionary mapping parameter names to arrays of possible values.
+    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+        Strategy for generating initial simplex vertices.
+    constraints : list, optional
+        List of constraint functions.
+    random_state : int, optional
+        Seed for random number generation.
+    rand_rest_p : float, default=0
+        Probability of random restart.
+    nth_process : int, optional
+        Process index for parallel optimization.
+    alpha : float, default=1
+        Reflection coefficient.
+    gamma : float, default=2
+        Expansion coefficient.
+    beta : float, default=0.5
+        Contraction coefficient.
+    sigma : float, default=0.5
+        Shrinkage coefficient.
+    """
+
     name = "Downhill Simplex"
     _name_ = "downhill_simplex"
     __name__ = "DownhillSimplexOptimizer"
@@ -96,6 +126,7 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
 
     @HillClimbingOptimizer.track_new_pos
     def iterate(self):
+        """Generate next simplex position via reflection/expansion/contraction."""
         simplex_stale = all(
             _arrays_equal(self.simplex_pos[0], array)
             for array in self.simplex_pos
@@ -155,6 +186,7 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
 
     @HillClimbingOptimizer.track_new_score
     def evaluate(self, score_new):
+        """Evaluate score and update simplex state machine."""
         if self.simplex_step != 0:
             self.prev_pos = self.positions_valid[-1]
 

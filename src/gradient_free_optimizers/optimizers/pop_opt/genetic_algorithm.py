@@ -10,6 +10,40 @@ from ._individual import Individual
 
 
 class GeneticAlgorithmOptimizer(EvolutionaryAlgorithmOptimizer):
+    """Genetic Algorithm inspired by biological evolution.
+
+    Uses selection, crossover, and mutation operations to evolve a
+    population of solutions. Fitter individuals are more likely to
+    reproduce and pass their traits to offspring.
+
+    Parameters
+    ----------
+    search_space : dict
+        Dictionary mapping parameter names to arrays of possible values.
+    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+        Strategy for generating initial positions.
+    constraints : list, optional
+        List of constraint functions.
+    random_state : int, optional
+        Seed for random number generation.
+    rand_rest_p : float, default=0
+        Probability of random restart.
+    nth_process : int, optional
+        Process index for parallel optimization.
+    population : int, default=10
+        Number of individuals in the population.
+    offspring : int, default=10
+        Number of offspring to generate per crossover batch.
+    crossover : str, default="discrete-recombination"
+        Crossover method to use.
+    n_parents : int, default=2
+        Number of parents for crossover.
+    mutation_rate : float, default=0.5
+        Probability of mutation operation.
+    crossover_rate : float, default=0.5
+        Probability of crossover operation.
+    """
+
     name = "Genetic Algorithm"
     _name_ = "genetic_algorithm"
     __name__ = "GeneticAlgorithmOptimizer"
@@ -92,6 +126,7 @@ class GeneticAlgorithmOptimizer(EvolutionaryAlgorithmOptimizer):
 
     @EvolutionaryAlgorithmOptimizer.track_new_pos
     def iterate(self):
+        """Generate next position via mutation or crossover."""
         n_ind = len(self.individuals)
 
         if n_ind == 1:

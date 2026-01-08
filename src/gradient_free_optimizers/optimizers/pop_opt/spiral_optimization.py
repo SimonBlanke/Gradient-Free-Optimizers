@@ -22,6 +22,32 @@ def centeroid(array_list):
 
 
 class SpiralOptimization(BasePopulationOptimizer):
+    """Spiral Optimization Algorithm.
+
+    Particles move in a spiral pattern toward the current best position.
+    The spiral movement combines rotation and contraction to balance
+    exploration and exploitation.
+
+    Parameters
+    ----------
+    search_space : dict
+        Dictionary mapping parameter names to arrays of possible values.
+    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+        Strategy for generating initial positions.
+    constraints : list, optional
+        List of constraint functions.
+    random_state : int, optional
+        Seed for random number generation.
+    rand_rest_p : float, default=0
+        Probability of random restart.
+    nth_process : int, optional
+        Process index for parallel optimization.
+    population : int, default=10
+        Number of particles in the swarm.
+    decay_rate : float, default=0.99
+        Rate at which spiral radius contracts per iteration.
+    """
+
     name = "Spiral Optimization"
     _name_ = "spiral_optimization"
     __name__ = "SpiralOptimization"
@@ -73,6 +99,7 @@ class SpiralOptimization(BasePopulationOptimizer):
 
     @BasePopulationOptimizer.track_new_pos
     def iterate(self):
+        """Move current particle in spiral pattern toward center."""
         while True:
             self.p_current = self.particles[
                 self.nth_trial % len(self.particles)

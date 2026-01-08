@@ -19,6 +19,45 @@ except ImportError:
 
 
 class TreeStructuredParzenEstimators(SMBO):
+    """Tree-structured Parzen Estimator (TPE) optimization algorithm.
+
+    TPE models the conditional probability P(x|y) instead of P(y|x) used by
+    other SMBO methods. It maintains two kernel density estimators: one for
+    the best-performing samples (l(x)) and one for the rest (g(x)). The
+    acquisition function is the ratio l(x)/g(x).
+
+    Parameters
+    ----------
+    search_space : dict
+        Dictionary mapping parameter names to arrays of possible values.
+    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+        Strategy for generating initial positions.
+    constraints : list, optional
+        List of constraint functions.
+    random_state : int, optional
+        Seed for random number generation.
+    rand_rest_p : float, default=0
+        Probability of random iteration.
+    nth_process : int, optional
+        Process index for parallel optimization.
+    warm_start_smbo : pd.DataFrame, optional
+        Previous results to initialize the KDEs.
+    max_sample_size : int, default=10000000
+        Maximum positions to consider.
+    sampling : dict or False, default={"random": 1000000}
+        Sampling strategy for large search spaces.
+    replacement : bool, default=True
+        Allow re-evaluation of positions.
+    gamma_tpe : float, default=0.2
+        Quantile threshold for splitting samples into "good" and "bad".
+        Top gamma_tpe fraction are used for l(x), rest for g(x).
+
+    See Also
+    --------
+    BayesianOptimizer : Gaussian Process based SMBO.
+    ForestOptimizer : Tree ensemble based SMBO.
+    """
+
     name = "Tree Structured Parzen Estimators"
     _name_ = "tree_structured_parzen_estimators"
     __name__ = "TreeStructuredParzenEstimators"
@@ -69,6 +108,7 @@ class TreeStructuredParzenEstimators(SMBO):
         return super().finish_initialization()
 
     def _get_samples(self):
+        """Split samples into best and worst groups based on gamma_tpe."""
         n_samples = len(self.X_sample)
         n_best = max(round(n_samples * self.gamma_tpe), 1)
 
@@ -83,6 +123,7 @@ class TreeStructuredParzenEstimators(SMBO):
         return best_samples, worst_samples
 
     def _expected_improvement(self):
+        """Compute acquisition as ratio of good/bad density estimates."""
         self.pos_comb = self._sampling(self.all_pos_comb)
 
         logprob_best = self.kd_best.score_samples(self.pos_comb)
@@ -104,6 +145,7 @@ class TreeStructuredParzenEstimators(SMBO):
         return exp_imp
 
     def _training(self):
+        """Fit KDE models on best and worst sample groups."""
         best_samples, worst_samples = self._get_samples()
 
         self.kd_best.fit(best_samples)

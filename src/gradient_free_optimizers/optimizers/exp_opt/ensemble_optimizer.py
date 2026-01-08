@@ -28,6 +28,53 @@ def normalize(array):
 
 
 class EnsembleOptimizer(SMBO):
+    """Ensemble-based sequential model-based optimization.
+
+    Combines multiple surrogate models (e.g., Gradient Boosting, Gaussian Process)
+    into an ensemble for more robust predictions. This experimental optimizer
+    averages predictions from multiple models to reduce variance.
+
+    Parameters
+    ----------
+    search_space : dict
+        Dictionary mapping parameter names to arrays of possible values.
+    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+        Strategy for generating initial positions.
+    constraints : list, optional
+        List of constraint functions.
+    random_state : int, optional
+        Seed for random number generation.
+    rand_rest_p : float, default=0
+        Probability of random restart.
+    nth_process : int, optional
+        Process index for parallel optimization.
+    epsilon : float, default=0.03
+        Step size for local search fallback.
+    distribution : str, default="normal"
+        Distribution for step sizes.
+    n_neighbours : int, default=3
+        Number of neighbors for local search.
+    estimators : list
+        List of scikit-learn estimator instances to ensemble.
+    xi : float, default=0.01
+        Exploration-exploitation parameter for Expected Improvement.
+    warm_start_smbo : pd.DataFrame, optional
+        Previous results to initialize the models.
+    max_sample_size : int, default=10000000
+        Maximum positions to consider.
+    sampling : dict or False, default={"random": 1000000}
+        Sampling strategy for large search spaces.
+    replacement : bool, default=True
+        Allow re-evaluation of positions.
+    warnings : int, default=100000000
+        Threshold for memory warnings.
+
+    Notes
+    -----
+    This is an experimental optimizer. For production use, consider
+    BayesianOptimizer or ForestOptimizer instead.
+    """
+
     name = "Ensemble Optimizer"
 
     def __init__(

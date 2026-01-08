@@ -13,6 +13,46 @@ np.seterr(divide="ignore", invalid="ignore")
 
 
 class SMBO(BaseOptimizer):
+    """Base class for Sequential Model-Based Optimization algorithms.
+
+    SMBO algorithms use a surrogate model to approximate the objective function
+    and an acquisition function to decide which positions to evaluate next.
+    The surrogate model is trained on evaluated positions and their scores,
+    then used to predict promising candidates.
+
+    Parameters
+    ----------
+    search_space : dict
+        Dictionary mapping parameter names to arrays of possible values.
+    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+        Strategy for generating initial positions before model-based search.
+    constraints : list, optional
+        List of constraint functions that filter valid positions.
+    random_state : int, optional
+        Seed for random number generation.
+    rand_rest_p : float, default=0
+        Probability of performing a random iteration instead of model-based.
+    nth_process : int, optional
+        Process index for parallel optimization.
+    warm_start_smbo : pd.DataFrame, optional
+        Previous optimization results to initialize the surrogate model.
+    max_sample_size : int, default=10000000
+        Maximum number of positions to consider for sampling.
+    sampling : dict or False, default={"random": 1000000}
+        Sampling strategy for large search spaces. Use False to disable.
+    replacement : bool, default=True
+        Whether to allow re-evaluation of the same position.
+
+    Attributes
+    ----------
+    X_sample : list
+        List of evaluated positions (training data for surrogate).
+    Y_sample : list
+        List of scores corresponding to X_sample.
+    sampler : InitialSampler
+        Sampler for generating candidate positions.
+    """
+
     def __init__(
         self,
         search_space,
@@ -45,6 +85,15 @@ class SMBO(BaseOptimizer):
         self.init_warm_start_smbo(warm_start_smbo)
 
     def init_warm_start_smbo(self, search_data):
+        """Initialize X_sample and Y_sample from previous optimization data.
+
+        Filters out invalid values (NaN, inf) and values outside the search space.
+
+        Parameters
+        ----------
+        search_data : pd.DataFrame or None
+            DataFrame with parameter columns and a 'score' column.
+        """
         if search_data is not None:
             # filter out nan and inf
             warm_start_smbo = search_data[
@@ -78,6 +127,8 @@ class SMBO(BaseOptimizer):
             self.Y_sample = []
 
     def track_X_sample(iterate):
+        """Decorator that appends returned position to X_sample."""
+
         def wrapper(self, *args, **kwargs):
             pos = iterate(self, *args, **kwargs)
             self.X_sample.append(pos)
@@ -86,6 +137,8 @@ class SMBO(BaseOptimizer):
         return wrapper
 
     def track_y_sample(evaluate):
+        """Decorator that appends score to Y_sample, skipping invalid scores."""
+
         def wrapper(self, score):
             evaluate(self, score)
 
@@ -151,6 +204,7 @@ class SMBO(BaseOptimizer):
     @BaseOptimizer.track_new_pos
     @track_X_sample
     def iterate(self):
+        """Generate next position using surrogate model and acquisition function."""
         return self._propose_location()
 
     def _remove_position(self, position):
@@ -160,6 +214,7 @@ class SMBO(BaseOptimizer):
     @BaseOptimizer.track_new_score
     @track_y_sample
     def evaluate(self, score_new):
+        """Evaluate the current position and update surrogate training data."""
         self._evaluate_new2current(score_new)
         self._evaluate_current2best()
 

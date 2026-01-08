@@ -34,14 +34,55 @@ def normalize(array):
 
 
 class ForestOptimizer(SMBO):
+    """Sequential model-based optimization using tree ensemble surrogates.
+
+    Uses a tree-based ensemble (Random Forest, Extra Trees, or Gradient Boosting)
+    as surrogate model. Tree ensembles can capture non-linear relationships and
+    provide uncertainty estimates via prediction variance across trees.
+
+    Based on the forest-optimizer in the scikit-optimize package.
+
+    Parameters
+    ----------
+    search_space : dict
+        Dictionary mapping parameter names to arrays of possible values.
+    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+        Strategy for generating initial positions.
+    constraints : list, optional
+        List of constraint functions.
+    random_state : int, optional
+        Seed for random number generation.
+    rand_rest_p : float, default=0
+        Probability of random iteration.
+    nth_process : int, optional
+        Process index for parallel optimization.
+    warm_start_smbo : pd.DataFrame, optional
+        Previous results to initialize the model.
+    max_sample_size : int, default=10000000
+        Maximum positions to consider.
+    sampling : dict or False, default={"random": 1000000}
+        Sampling strategy for large search spaces.
+    replacement : bool, default=True
+        Allow re-evaluation of positions.
+    tree_regressor : str, default="extra_tree"
+        Type of tree ensemble: "random_forest", "extra_tree", or "gradient_boost".
+    tree_para : dict, default={"n_estimators": 100}
+        Parameters passed to the tree regressor.
+    xi : float, default=0.03
+        Exploration-exploitation parameter for Expected Improvement.
+
+    See Also
+    --------
+    BayesianOptimizer : Uses Gaussian Process instead of trees.
+    TreeStructuredParzenEstimators : Density estimation approach.
+    """
+
     name = "Forest Optimization"
     _name_ = "forest_optimization"
     __name__ = "ForestOptimizer"
 
     optimizer_type = "sequential"
     computationally_expensive = True
-
-    """Based on the forest-optimizer in the scikit-optimize package"""
 
     def __init__(
         self,
@@ -82,12 +123,14 @@ class ForestOptimizer(SMBO):
         return super().finish_initialization()
 
     def _expected_improvement(self):
+        """Compute Expected Improvement for all candidate positions."""
         self.pos_comb = self._sampling(self.all_pos_comb)
 
         acqu_func = ExpectedImprovement(self.regr, self.pos_comb, self.xi)
         return acqu_func.calculate(self.X_sample, self.Y_sample)
 
     def _training(self):
+        """Fit the tree ensemble on collected samples."""
         X_sample = np.array(self.X_sample)
         Y_sample = np.array(self.Y_sample)
 
