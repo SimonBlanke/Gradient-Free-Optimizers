@@ -7,7 +7,6 @@ from ..._array_backend import (
     arange,
     abs as np_abs,
     take,
-    HAS_NUMPY,
 )
 
 # Pandas is still required for DataFrame operations
@@ -23,17 +22,15 @@ from ..._result import Result
 def check_numpy_array(search_space):
     """Check that search space values are array-like."""
     for para_name, dim_values in search_space.items():
-
-        def error_message(wrong_type):
-            return "\n Value in '{}' of search space dictionary must be of type array but is '{}' \n".format(
-                para_name, wrong_type
-            )
-
         # Accept numpy arrays or our GFOArray
         has_shape = hasattr(dim_values, "shape")
         has_len = hasattr(dim_values, "__len__")
         if not (has_shape and has_len):
-            raise ValueError(error_message(type(dim_values)))
+            raise TypeError(
+                f"Search space parameter '{para_name}' must be an array-like "
+                f"(e.g., numpy.ndarray or list), but got {type(dim_values).__name__}. "
+                f"Example: {{'x': np.linspace(-5, 5, 100), 'y': np.arange(0, 10)}}"
+            )
 
 
 class Converter:
@@ -103,7 +100,11 @@ class Converter:
         for n, space_dim in enumerate(self.search_space_values):
             # Find index of closest value
             diffs = np_abs(array([value[n] - v for v in space_dim]))
-            pos = int(diffs.argmin()) if hasattr(diffs, 'argmin') else diffs.tolist().index(min(diffs.tolist()))
+            pos = (
+                int(diffs.argmin())
+                if hasattr(diffs, "argmin")
+                else diffs.tolist().index(min(diffs.tolist()))
+            )
             position.append(pos)
 
         return array(position)
@@ -131,13 +132,13 @@ class Converter:
 
         for n, space_dim in enumerate(self.search_space_values):
             # Get column n from 2D array
-            if hasattr(values_arr, 'shape') and len(values_arr.shape) > 1:
+            if hasattr(values_arr, "shape") and len(values_arr.shape) > 1:
                 values_1d = [values_arr[i, n] for i in range(len(values_arr))]
             else:
                 values_1d = [v[n] for v in values]
 
             # Use searchsorted if available, otherwise manual search
-            if hasattr(space_dim, 'searchsorted'):
+            if hasattr(space_dim, "searchsorted"):
                 pos_list = space_dim.searchsorted(values_1d)
             else:
                 pos_list = [self._find_position(space_dim, v) for v in values_1d]
@@ -145,8 +146,12 @@ class Converter:
             positions_temp.append(pos_list)
 
         # Transpose and convert to list of arrays
-        positions = [array([positions_temp[dim][i] for dim in range(len(positions_temp))]).astype(int)
-                    for i in range(len(positions_temp[0]))]
+        positions = [
+            array(
+                [positions_temp[dim][i] for dim in range(len(positions_temp))]
+            ).astype(int)
+            for i in range(len(positions_temp[0]))
+        ]
 
         return positions
 
@@ -168,7 +173,7 @@ class Converter:
 
         for n, space_dim in enumerate(self.search_space_values):
             pos_1d = [pos[n] for pos in positions]
-            if hasattr(space_dim, '__getitem__'):
+            if hasattr(space_dim, "__getitem__"):
                 value_ = [space_dim[p] for p in pos_1d]
             else:
                 value_ = take(space_dim, pos_1d)
@@ -199,8 +204,10 @@ class Converter:
     def memory_dict2positions_scores(self, memory_dict: Optional[dict]):
         positions = [array(pos).astype(int) for pos in list(memory_dict.keys())]
         # Extract scores from Result objects
-        scores = [result.score if isinstance(result, Result) else result
-                 for result in memory_dict.values()]
+        scores = [
+            result.score if isinstance(result, Result) else result
+            for result in memory_dict.values()
+        ]
 
         return positions, scores
 
