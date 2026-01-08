@@ -5,6 +5,10 @@
 import random
 import numpy as np
 
+# Maximum supported dimensions for SMBO sampling
+# Limited by memory requirements for full position space enumeration
+MAX_SUPPORTED_DIMENSIONS = 31
+
 
 class InitialSampler:
     def __init__(self, conv, max_sample_size, dim_max_sample_size=1000000):
@@ -12,9 +16,15 @@ class InitialSampler:
         self.max_sample_size = max_sample_size
         self.dim_max_sample_size = dim_max_sample_size
 
-        if self.conv.n_dimensions > 31:
-            msg = "maximum supported dimension for a search-space in sequence-model-based optimizers is 31"
-            raise ValueError(msg)
+        if self.conv.n_dimensions > MAX_SUPPORTED_DIMENSIONS:
+            raise ValueError(
+                f"Search space has {self.conv.n_dimensions} dimensions, but "
+                f"sequential model-based optimizers support at most "
+                f"{MAX_SUPPORTED_DIMENSIONS} dimensions due to memory constraints. "
+                f"Consider using a population-based optimizer (e.g., "
+                f"EvolutionStrategyOptimizer, ParticleSwarmOptimizer) for "
+                f"high-dimensional problems."
+            )
 
     def get_pos_space(self):
         if self.max_sample_size < self.conv.search_space_size:
