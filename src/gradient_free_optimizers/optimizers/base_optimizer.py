@@ -73,8 +73,6 @@ class BaseOptimizer(CoreOptimizer):
         rand_rest_p=0,
         nth_process=None,
     ):
-        if constraints is None:
-            constraints = []
         super().__init__(
             search_space=search_space,
             initialize=initialize,

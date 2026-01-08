@@ -100,7 +100,7 @@ class CoreOptimizer(SearchTracker):
 
         self.search_space = search_space
         self.initialize = initialize
-        self.constraints = constraints
+        self.constraints = constraints if constraints is not None else []
         self.random_state = random_state
         self.rand_rest_p = rand_rest_p
         self.nth_process = nth_process

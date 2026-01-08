@@ -33,7 +33,7 @@ class SpiralOptimization(BasePopulationOptimizer):
         self,
         search_space,
         initialize={"grid": 4, "random": 2, "vertices": 4},
-        constraints=[],
+        constraints=None,
         random_state=None,
         rand_rest_p=0,
         nth_process=None,
