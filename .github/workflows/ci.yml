@@ -168,6 +168,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install build numpy pandas pytest
+          python -m pip install scipy
 
       - name: Build and install package
         run: |
