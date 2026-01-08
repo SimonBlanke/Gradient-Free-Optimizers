@@ -24,17 +24,17 @@ def sort_list_idx(list_):
     return [i for i, _ in indexed]
 
 
-def centeroid(array_list):
+def centroid(array_list):
     """Calculate centroid of a list of arrays."""
     n_dims = len(array_list[0])
-    centroid = []
+    result = []
 
     for idx in range(n_dims):
         center_dim_pos = [arr[idx] for arr in array_list]
         center_dim_mean = sum(center_dim_pos) / len(center_dim_pos)
-        centroid.append(center_dim_mean)
+        result.append(center_dim_mean)
 
-    return centroid
+    return result
 
 
 class DownhillSimplexOptimizer(HillClimbingOptimizer):
@@ -146,7 +146,7 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
                 self.simplex_scores[idx] for idx in idx_sorted
             ]
 
-            self.center_array = centeroid(self.simplex_pos[:-1])
+            self.center_array = centroid(self.simplex_pos[:-1])
 
             r_pos = self.center_array + self.alpha * (
                 self.center_array - self.simplex_pos[-1]
