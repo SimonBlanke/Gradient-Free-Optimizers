@@ -8,7 +8,7 @@ import math
 from collections.abc import Callable
 from typing import Any
 
-from ..local_opt import StochasticHillClimbingOptimizer
+from .stochastic_hill_climbing import StochasticHillClimbingOptimizer
 
 
 class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer):
