@@ -18,6 +18,51 @@ from ._stopping_conditions import OptimizationStopper
 
 
 class Search(TimesTracker, SearchStatistics):
+    """
+    High-level interface for running optimization searches.
+
+    Search provides the main entry point for optimization, handling the
+    orchestration of initialization, iteration, progress tracking, memory
+    caching, and result collection. It bridges the gap between user-facing
+    API methods (like ``search()``) and the underlying optimizer mechanics.
+
+    This class is designed as a mixin that combines with optimizer classes
+    through multiple inheritance. It requires the optimizer to provide:
+
+    - ``init_pos()``: Generate initial positions
+    - ``iterate()``: Generate the next position to evaluate
+    - ``evaluate_init(score)``: Process initialization scores
+    - ``evaluate(score)``: Process iteration scores
+    - ``finish_initialization()``: Transition from init to iteration phase
+    - ``conv``: Converter object for position/value/parameter transformations
+
+    The search process follows this flow:
+
+    1. **Initialization Phase**: Evaluate predefined initial positions
+       (grid, random, vertices, warm start) to seed the optimizer
+    2. **Iteration Phase**: Repeatedly generate and evaluate new positions
+       using the optimizer's strategy
+    3. **Termination**: Stop when n_iter reached or stopping condition met
+
+    Attributes
+    ----------
+    optimizers : list
+        List of optimizer instances (for ensemble/multi-optimizer support).
+    search_data : pd.DataFrame
+        DataFrame containing all evaluated positions and scores after search.
+    best_score : float
+        Best score found during the search.
+    best_para : dict
+        Parameters corresponding to the best score.
+    best_value : array
+        Raw parameter values corresponding to the best score.
+
+    See Also
+    --------
+    TimesTracker : Tracks evaluation and iteration timing.
+    SearchStatistics : Tracks search progress statistics.
+    """
+
     def __init__(self):
         super().__init__()
 
