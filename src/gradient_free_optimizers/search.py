@@ -2,9 +2,12 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+from __future__ import annotations
+
 import json
 import math
 import time
+from typing import TYPE_CHECKING, Any, Callable, Literal
 
 from ._progress_bar import ProgressBarLVL0, ProgressBarLVL1
 from ._times_tracker import TimesTracker
@@ -15,6 +18,9 @@ from ._results_manager import ResultsManager
 from ._objective_adapter import ObjectiveAdapter
 from ._memory import CachedObjectiveAdapter
 from ._stopping_conditions import OptimizationStopper
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 
 class Search(TimesTracker, SearchStatistics):
@@ -116,16 +122,16 @@ class Search(TimesTracker, SearchStatistics):
 
     def search(
         self,
-        objective_function,
-        n_iter,
-        max_time=None,
-        max_score=None,
-        early_stopping=None,
-        memory=True,
-        memory_warm_start=None,
-        verbosity=["progress_bar", "print_results", "print_times"],
-        optimum="maximum",
-    ):
+        objective_function: Callable[[dict[str, Any]], float],
+        n_iter: int,
+        max_time: float | None = None,
+        max_score: float | None = None,
+        early_stopping: dict[str, Any] | None = None,
+        memory: bool = True,
+        memory_warm_start: pd.DataFrame | None = None,
+        verbosity: list[str] | Literal[False] = ["progress_bar", "print_results", "print_times"],
+        optimum: Literal["maximum", "minimum"] = "maximum",
+    ) -> None:
         self.optimum = optimum
         self.init_search(
             objective_function,
@@ -165,15 +171,15 @@ class Search(TimesTracker, SearchStatistics):
     @SearchStatistics.init_stats
     def init_search(
         self,
-        objective_function,
-        n_iter,
-        max_time,
-        max_score,
-        early_stopping,
-        memory,
-        memory_warm_start,
-        verbosity,
-    ):
+        objective_function: Callable[[dict[str, Any]], float],
+        n_iter: int,
+        max_time: float | None,
+        max_score: float | None,
+        early_stopping: dict[str, Any] | None,
+        memory: bool,
+        memory_warm_start: pd.DataFrame | None,
+        verbosity: list[str] | Literal[False],
+    ) -> None:
         if getattr(self, "optimum", "maximum") == "minimum":
             self.objective_function = lambda pos: -objective_function(pos)
         else:
@@ -216,7 +222,7 @@ class Search(TimesTracker, SearchStatistics):
 
         self.n_inits_norm = min((self.init.n_inits - self.n_init_total), self.n_iter)
 
-    def finish_search(self):
+    def finish_search(self) -> None:
         self.search_data = self.results_manager.dataframe
 
         self.best_score = self.p_bar.score_best
@@ -241,7 +247,7 @@ class Search(TimesTracker, SearchStatistics):
             self.random_seed,
         )
 
-    def search_step(self, nth_iter):
+    def search_step(self, nth_iter: int) -> None:
         self.nth_iter = nth_iter
 
         if self.nth_iter < self.n_inits_norm:

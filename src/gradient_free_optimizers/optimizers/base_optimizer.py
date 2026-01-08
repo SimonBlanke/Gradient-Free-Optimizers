@@ -2,6 +2,9 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+from __future__ import annotations
+
+from typing import Any, Callable
 
 from .core_optimizer import CoreOptimizer
 
@@ -66,13 +69,13 @@ class BaseOptimizer(CoreOptimizer):
 
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        constraints=None,
-        random_state=None,
-        rand_rest_p=0,
-        nth_process=None,
-    ):
+        search_space: dict[str, Any],
+        initialize: dict[str, int] = {"grid": 4, "random": 2, "vertices": 4},
+        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
+        random_state: int | None = None,
+        rand_rest_p: float = 0,
+        nth_process: int | None = None,
+    ) -> None:
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -84,11 +87,11 @@ class BaseOptimizer(CoreOptimizer):
 
         self.optimizers = [self]
 
-    def finish_initialization(self):
+    def finish_initialization(self) -> None:
         """Transition from initialization phase to iteration phase."""
         self.search_state = "iter"
 
-    def evaluate(self, score_new):
+    def evaluate(self, score_new: float) -> None:
         """
         Update optimizer state based on a newly evaluated score.
 

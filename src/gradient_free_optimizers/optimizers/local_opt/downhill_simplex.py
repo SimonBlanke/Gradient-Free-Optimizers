@@ -2,13 +2,16 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+from __future__ import annotations
 
 import random
+from typing import Any, Callable
 
 from .hill_climbing_optimizer import HillClimbingOptimizer
+from ..core_optimizer.converter import ArrayLike
 
 
-def _arrays_equal(a, b):
+def _arrays_equal(a: Any, b: Any) -> bool:
     """Check if two arrays are element-wise equal."""
     if hasattr(a, '__len__') and hasattr(b, '__len__'):
         if len(a) != len(b):
@@ -17,14 +20,14 @@ def _arrays_equal(a, b):
     return a == b
 
 
-def sort_list_idx(list_):
+def sort_list_idx(list_: list[float]) -> list[int]:
     """Return indices that would sort the list in descending order."""
     indexed = list(enumerate(list_))
     indexed.sort(key=lambda x: x[1], reverse=True)
     return [i for i, _ in indexed]
 
 
-def centroid(array_list):
+def centroid(array_list: list[ArrayLike]) -> list[float]:
     """Calculate centroid of a list of arrays."""
     n_dims = len(array_list[0])
     result = []
@@ -77,17 +80,17 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
 
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        constraints=None,
-        random_state=None,
-        rand_rest_p=0,
-        nth_process=None,
-        alpha=1,
-        gamma=2,
-        beta=0.5,
-        sigma=0.5,
-    ):
+        search_space: dict[str, Any],
+        initialize: dict[str, int] = {"grid": 4, "random": 2, "vertices": 4},
+        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
+        random_state: int | None = None,
+        rand_rest_p: float = 0,
+        nth_process: int | None = None,
+        alpha: float = 1,
+        gamma: float = 2,
+        beta: float = 0.5,
+        sigma: float = 0.5,
+    ) -> None:
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -111,7 +114,7 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
         if diff_init > 0:
             self.init.add_n_random_init_pos(diff_init)
 
-    def finish_initialization(self):
+    def finish_initialization(self) -> None:
         idx_sorted = sort_list_idx(self.scores_valid)
         self.simplex_pos = [self.positions_valid[idx] for idx in idx_sorted]
         self.simplex_scores = [self.scores_valid[idx] for idx in idx_sorted]
@@ -125,7 +128,7 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
         self.search_state = "iter"
 
     @HillClimbingOptimizer.track_new_pos
-    def iterate(self):
+    def iterate(self) -> ArrayLike:
         """Generate next simplex position via reflection/expansion/contraction."""
         simplex_stale = all(
             _arrays_equal(self.simplex_pos[0], array)
@@ -185,7 +188,7 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
         )
 
     @HillClimbingOptimizer.track_new_score
-    def evaluate(self, score_new):
+    def evaluate(self, score_new: float) -> None:
         """Evaluate score and update simplex state machine."""
         if self.simplex_step != 0:
             self.prev_pos = self.positions_valid[-1]

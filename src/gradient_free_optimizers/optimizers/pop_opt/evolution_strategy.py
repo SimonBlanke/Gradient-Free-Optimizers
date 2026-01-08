@@ -2,11 +2,15 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+from __future__ import annotations
+
 import random
 import numpy as np
+from typing import Any, Callable
 
 from ._evolutionary_algorithm import EvolutionaryAlgorithmOptimizer
 from ._individual import Individual
+from ..core_optimizer.converter import ArrayLike
 
 
 class EvolutionStrategyOptimizer(EvolutionaryAlgorithmOptimizer):
@@ -51,18 +55,18 @@ class EvolutionStrategyOptimizer(EvolutionaryAlgorithmOptimizer):
 
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        constraints=None,
-        random_state=None,
-        rand_rest_p=0,
-        nth_process=None,
-        population=10,
-        offspring=20,
-        replace_parents=False,
-        mutation_rate=0.7,
-        crossover_rate=0.3,
-    ):
+        search_space: dict[str, Any],
+        initialize: dict[str, int] = {"grid": 4, "random": 2, "vertices": 4},
+        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
+        random_state: int | None = None,
+        rand_rest_p: float = 0,
+        nth_process: int | None = None,
+        population: int = 10,
+        offspring: int = 20,
+        replace_parents: bool = False,
+        mutation_rate: float = 0.7,
+        crossover_rate: float = 0.3,
+    ) -> None:
         super().__init__(
             search_space=search_space,
             initialize=initialize,

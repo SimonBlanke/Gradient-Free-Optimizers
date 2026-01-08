@@ -2,10 +2,17 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+from __future__ import annotations
+
+from typing import Any, Callable, TYPE_CHECKING
 
 import numpy as np
 
 from .smbo import SMBO
+from ..core_optimizer.converter import ArrayLike
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 # Use sklearn's KDE if available, otherwise native implementation
 try:
@@ -67,18 +74,18 @@ class TreeStructuredParzenEstimators(SMBO):
 
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        constraints=None,
-        random_state=None,
-        rand_rest_p=0,
-        nth_process=None,
-        warm_start_smbo=None,
-        max_sample_size=10000000,
-        sampling={"random": 1000000},
-        replacement=True,
-        gamma_tpe=0.2,
-    ):
+        search_space: dict[str, Any],
+        initialize: dict[str, int] = {"grid": 4, "random": 2, "vertices": 4},
+        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
+        random_state: int | None = None,
+        rand_rest_p: float = 0,
+        nth_process: int | None = None,
+        warm_start_smbo: pd.DataFrame | None = None,
+        max_sample_size: int = 10000000,
+        sampling: dict[str, int] | bool = {"random": 1000000},
+        replacement: bool = True,
+        gamma_tpe: float = 0.2,
+    ) -> None:
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -96,18 +103,18 @@ class TreeStructuredParzenEstimators(SMBO):
 
         # Initialize KDE - sklearn and native have different interfaces
         if SKLEARN_AVAILABLE:
-            kde_params = {"kernel": "gaussian", "bandwidth": 1.0}
+            kde_params: dict[str, Any] = {"kernel": "gaussian", "bandwidth": 1.0}
         else:
             kde_params = {"bandwidth": 1.0}
 
         self.kd_best = KernelDensity(**kde_params)
         self.kd_worst = KernelDensity(**kde_params)
 
-    def finish_initialization(self):
+    def finish_initialization(self) -> None:
         self.all_pos_comb = self._all_possible_pos()
         return super().finish_initialization()
 
-    def _get_samples(self):
+    def _get_samples(self) -> tuple[list[ArrayLike], list[ArrayLike]]:
         """Split samples into best and worst groups based on gamma_tpe."""
         n_samples = len(self.X_sample)
         n_best = max(round(n_samples * self.gamma_tpe), 1)
@@ -122,7 +129,7 @@ class TreeStructuredParzenEstimators(SMBO):
 
         return best_samples, worst_samples
 
-    def _expected_improvement(self):
+    def _expected_improvement(self) -> ArrayLike:
         """Compute acquisition as ratio of good/bad density estimates."""
         self.pos_comb = self._sampling(self.all_pos_comb)
 
@@ -144,7 +151,7 @@ class TreeStructuredParzenEstimators(SMBO):
 
         return exp_imp
 
-    def _training(self):
+    def _training(self) -> None:
         """Fit KDE models on best and worst sample groups."""
         best_samples, worst_samples = self._get_samples()
 

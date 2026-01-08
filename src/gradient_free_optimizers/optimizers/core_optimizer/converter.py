@@ -2,6 +2,8 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+from __future__ import annotations
+
 from ..._array_backend import (
     array,
     arange,
@@ -14,12 +16,15 @@ from ..._array_backend import (
 import pandas as pd
 
 from functools import reduce
-from typing import Optional
+from typing import Any, Callable, TypeVar
 
 from ..._result import Result
 
+# Type alias for array-like types (numpy arrays or GFOArray)
+ArrayLike = TypeVar("ArrayLike")
 
-def check_numpy_array(search_space):
+
+def check_numpy_array(search_space: dict[str, Any]) -> None:
     """Check that search space values are array-like."""
     for para_name, dim_values in search_space.items():
         # Accept numpy arrays or our GFOArray
@@ -79,7 +84,11 @@ class Converter:
     >>> para = conv.value2para(value)  # {"x": 0.0, "y": 5}
     """
 
-    def __init__(self, search_space: dict, constraints: list = None) -> None:
+    def __init__(
+        self,
+        search_space: dict[str, Any],
+        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
+    ) -> None:
         check_numpy_array(search_space)
 
         self.n_dimensions = len(search_space)
@@ -112,7 +121,7 @@ class Converter:
         self.max_positions = self.dim_sizes - 1
         self.search_space_values = list(search_space.values())
 
-    def not_in_constraint(self, position) -> bool:
+    def not_in_constraint(self, position: list[int] | ArrayLike) -> bool:
         """Check if a position satisfies all constraints.
 
         Parameters
@@ -132,10 +141,10 @@ class Converter:
                 return False
         return True
 
-    def returnNoneIfArgNone(func_):
+    def returnNoneIfArgNone(func_: Callable) -> Callable:
         """Decorator that returns None if any argument is None."""
 
-        def wrapper(self, *args):
+        def wrapper(self, *args: Any) -> Any:
             for arg in [*args]:
                 if arg is None:
                     return None
@@ -145,7 +154,7 @@ class Converter:
         return wrapper
 
     @returnNoneIfArgNone
-    def position2value(self, position: Optional[list]) -> Optional[list]:
+    def position2value(self, position: list[int] | None) -> list[Any] | None:
         """Convert position indices to actual values.
 
         Parameters
@@ -166,7 +175,7 @@ class Converter:
         return value
 
     @returnNoneIfArgNone
-    def value2position(self, value: Optional[list]) -> Optional[list]:
+    def value2position(self, value: list[Any] | None) -> ArrayLike | None:
         """Convert values to position indices.
 
         Finds the closest matching position for each value by minimizing
@@ -196,7 +205,7 @@ class Converter:
         return array(position)
 
     @returnNoneIfArgNone
-    def value2para(self, value: Optional[list]) -> Optional[dict]:
+    def value2para(self, value: list[Any] | None) -> dict[str, Any] | None:
         """Convert a value list to a parameter dictionary.
 
         Parameters
@@ -216,7 +225,7 @@ class Converter:
         return para
 
     @returnNoneIfArgNone
-    def para2value(self, para: Optional[dict]) -> Optional[list]:
+    def para2value(self, para: dict[str, Any] | None) -> list[Any] | None:
         """Convert a parameter dictionary to a value list.
 
         Parameters
@@ -236,7 +245,7 @@ class Converter:
         return value
 
     @returnNoneIfArgNone
-    def values2positions(self, values: Optional[list]) -> Optional[list]:
+    def values2positions(self, values: list[list[Any]] | None) -> list[ArrayLike] | None:
         """Convert multiple value lists to position lists.
 
         Parameters
@@ -277,7 +286,7 @@ class Converter:
 
         return positions
 
-    def _find_position(self, space_dim, value):
+    def _find_position(self, space_dim: Any, value: Any) -> int:
         """Find position using binary search."""
         arr = list(space_dim) if not isinstance(space_dim, list) else space_dim
         lo, hi = 0, len(arr)
@@ -290,7 +299,7 @@ class Converter:
         return lo
 
     @returnNoneIfArgNone
-    def positions2values(self, positions: Optional[list]) -> Optional[list]:
+    def positions2values(self, positions: list[ArrayLike] | None) -> list[list[Any]] | None:
         """Convert multiple position lists to value lists.
 
         Parameters
@@ -317,7 +326,7 @@ class Converter:
         return values
 
     @returnNoneIfArgNone
-    def values2paras(self, values: list) -> list:
+    def values2paras(self, values: list[list[Any]]) -> list[dict[str, Any]]:
         """Convert multiple value lists to parameter dictionaries.
 
         Parameters
@@ -337,8 +346,8 @@ class Converter:
 
     @returnNoneIfArgNone
     def positions_scores2memory_dict(
-        self, positions: Optional[list], scores: Optional[list]
-    ) -> Optional[dict]:
+        self, positions: list[ArrayLike] | None, scores: list[float] | None
+    ) -> dict[tuple[int, ...], Result] | None:
         """Convert positions and scores to a memory dictionary.
 
         Parameters
@@ -361,7 +370,9 @@ class Converter:
         return memory_dict
 
     @returnNoneIfArgNone
-    def memory_dict2positions_scores(self, memory_dict: Optional[dict]):
+    def memory_dict2positions_scores(
+        self, memory_dict: dict[tuple[int, ...], Result] | None
+    ) -> tuple[list[ArrayLike], list[float]] | None:
         """Convert a memory dictionary to positions and scores.
 
         Parameters
@@ -386,8 +397,8 @@ class Converter:
 
     @returnNoneIfArgNone
     def dataframe2memory_dict(
-        self, dataframe: Optional[pd.DataFrame]
-    ) -> Optional[dict]:
+        self, dataframe: pd.DataFrame | None
+    ) -> dict[tuple[int, ...], Result] | None:
         """Convert a pandas DataFrame to a memory dictionary.
 
         Used for warm-starting from previous optimization results.
@@ -427,8 +438,8 @@ class Converter:
 
     @returnNoneIfArgNone
     def memory_dict2dataframe(
-        self, memory_dict: Optional[dict]
-    ) -> Optional[pd.DataFrame]:
+        self, memory_dict: dict[tuple[int, ...], Result] | None
+    ) -> pd.DataFrame | None:
         """Convert a memory dictionary to a pandas DataFrame.
 
         Parameters

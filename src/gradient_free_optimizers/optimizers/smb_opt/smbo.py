@@ -2,12 +2,19 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any, Callable, Literal
 
 from ..base_optimizer import BaseOptimizer
 from .sampling import InitialSampler
+from ..core_optimizer.converter import ArrayLike
 
 import logging
 import numpy as np
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 np.seterr(divide="ignore", invalid="ignore")
 
@@ -55,17 +62,17 @@ class SMBO(BaseOptimizer):
 
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        constraints=None,
-        random_state=None,
-        rand_rest_p=0,
-        nth_process=None,
-        warm_start_smbo=None,
-        max_sample_size=10000000,
-        sampling={"random": 1000000},
-        replacement=True,
-    ):
+        search_space: dict[str, Any],
+        initialize: dict[str, int] = {"grid": 4, "random": 2, "vertices": 4},
+        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
+        random_state: int | None = None,
+        rand_rest_p: float = 0,
+        nth_process: int | None = None,
+        warm_start_smbo: pd.DataFrame | None = None,
+        max_sample_size: int = 10000000,
+        sampling: dict[str, int] | Literal[False] = {"random": 1000000},
+        replacement: bool = True,
+    ) -> None:
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -84,7 +91,7 @@ class SMBO(BaseOptimizer):
 
         self.init_warm_start_smbo(warm_start_smbo)
 
-    def init_warm_start_smbo(self, search_data):
+    def init_warm_start_smbo(self, search_data: pd.DataFrame | None) -> None:
         """Initialize X_sample and Y_sample from previous optimization data.
 
         Filters out invalid values (NaN, inf) and values outside the search space.
@@ -126,20 +133,20 @@ class SMBO(BaseOptimizer):
             self.X_sample = []
             self.Y_sample = []
 
-    def track_X_sample(iterate):
+    def track_X_sample(iterate: Callable) -> Callable:
         """Decorator that appends returned position to X_sample."""
 
-        def wrapper(self, *args, **kwargs):
+        def wrapper(self, *args: Any, **kwargs: Any) -> ArrayLike:
             pos = iterate(self, *args, **kwargs)
             self.X_sample.append(pos)
             return pos
 
         return wrapper
 
-    def track_y_sample(evaluate):
+    def track_y_sample(evaluate: Callable) -> Callable:
         """Decorator that appends score to Y_sample, skipping invalid scores."""
 
-        def wrapper(self, score):
+        def wrapper(self, score: float) -> None:
             evaluate(self, score)
 
             if np.isnan(score) or np.isinf(score):
@@ -149,13 +156,13 @@ class SMBO(BaseOptimizer):
 
         return wrapper
 
-    def _sampling(self, all_pos_comb):
+    def _sampling(self, all_pos_comb: np.ndarray) -> np.ndarray:
         if self.sampling is False:
             return all_pos_comb
         elif "random" in self.sampling:
             return self.random_sampling(all_pos_comb)
 
-    def random_sampling(self, pos_comb):
+    def random_sampling(self, pos_comb: np.ndarray) -> np.ndarray:
         n_samples = self.sampling["random"]
         n_pos_comb = pos_comb.shape[0]
 
@@ -166,7 +173,7 @@ class SMBO(BaseOptimizer):
             pos_comb_sampled = pos_comb[_idx_sample, :]
             return pos_comb_sampled
 
-    def _all_possible_pos(self):
+    def _all_possible_pos(self) -> np.ndarray:
         pos_space = self.sampler.get_pos_space()
         n_dim = len(pos_space)
         all_pos_comb = np.array(np.meshgrid(*pos_space)).T.reshape(-1, n_dim)
@@ -179,7 +186,7 @@ class SMBO(BaseOptimizer):
         all_pos_comb_constr = np.array(all_pos_comb_constr)
         return all_pos_comb_constr
 
-    def memory_warning(self, max_sample_size):
+    def memory_warning(self, max_sample_size: int) -> None:
         if (
             self.conv.search_space_size > self.warnings
             and max_sample_size > self.warnings
@@ -198,22 +205,22 @@ class SMBO(BaseOptimizer):
             )
 
     @track_X_sample
-    def init_pos(self):
+    def init_pos(self) -> ArrayLike:
         return super().init_pos()
 
     @BaseOptimizer.track_new_pos
     @track_X_sample
-    def iterate(self):
+    def iterate(self) -> ArrayLike:
         """Generate next position using surrogate model and acquisition function."""
         return self._propose_location()
 
-    def _remove_position(self, position):
+    def _remove_position(self, position: ArrayLike) -> None:
         mask = np.all(self.all_pos_comb == position, axis=1)
         self.all_pos_comb = self.all_pos_comb[np.invert(mask)]
 
     @BaseOptimizer.track_new_score
     @track_y_sample
-    def evaluate(self, score_new):
+    def evaluate(self, score_new: float) -> None:
         """Evaluate the current position and update surrogate training data."""
         self._evaluate_new2current(score_new)
         self._evaluate_current2best()
@@ -223,11 +230,11 @@ class SMBO(BaseOptimizer):
 
     @BaseOptimizer.track_new_score
     @track_y_sample
-    def evaluate_init(self, score_new):
+    def evaluate_init(self, score_new: float) -> None:
         self._evaluate_new2current(score_new)
         self._evaluate_current2best()
 
-    def _propose_location(self):
+    def _propose_location(self) -> ArrayLike:
         try:
             self._training()
         except ValueError:

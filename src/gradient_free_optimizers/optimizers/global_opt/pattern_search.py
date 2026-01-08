@@ -2,12 +2,16 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+from __future__ import annotations
+
 import random
+from typing import Any, Callable
 
 from ..._array_backend import array
 
 from ..base_optimizer import BaseOptimizer
 from ..local_opt.hill_climbing_optimizer import HillClimbingOptimizer
+from ..core_optimizer.converter import ArrayLike
 
 
 def _arrays_equal(a, b):
@@ -63,16 +67,16 @@ class PatternSearch(BaseOptimizer):
 
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        constraints=None,
-        random_state=None,
-        rand_rest_p=0,
-        nth_process=None,
-        n_positions=4,
-        pattern_size=0.25,
-        reduction=0.9,
-    ):
+        search_space: dict[str, Any],
+        initialize: dict[str, int] = {"grid": 4, "random": 2, "vertices": 4},
+        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
+        random_state: int | None = None,
+        rand_rest_p: float = 0,
+        nth_process: int | None = None,
+        n_positions: int = 4,
+        pattern_size: float = 0.25,
+        reduction: float = 0.9,
+    ) -> None:
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -88,9 +92,9 @@ class PatternSearch(BaseOptimizer):
 
         self.n_positions_ = min(n_positions, self.conv.n_dimensions)
         self.pattern_size_tmp = pattern_size
-        self.pattern_pos_l = []
+        self.pattern_pos_l: list[ArrayLike] = []
 
-    def generate_pattern(self, current_position):
+    def generate_pattern(self, current_position: ArrayLike) -> None:
         pattern_pos_l = []
 
         n_valid_pos = len(self.positions_valid)
@@ -124,7 +128,7 @@ class PatternSearch(BaseOptimizer):
 
     @BaseOptimizer.track_new_pos
     @BaseOptimizer.random_iteration
-    def iterate(self):
+    def iterate(self) -> ArrayLike:
         """Generate next position from the current pattern."""
         while True:
             pos_new = self.pattern_pos_l[0]
@@ -134,12 +138,12 @@ class PatternSearch(BaseOptimizer):
                 return pos_new
             return self.move_climb(pos_new)
 
-    def finish_initialization(self):
+    def finish_initialization(self) -> None:
         self.generate_pattern(self.pos_current)
         self.search_state = "iter"
 
     @BaseOptimizer.track_new_score
-    def evaluate(self, score_new):
+    def evaluate(self, score_new: float) -> None:
         """Evaluate score and regenerate pattern when needed."""
         BaseOptimizer.evaluate(self, score_new)
         if len(self.scores_valid) == 0:

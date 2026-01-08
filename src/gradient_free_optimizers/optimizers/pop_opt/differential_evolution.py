@@ -2,11 +2,15 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+from __future__ import annotations
+
 import random
 import numpy as np
+from typing import Any, Callable
 
 from ._evolutionary_algorithm import EvolutionaryAlgorithmOptimizer
 from ._individual import Individual
+from ..core_optimizer.converter import ArrayLike
 
 
 class DifferentialEvolutionOptimizer(EvolutionaryAlgorithmOptimizer):
@@ -47,16 +51,16 @@ class DifferentialEvolutionOptimizer(EvolutionaryAlgorithmOptimizer):
 
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        constraints=None,
-        random_state=None,
-        rand_rest_p=0,
-        nth_process=None,
-        population=10,
-        mutation_rate=0.9,
-        crossover_rate=0.9,
-    ):
+        search_space: dict[str, Any],
+        initialize: dict[str, int] = {"grid": 4, "random": 2, "vertices": 4},
+        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
+        random_state: int | None = None,
+        rand_rest_p: float = 0,
+        nth_process: int | None = None,
+        population: int = 10,
+        mutation_rate: float = 0.9,
+        crossover_rate: float = 0.9,
+    ) -> None:
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -75,27 +79,27 @@ class DifferentialEvolutionOptimizer(EvolutionaryAlgorithmOptimizer):
 
         self.offspring_l = []
 
-    def mutation(self, f=1):
+    def mutation(self, f: float = 1) -> ArrayLike:
         ind_selected = random.sample(self.individuals, 3)
 
         x_1, x_2, x_3 = [ind.pos_best for ind in ind_selected]
         return x_1 + self.mutation_rate * np.subtract(x_2, x_3)
 
-    def _constraint_loop(self, position):
+    def _constraint_loop(self, position: ArrayLike) -> ArrayLike:
         while True:
             if self.conv.not_in_constraint(position):
                 return position
             position = self.p_current.move_climb(position, epsilon_mod=0.3)
 
     @EvolutionaryAlgorithmOptimizer.track_new_pos
-    def init_pos(self):
+    def init_pos(self) -> ArrayLike:
         nth_pop = self.nth_trial % len(self.individuals)
 
         self.p_current = self.individuals[nth_pop]
         return self.p_current.init_pos()
 
     @EvolutionaryAlgorithmOptimizer.track_new_pos
-    def iterate(self):
+    def iterate(self) -> ArrayLike:
         """Generate trial vector via mutation and crossover."""
         self.p_current = self.individuals[
             self.nth_trial % len(self.individuals)
@@ -116,5 +120,5 @@ class DifferentialEvolutionOptimizer(EvolutionaryAlgorithmOptimizer):
         return self.p_current.pos_new
 
     @EvolutionaryAlgorithmOptimizer.track_new_score
-    def evaluate(self, score_new):
+    def evaluate(self, score_new: float) -> None:
         self.p_current.evaluate(score_new)  # selection

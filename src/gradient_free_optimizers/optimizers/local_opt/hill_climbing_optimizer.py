@@ -2,10 +2,15 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+from __future__ import annotations
+
+from typing import Any, Callable
+
 from ..base_optimizer import BaseOptimizer
+from ..core_optimizer.converter import ArrayLike
 
 
-def max_list_idx(list_):
+def max_list_idx(list_: list[float]) -> int:
     max_item = max(list_)
     max_item_idx = [i for i, j in enumerate(list_) if j == max_item]
     return max_item_idx[-1:][0]
@@ -48,16 +53,16 @@ class HillClimbingOptimizer(BaseOptimizer):
 
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        constraints=None,
-        random_state=None,
-        rand_rest_p=0,
-        nth_process=None,
-        epsilon=0.03,
-        distribution="normal",
-        n_neighbours=3,
-    ):
+        search_space: dict[str, Any],
+        initialize: dict[str, int] = {"grid": 4, "random": 2, "vertices": 4},
+        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
+        random_state: int | None = None,
+        rand_rest_p: float = 0,
+        nth_process: int | None = None,
+        epsilon: float = 0.03,
+        distribution: str = "normal",
+        n_neighbours: int = 3,
+    ) -> None:
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -72,7 +77,7 @@ class HillClimbingOptimizer(BaseOptimizer):
 
     @BaseOptimizer.track_new_pos
     @BaseOptimizer.random_iteration
-    def iterate(self):
+    def iterate(self) -> ArrayLike:
         """Generate next position by climbing from current position."""
         return self.move_climb(
             self.pos_current,
@@ -81,7 +86,7 @@ class HillClimbingOptimizer(BaseOptimizer):
         )
 
     @BaseOptimizer.track_new_score
-    def evaluate(self, score_new):
+    def evaluate(self, score_new: float) -> None:
         """Evaluate score and update current position after n_neighbours trials."""
         BaseOptimizer.evaluate(self, score_new)
         if len(self.scores_valid) == 0:

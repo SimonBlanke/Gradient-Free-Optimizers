@@ -2,9 +2,11 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+from __future__ import annotations
 
 import math
 from random import random
+from typing import Any, Callable
 
 from . import HillClimbingOptimizer
 from ..core_optimizer.parameter_tracker.stochastic_hill_climbing import (
@@ -52,17 +54,17 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer, ParameterTracker):
 
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        constraints=None,
-        random_state=None,
-        rand_rest_p=0,
-        nth_process=None,
-        epsilon=0.03,
-        distribution="normal",
-        n_neighbours=3,
-        p_accept=0.5,
-    ):
+        search_space: dict[str, Any],
+        initialize: dict[str, int] = {"grid": 4, "random": 2, "vertices": 4},
+        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
+        random_state: int | None = None,
+        rand_rest_p: float = 0,
+        nth_process: int | None = None,
+        epsilon: float = 0.03,
+        distribution: str = "normal",
+        n_neighbours: int = 3,
+        p_accept: float = 0.5,
+    ) -> None:
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -79,16 +81,16 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer, ParameterTracker):
         self.temp = 1
 
     @ParameterTracker.considered_transitions
-    def _consider(self, p_accept):
+    def _consider(self, p_accept: float) -> None:
         if p_accept >= random():
             self._execute_transition()
 
     @ParameterTracker.transitions
-    def _execute_transition(self):
+    def _execute_transition(self) -> None:
         self._new2current()
 
     @property
-    def _normalized_energy_state(self):
+    def _normalized_energy_state(self) -> float:
         denom = self.score_current + self.score_new
 
         if denom == 0:
@@ -99,13 +101,13 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer, ParameterTracker):
             return (self.score_new - self.score_current) / denom
 
     @property
-    def _exponent(self):
+    def _exponent(self) -> float:
         if self.temp == 0:
             return -math.inf
         else:
             return self._normalized_energy_state / self.temp
 
-    def _p_accept_default(self):
+    def _p_accept_default(self) -> float:
         try:
             exp_val = math.exp(self._exponent)
         except OverflowError:
@@ -113,11 +115,11 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer, ParameterTracker):
         return self.p_accept * 2 / (1 + exp_val)
 
     @HillClimbingOptimizer.track_new_score
-    def _transition(self, score_new):
+    def _transition(self, score_new: float) -> None:
         p_accept = self._p_accept_default()
         self._consider(p_accept)
 
-    def evaluate(self, score_new):
+    def evaluate(self, score_new: float) -> None:
         if score_new <= self.score_current:
             self._transition(score_new)
         else:

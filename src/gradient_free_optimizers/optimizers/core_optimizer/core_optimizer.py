@@ -2,21 +2,23 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+from __future__ import annotations
 
 import random
 from functools import wraps
+from typing import Any, Callable, Literal
 
 from ..._array_backend import rint, clip, array, random as np_random
 from ..._math_backend import cdist
 
 from .search_tracker import SearchTracker
-from .converter import Converter
+from .converter import Converter, ArrayLike
 from .init_positions import Initializer
 
 from .utils import set_random_seed, move_random
 
 
-def _get_dist_func(name):
+def _get_dist_func(name: str) -> Callable:
     """Get distribution function from array backend."""
     dist_map = {
         "normal": np_random.normal,
@@ -89,13 +91,13 @@ class CoreOptimizer(SearchTracker):
 
     def __init__(
         self,
-        search_space,
-        initialize,
-        constraints,
-        random_state,
-        rand_rest_p,
-        nth_process,
-    ):
+        search_space: dict[str, Any],
+        initialize: dict[str, int],
+        constraints: list[Callable[[dict[str, Any]], bool]] | None,
+        random_state: int | None,
+        rand_rest_p: float,
+        nth_process: int | None,
+    ) -> None:
         super().__init__()
 
         self.search_space = search_space
@@ -114,9 +116,9 @@ class CoreOptimizer(SearchTracker):
         self.nth_trial = 0
         self.search_state = "init"
 
-    def random_iteration(func):
+    def random_iteration(func: Callable) -> Callable:
         @wraps(func)
-        def wrapper(self, *args, **kwargs):
+        def wrapper(self, *args: Any, **kwargs: Any) -> ArrayLike:
             if self.rand_rest_p > random.uniform(0, 1):
                 return self.move_random()
             else:
@@ -125,8 +127,12 @@ class CoreOptimizer(SearchTracker):
         return wrapper
 
     def move_climb(
-        self, pos, epsilon=0.03, distribution="normal", epsilon_mod=1
-    ):
+        self,
+        pos: ArrayLike,
+        epsilon: float = 0.03,
+        distribution: str = "normal",
+        epsilon_mod: float = 1,
+    ) -> ArrayLike:
         dist_func = _get_dist_func(distribution)
         while True:
             sigma = self.conv.max_positions * epsilon * epsilon_mod
@@ -137,7 +143,7 @@ class CoreOptimizer(SearchTracker):
                 return pos
             epsilon_mod *= 1.01
 
-    def conv2pos(self, pos):
+    def conv2pos(self, pos: ArrayLike) -> ArrayLike:
         # position to int
         r_pos = rint(pos)
 
@@ -155,19 +161,19 @@ class CoreOptimizer(SearchTracker):
 
         return pos
 
-    def move_random(self):
+    def move_random(self) -> ArrayLike:
         while True:
             pos = move_random(self.conv.search_space_positions)
             if self.conv.not_in_constraint(pos):
                 return pos
 
     @SearchTracker.track_new_pos
-    def init_pos(self):
+    def init_pos(self) -> ArrayLike:
         init_pos = self.init.init_positions_l[self.nth_init]
         return init_pos
 
     @SearchTracker.track_new_score
-    def evaluate_init(self, score_new):
+    def evaluate_init(self, score_new: float) -> None:
         if self.pos_best is None:
             self.pos_best = self.pos_new
             self.score_best = score_new

@@ -2,8 +2,12 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+from __future__ import annotations
+
+from typing import Any, Callable
 
 from . import HillClimbingOptimizer
+from ..core_optimizer.converter import ArrayLike
 
 
 class RepulsingHillClimbingOptimizer(HillClimbingOptimizer):
@@ -46,17 +50,17 @@ class RepulsingHillClimbingOptimizer(HillClimbingOptimizer):
 
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        constraints=None,
-        random_state=None,
-        rand_rest_p=0,
-        nth_process=None,
-        epsilon=0.03,
-        distribution="normal",
-        n_neighbours=3,
-        repulsion_factor=5,
-    ):
+        search_space: dict[str, Any],
+        initialize: dict[str, int] = {"grid": 4, "random": 2, "vertices": 4},
+        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
+        random_state: int | None = None,
+        rand_rest_p: float = 0,
+        nth_process: int | None = None,
+        epsilon: float = 0.03,
+        distribution: str = "normal",
+        n_neighbours: int = 3,
+        repulsion_factor: float = 5,
+    ) -> None:
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -74,7 +78,7 @@ class RepulsingHillClimbingOptimizer(HillClimbingOptimizer):
         self.epsilon_mod = 1
 
     @HillClimbingOptimizer.track_new_pos
-    def iterate(self):
+    def iterate(self) -> ArrayLike:
         """Generate next position with adaptive step size."""
         return self.move_climb(
             self.pos_current,
@@ -83,7 +87,7 @@ class RepulsingHillClimbingOptimizer(HillClimbingOptimizer):
             epsilon_mod=self.epsilon_mod,
         )
 
-    def evaluate(self, score_new):
+    def evaluate(self, score_new: float) -> None:
         super().evaluate(score_new)
 
         if score_new <= self.score_current:

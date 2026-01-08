@@ -2,11 +2,14 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+from __future__ import annotations
 
 import numpy as np
+from typing import Any, Callable
 
 from .base_population_optimizer import BasePopulationOptimizer
 from ._particle import Particle
+from ..core_optimizer.converter import ArrayLike
 
 
 class ParticleSwarmOptimizer(BasePopulationOptimizer):
@@ -51,18 +54,18 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
 
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        constraints=None,
-        random_state=None,
-        rand_rest_p=0,
-        nth_process=None,
-        population=10,
-        inertia=0.5,
-        cognitive_weight=0.5,
-        social_weight=0.5,
-        temp_weight=0.2,
-    ):
+        search_space: dict[str, Any],
+        initialize: dict[str, int] = {"grid": 4, "random": 2, "vertices": 4},
+        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
+        random_state: int | None = None,
+        rand_rest_p: float = 0,
+        nth_process: int | None = None,
+        population: int = 10,
+        inertia: float = 0.5,
+        cognitive_weight: float = 0.5,
+        social_weight: float = 0.5,
+        temp_weight: float = 0.2,
+    ) -> None:
         super().__init__(
             search_space=search_space,
             initialize=initialize,

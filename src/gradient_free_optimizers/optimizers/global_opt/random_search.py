@@ -2,8 +2,12 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+from __future__ import annotations
+
+from typing import Any, Callable
 
 from ..base_optimizer import BaseOptimizer
+from ..core_optimizer.converter import ArrayLike
 
 
 class RandomSearchOptimizer(BaseOptimizer):
@@ -38,13 +42,13 @@ class RandomSearchOptimizer(BaseOptimizer):
 
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        constraints=None,
-        random_state=None,
-        rand_rest_p=0,
-        nth_process=None,
-    ):
+        search_space: dict[str, Any],
+        initialize: dict[str, int] = {"grid": 4, "random": 2, "vertices": 4},
+        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
+        random_state: int | None = None,
+        rand_rest_p: float = 0,
+        nth_process: int | None = None,
+    ) -> None:
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -55,10 +59,10 @@ class RandomSearchOptimizer(BaseOptimizer):
         )
 
     @BaseOptimizer.track_new_pos
-    def iterate(self):
+    def iterate(self) -> ArrayLike:
         """Generate a random position in the search space."""
         return self.move_random()
 
     @BaseOptimizer.track_new_score
-    def evaluate(self, score_new):
+    def evaluate(self, score_new: float) -> None:
         return super().evaluate(score_new)

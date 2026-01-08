@@ -2,11 +2,15 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+from __future__ import annotations
+
 import random
 import numpy as np
+from typing import Any, Callable
 
 from ._evolutionary_algorithm import EvolutionaryAlgorithmOptimizer
 from ._individual import Individual
+from ..core_optimizer.converter import ArrayLike
 
 # Selection parameters for genetic algorithm
 # Fraction of population selected as parents for crossover
@@ -59,19 +63,19 @@ class GeneticAlgorithmOptimizer(EvolutionaryAlgorithmOptimizer):
 
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        constraints=None,
-        random_state=None,
-        rand_rest_p=0,
-        nth_process=None,
-        population=10,
-        offspring=10,
-        crossover="discrete-recombination",
-        n_parents=2,
-        mutation_rate=0.5,
-        crossover_rate=0.5,
-    ):
+        search_space: dict[str, Any],
+        initialize: dict[str, int] = {"grid": 4, "random": 2, "vertices": 4},
+        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
+        random_state: int | None = None,
+        rand_rest_p: float = 0,
+        nth_process: int | None = None,
+        population: int = 10,
+        offspring: int = 10,
+        crossover: str = "discrete-recombination",
+        n_parents: int = 2,
+        mutation_rate: float = 0.5,
+        crossover_rate: float = 0.5,
+    ) -> None:
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -93,7 +97,7 @@ class GeneticAlgorithmOptimizer(EvolutionaryAlgorithmOptimizer):
 
         self.offspring_l = []
 
-    def fittest_parents(self):
+    def fittest_parents(self) -> list[Individual]:
         self.sort_pop_best_score()
 
         n_fittest = int(len(self.pop_sorted) * FITTEST_PARENTS_FRACTION)
@@ -106,7 +110,7 @@ class GeneticAlgorithmOptimizer(EvolutionaryAlgorithmOptimizer):
 
         return best_l
 
-    def _crossover(self):
+    def _crossover(self) -> None:
         fittest_parents = self.fittest_parents()
         selected_parents = random.sample(fittest_parents, self.n_parents)
 
@@ -116,20 +120,20 @@ class GeneticAlgorithmOptimizer(EvolutionaryAlgorithmOptimizer):
             offspring = self._constraint_loop(offspring)
             self.offspring_l.append(offspring)
 
-    def _constraint_loop(self, position):
+    def _constraint_loop(self, position: ArrayLike) -> ArrayLike:
         while True:
             if self.conv.not_in_constraint(position):
                 return position
             position = self.p_current.move_climb(position, epsilon_mod=0.3)
 
     @EvolutionaryAlgorithmOptimizer.track_new_pos
-    def init_pos(self):
+    def init_pos(self) -> ArrayLike:
         nth_pop = self.nth_trial % len(self.individuals)
         self.p_current = self.individuals[nth_pop]
         return self.p_current.init_pos()
 
     @EvolutionaryAlgorithmOptimizer.track_new_pos
-    def iterate(self):
+    def iterate(self) -> ArrayLike:
         """Generate next position via mutation or crossover."""
         n_ind = len(self.individuals)
 
@@ -153,5 +157,5 @@ class GeneticAlgorithmOptimizer(EvolutionaryAlgorithmOptimizer):
             return self.p_current.pos_new
 
     @EvolutionaryAlgorithmOptimizer.track_new_score
-    def evaluate(self, score_new):
+    def evaluate(self, score_new: float) -> None:
         self.p_current.evaluate(score_new)

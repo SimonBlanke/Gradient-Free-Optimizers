@@ -2,6 +2,10 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+from __future__ import annotations
+
+from typing import Any, Callable, Literal, TYPE_CHECKING
+
 import numpy as np
 from scipy.stats import norm
 
@@ -13,6 +17,10 @@ from .surrogate_models import (
 )
 from .acquisition_function import ExpectedImprovement
 from ._normalize import normalize
+from ..core_optimizer.converter import ArrayLike
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 
 tree_regressor_dict = {
@@ -75,20 +83,20 @@ class ForestOptimizer(SMBO):
 
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        constraints=None,
-        random_state=None,
-        rand_rest_p=0,
-        nth_process=None,
-        warm_start_smbo=None,
-        max_sample_size=10000000,
-        sampling={"random": 1000000},
-        replacement=True,
-        tree_regressor="extra_tree",
-        tree_para={"n_estimators": 100},
-        xi=0.03,
-    ):
+        search_space: dict[str, Any],
+        initialize: dict[str, int] = {"grid": 4, "random": 2, "vertices": 4},
+        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
+        random_state: int | None = None,
+        rand_rest_p: float = 0,
+        nth_process: int | None = None,
+        warm_start_smbo: pd.DataFrame | None = None,
+        max_sample_size: int = 10000000,
+        sampling: dict[str, int] | Literal[False] = {"random": 1000000},
+        replacement: bool = True,
+        tree_regressor: Literal["random_forest", "extra_tree", "gradient_boost"] = "extra_tree",
+        tree_para: dict[str, Any] = {"n_estimators": 100},
+        xi: float = 0.03,
+    ) -> None:
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -107,18 +115,18 @@ class ForestOptimizer(SMBO):
         self.regr = tree_regressor_dict[tree_regressor](**self.tree_para)
         self.xi = xi
 
-    def finish_initialization(self):
+    def finish_initialization(self) -> None:
         self.all_pos_comb = self._all_possible_pos()
         return super().finish_initialization()
 
-    def _expected_improvement(self):
+    def _expected_improvement(self) -> ArrayLike:
         """Compute Expected Improvement for all candidate positions."""
         self.pos_comb = self._sampling(self.all_pos_comb)
 
         acqu_func = ExpectedImprovement(self.regr, self.pos_comb, self.xi)
         return acqu_func.calculate(self.X_sample, self.Y_sample)
 
-    def _training(self):
+    def _training(self) -> None:
         """Fit the tree ensemble on collected samples."""
         X_sample = np.array(self.X_sample)
         Y_sample = np.array(self.Y_sample)

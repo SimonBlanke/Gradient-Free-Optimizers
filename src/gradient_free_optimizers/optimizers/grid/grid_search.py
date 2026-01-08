@@ -2,9 +2,14 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+from __future__ import annotations
+
+from typing import Any, Callable, Literal
+
 from ..base_optimizer import BaseOptimizer
 from .diagonal_grid_search import DiagonalGridSearchOptimizer
 from .orthogonal_grid_search import OrthogonalGridSearchOptimizer
+from ..core_optimizer.converter import ArrayLike
 
 
 class GridSearchOptimizer(BaseOptimizer):
@@ -42,15 +47,15 @@ class GridSearchOptimizer(BaseOptimizer):
 
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        constraints=None,
-        random_state=None,
-        rand_rest_p=0,
-        nth_process=None,
-        step_size=1,
-        direction="diagonal",
-    ):
+        search_space: dict[str, Any],
+        initialize: dict[str, int] = {"grid": 4, "random": 2, "vertices": 4},
+        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
+        random_state: int | None = None,
+        rand_rest_p: float = 0,
+        nth_process: int | None = None,
+        step_size: int = 1,
+        direction: Literal["diagonal", "orthogonal"] = "diagonal",
+    ) -> None:
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -89,9 +94,9 @@ class GridSearchOptimizer(BaseOptimizer):
             )
 
     @BaseOptimizer.track_new_pos
-    def iterate(self):
+    def iterate(self) -> ArrayLike:
         return self.grid_search_opt.iterate()
 
     @BaseOptimizer.track_new_score
-    def evaluate(self, score_new):
+    def evaluate(self, score_new: float) -> None:
         self.grid_search_opt.evaluate(score_new)

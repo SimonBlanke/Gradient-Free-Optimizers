@@ -2,8 +2,10 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+from __future__ import annotations
 
 import math
+from typing import Any, Callable
 
 from ..local_opt import StochasticHillClimbingOptimizer
 
@@ -50,18 +52,18 @@ class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer):
 
     def __init__(
         self,
-        search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
-        constraints=None,
-        random_state=None,
-        rand_rest_p=0,
-        nth_process=None,
-        epsilon=0.03,
-        distribution="normal",
-        n_neighbours=3,
-        annealing_rate=0.97,
-        start_temp=1,
-    ):
+        search_space: dict[str, Any],
+        initialize: dict[str, int] = {"grid": 4, "random": 2, "vertices": 4},
+        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
+        random_state: int | None = None,
+        rand_rest_p: float = 0,
+        nth_process: int | None = None,
+        epsilon: float = 0.03,
+        distribution: str = "normal",
+        n_neighbours: int = 3,
+        annealing_rate: float = 0.97,
+        start_temp: float = 1,
+    ) -> None:
         super().__init__(
             search_space=search_space,
             initialize=initialize,
