@@ -55,7 +55,6 @@ from gradient_free_optimizers import (
     BayesianOptimizer,
     TreeStructuredParzenEstimators,
     ForestOptimizer,
-    EnsembleOptimizer,
 )
 
 
@@ -95,7 +94,6 @@ ALL_OPTIMIZERS = [
     BayesianOptimizer,
     TreeStructuredParzenEstimators,
     ForestOptimizer,
-    EnsembleOptimizer,
 ]
 
 
