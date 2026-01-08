@@ -2,23 +2,8 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import numpy as np
-
 from .base_population_optimizer import BasePopulationOptimizer
 from ._spiral import Spiral
-
-
-def centeroid(array_list):
-    centeroid = []
-    for idx in range(array_list[0].shape[0]):
-        center_dim_pos = []
-        for array in array_list:
-            center_dim_pos.append(array[idx])
-
-        center_dim_mean = np.array(center_dim_pos).mean()
-        centeroid.append(center_dim_mean)
-
-    return centeroid
 
 
 class SpiralOptimization(BasePopulationOptimizer):
