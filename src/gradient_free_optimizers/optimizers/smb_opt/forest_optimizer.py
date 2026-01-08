@@ -5,7 +5,6 @@
 import numpy as np
 from scipy.stats import norm
 
-
 from .smbo import SMBO
 from .surrogate_models import (
     RandomForestRegressor,
@@ -13,6 +12,7 @@ from .surrogate_models import (
     GradientBoostingRegressor,
 )
 from .acquisition_function import ExpectedImprovement
+from ._normalize import normalize
 
 
 tree_regressor_dict = {
@@ -20,17 +20,6 @@ tree_regressor_dict = {
     "extra_tree": ExtraTreesRegressor,
     "gradient_boost": GradientBoostingRegressor,
 }
-
-
-def normalize(array):
-    min_val = array.min()
-    max_val = array.max()
-    den = max_val - min_val
-
-    if den == 0:
-        return np.random.random_sample(array.shape)
-    else:
-        return (array - min_val) / den
 
 
 class ForestOptimizer(SMBO):

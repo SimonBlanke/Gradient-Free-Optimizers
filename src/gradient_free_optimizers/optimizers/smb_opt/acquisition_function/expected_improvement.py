@@ -2,19 +2,10 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-
 import numpy as np
 from scipy.stats import norm
 
-
-def normalize(array):
-    num = array - array.min()
-    den = array.max() - array.min()
-
-    if den == 0:
-        return np.random.random_sample(array.shape)
-    else:
-        return ((num / den) + 0) / 1
+from .._normalize import normalize
 
 
 class ExpectedImprovement:

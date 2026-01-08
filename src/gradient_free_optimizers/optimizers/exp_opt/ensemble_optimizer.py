@@ -8,23 +8,13 @@ from scipy.stats import norm
 from ..smb_opt.smbo import SMBO
 from ..smb_opt.surrogate_models import EnsembleRegressor
 from ..smb_opt.acquisition_function import ExpectedImprovement
-
+from ..smb_opt._normalize import normalize
 
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.svm import SVR
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.neural_network import MLPRegressor
-
-
-def normalize(array):
-    num = array - array.min()
-    den = array.max() - array.min()
-
-    if den == 0:
-        return np.random.random_sample(array.shape)
-    else:
-        return ((num / den) + 0) / 1
 
 
 class EnsembleOptimizer(SMBO):

@@ -5,27 +5,16 @@
 import numpy as np
 from scipy.stats import norm
 
-
 from .smbo import SMBO
 from .surrogate_models import (
     GPR_linear,
     GPR,
 )
 from .acquisition_function import ExpectedImprovement
+from ._normalize import normalize
 
 
 gaussian_process = {"gp_nonlinear": GPR(), "gp_linear": GPR_linear()}
-
-
-def normalize(array):
-    array_min = array.min()
-    array_max = array.max()
-    range_ = array_max - array_min
-
-    if range_ == 0:
-        return np.random.random_sample(array.shape)
-    else:
-        return (array - array_min) / range_
 
 
 class BayesianOptimizer(SMBO):
