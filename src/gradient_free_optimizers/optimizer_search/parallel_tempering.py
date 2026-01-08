@@ -1,6 +1,7 @@
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License
+"""Parallel tempering using multiple annealers with temperature swapping."""
 
 from typing import Literal
 

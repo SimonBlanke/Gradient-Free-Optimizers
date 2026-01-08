@@ -1,6 +1,7 @@
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License
+"""Bayesian optimization using Gaussian Process surrogate models."""
 
 from typing import Literal
 

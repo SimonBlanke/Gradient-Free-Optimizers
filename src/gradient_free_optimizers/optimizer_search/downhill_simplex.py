@@ -1,6 +1,7 @@
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License
+"""Downhill simplex (Nelder-Mead) using geometric simplex transformations."""
 
 from typing import Literal
 

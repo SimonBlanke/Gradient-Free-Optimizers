@@ -1,6 +1,7 @@
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License
+"""DIRECT algorithm using adaptive hyperrectangle subdivision."""
 
 from typing import Literal
 

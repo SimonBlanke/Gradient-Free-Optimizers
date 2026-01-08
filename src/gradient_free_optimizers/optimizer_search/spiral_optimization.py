@@ -1,6 +1,7 @@
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License
+"""Spiral optimization using spiral movement patterns toward the best solution."""
 
 from typing import Literal
 

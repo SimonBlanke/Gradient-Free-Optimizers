@@ -1,6 +1,7 @@
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License
+"""Differential evolution using vector differences for mutation."""
 
 from typing import Literal
 

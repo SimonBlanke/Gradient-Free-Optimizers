@@ -1,6 +1,7 @@
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License
+"""Powell's method using sequential line searches along conjugate directions."""
 
 from typing import Literal
 

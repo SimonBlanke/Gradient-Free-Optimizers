@@ -1,6 +1,7 @@
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License
+"""Lipschitz optimization using continuity bounds for deterministic search."""
 
 from typing import Literal
 

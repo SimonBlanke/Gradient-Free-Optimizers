@@ -1,6 +1,7 @@
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License
+"""Hill climbing that iteratively moves toward better neighboring solutions."""
 
 from typing import Literal
 

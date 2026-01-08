@@ -1,6 +1,7 @@
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License
+"""Genetic algorithm using selection, crossover, and mutation operators."""
 
 from typing import Literal
 

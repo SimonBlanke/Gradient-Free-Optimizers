@@ -1,6 +1,7 @@
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License
+"""Evolution strategy using self-adaptive mutation for continuous domains."""
 
 from typing import Literal
 

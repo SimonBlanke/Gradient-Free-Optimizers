@@ -1,6 +1,7 @@
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License
+"""Random restart hill climbing with periodic restarts from random positions."""
 
 from typing import Literal
 

@@ -1,6 +1,7 @@
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License
+"""Repulsing hill climbing that increases step size to escape local optima."""
 
 from typing import Literal
 

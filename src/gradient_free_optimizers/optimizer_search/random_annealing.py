@@ -1,6 +1,7 @@
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License
+"""Random annealing using temperature to control the search radius."""
 
 from typing import Literal
 

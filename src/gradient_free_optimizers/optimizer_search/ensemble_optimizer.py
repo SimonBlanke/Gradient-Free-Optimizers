@@ -1,6 +1,7 @@
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License
+"""Ensemble optimizer combining multiple surrogate model types."""
 
 from typing import Literal
 

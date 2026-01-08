@@ -1,6 +1,7 @@
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License
+"""Random search that samples uniformly from the search space."""
 
 from typing import Literal
 

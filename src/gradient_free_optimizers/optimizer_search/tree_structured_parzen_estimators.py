@@ -1,6 +1,7 @@
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License
+"""Tree-structured Parzen Estimator (TPE) using kernel density estimation."""
 
 from typing import Literal
 

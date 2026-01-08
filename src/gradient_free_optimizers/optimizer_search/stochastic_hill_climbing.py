@@ -1,6 +1,7 @@
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License
+"""Stochastic hill climbing that probabilistically accepts worse solutions."""
 
 from typing import Literal
 

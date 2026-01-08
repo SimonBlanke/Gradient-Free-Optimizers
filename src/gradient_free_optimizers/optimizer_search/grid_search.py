@@ -1,6 +1,7 @@
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License
+"""Grid search that systematically evaluates points across the search space."""
 
 from typing import Literal
 

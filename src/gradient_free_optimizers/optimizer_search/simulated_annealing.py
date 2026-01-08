@@ -1,6 +1,7 @@
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License
+"""Simulated annealing inspired by the metallurgical annealing process."""
 
 from typing import Literal
 

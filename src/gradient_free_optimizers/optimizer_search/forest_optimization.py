@@ -1,6 +1,7 @@
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License
+"""Forest optimizer using tree ensemble surrogate models."""
 
 from typing import Literal
 

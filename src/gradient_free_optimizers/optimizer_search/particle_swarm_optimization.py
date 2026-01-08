@@ -1,6 +1,7 @@
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License
+"""Particle swarm optimization inspired by collective swarm behavior."""
 
 from typing import Literal
 

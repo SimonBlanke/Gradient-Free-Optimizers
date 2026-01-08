@@ -1,6 +1,7 @@
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License
+"""Pattern search using geometric patterns around the current best point."""
 
 from typing import Literal
 
