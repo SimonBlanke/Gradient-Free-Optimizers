@@ -5,12 +5,12 @@
 from __future__ import annotations
 
 import random
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from gradient_free_optimizers._array_backend import array
 
 from ..base_optimizer import BaseOptimizer
-from ..local_opt.hill_climbing_optimizer import HillClimbingOptimizer
 from ..core_optimizer.converter import ArrayLike
 
 

@@ -4,13 +4,12 @@
 
 
 import logging
+from multiprocessing.managers import DictProxy
+from typing import Any
+
 import pandas as pd
 
-from typing import Callable, Any, List
-from multiprocessing.managers import DictProxy
-
 from ._objective_adapter import ObjectiveAdapter
-from ._result import Result
 
 
 class CachedObjectiveAdapter(ObjectiveAdapter):

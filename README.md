@@ -88,14 +88,14 @@
 
 ## Introduction
 
-Gradient-Free-Optimizers provides a collection of easy to use optimization techniques, 
-whose objective function only requires an arbitrary score that gets maximized. 
-This makes gradient-free methods capable of solving various optimization problems, including: 
+Gradient-Free-Optimizers provides a collection of easy to use optimization techniques,
+whose objective function only requires an arbitrary score that gets maximized.
+This makes gradient-free methods capable of solving various optimization problems, including:
 - Optimizing arbitrary mathematical functions.
 - Fitting multiple gauss-distributions to data.
 - Hyperparameter-optimization of machine-learning methods.
 
-Gradient-Free-Optimizers is the optimization backend of <a href="https://github.com/SimonBlanke/Hyperactive">Hyperactive</a>  (in v3.0.0 and higher) but it can also be used by itself as a leaner and simpler optimization toolkit. 
+Gradient-Free-Optimizers is the optimization backend of <a href="https://github.com/SimonBlanke/Hyperactive">Hyperactive</a>  (in v3.0.0 and higher) but it can also be used by itself as a leaner and simpler optimization toolkit.
 
 
 <br>
@@ -190,10 +190,10 @@ Gradient-Free-Optimizers is the optimization backend of <a href="https://github.
 
   <br>
 
-  Per default Gradient-Free-Optimizers will look for the current position in a memory dictionary before evaluating the objective function. 
-  
-    - If the position is not in the dictionary the objective function will be evaluated and the position and score is saved in the dictionary. 
-    
+  Per default Gradient-Free-Optimizers will look for the current position in a memory dictionary before evaluating the objective function.
+
+    - If the position is not in the dictionary the objective function will be evaluated and the position and score is saved in the dictionary.
+
     - If a position is already saved in the dictionary Gradient-Free-Optimizers will just extract the score from it instead of evaluating the objective function. This avoids reevaluating computationally expensive objective functions (machine- or deep-learning) and therefore saves time.
 
 
@@ -207,7 +207,7 @@ Gradient-Free-Optimizers is the optimization backend of <a href="https://github.
   <br>
 
   Gradient-Free-Optimizers is extensivly tested with more than 400 tests in 2500 lines of test code. This includes the testing of:
-    - Each optimization algorithm 
+    - Each optimization algorithm
     - Each optimization parameter
     - All attributes that are part of the public api
 
@@ -247,7 +247,7 @@ Evaluates the score of n neighbours in an epsilon environment and moves to the b
 
 <table style="width:100%">
   <tr>
-    <th> <b>Convex Function</b> </th> 
+    <th> <b>Convex Function</b> </th>
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
@@ -270,7 +270,7 @@ Adds a probability to the hill climbing to move to a worse position in the searc
 
 <table style="width:100%">
   <tr>
-    <th> <b>Convex Function</b> </th> 
+    <th> <b>Convex Function</b> </th>
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
@@ -293,7 +293,7 @@ Hill climbing algorithm with the addition of increasing epsilon by a factor if n
 
 <table style="width:100%">
   <tr>
-    <th> <b>Convex Function</b> </th> 
+    <th> <b>Convex Function</b> </th>
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
@@ -316,7 +316,7 @@ Adds a probability to the hill climbing to move to a worse position in the searc
 
 <table style="width:100%">
   <tr>
-    <th> <b>Convex Function</b> </th> 
+    <th> <b>Convex Function</b> </th>
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
@@ -339,7 +339,7 @@ Constructs a simplex from multiple positions that moves through the search-space
 
 <table style="width:100%">
   <tr>
-    <th> <b>Convex Function</b> </th> 
+    <th> <b>Convex Function</b> </th>
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
@@ -365,7 +365,7 @@ Moves to random positions in each iteration.
 
 <table style="width:100%">
   <tr>
-    <th> <b>Convex Function</b> </th> 
+    <th> <b>Convex Function</b> </th>
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
@@ -388,7 +388,7 @@ Grid-search that moves through search-space diagonal (with step-size=1) starting
 
 <table style="width:100%">
   <tr>
-    <th> <b>Convex Function</b> </th> 
+    <th> <b>Convex Function</b> </th>
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
@@ -411,7 +411,7 @@ Hill climbingm, that moves to a random position after n iterations.
 
 <table style="width:100%">
   <tr>
-    <th> <b>Convex Function</b> </th> 
+    <th> <b>Convex Function</b> </th>
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
@@ -434,7 +434,7 @@ Hill Climbing, that has large epsilon at the start of the search decreasing over
 
 <table style="width:100%">
   <tr>
-    <th> <b>Convex Function</b> </th> 
+    <th> <b>Convex Function</b> </th>
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
@@ -457,7 +457,7 @@ Creates cross-shaped collection of positions that move through search-space by m
 
 <table style="width:100%">
   <tr>
-    <th> <b>Convex Function</b> </th> 
+    <th> <b>Convex Function</b> </th>
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
@@ -480,7 +480,7 @@ Optimizes each search-space dimension at a time with a hill-climbing algorithm.
 
 <table style="width:100%">
   <tr>
-    <th> <b>Convex Function</b> </th> 
+    <th> <b>Convex Function</b> </th>
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
@@ -510,7 +510,7 @@ Population of n simulated annealers, which occasionally swap transition probabil
 
 <table style="width:100%">
   <tr>
-    <th> <b>Convex Function</b> </th> 
+    <th> <b>Convex Function</b> </th>
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
@@ -533,7 +533,7 @@ Population of n particles attracting each other and moving towards the best part
 
 <table style="width:100%">
   <tr>
-    <th> <b>Convex Function</b> </th> 
+    <th> <b>Convex Function</b> </th>
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
@@ -557,7 +557,7 @@ Population of n particles moving in a spiral pattern around the best position.
 
 <table style="width:100%">
   <tr>
-    <th> <b>Convex Function</b> </th> 
+    <th> <b>Convex Function</b> </th>
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
@@ -581,7 +581,7 @@ Evolutionary algorithm selecting the best individuals in the population, mixing 
 
 <table style="width:100%">
   <tr>
-    <th> <b>Convex Function</b> </th> 
+    <th> <b>Convex Function</b> </th>
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
@@ -604,7 +604,7 @@ Population of n hill climbers occasionally mixing positional information and rem
 
 <table style="width:100%">
   <tr>
-    <th> <b>Convex Function</b> </th> 
+    <th> <b>Convex Function</b> </th>
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
@@ -627,7 +627,7 @@ Improves a population of candidate solutions by creating trial vectors through t
 
 <table style="width:100%">
   <tr>
-    <th> <b>Convex Function</b> </th> 
+    <th> <b>Convex Function</b> </th>
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
@@ -655,7 +655,7 @@ Gaussian process fitting to explored positions and predicting promising new posi
 
 <table style="width:100%">
   <tr>
-    <th> <b>Convex Function</b> </th> 
+    <th> <b>Convex Function</b> </th>
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
@@ -678,7 +678,7 @@ Calculates an upper bound from the distances of the previously explored position
 
 <table style="width:100%">
   <tr>
-    <th> <b>Convex Function</b> </th> 
+    <th> <b>Convex Function</b> </th>
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
@@ -701,7 +701,7 @@ Separates search space into subspaces. It evaluates the center position of each 
 
 <table style="width:100%">
   <tr>
-    <th> <b>Convex Function</b> </th> 
+    <th> <b>Convex Function</b> </th>
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
@@ -724,7 +724,7 @@ Kernel density estimators fitting to good and bad explored positions and predict
 
 <table style="width:100%">
   <tr>
-    <th> <b>Convex Function</b> </th> 
+    <th> <b>Convex Function</b> </th>
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
@@ -747,7 +747,7 @@ Ensemble of decision trees fitting to explored positions and predicting promisin
 
 <table style="width:100%">
   <tr>
-    <th> <b>Convex Function</b> </th> 
+    <th> <b>Convex Function</b> </th>
     <th> <b>Non-convex Function</b> </th>
   </tr>
   <tr>
@@ -764,7 +764,7 @@ Ensemble of decision trees fitting to explored positions and predicting promisin
 
 ## Sideprojects and Tools
 
-The following packages are designed to support Gradient-Free-Optimizers and expand its use cases. 
+The following packages are designed to support Gradient-Free-Optimizers and expand its use cases.
 
 | Package                                                                       | Description                                                                          |
 |-------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
@@ -931,7 +931,7 @@ print("\n search_data \n", search_data, "\n")
 
 ## Gradient Free Optimizers <=> Hyperactive
 
-Gradient-Free-Optimizers was created as the optimization backend of the [Hyperactive package](https://github.com/SimonBlanke/Hyperactive). Therefore the algorithms are exactly the same in both packages and deliver the same results. 
+Gradient-Free-Optimizers was created as the optimization backend of the [Hyperactive package](https://github.com/SimonBlanke/Hyperactive). Therefore the algorithms are exactly the same in both packages and deliver the same results.
 However you can still use Gradient-Free-Optimizers as a standalone package.
 The separation of Gradient-Free-Optimizers from Hyperactive enables multiple advantages:
   - Even easier to use than Hyperactive
@@ -962,5 +962,3 @@ While Gradient-Free-Optimizers is relatively simple, Hyperactive is a more compl
 Gradient-Free-Optimizers is licensed under the following License:
 
 [![LICENSE](https://img.shields.io/github/license/SimonBlanke/Gradient-Free-Optimizers?style=for-the-badge)](https://github.com/SimonBlanke/Gradient-Free-Optimizers/blob/master/LICENSE)
-
-

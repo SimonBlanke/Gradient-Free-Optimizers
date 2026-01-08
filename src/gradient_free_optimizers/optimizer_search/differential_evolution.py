@@ -2,12 +2,12 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-from typing import List, Dict, Literal, Union
+from typing import Literal
 
-from ..search import Search
 from ..optimizers import (
     DifferentialEvolutionOptimizer as _DifferentialEvolutionOptimizer,
 )
+from ..search import Search
 
 
 class DifferentialEvolutionOptimizer(_DifferentialEvolutionOptimizer, Search):
@@ -88,12 +88,12 @@ class DifferentialEvolutionOptimizer(_DifferentialEvolutionOptimizer, Search):
 
     def __init__(
         self,
-        search_space: Dict[str, list],
-        initialize: Dict[
+        search_space: dict[str, list],
+        initialize: dict[
             Literal["grid", "vertices", "random", "warm_start"],
-            Union[int, list[dict]],
+            int | list[dict],
         ] = {"grid": 4, "random": 2, "vertices": 4},
-        constraints: List[callable] = [],
+        constraints: list[callable] = [],
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,

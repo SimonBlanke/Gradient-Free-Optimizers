@@ -4,8 +4,6 @@ Tests for the GFOArray class (pure Python array implementation).
 These tests ensure the GFOArray class works correctly as a NumPy replacement.
 """
 
-import pytest
-
 from gradient_free_optimizers._array_backend import _pure as pure_backend
 
 from .conftest import to_list

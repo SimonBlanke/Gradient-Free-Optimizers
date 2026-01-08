@@ -2,10 +2,10 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-from typing import List, Dict, Literal, Union
+from typing import Literal
 
-from ..search import Search
 from ..optimizers import BayesianOptimizer as _BayesianOptimizer
+from ..search import Search
 
 
 class BayesianOptimizer(_BayesianOptimizer, Search):
@@ -61,17 +61,17 @@ class BayesianOptimizer(_BayesianOptimizer, Search):
     sampling : dict
         Configuration for candidate sampling. Default is {"random": 1000000}.
     replacement : bool
-<<<<<<< HEAD
+    <<<<<<< HEAD
         Whether to sample candidates with replacement. Default is True.
     gpr : object
         The Gaussian Process Regressor configuration. Uses a nonlinear GP
         by default, suitable for most optimization problems.
-=======
+    =======
         Whether to sample with replacement.
     gpr : object, optional
         The Gaussian Process Regressor to use. Can be None (uses default GPR),
         a class (instantiated automatically), or an instance.
->>>>>>> feature/array_and_math_backends
+    >>>>>>> feature/array_and_math_backends
     xi : float
         Exploration-exploitation trade-off parameter for Expected Improvement.
         Higher values favor exploration of uncertain regions. Default is 0.03.
@@ -97,18 +97,18 @@ class BayesianOptimizer(_BayesianOptimizer, Search):
 
     def __init__(
         self,
-        search_space: Dict[str, list],
-        initialize: Dict[
+        search_space: dict[str, list],
+        initialize: dict[
             Literal["grid", "vertices", "random", "warm_start"],
-            Union[int, list[dict]],
+            int | list[dict],
         ] = {"grid": 4, "random": 2, "vertices": 4},
-        constraints: List[callable] = [],
+        constraints: list[callable] = [],
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,
         warm_start_smbo=None,
         max_sample_size: int = 10000000,
-        sampling: Dict[Literal["random"], int] = {"random": 1000000},
+        sampling: dict[Literal["random"], int] = {"random": 1000000},
         replacement: bool = True,
         gpr=None,
         xi: float = 0.03,

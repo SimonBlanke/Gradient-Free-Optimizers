@@ -1,15 +1,13 @@
-import pytest
-from tqdm import tqdm
 import numpy as np
-
+import pytest
 from surfaces.test_functions.mathematical import RastriginFunction
+from tqdm import tqdm
 
 from gradient_free_optimizers import (
-    RandomSearchOptimizer,
-    RandomRestartHillClimbingOptimizer,
     RandomAnnealingOptimizer,
+    RandomRestartHillClimbingOptimizer,
+    RandomSearchOptimizer,
 )
-
 
 opt_global_l = (
     "Optimizer",
@@ -23,7 +21,7 @@ opt_global_l = (
 
 @pytest.mark.parametrize(*opt_global_l)
 def test_global_perf(Optimizer):
-    ackley_function = RastriginFunction(n_dim=1, metric="score")
+    RastriginFunction(n_dim=1, metric="score")
 
     def objective_function(para):
         score = -para["x1"] * para["x1"]

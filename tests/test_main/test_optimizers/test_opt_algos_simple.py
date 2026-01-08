@@ -1,25 +1,24 @@
-from gradient_free_optimizers.optimizers.core_optimizer import search_tracker
-import pytest
 import numpy as np
+import pytest
 
 from gradient_free_optimizers import (
-    HillClimbingOptimizer,
-    StochasticHillClimbingOptimizer,
-    RepulsingHillClimbingOptimizer,
-    SimulatedAnnealingOptimizer,
+    BayesianOptimizer,
     DownhillSimplexOptimizer,
-    RandomSearchOptimizer,
+    EvolutionStrategyOptimizer,
+    ForestOptimizer,
     GridSearchOptimizer,
-    RandomRestartHillClimbingOptimizer,
-    PowellsMethod,
-    PatternSearch,
-    RandomAnnealingOptimizer,
+    HillClimbingOptimizer,
     ParallelTemperingOptimizer,
     ParticleSwarmOptimizer,
-    EvolutionStrategyOptimizer,
-    BayesianOptimizer,
+    PatternSearch,
+    PowellsMethod,
+    RandomAnnealingOptimizer,
+    RandomRestartHillClimbingOptimizer,
+    RandomSearchOptimizer,
+    RepulsingHillClimbingOptimizer,
+    SimulatedAnnealingOptimizer,
+    StochasticHillClimbingOptimizer,
     TreeStructuredParzenEstimators,
-    ForestOptimizer,
 )
 
 optimizers = (

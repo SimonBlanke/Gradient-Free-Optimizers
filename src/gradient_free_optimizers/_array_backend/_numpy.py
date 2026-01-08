@@ -101,8 +101,10 @@ dot = np.dot
 matmul = np.matmul
 outer = np.outer
 
+
 class linalg:
     """Linear algebra namespace."""
+
     solve = staticmethod(np.linalg.solve)
     lstsq = staticmethod(np.linalg.lstsq)
     pinv = staticmethod(np.linalg.pinv)
@@ -111,9 +113,11 @@ class linalg:
     norm = staticmethod(np.linalg.norm)
     det = staticmethod(np.linalg.det)
 
+
 # === Random Number Generation ===
 class random:
     """Random number generation namespace."""
+
     seed = staticmethod(np.random.seed)
     randint = staticmethod(np.random.randint)
     choice = staticmethod(np.random.choice)
@@ -125,6 +129,7 @@ class random:
     shuffle = staticmethod(np.random.shuffle)
     permutation = staticmethod(np.random.permutation)
     RandomState = np.random.RandomState
+
 
 # === Constants ===
 inf = np.inf

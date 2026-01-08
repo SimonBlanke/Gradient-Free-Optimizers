@@ -7,17 +7,17 @@ from __future__ import annotations
 import json
 import math
 import time
-from typing import TYPE_CHECKING, Any, Callable, Literal
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Literal
 
-from ._progress_bar import ProgressBarLVL0, ProgressBarLVL1
-from ._times_tracker import TimesTracker
-from ._search_statistics import SearchStatistics
-from ._print_info import print_info
-from ._stop_run import StopRun
-from ._results_manager import ResultsManager
-from ._objective_adapter import ObjectiveAdapter
 from ._memory import CachedObjectiveAdapter
+from ._objective_adapter import ObjectiveAdapter
+from ._print_info import print_info
+from ._progress_bar import ProgressBarLVL0, ProgressBarLVL1
+from ._results_manager import ResultsManager
+from ._search_statistics import SearchStatistics
 from ._stopping_conditions import OptimizationStopper
+from ._times_tracker import TimesTracker
 
 if TYPE_CHECKING:
     import pandas as pd

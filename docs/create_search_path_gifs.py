@@ -7,36 +7,35 @@ import warnings
 warnings.warn = warn
 
 import os
-import numpy as np
 
+import numpy as np
+from search_path_gif import search_path_gif
+from surfaces.test_functions.mathematical import AckleyFunction, SphereFunction
 
 from gradient_free_optimizers import (
-    HillClimbingOptimizer,
-    StochasticHillClimbingOptimizer,
-    RepulsingHillClimbingOptimizer,
-    SimulatedAnnealingOptimizer,
-    DownhillSimplexOptimizer,
-    RandomSearchOptimizer,
-    GridSearchOptimizer,
-    RandomRestartHillClimbingOptimizer,
-    PowellsMethod,
-    PatternSearch,
-    LipschitzOptimizer,
+    BayesianOptimizer,
+    DifferentialEvolutionOptimizer,
     DirectAlgorithm,
-    RandomAnnealingOptimizer,
+    DownhillSimplexOptimizer,
+    EvolutionStrategyOptimizer,
+    ForestOptimizer,
+    GeneticAlgorithmOptimizer,
+    GridSearchOptimizer,
+    HillClimbingOptimizer,
+    LipschitzOptimizer,
     ParallelTemperingOptimizer,
     ParticleSwarmOptimizer,
+    PatternSearch,
+    PowellsMethod,
+    RandomAnnealingOptimizer,
+    RandomRestartHillClimbingOptimizer,
+    RandomSearchOptimizer,
+    RepulsingHillClimbingOptimizer,
+    SimulatedAnnealingOptimizer,
     SpiralOptimization,
-    GeneticAlgorithmOptimizer,
-    EvolutionStrategyOptimizer,
-    DifferentialEvolutionOptimizer,
-    BayesianOptimizer,
+    StochasticHillClimbingOptimizer,
     TreeStructuredParzenEstimators,
-    ForestOptimizer,
 )
-from surfaces.test_functions.mathematical import SphereFunction, AckleyFunction
-
-from search_path_gif import search_path_gif
 
 here = os.path.dirname(os.path.abspath(__file__))
 
@@ -101,11 +100,7 @@ for test_function_ in test_function_l:
             "path": os.path.join(here, "gifs"),
             "optimizer": optimizer,
             "opt_para": {},
-            "name": optimizer._name_
-            + "_"
-            + test_function_._name_
-            + "_"
-            + ".gif",
+            "name": optimizer._name_ + "_" + test_function_._name_ + "_" + ".gif",
             "n_iter": n_iter,
             "objective_function": objective_function,
             "search_space": search_space,

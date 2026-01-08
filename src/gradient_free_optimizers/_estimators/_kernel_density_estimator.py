@@ -16,8 +16,8 @@ import math
 from gradient_free_optimizers._array_backend import (
     array,
     asarray,
-    zeros,
     full,
+    zeros,
 )
 from gradient_free_optimizers._math_backend import logsumexp
 
@@ -43,9 +43,7 @@ class KernelDensityEstimator:
         self._fitted = False
 
     def fit(self, X) -> "KernelDensityEstimator":
-        """
-        Memorise the training samples and, if necessary, estimate a
-        bandwidth.
+        """Memorise the training samples and estimate bandwidth if necessary.
 
         Parameters
         ----------

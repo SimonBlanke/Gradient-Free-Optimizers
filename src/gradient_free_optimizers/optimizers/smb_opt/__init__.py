@@ -4,9 +4,8 @@
 
 
 from .bayesian_optimization import BayesianOptimizer
-from .tree_structured_parzen_estimators import TreeStructuredParzenEstimators
 from .forest_optimizer import ForestOptimizer
-
+from .tree_structured_parzen_estimators import TreeStructuredParzenEstimators
 
 __all__ = [
     "BayesianOptimizer",

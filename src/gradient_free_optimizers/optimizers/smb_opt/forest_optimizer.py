@@ -4,24 +4,22 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable, Literal, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Literal
 
-import numpy as np
-from scipy.stats import norm
 from gradient_free_optimizers._array_backend import (
     array as gfo_array,
-    random as np_random,
 )
 
+from ..core_optimizer.converter import ArrayLike
+from ._normalize import normalize
+from .acquisition_function import ExpectedImprovement
 from .smbo import SMBO
 from .surrogate_models import (
-    RandomForestRegressor,
     ExtraTreesRegressor,
     GradientBoostingRegressor,
+    RandomForestRegressor,
 )
-from .acquisition_function import ExpectedImprovement
-from ._normalize import normalize
-from ..core_optimizer.converter import ArrayLike
 
 if TYPE_CHECKING:
     import pandas as pd

@@ -3,10 +3,9 @@
 # License: MIT License
 
 from .base import LineSearch
-from .grid_search import GridLineSearch
 from .golden_section import GoldenSectionLineSearch
+from .grid_search import GridLineSearch
 from .hill_climb import HillClimbLineSearch
-
 
 __all__ = [
     "LineSearch",

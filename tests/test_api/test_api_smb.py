@@ -3,7 +3,7 @@
 # License: MIT License
 
 """
-API Freeze Tests for Sequential Model-Based Optimizers
+API Freeze Tests for Sequential Model-Based Optimizers.
 
 These tests ensure that the public API of sequential model-based optimizers
 remains stable. Any changes to parameter names, default values, or method
@@ -22,13 +22,12 @@ import numpy as np
 import pytest
 
 from gradient_free_optimizers import (
-    LipschitzOptimizer,
-    DirectAlgorithm,
     BayesianOptimizer,
-    TreeStructuredParzenEstimators,
+    DirectAlgorithm,
     ForestOptimizer,
+    LipschitzOptimizer,
+    TreeStructuredParzenEstimators,
 )
-
 
 # Minimal search space and objective for smoke tests
 # Using smaller space for SMB optimizers as they can be computationally heavier

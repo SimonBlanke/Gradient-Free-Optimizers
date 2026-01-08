@@ -3,15 +3,14 @@
 # License: MIT License
 
 
-from .powells_method import PowellsMethod
 from .direction import Direction
 from .line_search import (
-    LineSearch,
-    GridLineSearch,
     GoldenSectionLineSearch,
+    GridLineSearch,
     HillClimbLineSearch,
+    LineSearch,
 )
-
+from .powells_method import PowellsMethod
 
 __all__ = [
     "PowellsMethod",

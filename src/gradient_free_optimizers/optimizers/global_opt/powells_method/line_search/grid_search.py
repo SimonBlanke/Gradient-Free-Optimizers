@@ -2,9 +2,8 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-from typing import Optional, Tuple, List
 
-from gradient_free_optimizers._array_backend import array, linspace, argmax
+from gradient_free_optimizers._array_backend import argmax, array, linspace
 
 from .base import LineSearch
 
@@ -29,9 +28,9 @@ class GridLineSearch(LineSearch):
 
     def __init__(self, optimizer):
         super().__init__(optimizer)
-        self.grid_positions: List = []
-        self.evaluated_positions: List = []
-        self.evaluated_scores: List[float] = []
+        self.grid_positions: list = []
+        self.evaluated_positions: list = []
+        self.evaluated_scores: list[float] = []
         self.current_step: int = 0
         self.active: bool = False
 
@@ -56,7 +55,7 @@ class GridLineSearch(LineSearch):
         origin,
         direction,
         n_steps: int,
-    ) -> List:
+    ) -> list:
         """
         Generate evenly spaced positions along the direction.
 
@@ -108,7 +107,7 @@ class GridLineSearch(LineSearch):
         self.evaluated_positions.append(array(position).copy())
         self.evaluated_scores.append(score)
 
-    def get_best_result(self) -> Tuple:
+    def get_best_result(self) -> tuple:
         """Return the position with the highest score."""
         if not self.evaluated_scores:
             return None, None

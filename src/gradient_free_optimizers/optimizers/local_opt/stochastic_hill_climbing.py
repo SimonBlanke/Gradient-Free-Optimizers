@@ -5,13 +5,14 @@
 from __future__ import annotations
 
 import math
+from collections.abc import Callable
 from random import random
-from typing import Any, Callable
+from typing import Any
 
-from . import HillClimbingOptimizer
 from ..core_optimizer.parameter_tracker.stochastic_hill_climbing import (
     ParameterTracker,
 )
+from . import HillClimbingOptimizer
 
 
 class StochasticHillClimbingOptimizer(HillClimbingOptimizer, ParameterTracker):

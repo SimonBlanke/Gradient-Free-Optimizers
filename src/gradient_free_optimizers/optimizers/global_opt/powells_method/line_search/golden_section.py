@@ -3,12 +3,10 @@
 # License: MIT License
 
 import math
-from typing import Optional, Tuple, List
 
-from gradient_free_optimizers._array_backend import array, argmax
+from gradient_free_optimizers._array_backend import argmax, array
 
 from .base import LineSearch
-
 
 # Golden ratio: (sqrt(5) - 1) / 2 ≈ 0.618
 GOLDEN_RATIO = (math.sqrt(5) - 1) / 2
@@ -36,13 +34,13 @@ class GoldenSectionLineSearch(LineSearch):
         self.b: float = 0.0
         self.c: float = 0.0
         self.d: float = 0.0
-        self.fc: Optional[float] = None
-        self.fd: Optional[float] = None
+        self.fc: float | None = None
+        self.fd: float | None = None
         self.phase: str = "eval_c"
 
         # Track all evaluations for best result
-        self.evaluated_positions: List = []
-        self.evaluated_scores: List[float] = []
+        self.evaluated_positions: list = []
+        self.evaluated_scores: list[float] = []
 
     def start(
         self,
@@ -145,7 +143,7 @@ class GoldenSectionLineSearch(LineSearch):
 
         self.current_step += 1
 
-    def get_best_result(self) -> Tuple:
+    def get_best_result(self) -> tuple:
         """Return the position with the highest score."""
         if not self.evaluated_scores:
             return None, None

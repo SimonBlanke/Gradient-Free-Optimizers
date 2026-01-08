@@ -4,7 +4,7 @@
 
 from math import gcd
 
-from gradient_free_optimizers._array_backend import array, zeros, prod, power
+from gradient_free_optimizers._array_backend import array, power, prod, zeros
 
 from ..base_optimizer import BaseOptimizer
 
@@ -57,12 +57,12 @@ class DiagonalGridSearchOptimizer(BaseOptimizer):
         self.high_dim_pointer = 0
         # direction is a generator of our search space (prime with search_space_size)
         self.direction_calc = None
-        # step_size describes how many steps of size direction are jumped at each iteration
+        # step_size: how many steps of size direction are jumped each iteration
         self.step_size = step_size
 
     def get_direction(self):
-        """
-        Aim here is to generate a prime number of the search space size we call our direction.
+        """Generate a prime number to serve as direction in search space.
+
         As direction is prime with the search space size, we know it is
         a generator of Z/(search_space_size*Z).
         """
@@ -82,17 +82,17 @@ class DiagonalGridSearchOptimizer(BaseOptimizer):
         return dim_root
 
     def grid_move(self):
-        """
-        We convert our pointer of Z/(search_space_size * Z) in a position of our search space.
-        This algorithm uses a bijection from Z/(search_space_size * Z) -> (Z/dim_1*Z)x...x(Z/dim_n*Z).
+        """Convert 1D pointer to a position in the multi-dimensional search space.
+
+        Uses a bijection from Z/(search_space_size * Z) to the product space.
         """
         new_pos = []
         dim_sizes = self.conv.dim_sizes
         pointer = self.high_dim_pointer
 
         # The coordinate of our new position for each dimension is
-        # the quotient of the pointer by the product of remaining dimensions
-        # Describes a bijection from Z/search_space_size*Z -> (Z/dim_1*Z)x...x(Z/dim_n*Z)
+        # the quotient of the pointer by the product of remaining dimensions.
+        # Bijection: Z/search_space_size*Z -> (Z/dim_1*Z)x...x(Z/dim_n*Z)
         for dim in range(len(dim_sizes) - 1):
             remaining_prod = prod(dim_sizes[dim + 1 :])
             new_pos.append(pointer // remaining_prod % dim_sizes[dim])

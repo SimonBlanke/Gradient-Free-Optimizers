@@ -2,14 +2,14 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import time
-import pytest
 import random
-import numpy as np
 
-from gradient_free_optimizers import ForestOptimizer
+import numpy as np
+import pytest
+
+from gradient_free_optimizers import ForestOptimizer, RandomSearchOptimizer
+
 from ._base_para_test import _base_para_test_func
-from gradient_free_optimizers import RandomSearchOptimizer
 
 
 def objective_function_nan(para):

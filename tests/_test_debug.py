@@ -1,19 +1,20 @@
 import numpy as np
+
 from gradient_free_optimizers import (
+    BayesianOptimizer,
+    EnsembleOptimizer,
+    EvolutionStrategyOptimizer,
+    ForestOptimizer,
     HillClimbingOptimizer,
-    StochasticHillClimbingOptimizer,
-    RepulsingHillClimbingOptimizer,
-    RandomSearchOptimizer,
-    RandomRestartHillClimbingOptimizer,
-    RandomAnnealingOptimizer,
-    SimulatedAnnealingOptimizer,
     ParallelTemperingOptimizer,
     ParticleSwarmOptimizer,
-    EvolutionStrategyOptimizer,
-    BayesianOptimizer,
+    RandomAnnealingOptimizer,
+    RandomRestartHillClimbingOptimizer,
+    RandomSearchOptimizer,
+    RepulsingHillClimbingOptimizer,
+    SimulatedAnnealingOptimizer,
+    StochasticHillClimbingOptimizer,
     TreeStructuredParzenEstimators,
-    ForestOptimizer,
-    EnsembleOptimizer,
 )
 
 # check if there are any debug-prints left in code

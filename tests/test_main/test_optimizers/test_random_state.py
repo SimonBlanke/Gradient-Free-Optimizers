@@ -1,11 +1,9 @@
-import pytest
-import time
 import numpy as np
-import pandas as pd
+import pytest
 
+from gradient_free_optimizers import DirectAlgorithm
 
 from ._parametrize import optimizers_non_deterministic as optimizers
-from gradient_free_optimizers import DirectAlgorithm
 
 
 def objective_function(para):

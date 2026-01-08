@@ -1,16 +1,14 @@
-import pytest
-from tqdm import tqdm
 import numpy as np
-
-from surfaces.test_functions.mathematical import SphereFunction, RastriginFunction
+import pytest
+from surfaces.test_functions.mathematical import RastriginFunction, SphereFunction
+from tqdm import tqdm
 
 from gradient_free_optimizers import (
+    EvolutionStrategyOptimizer,
     ParallelTemperingOptimizer,
     ParticleSwarmOptimizer,
-    EvolutionStrategyOptimizer,
     RandomSearchOptimizer,
 )
-
 
 opt_pop_l = (
     "Optimizer",

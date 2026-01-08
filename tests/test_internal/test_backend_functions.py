@@ -5,18 +5,20 @@ These tests verify that the pure Python implementations produce results
 consistent with NumPy/SciPy implementations.
 """
 
-import pytest
 import math
 
-from gradient_free_optimizers._array_backend import _pure as pure_array
+import pytest
+
 from gradient_free_optimizers._array_backend import HAS_NUMPY
-from gradient_free_optimizers._math_backend import _pure as pure_math
+from gradient_free_optimizers._array_backend import _pure as pure_array
 from gradient_free_optimizers._math_backend import HAS_SCIPY
+from gradient_free_optimizers._math_backend import _pure as pure_math
 
 # Conditionally import backends
 if HAS_NUMPY:
-    from gradient_free_optimizers._array_backend import _numpy as numpy_array
     import numpy as np
+
+    from gradient_free_optimizers._array_backend import _numpy as numpy_array
 else:
     numpy_array = None
     np = None
@@ -31,6 +33,7 @@ else:
 # Test: __matmul__ operator (@)
 # =============================================================================
 
+
 class TestMatmul:
     """Tests for matrix multiplication operator."""
 
@@ -39,7 +42,7 @@ class TestMatmul:
         a = pure_array.array([1.0, 2.0, 3.0])
         b = pure_array.array([4.0, 5.0, 6.0])
         result = a @ b
-        expected = 1*4 + 2*5 + 3*6  # = 32
+        expected = 1 * 4 + 2 * 5 + 3 * 6  # = 32
         assert result == expected
 
     def test_matmul_2d_1d_matrix_vector(self):
@@ -48,7 +51,7 @@ class TestMatmul:
         v = pure_array.array([1.0, 2.0])
         result = A @ v
         # [[1, 2], [3, 4], [5, 6]] @ [1, 2] = [5, 11, 17]
-        expected = [1*1 + 2*2, 3*1 + 4*2, 5*1 + 6*2]
+        expected = [1 * 1 + 2 * 2, 3 * 1 + 4 * 2, 5 * 1 + 6 * 2]
         assert list(result) == expected
 
     def test_matmul_1d_2d_vector_matrix(self):
@@ -57,7 +60,7 @@ class TestMatmul:
         A = pure_array.array([[1.0, 2.0], [3.0, 4.0], [5.0, 6.0]])
         result = v @ A
         # [1, 2, 3] @ [[1, 2], [3, 4], [5, 6]] = [22, 28]
-        expected = [1*1 + 2*3 + 3*5, 1*2 + 2*4 + 3*6]
+        expected = [1 * 1 + 2 * 3 + 3 * 5, 1 * 2 + 2 * 4 + 3 * 6]
         assert list(result) == expected
 
     def test_matmul_2d_2d_matrix_matrix(self):
@@ -66,7 +69,7 @@ class TestMatmul:
         B = pure_array.array([[5.0, 6.0], [7.0, 8.0]])
         result = A @ B
         # [[1, 2], [3, 4]] @ [[5, 6], [7, 8]] = [[19, 22], [43, 50]]
-        expected = [[1*5 + 2*7, 1*6 + 2*8], [3*5 + 4*7, 3*6 + 4*8]]
+        expected = [[1 * 5 + 2 * 7, 1 * 6 + 2 * 8], [3 * 5 + 4 * 7, 3 * 6 + 4 * 8]]
         assert result.shape == (2, 2)
         for i in range(2):
             for j in range(2):
@@ -109,6 +112,7 @@ class TestMatmul:
 # =============================================================================
 # Test: diag function
 # =============================================================================
+
 
 class TestDiag:
     """Tests for diagonal extraction/construction."""
@@ -191,6 +195,7 @@ class TestDiag:
 # Test: empty_like function
 # =============================================================================
 
+
 class TestEmptyLike:
     """Tests for empty_like function."""
 
@@ -220,11 +225,12 @@ class TestEmptyLike:
 # Test: Shape-preserving elementwise functions
 # =============================================================================
 
+
 class TestElementwiseShapePreservation:
     """Tests for elementwise functions preserving 2D shape."""
 
     def test_exp_preserves_2d_shape(self):
-        """exp should preserve 2D array shape."""
+        """Exp should preserve 2D array shape."""
         A = pure_array.array([[1.0, 2.0], [3.0, 4.0]])
         result = pure_array.exp(A)
         assert result.shape == (2, 2)
@@ -232,7 +238,7 @@ class TestElementwiseShapePreservation:
         assert abs(result[1, 1] - math.exp(4.0)) < 1e-10
 
     def test_log_preserves_2d_shape(self):
-        """log should preserve 2D array shape."""
+        """Log should preserve 2D array shape."""
         A = pure_array.array([[1.0, 2.0], [3.0, 4.0]])
         result = pure_array.log(A)
         assert result.shape == (2, 2)
@@ -240,7 +246,7 @@ class TestElementwiseShapePreservation:
         assert abs(result[1, 1] - math.log(4.0)) < 1e-10
 
     def test_sqrt_preserves_2d_shape(self):
-        """sqrt should preserve 2D array shape."""
+        """Sqrt should preserve 2D array shape."""
         A = pure_array.array([[1.0, 4.0], [9.0, 16.0]])
         result = pure_array.sqrt(A)
         assert result.shape == (2, 2)
@@ -250,7 +256,7 @@ class TestElementwiseShapePreservation:
         assert abs(result[1, 1] - 4.0) < 1e-10
 
     def test_abs_preserves_2d_shape(self):
-        """abs should preserve 2D array shape."""
+        """Abs should preserve 2D array shape."""
         A = pure_array.array([[-1.0, 2.0], [-3.0, 4.0]])
         result = pure_array.abs(A)
         assert result.shape == (2, 2)
@@ -258,23 +264,23 @@ class TestElementwiseShapePreservation:
         assert result[1, 0] == 3.0
 
     def test_sin_preserves_2d_shape(self):
-        """sin should preserve 2D array shape."""
-        A = pure_array.array([[0.0, math.pi/2], [math.pi, 3*math.pi/2]])
+        """Sin should preserve 2D array shape."""
+        A = pure_array.array([[0.0, math.pi / 2], [math.pi, 3 * math.pi / 2]])
         result = pure_array.sin(A)
         assert result.shape == (2, 2)
         assert abs(result[0, 0] - 0.0) < 1e-10
         assert abs(result[0, 1] - 1.0) < 1e-10
 
     def test_cos_preserves_2d_shape(self):
-        """cos should preserve 2D array shape."""
-        A = pure_array.array([[0.0, math.pi/2], [math.pi, 3*math.pi/2]])
+        """Cos should preserve 2D array shape."""
+        A = pure_array.array([[0.0, math.pi / 2], [math.pi, 3 * math.pi / 2]])
         result = pure_array.cos(A)
         assert result.shape == (2, 2)
         assert abs(result[0, 0] - 1.0) < 1e-10
         assert abs(result[0, 1] - 0.0) < 1e-10
 
     def test_power_preserves_2d_shape(self):
-        """power should preserve 2D array shape."""
+        """Power should preserve 2D array shape."""
         A = pure_array.array([[1.0, 2.0], [3.0, 4.0]])
         result = pure_array.power(A, 2)
         assert result.shape == (2, 2)
@@ -308,6 +314,7 @@ class TestElementwiseShapePreservation:
 # =============================================================================
 # Test: solve_triangular function
 # =============================================================================
+
 
 class TestSolveTriangular:
     """Tests for triangular system solver."""
@@ -378,16 +385,17 @@ class TestSolveTriangular:
 # Test: solve function with assume_a parameter
 # =============================================================================
 
+
 class TestSolveAssumeA:
     """Tests for solve function with assume_a parameter."""
 
     def test_solve_with_assume_a_pos(self):
-        """solve with assume_a='pos' should work for positive definite matrix."""
+        """Solve with assume_a='pos' should work for positive definite matrix."""
         # Create a positive definite matrix
         A = np.array([[4.0, 2.0], [2.0, 3.0]])
         b = np.array([8.0, 7.0])
 
-        result = pure_math.solve(A, b, assume_a='pos')
+        result = pure_math.solve(A, b, assume_a="pos")
 
         # Verify: A @ result should equal b
         check = A @ result
@@ -396,12 +404,12 @@ class TestSolveAssumeA:
 
     @pytest.mark.skipif(not HAS_SCIPY, reason="SciPy not available")
     def test_solve_matches_scipy_with_assume_a(self):
-        """solve with assume_a should match SciPy."""
+        """Solve with assume_a should match SciPy."""
         A = np.array([[5.0, 2.0, 1.0], [2.0, 4.0, 2.0], [1.0, 2.0, 3.0]])
         b = np.array([10.0, 12.0, 10.0])
 
-        result_pure = pure_math.solve(A, b, assume_a='pos')
-        result_scipy = scipy_math.solve(A, b, assume_a='pos')
+        result_pure = pure_math.solve(A, b, assume_a="pos")
+        result_scipy = scipy_math.solve(A, b, assume_a="pos")
 
         for i in range(3):
             assert abs(result_pure[i] - result_scipy[i]) < 1e-8
@@ -410,6 +418,7 @@ class TestSolveAssumeA:
 # =============================================================================
 # Test: Cholesky-based operations work with pure backend
 # =============================================================================
+
 
 class TestCholeskyIntegration:
     """Integration tests for Cholesky-based operations."""
@@ -444,6 +453,7 @@ class TestCholeskyIntegration:
 # =============================================================================
 # Test: Eye and identity operations
 # =============================================================================
+
 
 class TestEye:
     """Tests for eye (identity matrix) function."""

@@ -3,7 +3,7 @@
 # License: MIT License
 
 """
-API Freeze Tests for Local Optimizers
+API Freeze Tests for Local Optimizers.
 
 These tests ensure that the public API of local optimizers remains stable.
 Any changes to parameter names, default values, or method signatures will
@@ -21,13 +21,12 @@ import numpy as np
 import pytest
 
 from gradient_free_optimizers import (
+    DownhillSimplexOptimizer,
     HillClimbingOptimizer,
-    StochasticHillClimbingOptimizer,
     RepulsingHillClimbingOptimizer,
     SimulatedAnnealingOptimizer,
-    DownhillSimplexOptimizer,
+    StochasticHillClimbingOptimizer,
 )
-
 
 # Minimal search space and objective for smoke tests
 SEARCH_SPACE = {"x": np.linspace(-1, 1, 10)}

@@ -4,12 +4,13 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable, Literal
+from collections.abc import Callable
+from typing import Any, Literal
 
 from ..base_optimizer import BaseOptimizer
+from ..core_optimizer.converter import ArrayLike
 from .diagonal_grid_search import DiagonalGridSearchOptimizer
 from .orthogonal_grid_search import OrthogonalGridSearchOptimizer
-from ..core_optimizer.converter import ArrayLike
 
 
 class GridSearchOptimizer(BaseOptimizer):

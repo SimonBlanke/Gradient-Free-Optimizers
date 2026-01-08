@@ -3,7 +3,7 @@
 # License: MIT License
 
 """
-Dependency Isolation Tests - No scipy
+Dependency Isolation Tests - No scipy.
 
 These tests verify that Gradient-Free-Optimizers works correctly
 when scipy is NOT installed. This ensures the library can function
@@ -14,8 +14,6 @@ Test Configuration:
 - n_iter: 10 (quick iteration count)
 - Small numeric search space
 """
-
-import sys
 
 import numpy as np
 import pytest
@@ -33,30 +31,29 @@ except ImportError:
 
 
 from gradient_free_optimizers import (
-    HillClimbingOptimizer,
-    StochasticHillClimbingOptimizer,
-    RepulsingHillClimbingOptimizer,
-    SimulatedAnnealingOptimizer,
-    DownhillSimplexOptimizer,
-    RandomSearchOptimizer,
-    GridSearchOptimizer,
-    RandomRestartHillClimbingOptimizer,
-    PowellsMethod,
-    PatternSearch,
-    LipschitzOptimizer,
+    BayesianOptimizer,
+    DifferentialEvolutionOptimizer,
     DirectAlgorithm,
-    RandomAnnealingOptimizer,
+    DownhillSimplexOptimizer,
+    EvolutionStrategyOptimizer,
+    ForestOptimizer,
+    GeneticAlgorithmOptimizer,
+    GridSearchOptimizer,
+    HillClimbingOptimizer,
+    LipschitzOptimizer,
     ParallelTemperingOptimizer,
     ParticleSwarmOptimizer,
+    PatternSearch,
+    PowellsMethod,
+    RandomAnnealingOptimizer,
+    RandomRestartHillClimbingOptimizer,
+    RandomSearchOptimizer,
+    RepulsingHillClimbingOptimizer,
+    SimulatedAnnealingOptimizer,
     SpiralOptimization,
-    GeneticAlgorithmOptimizer,
-    EvolutionStrategyOptimizer,
-    DifferentialEvolutionOptimizer,
-    BayesianOptimizer,
+    StochasticHillClimbingOptimizer,
     TreeStructuredParzenEstimators,
-    ForestOptimizer,
 )
-
 
 # Small numeric search space for fast tests
 SEARCH_SPACE = {

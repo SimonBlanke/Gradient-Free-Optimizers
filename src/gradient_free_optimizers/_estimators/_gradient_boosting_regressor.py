@@ -14,10 +14,13 @@ without NumPy when needed (though it will be slower).
 from gradient_free_optimizers._array_backend import (
     array,
     asarray,
-    mean,
     full,
+    mean,
+)
+from gradient_free_optimizers._array_backend import (
     random as np_random,
 )
+
 from ._decision_tree_regressor import DecisionTreeRegressor
 
 
@@ -104,7 +107,9 @@ class GradientBoostingRegressor:
             if self.subsample < 1.0:
                 n_subsample = max(1, int(self.subsample * n_samples))
                 indices = rng.choice(n_samples, n_subsample, replace=False)
-                indices_list = list(indices) if hasattr(indices, '__iter__') else [indices]
+                indices_list = (
+                    list(indices) if hasattr(indices, "__iter__") else [indices]
+                )
                 X_sample = array([X[i] for i in indices_list])
                 residuals_sample = array([residuals[i] for i in indices_list])
             else:
@@ -123,7 +128,9 @@ class GradientBoostingRegressor:
             # Update predictions
             tree_pred = tree.predict(X)
             for j in range(n_samples):
-                current_prediction[j] = float(current_prediction[j]) + self.learning_rate * float(tree_pred[j])
+                current_prediction[j] = float(
+                    current_prediction[j]
+                ) + self.learning_rate * float(tree_pred[j])
 
             # Store as list for sklearn compatibility
             self.estimators_.append([tree])

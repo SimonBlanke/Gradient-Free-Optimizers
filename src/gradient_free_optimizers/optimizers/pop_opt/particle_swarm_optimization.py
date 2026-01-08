@@ -4,13 +4,13 @@
 
 from __future__ import annotations
 
-import numpy as np
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
+
 from gradient_free_optimizers._array_backend import zeros
 
-from .base_population_optimizer import BasePopulationOptimizer
 from ._particle import Particle
-from ..core_optimizer.converter import ArrayLike
+from .base_population_optimizer import BasePopulationOptimizer
 
 
 class ParticleSwarmOptimizer(BasePopulationOptimizer):
@@ -105,9 +105,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
     def iterate(self):
         """Move current particle based on velocity update equations."""
         while True:
-            self.p_current = self.particles[
-                self.nth_trial % len(self.particles)
-            ]
+            self.p_current = self.particles[self.nth_trial % len(self.particles)]
 
             self.sort_pop_best_score()
             self.p_current.global_pos_best = self.pop_sorted[0].pos_best

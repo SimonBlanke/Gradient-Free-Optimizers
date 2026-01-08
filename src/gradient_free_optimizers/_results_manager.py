@@ -1,5 +1,4 @@
 import pandas as pd
-from collections.abc import Sequence
 
 
 class ResultsManager:

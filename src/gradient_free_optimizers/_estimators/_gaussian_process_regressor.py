@@ -16,18 +16,20 @@ import math
 from gradient_free_optimizers._array_backend import (
     array,
     asarray,
-    zeros,
-    ones,
-    eye,
     diag,
-    empty_like,
-    exp,
     log,
-    sqrt,
     maximum,
+    sqrt,
+)
+from gradient_free_optimizers._array_backend import (
     sum as arr_sum,
 )
-from gradient_free_optimizers._math_backend import cholesky, cho_solve, solve_triangular, minimize
+from gradient_free_optimizers._math_backend import (
+    cho_solve,
+    cholesky,
+    minimize,
+    solve_triangular,
+)
 
 
 class GaussianProcessRegressor:
@@ -58,9 +60,7 @@ class GaussianProcessRegressor:
         self.alpha = None
 
     def fit(self, X, y):
-        """
-        Fit the GP hyper-parameters and pre-compute quantities needed
-        for prediction.
+        """Fit the GP hyper-parameters and pre-compute for prediction.
 
         Parameters
         ----------
@@ -76,7 +76,7 @@ class GaussianProcessRegressor:
         self.X = asarray(X, dtype=float)
         y_arr = asarray(y, dtype=float)
         # Flatten if needed
-        if hasattr(y_arr, 'ravel'):
+        if hasattr(y_arr, "ravel"):
             self.y = y_arr.ravel()
         else:
             self.y = y_arr
@@ -85,8 +85,13 @@ class GaussianProcessRegressor:
             self.theta = self._optimise_theta()
 
         K = self.kernel(self.X, self.X, self.theta)
-        n = len(self.X)
-        sigma_n2 = math.exp(2 * float(self.theta[-1] if hasattr(self.theta, '__getitem__') else self.theta))
+        len(self.X)
+        sigma_n2 = math.exp(
+            2
+            * float(
+                self.theta[-1] if hasattr(self.theta, "__getitem__") else self.theta
+            )
+        )
 
         # K += sigma_n2 * I
         K_reg = self._add_diagonal(K, sigma_n2)
@@ -100,9 +105,9 @@ class GaussianProcessRegressor:
         """Add value to diagonal of matrix K."""
         n = len(K)
         # Convert to list of lists for manipulation
-        if hasattr(K, '_data'):
+        if hasattr(K, "_data"):
             result = [list(row) for row in K._data]
-        elif hasattr(K, 'tolist'):
+        elif hasattr(K, "tolist"):
             result = K.tolist()
         else:
             result = [list(row) for row in K]
@@ -117,14 +122,16 @@ class GaussianProcessRegressor:
         n = len(self.X)
 
         K = self.kernel(self.X, self.X, theta)
-        sigma_n2 = math.exp(2 * float(theta[-1] if hasattr(theta, '__getitem__') else theta))
+        sigma_n2 = math.exp(
+            2 * float(theta[-1] if hasattr(theta, "__getitem__") else theta)
+        )
         K_reg = self._add_diagonal(K, sigma_n2)
 
         try:
             L = cholesky(K_reg, lower=True)
         except Exception:
             # Return high value if Cholesky fails
-            return float('inf')
+            return float("inf")
 
         alpha = cho_solve((L, True), self.y)
 
@@ -140,12 +147,12 @@ class GaussianProcessRegressor:
 
     def _dot_1d(self, a, b):
         """Dot product of two 1D arrays."""
-        if hasattr(a, '_data'):
+        if hasattr(a, "_data"):
             a_list = a._data if a.ndim == 1 else a._get_flat()
         else:
             a_list = list(a)
 
-        if hasattr(b, '_data'):
+        if hasattr(b, "_data"):
             b_list = b._data if b.ndim == 1 else b._get_flat()
         else:
             b_list = list(b)
@@ -155,9 +162,9 @@ class GaussianProcessRegressor:
     def _optimise_theta(self):
         """Maximise log-marginal likelihood starting from self.theta."""
         # Convert theta to list for minimize
-        if hasattr(self.theta, 'tolist'):
+        if hasattr(self.theta, "tolist"):
             x0 = self.theta.tolist()
-        elif hasattr(self.theta, '_data'):
+        elif hasattr(self.theta, "_data"):
             x0 = list(self.theta._data)
         else:
             x0 = list(self.theta)
@@ -215,10 +222,10 @@ class GaussianProcessRegressor:
 
     def _transpose(self, A):
         """Transpose a 2D array."""
-        if hasattr(A, 'T'):
+        if hasattr(A, "T"):
             return A.T
         # Manual transpose
-        if hasattr(A, '_data'):
+        if hasattr(A, "_data"):
             data = A._data
         else:
             data = list(A)
@@ -229,16 +236,16 @@ class GaussianProcessRegressor:
 
     def _matmul_mv(self, A, v):
         """Matrix-vector multiplication."""
-        if hasattr(A, '__matmul__'):
+        if hasattr(A, "__matmul__"):
             return A @ v
 
         # Manual implementation
-        if hasattr(A, '_data'):
+        if hasattr(A, "_data"):
             A_data = A._data
         else:
             A_data = list(A)
 
-        if hasattr(v, '_data'):
+        if hasattr(v, "_data"):
             v_data = v._data if v.ndim == 1 else v._get_flat()
         else:
             v_data = list(v)
@@ -250,7 +257,7 @@ class GaussianProcessRegressor:
 
     def _sum_squared_cols(self, v):
         """Sum of squared values along columns (axis=0)."""
-        if hasattr(v, '_data'):
+        if hasattr(v, "_data"):
             data = v._data
         else:
             data = list(v)
@@ -270,15 +277,15 @@ class GaussianProcessRegressor:
 
     def _subtract_arrays(self, a, b):
         """Element-wise subtraction."""
-        if hasattr(a, '__sub__'):
+        if hasattr(a, "__sub__"):
             return a - b
 
-        if hasattr(a, '_data'):
+        if hasattr(a, "_data"):
             a_list = a._data if a.ndim == 1 else a._get_flat()
         else:
             a_list = list(a)
 
-        if hasattr(b, '_data'):
+        if hasattr(b, "_data"):
             b_list = b._data if b.ndim == 1 else b._get_flat()
         else:
             b_list = list(b)
@@ -300,7 +307,7 @@ class GaussianProcessRegressor:
             If True, return only diagonal (for variance computation)
         """
         # Extract hyperparameters
-        if hasattr(theta, '__getitem__'):
+        if hasattr(theta, "__getitem__"):
             log_ell = float(theta[0])
             log_sigma_f = float(theta[1])
         else:
@@ -314,28 +321,28 @@ class GaussianProcessRegressor:
         X2 = asarray(X2, dtype=float)
 
         # Get data as nested Python lists (pure floats, not numpy types)
-        if hasattr(X1, '_data'):
+        if hasattr(X1, "_data"):
             X1_data = X1._data if X1.ndim == 2 else [X1._data]
-        elif hasattr(X1, 'tolist'):
+        elif hasattr(X1, "tolist"):
             # numpy array - convert to pure Python lists
             X1_data = X1.tolist()
             if not isinstance(X1_data[0], list):
                 X1_data = [[x] for x in X1_data]
         else:
             X1_data = list(X1)
-            if not isinstance(X1_data[0], (list, tuple)):
+            if not isinstance(X1_data[0], list | tuple):
                 X1_data = [[x] for x in X1_data]
 
-        if hasattr(X2, '_data'):
+        if hasattr(X2, "_data"):
             X2_data = X2._data if X2.ndim == 2 else [X2._data]
-        elif hasattr(X2, 'tolist'):
+        elif hasattr(X2, "tolist"):
             # numpy array - convert to pure Python lists
             X2_data = X2.tolist()
             if not isinstance(X2_data[0], list):
                 X2_data = [[x] for x in X2_data]
         else:
             X2_data = list(X2)
-            if not isinstance(X2_data[0], (list, tuple)):
+            if not isinstance(X2_data[0], list | tuple):
                 X2_data = [[x] for x in X2_data]
 
         n1 = len(X1_data)

@@ -4,20 +4,22 @@
 
 from __future__ import annotations
 
-from gradient_free_optimizers._array_backend import (
-    array,
-    arange,
-    abs as np_abs,
-    take,
-)
+from collections.abc import Callable
+from functools import reduce
+from typing import Any, TypeVar
 
 # Pandas is still required for DataFrame operations
 # TODO: Make pandas optional in Phase 3
 import pandas as pd
 
-from functools import reduce
-from typing import Any, Callable, TypeVar
-
+from gradient_free_optimizers._array_backend import (
+    abs as np_abs,
+)
+from gradient_free_optimizers._array_backend import (
+    arange,
+    array,
+    take,
+)
 from gradient_free_optimizers._result import Result
 
 # Type alias for array-like types (numpy arrays or GFOArray)
@@ -46,7 +48,7 @@ class Converter:
 
     - **Position**: Integer indices into the search space arrays (e.g., [2, 5, 1])
     - **Value**: Actual values from the search space (e.g., [0.5, 100, "adam"])
-    - **Parameter dict**: Named parameters (e.g., {"lr": 0.5, "batch": 100, "opt": "adam"})
+    - **Parameter dict**: Named parameters (e.g., {"lr": 0.5, "batch": 100})
 
     This class also handles constraint validation and conversion between
     memory dictionaries and DataFrames for warm-starting optimizations.

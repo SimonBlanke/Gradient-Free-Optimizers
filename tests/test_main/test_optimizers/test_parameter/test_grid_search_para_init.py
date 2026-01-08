@@ -4,10 +4,9 @@
 
 import pytest
 
-
 from gradient_free_optimizers import GridSearchOptimizer
-from ._base_para_test import _base_para_test_func
 
+from ._base_para_test import _base_para_test_func
 
 grid_search_para = [
     ({"step_size": 1}),

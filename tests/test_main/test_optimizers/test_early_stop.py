@@ -1,8 +1,5 @@
-import time
-import pytest
 import numpy as np
-from sklearn.datasets import load_breast_cancer
-from sklearn.model_selection import cross_val_score
+import pytest
 
 from ._parametrize import optimizers
 

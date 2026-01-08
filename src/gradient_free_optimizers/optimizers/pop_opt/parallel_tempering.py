@@ -6,10 +6,11 @@ import copy
 import math
 import random
 
-from gradient_free_optimizers._array_backend import exp, inf, isinf, random as np_random
+from gradient_free_optimizers._array_backend import isinf
+from gradient_free_optimizers._array_backend import random as np_random
 
-from .base_population_optimizer import BasePopulationOptimizer
 from ..local_opt import SimulatedAnnealingOptimizer
+from .base_population_optimizer import BasePopulationOptimizer
 
 # Temperature initialization parameters for parallel tempering
 # temp = TEMP_BASE ** uniform(0, TEMP_MAX_EXPONENT) gives range [1.0, ~9.3]

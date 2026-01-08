@@ -2,10 +2,10 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-from typing import List, Dict, Literal, Union
+from typing import Literal
 
-from ..search import Search
 from ..optimizers import RandomAnnealingOptimizer as _RandomAnnealingOptimizer
+from ..search import Search
 
 
 class RandomAnnealingOptimizer(_RandomAnnealingOptimizer, Search):
@@ -28,7 +28,8 @@ class RandomAnnealingOptimizer(_RandomAnnealingOptimizer, Search):
 
     - Problems requiring extensive initial exploration
     - Optimization landscapes with large basins of attraction
-    - Scenarios where controlling step size is more intuitive than acceptance probability
+    - Scenarios where controlling step size is more intuitive than acceptance
+      probability
     - Problems where the scale of the search space varies
 
     The `start_temp` parameter controls the initial search radius multiplier,
@@ -87,19 +88,17 @@ class RandomAnnealingOptimizer(_RandomAnnealingOptimizer, Search):
 
     def __init__(
         self,
-        search_space: Dict[str, list],
-        initialize: Dict[
+        search_space: dict[str, list],
+        initialize: dict[
             Literal["grid", "vertices", "random", "warm_start"],
-            Union[int, list[dict]],
+            int | list[dict],
         ] = {"grid": 4, "random": 2, "vertices": 4},
-        constraints: List[callable] = [],
+        constraints: list[callable] = [],
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,
         epsilon: float = 0.03,
-        distribution: Literal[
-            "normal", "laplace", "gumbel", "logistic"
-        ] = "normal",
+        distribution: Literal["normal", "laplace", "gumbel", "logistic"] = "normal",
         n_neighbours: int = 3,
         annealing_rate=0.98,
         start_temp=10,

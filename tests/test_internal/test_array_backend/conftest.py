@@ -2,7 +2,6 @@
 
 import pytest
 
-from gradient_free_optimizers._array_backend import _pure as pure_backend
 from gradient_free_optimizers._array_backend import HAS_NUMPY
 
 # Only import numpy backend if numpy is available
@@ -32,7 +31,7 @@ def to_list(arr):
         return arr._get_flat()
     if hasattr(arr, "tolist"):
         return arr.tolist()
-    if isinstance(arr, (list, tuple)):
+    if isinstance(arr, list | tuple):
         return list(arr)
     return [arr]
 

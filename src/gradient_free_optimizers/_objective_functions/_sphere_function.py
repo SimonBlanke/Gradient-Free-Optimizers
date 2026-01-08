@@ -7,13 +7,15 @@ class SphereFunction(BaseFunction):
     """
     Implements the Sphere objective function for optimization tasks.
 
-    Attributes:
+    Attributes
+    ----------
         n_dim (int): Number of dimensions.
         A (float): Coefficient for the quadratic term.
 
-    Methods:
-        objective_function(para): Calculates the Sphere function value for a given parameter dictionary.
-        search_space: Property that defines the search space for each dimension as a range from -8 to 8 with step 0.1.
+    Methods
+    -------
+        objective_function(para): Calculates the Sphere function value.
+        search_space: Defines the search space for each dimension (-8 to 8).
     """
 
     def __init__(self, n_dim, A=1):

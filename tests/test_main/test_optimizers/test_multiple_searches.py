@@ -1,7 +1,7 @@
-import pytest
 import numpy as np
+import pytest
 
-from ._parametrize import optimizers_singleOpt, optimizers_PopBased, optimizers_SBOM
+from ._parametrize import optimizers_PopBased, optimizers_singleOpt
 
 
 def objective_function(para):
@@ -14,7 +14,6 @@ search_space = {"x1": np.arange(-100, 1, 1)}
 
 @pytest.mark.parametrize(*optimizers_singleOpt)
 def test_searches_0(Optimizer):
-
     initialize = {"warm_start": [{"x1": -100}]}
 
     opt = Optimizer(search_space, initialize=initialize)
@@ -32,7 +31,6 @@ def test_searches_0(Optimizer):
 
 @pytest.mark.parametrize(*optimizers_PopBased)
 def test_searches_pop_0(Optimizer):
-
     initialize = {"warm_start": [{"x1": -100}]}
 
     opt = Optimizer(search_space, initialize=initialize)

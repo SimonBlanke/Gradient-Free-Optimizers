@@ -5,7 +5,6 @@
 
 from .expected_improvement import ExpectedImprovement
 
-
 __all__ = [
     "ExpectedImprovement",
 ]

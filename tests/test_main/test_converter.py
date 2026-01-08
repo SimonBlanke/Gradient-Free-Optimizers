@@ -1,9 +1,9 @@
-import pytest
 import numpy as np
 import pandas as pd
+import pytest
 
-from gradient_free_optimizers.optimizers.core_optimizer import Converter
 from gradient_free_optimizers._result import Result
+from gradient_free_optimizers.optimizers.core_optimizer import Converter
 
 
 def equal_arraysInList(list1, list2):
@@ -52,7 +52,7 @@ position2value_test_para_0 = [
 ]
 
 
-@pytest.mark.parametrize("test_input,expected", position2value_test_para_0)
+@pytest.mark.parametrize(("test_input", "expected"), position2value_test_para_0)
 def test_position2value_0(test_input, expected):
     search_space = {
         "x1": np.arange(-10, 11, 1),
@@ -71,7 +71,7 @@ position2value_test_para_1 = [
 ]
 
 
-@pytest.mark.parametrize("test_input,expected", position2value_test_para_1)
+@pytest.mark.parametrize(("test_input", "expected"), position2value_test_para_1)
 def test_position2value_1(test_input, expected):
     search_space = {
         "x1": np.arange(-10, 11, 1),
@@ -98,7 +98,7 @@ value2position_test_para_0 = [
 ]
 
 
-@pytest.mark.parametrize("test_input,expected", value2position_test_para_0)
+@pytest.mark.parametrize(("test_input", "expected"), value2position_test_para_0)
 def test_value2position_0(test_input, expected):
     search_space = {
         "x1": np.arange(-10, 11, 1),
@@ -117,7 +117,7 @@ value2position_test_para_1 = [
 ]
 
 
-@pytest.mark.parametrize("test_input,expected", value2position_test_para_1)
+@pytest.mark.parametrize(("test_input", "expected"), value2position_test_para_1)
 def test_value2position_1(test_input, expected):
     search_space = {
         "x1": np.arange(-10, 11, 1),
@@ -142,7 +142,7 @@ value2para_test_para_0 = [
 ]
 
 
-@pytest.mark.parametrize("test_input,expected", value2para_test_para_0)
+@pytest.mark.parametrize(("test_input", "expected"), value2para_test_para_0)
 def test_value2para_0(test_input, expected):
     search_space = {
         "x1": np.arange(-10, 11, 1),
@@ -161,7 +161,7 @@ value2para_test_para_1 = [
 ]
 
 
-@pytest.mark.parametrize("test_input,expected", value2para_test_para_1)
+@pytest.mark.parametrize(("test_input", "expected"), value2para_test_para_1)
 def test_value2para_1(test_input, expected):
     search_space = {
         "x1": np.arange(-10, 11, 1),
@@ -186,7 +186,7 @@ para2value_test_para_0 = [
 ]
 
 
-@pytest.mark.parametrize("test_input,expected", para2value_test_para_0)
+@pytest.mark.parametrize(("test_input", "expected"), para2value_test_para_0)
 def test_para2value_0(test_input, expected):
     search_space = {
         "x1": np.arange(-10, 11, 1),
@@ -205,7 +205,7 @@ para2value_test_para_1 = [
 ]
 
 
-@pytest.mark.parametrize("test_input,expected", para2value_test_para_1)
+@pytest.mark.parametrize(("test_input", "expected"), para2value_test_para_1)
 def test_para2value_1(test_input, expected):
     search_space = {
         "x1": np.arange(-10, 11, 1),
@@ -270,7 +270,7 @@ values2positions_test_para_0 = [
 ]
 
 
-@pytest.mark.parametrize("test_input,expected", values2positions_test_para_0)
+@pytest.mark.parametrize(("test_input", "expected"), values2positions_test_para_0)
 def test_values2positions_0(test_input, expected):
     search_space = {
         "x1": np.arange(-10, 11, 1),
@@ -326,7 +326,7 @@ values2positions_test_para_1 = [
 ]
 
 
-@pytest.mark.parametrize("test_input,expected", values2positions_test_para_1)
+@pytest.mark.parametrize(("test_input", "expected"), values2positions_test_para_1)
 def test_values2positions_1(test_input, expected):
     search_space = {
         "x1": np.arange(-10, 11, 1),
@@ -388,7 +388,7 @@ positions2values_test_para_0 = [
 ]
 
 
-@pytest.mark.parametrize("test_input,expected", positions2values_test_para_0)
+@pytest.mark.parametrize(("test_input", "expected"), positions2values_test_para_0)
 def test_positions2values_0(test_input, expected):
     search_space = {
         "x1": np.arange(-10, 11, 1),
@@ -444,7 +444,7 @@ positions2values_test_para_1 = [
 ]
 
 
-@pytest.mark.parametrize("test_input,expected", positions2values_test_para_1)
+@pytest.mark.parametrize(("test_input", "expected"), positions2values_test_para_1)
 def test_positions2values_1(test_input, expected):
     search_space = {
         "x1": np.arange(-10, 11, 1),
@@ -484,7 +484,7 @@ positions_scores2memory_dict_test_para_0 = [
 
 
 @pytest.mark.parametrize(
-    "test_input,expected", positions_scores2memory_dict_test_para_0
+    ("test_input", "expected"), positions_scores2memory_dict_test_para_0
 )
 def test_positions_scores2memory_dict_0(test_input, expected):
     search_space = {
@@ -524,7 +524,7 @@ memory_dict2positions_scores_test_para_0 = [
 
 
 @pytest.mark.parametrize(
-    "test_input,expected", memory_dict2positions_scores_test_para_0
+    ("test_input", "expected"), memory_dict2positions_scores_test_para_0
 )
 def test_memory_dict2positions_scores_0(test_input, expected):
     search_space = {
@@ -552,9 +552,7 @@ dataframe0 = pd.DataFrame(
     [[-10, 10, 0.1], [10, 10, 0.2], [0, 0, 0.3]], columns=["x1", "x2", "score"]
 )
 
-dataframe1 = pd.DataFrame(
-    [[-10, 0.1], [10, 0.2], [0, 0.3]], columns=["x1", "score"]
-)
+dataframe1 = pd.DataFrame([[-10, 0.1], [10, 0.2], [0, 0.3]], columns=["x1", "score"])
 
 memory_dict_0 = {
     (0, 10): Result(0.1, {}),
@@ -568,9 +566,7 @@ dataframe2memory_dict_test_para_0 = [
 ]
 
 
-@pytest.mark.parametrize(
-    "test_input,expected", dataframe2memory_dict_test_para_0
-)
+@pytest.mark.parametrize(("test_input", "expected"), dataframe2memory_dict_test_para_0)
 def test_dataframe2memory_dict_0(test_input, expected):
     search_space = {
         "x1": np.arange(-10, 11, 1),
@@ -604,9 +600,7 @@ memory_dict2dataframe_test_para_0 = [
 ]
 
 
-@pytest.mark.parametrize(
-    "test_input,expected", memory_dict2dataframe_test_para_0
-)
+@pytest.mark.parametrize(("test_input", "expected"), memory_dict2dataframe_test_para_0)
 def test_memory_dict2dataframe_0(test_input, expected):
     search_space = {
         "x1": np.arange(-10, 11, 1),

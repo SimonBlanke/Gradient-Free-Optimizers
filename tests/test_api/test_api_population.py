@@ -3,7 +3,7 @@
 # License: MIT License
 
 """
-API Freeze Tests for Population-Based Optimizers
+API Freeze Tests for Population-Based Optimizers.
 
 These tests ensure that the public API of population-based optimizers remains stable.
 Any changes to parameter names, default values, or method signatures will
@@ -22,14 +22,13 @@ import numpy as np
 import pytest
 
 from gradient_free_optimizers import (
+    DifferentialEvolutionOptimizer,
+    EvolutionStrategyOptimizer,
+    GeneticAlgorithmOptimizer,
     ParallelTemperingOptimizer,
     ParticleSwarmOptimizer,
     SpiralOptimization,
-    GeneticAlgorithmOptimizer,
-    EvolutionStrategyOptimizer,
-    DifferentialEvolutionOptimizer,
 )
-
 
 # Minimal search space and objective for smoke tests
 SEARCH_SPACE = {"x": np.linspace(-1, 1, 10)}
@@ -271,7 +270,9 @@ class TestGeneticAlgorithmOptimizerAPI:
 
     def test_crossover_parameter(self):
         """Test crossover parameter exists and accepts string."""
-        opt = GeneticAlgorithmOptimizer(SEARCH_SPACE, crossover="discrete-recombination")
+        opt = GeneticAlgorithmOptimizer(
+            SEARCH_SPACE, crossover="discrete-recombination"
+        )
         opt.search(objective, n_iter=1, verbosity=False)
 
     def test_n_parents_parameter(self):

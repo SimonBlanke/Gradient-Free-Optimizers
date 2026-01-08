@@ -11,7 +11,14 @@ def _print_times(eval_time, iter_time, n_iter):
     if iter_time == 0:
         print(indent, "Evaluation time   :", eval_time, "sec")
         print(indent, "Optimization time :", 0, "sec")
-        print(indent, "Iteration time    :", iter_time, "sec", indent, "[too fast to measure]")
+        print(
+            indent,
+            "Iteration time    :",
+            iter_time,
+            "sec",
+            indent,
+            "[too fast to measure]",
+        )
         print(" ")
         return
 
@@ -24,7 +31,7 @@ def _print_times(eval_time, iter_time, n_iter):
         eval_time,
         "sec",
         indent,
-        "[{} %]".format(round(eval_time / iter_time * 100, 2)),
+        f"[{round(eval_time / iter_time * 100, 2)} %]",
     )
     print(
         indent,
@@ -32,7 +39,7 @@ def _print_times(eval_time, iter_time, n_iter):
         opt_time,
         "sec",
         indent,
-        "[{} %]".format(round(opt_time / iter_time * 100, 2)),
+        f"[{round(opt_time / iter_time * 100, 2)} %]",
     )
     if iterPerSec >= 1:
         print(
@@ -41,7 +48,7 @@ def _print_times(eval_time, iter_time, n_iter):
             iter_time,
             "sec",
             indent,
-            "[{} iter/sec]".format(round(iterPerSec, 2)),
+            f"[{round(iterPerSec, 2)} iter/sec]",
         )
     else:
         secPerIter = iter_time / n_iter
@@ -51,7 +58,7 @@ def _print_times(eval_time, iter_time, n_iter):
             iter_time,
             "sec",
             indent,
-            "[{} sec/iter]".format(round(secPerIter, 2)),
+            f"[{round(secPerIter, 2)} sec/iter]",
         )
     print(" ")
 
@@ -69,7 +76,7 @@ def align_para_names(para_names):
 
 
 def _print_results(objective_function, score_best, para_best, random_seed):
-    print("\nResults: '{}'".format(objective_function.__name__), " ")
+    print(f"\nResults: '{objective_function.__name__}'", " ")
     if para_best is None:
         print(indent, "Best score:", score_best, " ")
         print(indent, "Best parameter:", para_best, " ")
@@ -84,8 +91,8 @@ def _print_results(objective_function, score_best, para_best, random_seed):
             print(
                 indent,
                 indent,
-                "'{}'".format(para_key),
-                "{}:".format(added_spaces),
+                f"'{para_key}'",
+                f"{added_spaces}:",
                 para_best[para_key],
                 " ",
             )
@@ -104,7 +111,6 @@ def print_info(
     n_iter,
     random_seed,
 ):
-
     eval_time = sum(eval_times)
     iter_time = sum(iter_times)
 

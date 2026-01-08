@@ -19,7 +19,9 @@ def test_verbosity_0():
 
 
 def test_verbosity_1():
-    opt = RandomSearchOptimizer(search_space,)
+    opt = RandomSearchOptimizer(
+        search_space,
+    )
     opt.search(
         objective_function,
         n_iter=100,
@@ -57,4 +59,3 @@ def test_verbosity_4():
 def test_verbosity_5():
     opt = RandomSearchOptimizer(search_space)
     opt.search(objective_function, n_iter=100, verbosity=[])
-

@@ -15,10 +15,14 @@ from gradient_free_optimizers._array_backend import (
     array,
     asarray,
     mean,
-    var,
-    sum as arr_sum,
     unique,
+    var,
+)
+from gradient_free_optimizers._array_backend import (
     random as np_random,
+)
+from gradient_free_optimizers._array_backend import (
+    sum as arr_sum,
 )
 
 
@@ -200,7 +204,7 @@ class DecisionTreeRegressor:
         # Select features to consider
         if self._max_features < n_features:
             features = self._rng.choice(n_features, self._max_features, replace=False)
-            features = list(features) if hasattr(features, '__iter__') else [features]
+            features = list(features) if hasattr(features, "__iter__") else [features]
         else:
             features = range(n_features)
 
@@ -226,7 +230,9 @@ class DecisionTreeRegressor:
 
                 # Calculate impurity reduction (variance reduction)
                 left_impurity = float(var(y[left_mask])) * n_left if n_left > 0 else 0
-                right_impurity = float(var(y[right_mask])) * n_right if n_right > 0 else 0
+                right_impurity = (
+                    float(var(y[right_mask])) * n_right if n_right > 0 else 0
+                )
 
                 gain = current_impurity - left_impurity - right_impurity
 

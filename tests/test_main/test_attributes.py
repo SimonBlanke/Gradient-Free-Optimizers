@@ -1,9 +1,7 @@
 import time
+
 import numpy as np
-import pandas as pd
-from sklearn.datasets import load_breast_cancer
-from sklearn.model_selection import cross_val_score
-from sklearn.tree import DecisionTreeClassifier
+
 from gradient_free_optimizers import RandomSearchOptimizer
 
 

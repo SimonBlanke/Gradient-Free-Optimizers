@@ -5,14 +5,13 @@
 from __future__ import annotations
 
 import random
-import numpy as np
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from gradient_free_optimizers._array_backend import random as np_random
 
 from ._evolutionary_algorithm import EvolutionaryAlgorithmOptimizer
 from ._individual import Individual
-from ..core_optimizer.converter import ArrayLike
 
 
 class EvolutionStrategyOptimizer(EvolutionaryAlgorithmOptimizer):
@@ -91,11 +90,7 @@ class EvolutionStrategyOptimizer(EvolutionaryAlgorithmOptimizer):
         while True:
             if len(self.individuals) > 2:
                 rnd_int2 = random.choice(
-                    [
-                        i
-                        for i in range(0, self.n_ind - 1)
-                        if i not in [self.rnd_int]
-                    ]
+                    [i for i in range(0, self.n_ind - 1) if i not in [self.rnd_int]]
                 )
             else:
                 rnd_int2 = random.choice(

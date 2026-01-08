@@ -2,7 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-from gradient_free_optimizers._array_backend import array, zeros, linalg
+from gradient_free_optimizers._array_backend import array, linalg, zeros
 
 
 class Direction:

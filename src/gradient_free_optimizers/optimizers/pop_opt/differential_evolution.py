@@ -5,14 +5,14 @@
 from __future__ import annotations
 
 import random
-import numpy as np
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from gradient_free_optimizers._array_backend import array
 
+from ..core_optimizer.converter import ArrayLike
 from ._evolutionary_algorithm import EvolutionaryAlgorithmOptimizer
 from ._individual import Individual
-from ..core_optimizer.converter import ArrayLike
 
 
 class DifferentialEvolutionOptimizer(EvolutionaryAlgorithmOptimizer):
@@ -84,7 +84,7 @@ class DifferentialEvolutionOptimizer(EvolutionaryAlgorithmOptimizer):
     def mutation(self, f: float = 1) -> ArrayLike:
         ind_selected = random.sample(self.individuals, 3)
 
-        x_1, x_2, x_3 = [ind.pos_best for ind in ind_selected]
+        x_1, x_2, x_3 = (ind.pos_best for ind in ind_selected)
         return array(x_1) + self.mutation_rate * (array(x_2) - array(x_3))
 
     def _constraint_loop(self, position: ArrayLike) -> ArrayLike:
@@ -103,9 +103,7 @@ class DifferentialEvolutionOptimizer(EvolutionaryAlgorithmOptimizer):
     @EvolutionaryAlgorithmOptimizer.track_new_pos
     def iterate(self) -> ArrayLike:
         """Generate trial vector via mutation and crossover."""
-        self.p_current = self.individuals[
-            self.nth_trial % len(self.individuals)
-        ]
+        self.p_current = self.individuals[self.nth_trial % len(self.individuals)]
         target_vector = self.p_current.pos_new
 
         mutant_vector = self.mutation()

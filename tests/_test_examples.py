@@ -1,11 +1,12 @@
-import os, sys, glob
+import glob
+import os
 import subprocess
 from subprocess import DEVNULL, STDOUT
 
 here = os.path.dirname(os.path.abspath(__file__))
 
-files0 = glob.glob(here+"/../examples/*/*.py")
-files1 = glob.glob(here+"/../examples/*.py")
+files0 = glob.glob(here + "/../examples/*/*.py")
+files1 = glob.glob(here + "/../examples/*.py")
 
 files = files0 + files1
 

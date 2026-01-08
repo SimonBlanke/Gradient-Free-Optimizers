@@ -1,14 +1,13 @@
+import numpy as np
 import pytest
 from tqdm import tqdm
-import numpy as np
 
 from gradient_free_optimizers import (
     HillClimbingOptimizer,
-    StochasticHillClimbingOptimizer,
     RepulsingHillClimbingOptimizer,
     SimulatedAnnealingOptimizer,
+    StochasticHillClimbingOptimizer,
 )
-
 
 opt_local_l = (
     "Optimizer",

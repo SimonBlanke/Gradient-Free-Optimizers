@@ -17,9 +17,11 @@ The backend automatically selects the fastest available implementation:
 
 try:
     import scipy
+
     # Verify scipy is fully installed, not just a namespace stub
     _ = scipy.__version__
     from scipy.linalg import cholesky as _test_cholesky
+
     del _test_cholesky
     HAS_SCIPY = True
 except (ImportError, AttributeError):
@@ -30,9 +32,11 @@ except (ImportError, AttributeError):
 
 if HAS_SCIPY:
     from ._scipy import *
+
     _backend_name = "scipy"
 else:
     from ._pure import *
+
     _backend_name = "pure"
 
 

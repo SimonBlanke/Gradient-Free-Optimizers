@@ -9,7 +9,6 @@ from gradient_free_optimizers._array_backend import array, array_split
 from gradient_free_optimizers._math_backend import cdist
 
 from ..smb_opt.smbo import SMBO
-from ..local_opt import HillClimbingOptimizer
 
 
 class SubSpace:

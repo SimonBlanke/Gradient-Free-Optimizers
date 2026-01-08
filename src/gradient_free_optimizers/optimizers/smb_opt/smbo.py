@@ -4,31 +4,30 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Literal
+import logging
+import math
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Literal
+
+import numpy as np
 
 from ..base_optimizer import BaseOptimizer
-from .sampling import InitialSampler
 from ..core_optimizer.converter import ArrayLike
-
-import math
-import logging
-import numpy as np
+from .sampling import InitialSampler
 
 if TYPE_CHECKING:
     import pandas as pd
 
 np.seterr(divide="ignore", invalid="ignore")
 from gradient_free_optimizers._array_backend import (
-    array,
-    meshgrid,
-    isnan,
-    isinf,
-    inf,
-    nonzero,
-    isin,
-    intersect1d,
-    random as np_random,
     HAS_NUMPY,
+    array,
+    isinf,
+    isnan,
+    meshgrid,
+)
+from gradient_free_optimizers._array_backend import (
+    random as np_random,
 )
 
 # Import numpy only for warm_start pandas operations
@@ -266,7 +265,7 @@ class SMBO(BaseOptimizer):
             self._training()
         except ValueError:
             logging.warning(
-                "Warning: training sequential model failed. Performing random iteration instead."
+                "Training sequential model failed. Performing random iteration."
             )
             return self.move_random()
 

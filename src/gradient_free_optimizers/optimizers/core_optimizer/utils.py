@@ -4,14 +4,12 @@
 
 import random
 
-from gradient_free_optimizers._array_backend import array, random as np_random
+from gradient_free_optimizers._array_backend import array
+from gradient_free_optimizers._array_backend import random as np_random
 
 
 def set_random_seed(nth_process, random_state):
-    """
-    Sets the random seed separately for each thread
-    (to avoid getting the same results in each thread)
-    """
+    """Set random seed separately for each thread to avoid duplicate results."""
     if nth_process is None:
         nth_process = 0
 
@@ -25,13 +23,16 @@ def set_random_seed(nth_process, random_state):
 
 
 def move_random(ss_positions):
-    """
-    Selects a random element from each sublist in ss_positions and returns them as an array.
+    """Select a random element from each sublist and return as array.
 
-    Args:
-    ss_positions (list): A list of lists representing search spaces of possible positions.
+    Parameters
+    ----------
+    ss_positions : list
+        A list of lists representing search spaces of possible positions.
 
-    Returns:
-    array: Array containing one randomly selected element from each sublist in ss_positions.
+    Returns
+    -------
+    array
+        One randomly selected element from each sublist.
     """
     return array([random.choice(search_space_pos) for search_space_pos in ss_positions])

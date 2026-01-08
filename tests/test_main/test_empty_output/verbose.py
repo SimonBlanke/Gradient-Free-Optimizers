@@ -1,4 +1,5 @@
 import numpy as np
+
 from gradient_free_optimizers import RandomSearchOptimizer
 
 

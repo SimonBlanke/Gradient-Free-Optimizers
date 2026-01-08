@@ -4,12 +4,13 @@
 
 from __future__ import annotations
 
-from typing import Any, Callable, TYPE_CHECKING
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 from gradient_free_optimizers._array_backend import array, exp, zeros_like
 
-from .smbo import SMBO
 from ..core_optimizer.converter import ArrayLike
+from .smbo import SMBO
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -20,7 +21,9 @@ try:
 
     SKLEARN_AVAILABLE = True
 except ImportError:
-    from gradient_free_optimizers._estimators import KernelDensityEstimator as KernelDensity
+    from gradient_free_optimizers._estimators import (
+        KernelDensityEstimator as KernelDensity,
+    )
 
     SKLEARN_AVAILABLE = False
 
@@ -139,7 +142,7 @@ class TreeStructuredParzenEstimators(SMBO):
         prob_best = exp(array(logprob_best))
         prob_worst = exp(array(logprob_worst))
 
-        # Match original np.divide(prob_worst, prob_best, out=zeros, where=prob_worst != 0)
+        # Match np.divide(prob_worst, prob_best, out=zeros, where=prob_worst != 0)
         # Only divide where prob_worst != 0; output 0 otherwise
         WorstOverbest = zeros_like(prob_worst)
         for i in range(len(prob_worst)):
@@ -148,7 +151,7 @@ class TreeStructuredParzenEstimators(SMBO):
                     WorstOverbest[i] = prob_worst[i] / prob_best[i]
                 else:
                     # prob_best == 0 but prob_worst != 0 -> inf (like numpy)
-                    WorstOverbest[i] = float('inf')
+                    WorstOverbest[i] = float("inf")
 
         exp_imp_inv = self.gamma_tpe + WorstOverbest * (1 - self.gamma_tpe)
         exp_imp = 1 / exp_imp_inv

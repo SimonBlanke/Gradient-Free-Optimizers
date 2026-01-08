@@ -1,6 +1,6 @@
 import numpy as np
-from gradient_free_optimizers import RandomSearchOptimizer
 
+from gradient_free_optimizers import RandomSearchOptimizer
 
 """ --- test search spaces with mixed int/float types --- """
 
@@ -8,7 +8,7 @@ from gradient_free_optimizers import RandomSearchOptimizer
 def test_mixed_type_search_space_0():
     def objective_function(para):
         print("type x1", type(para["x1"]))
-        assert isinstance(para["x1"], (int, np.int64))
+        assert isinstance(para["x1"], int | np.int64)
 
         return 1
 
@@ -36,7 +36,7 @@ def test_mixed_type_search_space_1():
 
 def test_mixed_type_search_space_2():
     def objective_function(para):
-        assert isinstance(para["x1"], (int, np.int64))
+        assert isinstance(para["x1"], int | np.int64)
         assert isinstance(para["x2"], float)
 
         return 1

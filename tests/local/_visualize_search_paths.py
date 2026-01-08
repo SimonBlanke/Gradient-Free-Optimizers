@@ -1,21 +1,23 @@
 import os
-import numpy as np
+
 import matplotlib.pyplot as plt
+import numpy as np
+
 from gradient_free_optimizers import (
+    BayesianOptimizer,
+    EnsembleOptimizer,
+    EvolutionStrategyOptimizer,
+    ForestOptimizer,
     HillClimbingOptimizer,
-    StochasticHillClimbingOptimizer,
-    TabuOptimizer,
-    RandomSearchOptimizer,
-    RandomRestartHillClimbingOptimizer,
-    RandomAnnealingOptimizer,
-    SimulatedAnnealingOptimizer,
     ParallelTemperingOptimizer,
     ParticleSwarmOptimizer,
-    EvolutionStrategyOptimizer,
-    BayesianOptimizer,
+    RandomAnnealingOptimizer,
+    RandomRestartHillClimbingOptimizer,
+    RandomSearchOptimizer,
+    SimulatedAnnealingOptimizer,
+    StochasticHillClimbingOptimizer,
+    TabuOptimizer,
     TreeStructuredParzenEstimators,
-    ForestOptimizer,
-    EnsembleOptimizer,
 )
 
 n_inits = 4

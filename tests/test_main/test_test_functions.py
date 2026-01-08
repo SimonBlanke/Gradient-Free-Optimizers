@@ -12,7 +12,7 @@ def test_ackley():
     opt.search(ackley.objective_function, n_iter=100)
 
 
-def test_ackley():
+def test_sphere():
     from gradient_free_optimizers._objective_functions._sphere_function import (
         SphereFunction,
     )

@@ -2,9 +2,9 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import random
 
-from gradient_free_optimizers._array_backend import array, random as np_random
+from gradient_free_optimizers._array_backend import array
+from gradient_free_optimizers._array_backend import random as np_random
 
 from .base_population_optimizer import BasePopulationOptimizer
 

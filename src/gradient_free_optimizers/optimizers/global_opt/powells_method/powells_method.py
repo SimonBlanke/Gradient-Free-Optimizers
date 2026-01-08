@@ -2,11 +2,11 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-from gradient_free_optimizers._array_backend import array, argmax, linalg
+from gradient_free_optimizers._array_backend import argmax, array, linalg
 
 from ...local_opt import HillClimbingOptimizer
 from .direction import Direction
-from .line_search import GridLineSearch, GoldenSectionLineSearch, HillClimbLineSearch
+from .line_search import GoldenSectionLineSearch, GridLineSearch, HillClimbLineSearch
 
 
 class PowellsMethod(HillClimbingOptimizer):

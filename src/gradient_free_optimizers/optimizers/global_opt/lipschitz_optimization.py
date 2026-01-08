@@ -6,9 +6,9 @@
 # TODO: Refactor to use backend when numpy masked arrays are supported.
 import numpy as np
 
-from ..smb_opt.smbo import SMBO
-
 from gradient_free_optimizers._math_backend import cdist
+
+from ..smb_opt.smbo import SMBO
 
 
 class LipschitzFunction:
@@ -24,7 +24,7 @@ class LipschitzFunction:
                 x_sample1, y_sample1 = X_sample[i], Y_sample[i]
                 x_sample2, y_sample2 = X_sample[j], Y_sample[j]
 
-                if y_sample1 != y_sample2 and np.prod((x_sample1 - x_sample2)) != 0:
+                if y_sample1 != y_sample2 and np.prod(x_sample1 - x_sample2) != 0:
                     slopes.append(
                         abs(y_sample1 - y_sample2) / abs(x_sample1 - x_sample2)
                     )

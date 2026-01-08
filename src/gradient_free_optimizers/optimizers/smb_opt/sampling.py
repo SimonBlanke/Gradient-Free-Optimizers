@@ -2,16 +2,16 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import math
 import random
 
 from gradient_free_optimizers._array_backend import (
-    array,
     arange,
+    array,
     clip,
-    maximum,
-    prod,
     inf,
+    prod,
+)
+from gradient_free_optimizers._array_backend import (
     random as np_random,
 )
 

@@ -1,7 +1,6 @@
 import os
 import subprocess
 
-
 here = os.path.dirname(os.path.abspath(__file__))
 
 verbose_file = os.path.join(here, "verbose.py")

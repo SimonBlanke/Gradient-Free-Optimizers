@@ -1,5 +1,5 @@
-import pytest
 import numpy as np
+import pytest
 
 from ._parametrize import optimizers_noSBOM, optimizers_SBOM
 
@@ -10,7 +10,6 @@ def objective_function(para):
 
 @pytest.mark.parametrize(*optimizers_noSBOM)
 def test_large_search_space_0(Optimizer):
-
     search_space = {
         "x1": np.arange(0, 100000),
         "x2": np.arange(0, 100000),
@@ -22,7 +21,6 @@ def test_large_search_space_0(Optimizer):
 
 @pytest.mark.parametrize(*optimizers_noSBOM)
 def test_large_search_space_1(Optimizer):
-
     search_space = {
         "x1": np.arange(0, 100, 0.001),
         "x2": np.arange(0, 100, 0.001),
@@ -35,7 +33,6 @@ def test_large_search_space_1(Optimizer):
 
 @pytest.mark.parametrize(*optimizers_noSBOM)
 def test_large_search_space_2(Optimizer):
-
     search_space = {}
     for i in range(33):
         key = "x" + str(i)
@@ -47,7 +44,6 @@ def test_large_search_space_2(Optimizer):
 
 @pytest.mark.parametrize(*optimizers_SBOM)
 def test_large_search_space_3(Optimizer):
-
     search_space = {}
     for i in range(5):
         key = "x" + str(i)

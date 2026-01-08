@@ -16,9 +16,11 @@ The backend automatically selects the fastest available implementation:
 
 try:
     import numpy
+
     # Verify numpy is fully installed, not just a namespace stub
     _ = numpy.__version__
     from numpy import array as _test_array
+
     del _test_array
     HAS_NUMPY = True
 except (ImportError, AttributeError):
@@ -29,9 +31,11 @@ except (ImportError, AttributeError):
 
 if HAS_NUMPY:
     from ._numpy import *
+
     _backend_name = "numpy"
 else:
     from ._pure import *
+
     _backend_name = "pure"
 
 

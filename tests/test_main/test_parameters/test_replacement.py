@@ -2,15 +2,14 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import pytest
 import numpy as np
-
+import pytest
 
 from gradient_free_optimizers import (
     BayesianOptimizer,
-    TreeStructuredParzenEstimators,
-    LipschitzOptimizer,
     ForestOptimizer,
+    LipschitzOptimizer,
+    TreeStructuredParzenEstimators,
 )
 
 

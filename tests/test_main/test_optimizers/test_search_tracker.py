@@ -1,8 +1,7 @@
-import pytest
 import numpy as np
+import pytest
 
 from ._parametrize import optimizers
-
 
 n_iter_para = ("n_iter", [(10), (20), (30), (50)])
 

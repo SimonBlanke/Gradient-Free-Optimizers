@@ -1,9 +1,9 @@
-import pytest
 import time
-import numpy as np
-import pandas as pd
-from gradient_free_optimizers import GridSearchOptimizer
 
+import numpy as np
+import pytest
+
+from gradient_free_optimizers import GridSearchOptimizer
 
 from ._parametrize import optimizers_non_smbo, optimizers_smbo
 

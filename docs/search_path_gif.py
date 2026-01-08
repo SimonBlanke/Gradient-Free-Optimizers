@@ -6,16 +6,14 @@ import warnings
 
 warnings.warn = warn
 
-import os
 import gc
 import glob
-
-import numpy as np
-import pandas as pd
-from tqdm import tqdm
+import os
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+import numpy as np
+from tqdm import tqdm
 
 plt.rcParams["figure.facecolor"] = "w"
 
@@ -162,7 +160,7 @@ def plot_search_paths(
 
         # plt.margins(0, 0)
         plt.savefig(
-            path + "/_plots/" + opt._name_ + "_" + "{0:0=3d}".format(n_iter) + ".jpg",
+            path + "/_plots/" + opt._name_ + "_" + f"{n_iter:0=3d}" + ".jpg",
             dpi=150,
             pad_inches=0,
             # bbox_inches="tight",

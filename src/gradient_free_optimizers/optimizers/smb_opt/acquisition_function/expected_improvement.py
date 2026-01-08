@@ -2,12 +2,9 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import numpy as np
-from scipy.stats import norm
 
-from .._normalize import normalize
-
-from gradient_free_optimizers._array_backend import array, zeros_like, random as np_random
+from gradient_free_optimizers._array_backend import array, zeros_like
+from gradient_free_optimizers._array_backend import random as np_random
 from gradient_free_optimizers._math_backend import norm_cdf, norm_pdf
 
 

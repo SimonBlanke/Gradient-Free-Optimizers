@@ -16,9 +16,11 @@ import math
 from gradient_free_optimizers._array_backend import (
     array,
     asarray,
-    mean,
+)
+from gradient_free_optimizers._array_backend import (
     random as np_random,
 )
+
 from ._decision_tree_regressor import DecisionTreeRegressor
 
 
@@ -116,7 +118,9 @@ class RandomForestRegressor:
             if self.bootstrap:
                 indices = rng.randint(0, n_samples, n_samples)
                 # Convert indices to list for indexing
-                indices_list = list(indices) if hasattr(indices, '__iter__') else [indices]
+                indices_list = (
+                    list(indices) if hasattr(indices, "__iter__") else [indices]
+                )
                 X_sample = array([X[i] for i in indices_list])
                 y_sample = array([y[i] for i in indices_list])
             else:

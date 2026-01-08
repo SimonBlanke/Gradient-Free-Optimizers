@@ -4,10 +4,9 @@
 
 import pytest
 
-
 from gradient_free_optimizers import HillClimbingOptimizer
-from ._base_para_test import _base_para_test_func
 
+from ._base_para_test import _base_para_test_func
 
 hill_climbing_para = [
     ({"epsilon": 0.0001}),

@@ -2,17 +2,16 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-from typing import List, Dict, Literal, Union
+from typing import Literal
 
-from ..search import Search
 from ..optimizers import (
     StochasticHillClimbingOptimizer as _StochasticHillClimbingOptimizer,
 )
+from ..search import Search
 
 
 class StochasticHillClimbingOptimizer(_StochasticHillClimbingOptimizer, Search):
-    """
-    Hill climbing variant that probabilistically accepts worse solutions to escape local optima.
+    """Hill climbing variant that accepts worse solutions to escape local optima.
 
     Stochastic Hill Climbing extends the basic hill climbing algorithm by introducing
     a probability of accepting solutions that are worse than the current one. This
@@ -84,19 +83,17 @@ class StochasticHillClimbingOptimizer(_StochasticHillClimbingOptimizer, Search):
 
     def __init__(
         self,
-        search_space: Dict[str, list],
-        initialize: Dict[
+        search_space: dict[str, list],
+        initialize: dict[
             Literal["grid", "vertices", "random", "warm_start"],
-            Union[int, list[dict]],
+            int | list[dict],
         ] = {"grid": 4, "random": 2, "vertices": 4},
-        constraints: List[callable] = [],
+        constraints: list[callable] = [],
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,
         epsilon: float = 0.03,
-        distribution: Literal[
-            "normal", "laplace", "gumbel", "logistic"
-        ] = "normal",
+        distribution: Literal["normal", "laplace", "gumbel", "logistic"] = "normal",
         n_neighbours: int = 3,
         p_accept: float = 0.5,
     ):

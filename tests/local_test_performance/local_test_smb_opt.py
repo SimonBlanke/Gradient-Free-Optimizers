@@ -1,16 +1,13 @@
-import pytest
-from tqdm import tqdm
 import numpy as np
-
-from surfaces.test_functions.mathematical import SphereFunction, RastriginFunction
+import pytest
+from surfaces.test_functions.mathematical import RastriginFunction, SphereFunction
+from tqdm import tqdm
 
 from gradient_free_optimizers import (
     BayesianOptimizer,
-    TreeStructuredParzenEstimators,
-    ForestOptimizer,
     RandomSearchOptimizer,
+    TreeStructuredParzenEstimators,
 )
-
 
 opt_smbo_l = (
     "Optimizer",

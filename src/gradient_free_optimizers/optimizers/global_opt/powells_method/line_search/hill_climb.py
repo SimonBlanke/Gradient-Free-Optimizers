@@ -2,9 +2,9 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-from typing import Optional, Tuple, List
 
-from gradient_free_optimizers._array_backend import array, maximum, argmax, random as np_random
+from gradient_free_optimizers._array_backend import argmax, array, maximum
+from gradient_free_optimizers._array_backend import random as np_random
 
 from .base import LineSearch
 
@@ -43,11 +43,11 @@ class HillClimbLineSearch(LineSearch):
 
         # Track current best position for hill climbing
         self.current_pos = None
-        self.current_score: Optional[float] = None
+        self.current_score: float | None = None
 
         # Track all evaluations
-        self.evaluated_positions: List = []
-        self.evaluated_scores: List[float] = []
+        self.evaluated_positions: list = []
+        self.evaluated_scores: list[float] = []
 
     def start(
         self,
@@ -107,7 +107,7 @@ class HillClimbLineSearch(LineSearch):
             self.current_pos = array(position).copy()
             self.current_score = score
 
-    def get_best_result(self) -> Tuple:
+    def get_best_result(self) -> tuple:
         """Return the best position found during hill climbing."""
         if not self.evaluated_scores:
             return None, None

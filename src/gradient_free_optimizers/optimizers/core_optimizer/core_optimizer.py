@@ -5,22 +5,24 @@
 from __future__ import annotations
 
 import random
+from collections.abc import Callable
 from functools import wraps
-from typing import Any, Callable, Literal
+from typing import Any
 
 from gradient_free_optimizers._array_backend import (
-    rint,
-    clip,
     array,
+    clip,
+    rint,
+)
+from gradient_free_optimizers._array_backend import (
     random as np_random,
 )
 from gradient_free_optimizers._math_backend import cdist
 
-from .search_tracker import SearchTracker
-from .converter import Converter, ArrayLike
+from .converter import ArrayLike, Converter
 from .init_positions import Initializer
-
-from .utils import set_random_seed, move_random
+from .search_tracker import SearchTracker
+from .utils import move_random, set_random_seed
 
 
 def _get_dist_func(name: str) -> Callable:

@@ -4,10 +4,10 @@
 
 import math
 
-from gradient_free_optimizers._array_backend import sqrt, clip, random as np_random
+from gradient_free_optimizers._array_backend import random as np_random
 
-from ..local_opt import HillClimbingOptimizer
 from ..base_optimizer import BaseOptimizer
+from ..local_opt import HillClimbingOptimizer
 
 
 class Individual(HillClimbingOptimizer):

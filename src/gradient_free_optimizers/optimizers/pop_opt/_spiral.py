@@ -2,7 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-from gradient_free_optimizers._array_backend import array, zeros, matmul, clip
+from gradient_free_optimizers._array_backend import array, clip, matmul, zeros
 
 from ..local_opt import HillClimbingOptimizer
 

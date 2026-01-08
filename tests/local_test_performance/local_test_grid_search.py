@@ -1,13 +1,11 @@
-import pytest
-from tqdm import tqdm
-import numpy as np
-import pandas as pd
 from functools import reduce
 
+import numpy as np
+import pytest
+from surfaces.test_functions.mathematical import RastriginFunction, SphereFunction
+from tqdm import tqdm
+
 from gradient_free_optimizers import GridSearchOptimizer
-
-from surfaces.test_functions.mathematical import SphereFunction, RastriginFunction
-
 
 obj_func_l = (
     "test_function",

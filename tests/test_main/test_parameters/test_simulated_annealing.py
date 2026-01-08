@@ -2,7 +2,6 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import pytest
 import numpy as np
 
 from gradient_free_optimizers import SimulatedAnnealingOptimizer

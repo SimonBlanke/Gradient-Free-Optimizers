@@ -3,7 +3,6 @@
 # License: MIT License
 
 from abc import ABC, abstractmethod
-from typing import Optional, Tuple
 
 from gradient_free_optimizers._array_backend import mean
 
@@ -76,7 +75,7 @@ class LineSearch(ABC):
         pass
 
     @abstractmethod
-    def get_best_result(self) -> Tuple:
+    def get_best_result(self) -> tuple:
         """
         Get the best result found during this line search.
 

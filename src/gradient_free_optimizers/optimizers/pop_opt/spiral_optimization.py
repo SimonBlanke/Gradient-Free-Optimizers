@@ -2,10 +2,9 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-from gradient_free_optimizers._array_backend import mean
 
-from .base_population_optimizer import BasePopulationOptimizer
 from ._spiral import Spiral
+from .base_population_optimizer import BasePopulationOptimizer
 
 
 class SpiralOptimization(BasePopulationOptimizer):

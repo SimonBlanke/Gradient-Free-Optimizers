@@ -3,17 +3,13 @@
 # License: MIT License
 
 import numpy as np
+from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.gaussian_process import GaussianProcessRegressor
 
+from ..smb_opt._normalize import normalize
+from ..smb_opt.acquisition_function import ExpectedImprovement
 from ..smb_opt.smbo import SMBO
 from ..smb_opt.surrogate_models import EnsembleRegressor
-from ..smb_opt.acquisition_function import ExpectedImprovement
-from ..smb_opt._normalize import normalize
-
-from sklearn.tree import DecisionTreeRegressor
-from sklearn.ensemble import GradientBoostingRegressor
-from sklearn.svm import SVR
-from sklearn.gaussian_process import GaussianProcessRegressor
-from sklearn.neural_network import MLPRegressor
 
 
 class EnsembleOptimizer(SMBO):

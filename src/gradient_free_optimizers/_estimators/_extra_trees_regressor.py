@@ -17,10 +17,15 @@ from gradient_free_optimizers._array_backend import (
     array,
     asarray,
     var,
-    sum as arr_sum,
+)
+from gradient_free_optimizers._array_backend import (
     random as np_random,
 )
-from ._decision_tree_regressor import DecisionTreeRegressor, TreeNode
+from gradient_free_optimizers._array_backend import (
+    sum as arr_sum,
+)
+
+from ._decision_tree_regressor import DecisionTreeRegressor
 
 
 class ExtraTreeRegressor(DecisionTreeRegressor):
@@ -40,7 +45,7 @@ class ExtraTreeRegressor(DecisionTreeRegressor):
         # Select features to consider
         if self._max_features < n_features:
             features = self._rng.choice(n_features, self._max_features, replace=False)
-            features = list(features) if hasattr(features, '__iter__') else [features]
+            features = list(features) if hasattr(features, "__iter__") else [features]
         else:
             features = range(n_features)
 
@@ -171,7 +176,9 @@ class ExtraTreesRegressor:
             # Bootstrap sample (usually False for Extra Trees)
             if self.bootstrap:
                 indices = rng.randint(0, n_samples, n_samples)
-                indices_list = list(indices) if hasattr(indices, '__iter__') else [indices]
+                indices_list = (
+                    list(indices) if hasattr(indices, "__iter__") else [indices]
+                )
                 X_sample = array([X[i] for i in indices_list])
                 y_sample = array([y[i] for i in indices_list])
             else:

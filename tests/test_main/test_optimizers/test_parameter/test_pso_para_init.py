@@ -2,10 +2,11 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import pytest
 import numpy as np
+import pytest
 
 from gradient_free_optimizers import ParticleSwarmOptimizer
+
 from ._base_para_test import _base_para_test_func
 
 

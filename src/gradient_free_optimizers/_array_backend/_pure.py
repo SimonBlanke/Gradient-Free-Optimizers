@@ -10,7 +10,8 @@ Not all NumPy features are supported.
 
 import math
 import random as py_random
-from typing import Any, Callable, Iterator, List, Optional, Sequence, Tuple, Union
+from collections.abc import Callable, Iterator
+from typing import Any, Union
 
 # === Constants ===
 inf = float("inf")
@@ -19,8 +20,8 @@ e = math.e
 nan = float("nan")
 
 # === Type Aliases ===
-ArrayLike = Union["GFOArray", List, Tuple, int, float]
-Shape = Union[int, Tuple[int, ...]]
+ArrayLike = Union["GFOArray", list, tuple, int, float]
+Shape = int | tuple[int, ...]
 
 # === Numeric Types (for compatibility) ===
 int32 = int
@@ -38,17 +39,17 @@ class GFOArray:
 
     __slots__ = ("_data", "_shape", "_ndim")
 
-    def __init__(self, data: Any, dtype: Optional[type] = None):
+    def __init__(self, data: Any, dtype: type | None = None):
         if isinstance(data, GFOArray):
             self._data = data._data.copy()
             self._shape = data._shape
             self._ndim = data._ndim
-        elif isinstance(data, (list, tuple)):
+        elif isinstance(data, list | tuple):
             if len(data) == 0:
                 self._data = []
                 self._shape = (0,)
                 self._ndim = 1
-            elif isinstance(data[0], (list, tuple)):
+            elif isinstance(data[0], list | tuple):
                 # 2D array
                 self._data = [list(row) for row in data]
                 self._shape = (len(data), len(data[0]))
@@ -75,14 +76,14 @@ class GFOArray:
         else:
             self._data = [[dtype(x) for x in row] for row in self._data]
 
-    def _get_flat(self) -> List:
+    def _get_flat(self) -> list:
         """Get flattened data."""
         if self._ndim == 1:
             return self._data
         return [x for row in self._data for x in row]
 
     @property
-    def shape(self) -> Tuple[int, ...]:
+    def shape(self) -> tuple[int, ...]:
         return self._shape
 
     @property
@@ -132,17 +133,21 @@ class GFOArray:
             if self._ndim == 1:
                 return GFOArray(self._data[idx])
             return GFOArray(self._data[idx])
-        if isinstance(idx, (list, GFOArray)):
+        if isinstance(idx, list | GFOArray):
             # Boolean or integer indexing
             idx_list = list(idx) if isinstance(idx, GFOArray) else idx
             if self._ndim == 1:
                 if idx_list and isinstance(idx_list[0], bool):
-                    return GFOArray([self._data[i] for i, b in enumerate(idx_list) if b])
+                    return GFOArray(
+                        [self._data[i] for i, b in enumerate(idx_list) if b]
+                    )
                 return GFOArray([self._data[i] for i in idx_list])
             elif self._ndim == 2:
                 # 2D boolean indexing - select rows where mask is True
                 if idx_list and isinstance(idx_list[0], bool):
-                    return GFOArray([self._data[i] for i, b in enumerate(idx_list) if b])
+                    return GFOArray(
+                        [self._data[i] for i, b in enumerate(idx_list) if b]
+                    )
                 # Integer indexing for 2D
                 return GFOArray([self._data[i] for i in idx_list])
         return self._data[idx]
@@ -172,7 +177,7 @@ class GFOArray:
         """Apply binary operation element-wise."""
         if isinstance(other, GFOArray):
             other_flat = other._get_flat()
-        elif isinstance(other, (list, tuple)):
+        elif isinstance(other, list | tuple):
             other_flat = list(other)
         else:
             # Scalar
@@ -191,24 +196,54 @@ class GFOArray:
             if self._ndim == 1:
                 result = result_flat
             else:
-                result = [result_flat[i:i+self._shape[1]]
-                         for i in range(0, len(result_flat), self._shape[1])]
+                result = [
+                    result_flat[i : i + self._shape[1]]
+                    for i in range(0, len(result_flat), self._shape[1])
+                ]
         return GFOArray(result)
 
-    def __add__(self, other): return self._apply_binary_op(other, lambda a, b: a + b)
-    def __radd__(self, other): return self.__add__(other)
-    def __sub__(self, other): return self._apply_binary_op(other, lambda a, b: a - b)
-    def __rsub__(self, other): return GFOArray(other)._apply_binary_op(self, lambda a, b: a - b)
-    def __mul__(self, other): return self._apply_binary_op(other, lambda a, b: a * b)
-    def __rmul__(self, other): return self.__mul__(other)
-    def __truediv__(self, other): return self._apply_binary_op(other, lambda a, b: a / b)
-    def __rtruediv__(self, other): return GFOArray(other)._apply_binary_op(self, lambda a, b: a / b)
-    def __floordiv__(self, other): return self._apply_binary_op(other, lambda a, b: a // b)
-    def __pow__(self, other): return self._apply_binary_op(other, lambda a, b: a ** b)
-    def __mod__(self, other): return self._apply_binary_op(other, lambda a, b: a % b)
-    def __neg__(self): return GFOArray([-x for x in self._get_flat()])
-    def __pos__(self): return GFOArray(self._data)
-    def __abs__(self): return GFOArray([builtins_abs(x) for x in self._get_flat()])
+    def __add__(self, other):
+        return self._apply_binary_op(other, lambda a, b: a + b)
+
+    def __radd__(self, other):
+        return self.__add__(other)
+
+    def __sub__(self, other):
+        return self._apply_binary_op(other, lambda a, b: a - b)
+
+    def __rsub__(self, other):
+        return GFOArray(other)._apply_binary_op(self, lambda a, b: a - b)
+
+    def __mul__(self, other):
+        return self._apply_binary_op(other, lambda a, b: a * b)
+
+    def __rmul__(self, other):
+        return self.__mul__(other)
+
+    def __truediv__(self, other):
+        return self._apply_binary_op(other, lambda a, b: a / b)
+
+    def __rtruediv__(self, other):
+        return GFOArray(other)._apply_binary_op(self, lambda a, b: a / b)
+
+    def __floordiv__(self, other):
+        return self._apply_binary_op(other, lambda a, b: a // b)
+
+    def __pow__(self, other):
+        return self._apply_binary_op(other, lambda a, b: a**b)
+
+    def __mod__(self, other):
+        return self._apply_binary_op(other, lambda a, b: a % b)
+
+    def __neg__(self):
+        return GFOArray([-x for x in self._get_flat()])
+
+    def __pos__(self):
+        return GFOArray(self._data)
+
+    def __abs__(self):
+        return GFOArray([builtins_abs(x) for x in self._get_flat()])
+
     def __invert__(self):
         """Boolean negation (~arr) for boolean arrays."""
         if self._ndim == 1:
@@ -236,8 +271,12 @@ class GFOArray:
             cols = other._shape[1]
             result = []
             for j in range(cols):
-                result.append(builtins_sum(self._data[i] * other._data[i][j]
-                                          for i in range(len(self._data))))
+                result.append(
+                    builtins_sum(
+                        self._data[i] * other._data[i][j]
+                        for i in range(len(self._data))
+                    )
+                )
             return GFOArray(result)
 
         # 2D @ 2D = matrix multiplication
@@ -245,12 +284,24 @@ class GFOArray:
             m, k1 = self._shape
             k2, n = other._shape
             if k1 != k2:
-                raise ValueError(f"Incompatible dimensions for matmul: {self._shape} @ {other._shape}")
-            result = [[builtins_sum(self._data[i][k] * other._data[k][j] for k in range(k1))
-                      for j in range(n)] for i in range(m)]
+                raise ValueError(
+                    f"Incompatible dimensions for matmul: "
+                    f"{self._shape} @ {other._shape}"
+                )
+            result = [
+                [
+                    builtins_sum(
+                        self._data[i][k] * other._data[k][j] for k in range(k1)
+                    )
+                    for j in range(n)
+                ]
+                for i in range(m)
+            ]
             return GFOArray(result)
 
-        raise ValueError(f"Cannot matmul arrays with shapes {self._shape} and {other._shape}")
+        raise ValueError(
+            f"Cannot matmul arrays with shapes {self._shape} and {other._shape}"
+        )
 
     def __rmatmul__(self, other):
         """Right matrix multiplication."""
@@ -258,16 +309,27 @@ class GFOArray:
 
     # === Comparison Operations ===
 
-    def __eq__(self, other): return self._apply_binary_op(other, lambda a, b: a == b)
-    def __ne__(self, other): return self._apply_binary_op(other, lambda a, b: a != b)
-    def __lt__(self, other): return self._apply_binary_op(other, lambda a, b: a < b)
-    def __le__(self, other): return self._apply_binary_op(other, lambda a, b: a <= b)
-    def __gt__(self, other): return self._apply_binary_op(other, lambda a, b: a > b)
-    def __ge__(self, other): return self._apply_binary_op(other, lambda a, b: a >= b)
+    def __eq__(self, other):
+        return self._apply_binary_op(other, lambda a, b: a == b)
+
+    def __ne__(self, other):
+        return self._apply_binary_op(other, lambda a, b: a != b)
+
+    def __lt__(self, other):
+        return self._apply_binary_op(other, lambda a, b: a < b)
+
+    def __le__(self, other):
+        return self._apply_binary_op(other, lambda a, b: a <= b)
+
+    def __gt__(self, other):
+        return self._apply_binary_op(other, lambda a, b: a > b)
+
+    def __ge__(self, other):
+        return self._apply_binary_op(other, lambda a, b: a >= b)
 
     # === Conversion Methods ===
 
-    def tolist(self) -> List:
+    def tolist(self) -> list:
         if self._ndim == 1:
             return self._data.copy()
         return [row.copy() for row in self._data]
@@ -286,7 +348,7 @@ class GFOArray:
             return GFOArray(flat)
         elif len(shape) == 2:
             rows, cols = shape
-            result = [flat[i*cols:(i+1)*cols] for i in range(rows)]
+            result = [flat[i * cols : (i + 1) * cols] for i in range(rows)]
             return GFOArray(result)
         raise ValueError(f"Reshape to {shape} not supported")
 
@@ -311,19 +373,23 @@ class GFOArray:
 
     # === Aggregation Methods ===
 
-    def sum(self, axis: Optional[int] = None):
+    def sum(self, axis: int | None = None):
         if axis is None:
             return builtins_sum(self._get_flat())
         if self._ndim == 1:
             return builtins_sum(self._data)
         if axis == 0:
-            return GFOArray([builtins_sum(self._data[r][c] for r in range(self._shape[0]))
-                           for c in range(self._shape[1])])
+            return GFOArray(
+                [
+                    builtins_sum(self._data[r][c] for r in range(self._shape[0]))
+                    for c in range(self._shape[1])
+                ]
+            )
         if axis == 1:
             return GFOArray([builtins_sum(row) for row in self._data])
         raise ValueError(f"Invalid axis {axis}")
 
-    def mean(self, axis: Optional[int] = None):
+    def mean(self, axis: int | None = None):
         if axis is None:
             flat = self._get_flat()
             return builtins_sum(flat) / len(flat) if flat else 0.0
@@ -333,7 +399,7 @@ class GFOArray:
             return GFOArray([x / n for x in s._get_flat()])
         return s / n
 
-    def std(self, axis: Optional[int] = None, ddof: int = 0):
+    def std(self, axis: int | None = None, ddof: int = 0):
         m = self.mean(axis=axis)
         if axis is None:
             flat = self._get_flat()
@@ -342,27 +408,27 @@ class GFOArray:
         # Simplified: axis-aware std not fully implemented
         raise NotImplementedError("Axis-aware std not implemented")
 
-    def var(self, axis: Optional[int] = None, ddof: int = 0):
+    def var(self, axis: int | None = None, ddof: int = 0):
         std_val = self.std(axis=axis, ddof=ddof)
-        return std_val ** 2
+        return std_val**2
 
-    def min(self, axis: Optional[int] = None):
+    def min(self, axis: int | None = None):
         if axis is None:
             return builtins_min(self._get_flat())
         raise NotImplementedError("Axis-aware min not implemented")
 
-    def max(self, axis: Optional[int] = None):
+    def max(self, axis: int | None = None):
         if axis is None:
             return builtins_max(self._get_flat())
         raise NotImplementedError("Axis-aware max not implemented")
 
-    def argmax(self, axis: Optional[int] = None):
+    def argmax(self, axis: int | None = None):
         if axis is None:
             flat = self._get_flat()
             return flat.index(builtins_max(flat))
         raise NotImplementedError("Axis-aware argmax not implemented")
 
-    def argmin(self, axis: Optional[int] = None):
+    def argmin(self, axis: int | None = None):
         if axis is None:
             flat = self._get_flat()
             return flat.index(builtins_min(flat))
@@ -371,6 +437,7 @@ class GFOArray:
 
 # Keep reference to builtins
 import builtins
+
 builtins_sum = builtins.sum
 builtins_min = builtins.min
 builtins_max = builtins.max
@@ -381,15 +448,18 @@ builtins_any = builtins.any
 
 # === Array Creation Functions ===
 
+
 def array(data, dtype=None) -> GFOArray:
     """Create a GFOArray from data."""
     return GFOArray(data, dtype=dtype)
+
 
 def asarray(data, dtype=None) -> GFOArray:
     """Convert to GFOArray if not already."""
     if isinstance(data, GFOArray):
         return data if dtype is None else data.astype(dtype)
     return GFOArray(data, dtype=dtype)
+
 
 def zeros(shape: Shape, dtype=float) -> GFOArray:
     """Create array of zeros."""
@@ -406,7 +476,7 @@ def zeros_like(a, dtype=None) -> GFOArray:
     """Create array of zeros with same shape as input."""
     if isinstance(a, GFOArray):
         shape = a.shape
-    elif hasattr(a, 'shape'):
+    elif hasattr(a, "shape"):
         shape = a.shape
     else:
         # Assume 1D list/tuple
@@ -426,9 +496,11 @@ def ones(shape: Shape, dtype=float) -> GFOArray:
         return GFOArray([[dtype(1)] * shape[1] for _ in range(shape[0])])
     raise ValueError(f"Shape {shape} not supported")
 
+
 def empty(shape: Shape, dtype=float) -> GFOArray:
     """Create uninitialized array (filled with zeros for simplicity)."""
     return zeros(shape, dtype)
+
 
 def full(shape: Shape, fill_value, dtype=None) -> GFOArray:
     """Create array filled with value."""
@@ -440,6 +512,7 @@ def full(shape: Shape, fill_value, dtype=None) -> GFOArray:
     elif len(shape) == 2:
         return GFOArray([[val] * shape[1] for _ in range(shape[0])])
     raise ValueError(f"Shape {shape} not supported")
+
 
 def arange(start, stop=None, step=1, dtype=None) -> GFOArray:
     """Create array with evenly spaced values."""
@@ -453,6 +526,7 @@ def arange(start, stop=None, step=1, dtype=None) -> GFOArray:
     if dtype:
         result = [dtype(x) for x in result]
     return GFOArray(result)
+
 
 def linspace(start, stop, num=50, endpoint=True, dtype=None) -> GFOArray:
     """Create array with evenly spaced values over interval."""
@@ -472,6 +546,7 @@ def linspace(start, stop, num=50, endpoint=True, dtype=None) -> GFOArray:
     if dtype:
         result = [dtype(x) for x in result]
     return GFOArray(result)
+
 
 def eye(n: int, m: int = None, dtype=float) -> GFOArray:
     """Create identity matrix."""
@@ -539,26 +614,29 @@ def meshgrid(*arrays, indexing="xy"):
 
 # === Array Properties ===
 
+
 def ndim(x) -> int:
     if isinstance(x, GFOArray):
         return x.ndim
-    if isinstance(x, (list, tuple)):
-        if len(x) > 0 and isinstance(x[0], (list, tuple)):
+    if isinstance(x, list | tuple):
+        if len(x) > 0 and isinstance(x[0], list | tuple):
             return 2
         return 1
     return 0
 
-def shape(x) -> Tuple[int, ...]:
+
+def shape(x) -> tuple[int, ...]:
     if isinstance(x, GFOArray):
         return x.shape
-    if isinstance(x, (list, tuple)):
-        if len(x) > 0 and isinstance(x[0], (list, tuple)):
+    if isinstance(x, list | tuple):
+        if len(x) > 0 and isinstance(x[0], list | tuple):
             return (len(x), len(x[0]))
         return (len(x),)
     return ()
 
 
 # === Element-wise Math Functions ===
+
 
 def _apply_elementwise(x, func):
     """Apply a function elementwise, preserving array shape."""
@@ -585,12 +663,13 @@ def log10(x):
 def sqrt(x):
     return _apply_elementwise(x, math.sqrt)
 
+
 def abs(x):
     return _apply_elementwise(x, builtins_abs)
 
 
 def power(x, p):
-    return _apply_elementwise(x, lambda v: v ** p)
+    return _apply_elementwise(x, lambda v: v**p)
 
 
 def square(x):
@@ -607,16 +686,24 @@ def cos(x):
 
 # === Rounding and Clipping ===
 
+
 def clip(x, a_min, a_max):
     """Clip values to range [a_min, a_max]."""
     if isinstance(x, GFOArray):
         # Handle array bounds
         if isinstance(a_max, GFOArray):
             a_max_list = a_max._get_flat()
-            return GFOArray([builtins_max(a_min, builtins_min(v, m))
-                           for v, m in zip(x._get_flat(), a_max_list)])
-        return GFOArray([builtins_max(a_min, builtins_min(v, a_max)) for v in x._get_flat()])
+            return GFOArray(
+                [
+                    builtins_max(a_min, builtins_min(v, m))
+                    for v, m in zip(x._get_flat(), a_max_list)
+                ]
+            )
+        return GFOArray(
+            [builtins_max(a_min, builtins_min(v, a_max)) for v in x._get_flat()]
+        )
     return builtins_max(a_min, builtins_min(x, a_max))
+
 
 def rint(x):
     """Round to nearest integer."""
@@ -624,16 +711,19 @@ def rint(x):
         return GFOArray([round(v) for v in x._get_flat()])
     return round(x)
 
+
 def round(x, decimals=0):
     """Round to given decimals."""
     if isinstance(x, GFOArray):
         return GFOArray([builtins.round(v, decimals) for v in x._get_flat()])
     return builtins.round(x, decimals)
 
+
 def floor(x):
     if isinstance(x, GFOArray):
         return GFOArray([math.floor(v) for v in x._get_flat()])
     return math.floor(x)
+
 
 def ceil(x):
     if isinstance(x, GFOArray):
@@ -643,39 +733,56 @@ def ceil(x):
 
 # === Comparison and Logic ===
 
+
 def maximum(x, y):
     """Element-wise maximum."""
     if isinstance(x, GFOArray):
         if isinstance(y, GFOArray):
-            return GFOArray([builtins_max(a, b) for a, b in zip(x._get_flat(), y._get_flat())])
+            return GFOArray(
+                [builtins_max(a, b) for a, b in zip(x._get_flat(), y._get_flat())]
+            )
         return GFOArray([builtins_max(v, y) for v in x._get_flat()])
     if isinstance(y, GFOArray):
         return GFOArray([builtins_max(x, v) for v in y._get_flat()])
     return builtins_max(x, y)
 
+
 def minimum(x, y):
     """Element-wise minimum."""
     if isinstance(x, GFOArray):
         if isinstance(y, GFOArray):
-            return GFOArray([builtins_min(a, b) for a, b in zip(x._get_flat(), y._get_flat())])
+            return GFOArray(
+                [builtins_min(a, b) for a, b in zip(x._get_flat(), y._get_flat())]
+            )
         return GFOArray([builtins_min(v, y) for v in x._get_flat()])
     if isinstance(y, GFOArray):
         return GFOArray([builtins_min(x, v) for v in y._get_flat()])
     return builtins_min(x, y)
 
-def greater(x, y): return GFOArray(x) > y
-def less(x, y): return GFOArray(x) < y
-def equal(x, y): return GFOArray(x) == y
+
+def greater(x, y):
+    return GFOArray(x) > y
+
+
+def less(x, y):
+    return GFOArray(x) < y
+
+
+def equal(x, y):
+    return GFOArray(x) == y
+
 
 def isnan(x):
     if isinstance(x, GFOArray):
         return GFOArray([math.isnan(v) for v in x._get_flat()])
     return math.isnan(x)
 
+
 def isinf(x):
     if isinstance(x, GFOArray):
         return GFOArray([math.isinf(v) for v in x._get_flat()])
     return math.isinf(x)
+
 
 def isfinite(x):
     if isinstance(x, GFOArray):
@@ -685,15 +792,18 @@ def isfinite(x):
 
 # === Aggregation Functions ===
 
+
 def sum(x, axis=None):
     if isinstance(x, GFOArray):
         return x.sum(axis=axis)
     return builtins_sum(x)
 
+
 def mean(x, axis=None):
     if isinstance(x, GFOArray):
         return x.mean(axis=axis)
     return builtins_sum(x) / len(x)
+
 
 def std(x, axis=None, ddof=0):
     if isinstance(x, GFOArray):
@@ -701,8 +811,10 @@ def std(x, axis=None, ddof=0):
     m = mean(x)
     return math.sqrt(builtins_sum((v - m) ** 2 for v in x) / (len(x) - ddof))
 
+
 def var(x, axis=None, ddof=0):
     return std(x, axis=axis, ddof=ddof) ** 2
+
 
 def prod(x, axis=None):
     if isinstance(x, GFOArray):
@@ -713,6 +825,7 @@ def prod(x, axis=None):
     for v in flat:
         result *= v
     return result
+
 
 def cumsum(x, axis=None):
     if isinstance(x, GFOArray):
@@ -729,15 +842,18 @@ def cumsum(x, axis=None):
 
 # === Index Operations ===
 
+
 def argmax(x, axis=None):
     if isinstance(x, GFOArray):
         return x.argmax(axis=axis)
     return list(x).index(builtins_max(x))
 
+
 def argmin(x, axis=None):
     if isinstance(x, GFOArray):
         return x.argmin(axis=axis)
     return list(x).index(builtins_min(x))
+
 
 def argsort(x, axis=-1):
     if isinstance(x, GFOArray):
@@ -745,6 +861,7 @@ def argsort(x, axis=-1):
     else:
         flat = list(x)
     return GFOArray(sorted(range(len(flat)), key=lambda i: flat[i]))
+
 
 def where(condition, x=None, y=None):
     """Where with optional x/y values."""
@@ -761,20 +878,21 @@ def where(condition, x=None, y=None):
     # Conditional selection
     if isinstance(x, GFOArray):
         x_flat = x._get_flat()
-    elif isinstance(x, (list, tuple)):
+    elif isinstance(x, list | tuple):
         x_flat = list(x)
     else:
         x_flat = [x] * len(cond_flat)
 
     if isinstance(y, GFOArray):
         y_flat = y._get_flat()
-    elif isinstance(y, (list, tuple)):
+    elif isinstance(y, list | tuple):
         y_flat = list(y)
     else:
         y_flat = [y] * len(cond_flat)
 
     result = [xv if c else yv for c, xv, yv in zip(cond_flat, x_flat, y_flat)]
     return GFOArray(result)
+
 
 def nonzero(x):
     if isinstance(x, GFOArray):
@@ -784,6 +902,7 @@ def nonzero(x):
     indices = [i for i, v in enumerate(flat) if v]
     return (GFOArray(indices),)
 
+
 def searchsorted(a, v, side="left"):
     """Find indices where elements should be inserted."""
     if isinstance(a, GFOArray):
@@ -791,10 +910,11 @@ def searchsorted(a, v, side="left"):
     else:
         a_list = list(a)
 
-    if isinstance(v, (GFOArray, list, tuple)):
+    if isinstance(v, GFOArray | list | tuple):
         v_list = list(v) if not isinstance(v, GFOArray) else v._get_flat()
         return GFOArray([_binary_search(a_list, val, side) for val in v_list])
     return _binary_search(a_list, v, side)
+
 
 def _binary_search(arr, val, side):
     """Binary search for sorted insertion point."""
@@ -807,6 +927,7 @@ def _binary_search(arr, val, side):
             hi = mid
     return lo
 
+
 def take(a, indices, axis=None):
     if isinstance(a, GFOArray):
         flat = a._get_flat()
@@ -815,7 +936,7 @@ def take(a, indices, axis=None):
 
     if isinstance(indices, GFOArray):
         indices = indices._get_flat()
-    elif isinstance(indices, (list, tuple)):
+    elif isinstance(indices, list | tuple):
         indices = list(indices)
     else:
         return flat[indices]
@@ -824,6 +945,7 @@ def take(a, indices, axis=None):
 
 
 # === Set Operations ===
+
 
 def unique(x, return_index=False, return_inverse=False, return_counts=False):
     if isinstance(x, GFOArray):
@@ -858,6 +980,7 @@ def unique(x, return_index=False, return_inverse=False, return_counts=False):
 
     return tuple(ret)
 
+
 def intersect1d(ar1, ar2):
     if isinstance(ar1, GFOArray):
         set1 = set(ar1._get_flat())
@@ -870,6 +993,7 @@ def intersect1d(ar1, ar2):
         set2 = set(ar2)
 
     return GFOArray(sorted(set1 & set2))
+
 
 def isin(element, test_elements):
     if isinstance(test_elements, GFOArray):
@@ -884,25 +1008,30 @@ def isin(element, test_elements):
 
 # === Array Manipulation ===
 
+
 def reshape(x, shape):
     if isinstance(x, GFOArray):
         return x.reshape(shape)
     return GFOArray(x).reshape(shape)
+
 
 def transpose(x, axes=None):
     if isinstance(x, GFOArray):
         return x.transpose()
     return GFOArray(x).transpose()
 
+
 def ravel(x):
     if isinstance(x, GFOArray):
         return x.ravel()
     return GFOArray(x).ravel()
 
+
 def flatten(x):
     if isinstance(x, GFOArray):
         return x.flatten()
     return GFOArray(x).flatten()
+
 
 def concatenate(arrays, axis=0):
     result = []
@@ -916,12 +1045,17 @@ def concatenate(arrays, axis=0):
             result.extend(arr)
     return GFOArray(result)
 
+
 def stack(arrays, axis=0):
-    arrays_list = [list(a) if not isinstance(a, GFOArray) else a._get_flat() for a in arrays]
+    arrays_list = [
+        list(a) if not isinstance(a, GFOArray) else a._get_flat() for a in arrays
+    ]
     return GFOArray(arrays_list)
+
 
 def vstack(arrays):
     return stack(arrays, axis=0)
+
 
 def hstack(arrays):
     result = []
@@ -932,6 +1066,7 @@ def hstack(arrays):
             result.extend(arr)
     return GFOArray(result)
 
+
 def tile(x, reps):
     if isinstance(x, GFOArray):
         flat = x._get_flat()
@@ -941,6 +1076,7 @@ def tile(x, reps):
     if isinstance(reps, int):
         return GFOArray(flat * reps)
     raise NotImplementedError("Multi-dimensional tile not supported")
+
 
 def repeat(x, repeats, axis=None):
     if isinstance(x, GFOArray):
@@ -996,6 +1132,7 @@ def split(x, indices_or_sections, axis=0):
 
 # === Linear Algebra ===
 
+
 def dot(a, b):
     """Dot product of two arrays."""
     if isinstance(a, GFOArray):
@@ -1014,6 +1151,7 @@ def dot(a, b):
 
     raise NotImplementedError("Matrix dot product not fully implemented")
 
+
 def matmul(a, b):
     """Matrix multiplication (simplified for 2D)."""
     if isinstance(a, GFOArray) and isinstance(b, GFOArray):
@@ -1022,10 +1160,13 @@ def matmul(a, b):
             k2, n = b.shape
             if k1 != k2:
                 raise ValueError("Incompatible dimensions")
-            result = [[builtins_sum(a[i, k] * b[k, j] for k in range(k1))
-                      for j in range(n)] for i in range(m)]
+            result = [
+                [builtins_sum(a[i, k] * b[k, j] for k in range(k1)) for j in range(n)]
+                for i in range(m)
+            ]
             return GFOArray(result)
     return dot(a, b)
+
 
 def outer(a, b):
     """Outer product of two vectors."""
@@ -1086,7 +1227,7 @@ class linalg:
             flat = list(x)
 
         if ord is None or ord == 2:
-            return math.sqrt(builtins_sum(v ** 2 for v in flat))
+            return math.sqrt(builtins_sum(v**2 for v in flat))
         elif ord == 1:
             return builtins_sum(builtins_abs(v) for v in flat)
         elif ord == inf:
@@ -1101,6 +1242,7 @@ class linalg:
 
 
 # === Random Number Generation ===
+
 
 class random:
     """Random number generation namespace."""
@@ -1191,9 +1333,12 @@ class random:
     @staticmethod
     def laplace(loc=0.0, scale=1.0, size=None):
         """Laplace distribution via inverse CDF."""
+
         def _laplace():
             u = random._rng.random() - 0.5
-            return loc - scale * (1 if u >= 0 else -1) * math.log(1 - 2 * builtins_abs(u))
+            return loc - scale * (1 if u >= 0 else -1) * math.log(
+                1 - 2 * builtins_abs(u)
+            )
 
         if size is None:
             return _laplace()
@@ -1210,6 +1355,7 @@ class random:
     @staticmethod
     def logistic(loc=0.0, scale=1.0, size=None):
         """Logistic distribution via inverse CDF."""
+
         def _logistic():
             u = random._rng.random()
             return loc + scale * math.log(u / (1 - u))
@@ -1229,6 +1375,7 @@ class random:
     @staticmethod
     def gumbel(loc=0.0, scale=1.0, size=None):
         """Gumbel distribution via inverse CDF."""
+
         def _gumbel():
             u = random._rng.random()
             return loc - scale * math.log(-math.log(u))
@@ -1265,6 +1412,7 @@ class random:
 
     class RandomState:
         """RandomState for compatibility."""
+
         def __init__(self, seed=None):
             self._rng = py_random.Random(seed)
 
@@ -1297,10 +1445,12 @@ class random:
 
 # === Utility Functions ===
 
+
 def copy(x):
     if isinstance(x, GFOArray):
         return x.copy()
     return GFOArray(x)
+
 
 def allclose(a, b, rtol=1e-5, atol=1e-8):
     if isinstance(a, GFOArray):
@@ -1313,10 +1463,12 @@ def allclose(a, b, rtol=1e-5, atol=1e-8):
             return False
     return True
 
+
 def all(x, axis=None):
     if isinstance(x, GFOArray):
         return builtins_all(x._get_flat())
     return builtins_all(x)
+
 
 def any(x, axis=None):
     if isinstance(x, GFOArray):

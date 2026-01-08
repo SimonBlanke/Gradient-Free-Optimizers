@@ -6,12 +6,12 @@ they produce equivalent results.
 """
 
 import math
+
 import pytest
 
-from gradient_free_optimizers._math_backend import _scipy as scipy_backend
-from gradient_free_optimizers._math_backend import _pure as pure_math
 from gradient_free_optimizers._math_backend import HAS_SCIPY
-
+from gradient_free_optimizers._math_backend import _pure as pure_math
+from gradient_free_optimizers._math_backend import _scipy as scipy_backend
 
 # =============================================================================
 # Normal Distribution Tests
@@ -22,7 +22,7 @@ class TestNormDistribution:
     """Test normal distribution functions."""
 
     @pytest.mark.parametrize(
-        "x,expected_approx",
+        ("x", "expected_approx"),
         [
             (0, 0.5),
             (-3, 0.00135),

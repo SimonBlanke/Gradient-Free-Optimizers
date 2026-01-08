@@ -7,27 +7,28 @@ import warnings
 warnings.warn = warn
 
 import numpy as np
+
 from gradient_free_optimizers import (
-    HillClimbingOptimizer,
-    StochasticHillClimbingOptimizer,
-    RepulsingHillClimbingOptimizer,
-    SimulatedAnnealingOptimizer,
-    DownhillSimplexOptimizer,
-    RandomSearchOptimizer,
-    PowellsMethod,
-    GridSearchOptimizer,
-    RandomRestartHillClimbingOptimizer,
-    RandomAnnealingOptimizer,
-    PatternSearch,
+    BayesianOptimizer,
     DirectAlgorithm,
+    DownhillSimplexOptimizer,
+    EvolutionStrategyOptimizer,
+    ForestOptimizer,
+    GridSearchOptimizer,
+    HillClimbingOptimizer,
+    LipschitzOptimizer,
     ParallelTemperingOptimizer,
     ParticleSwarmOptimizer,
+    PatternSearch,
+    PowellsMethod,
+    RandomAnnealingOptimizer,
+    RandomRestartHillClimbingOptimizer,
+    RandomSearchOptimizer,
+    RepulsingHillClimbingOptimizer,
+    SimulatedAnnealingOptimizer,
     SpiralOptimization,
-    EvolutionStrategyOptimizer,
-    LipschitzOptimizer,
-    BayesianOptimizer,
+    StochasticHillClimbingOptimizer,
     TreeStructuredParzenEstimators,
-    ForestOptimizer,
 )
 
 optimizers = [

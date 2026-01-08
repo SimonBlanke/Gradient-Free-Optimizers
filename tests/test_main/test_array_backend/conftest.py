@@ -2,10 +2,6 @@
 
 import pytest
 
-from gradient_free_optimizers._array_backend import _numpy as np_backend
-from gradient_free_optimizers._array_backend import _pure as pure_backend
-from gradient_free_optimizers._array_backend import HAS_NUMPY
-
 
 def arrays_close(a, b, rtol=1e-5, atol=1e-8):
     """Check if two array-like objects are approximately equal."""
@@ -27,7 +23,7 @@ def to_list(arr):
         return arr._get_flat()
     if hasattr(arr, "tolist"):
         return arr.tolist()
-    if isinstance(arr, (list, tuple)):
+    if isinstance(arr, list | tuple):
         return list(arr)
     return [arr]
 

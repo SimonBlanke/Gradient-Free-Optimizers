@@ -2,43 +2,37 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+from .exp_opt import RandomAnnealingOptimizer
+from .global_opt import (
+    DirectAlgorithm,
+    LipschitzOptimizer,
+    PatternSearch,
+    PowellsMethod,
+    RandomRestartHillClimbingOptimizer,
+    RandomSearchOptimizer,
+)
+from .grid import (
+    GridSearchOptimizer,
+)
 from .local_opt import (
+    DownhillSimplexOptimizer,
     HillClimbingOptimizer,
-    StochasticHillClimbingOptimizer,
     RepulsingHillClimbingOptimizer,
     SimulatedAnnealingOptimizer,
-    DownhillSimplexOptimizer,
+    StochasticHillClimbingOptimizer,
 )
-
-from .global_opt import (
-    RandomSearchOptimizer,
-    RandomRestartHillClimbingOptimizer,
-    PowellsMethod,
-    PatternSearch,
-    LipschitzOptimizer,
-    DirectAlgorithm,
-)
-
-
 from .pop_opt import (
+    DifferentialEvolutionOptimizer,
+    EvolutionStrategyOptimizer,
+    GeneticAlgorithmOptimizer,
     ParallelTemperingOptimizer,
     ParticleSwarmOptimizer,
     SpiralOptimization,
-    GeneticAlgorithmOptimizer,
-    EvolutionStrategyOptimizer,
-    DifferentialEvolutionOptimizer,
 )
-
 from .smb_opt import (
     BayesianOptimizer,
-    TreeStructuredParzenEstimators,
     ForestOptimizer,
-)
-
-from .exp_opt import RandomAnnealingOptimizer
-
-from .grid import (
-    GridSearchOptimizer,
+    TreeStructuredParzenEstimators,
 )
 
 __all__ = [

@@ -39,9 +39,7 @@ class SimpleProgressBar:
 
         postfix_str = ""
         if self.postfix:
-            postfix_str = " | " + ", ".join(
-                f"{k}={v}" for k, v in self.postfix.items()
-            )
+            postfix_str = " | " + ", ".join(f"{k}={v}" for k, v in self.postfix.items())
 
         desc_str = f"{self.desc}: " if self.desc else ""
         print(
@@ -141,10 +139,7 @@ class ProgressBarLVL1(ProgressBarBase):
         del self._tqdm
 
     def _tqdm_dict(self, nth_process, n_iter, objective_function):
-        """
-        Generates the parameter dict for tqdm in the iteration-loop of each optimizer
-        """
-
+        """Generate the parameter dict for tqdm in the iteration-loop."""
         self.objective_function = objective_function
 
         if nth_process is None:

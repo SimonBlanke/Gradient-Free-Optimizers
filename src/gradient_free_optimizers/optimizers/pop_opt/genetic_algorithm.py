@@ -5,14 +5,14 @@
 from __future__ import annotations
 
 import random
-import numpy as np
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
 from gradient_free_optimizers._array_backend import random as np_random
 
+from ..core_optimizer.converter import ArrayLike
 from ._evolutionary_algorithm import EvolutionaryAlgorithmOptimizer
 from ._individual import Individual
-from ..core_optimizer.converter import ArrayLike
 
 # Selection parameters for genetic algorithm
 # Fraction of population selected as parents for crossover

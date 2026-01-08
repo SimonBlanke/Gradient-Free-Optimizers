@@ -1,9 +1,9 @@
+import logging
 import math
 import time
-import logging
 from abc import ABC, abstractmethod
-from dataclasses import dataclass, field
-from typing import List, Optional, Dict, Any
+from dataclasses import dataclass
+from typing import Any
 
 
 @dataclass
@@ -16,7 +16,7 @@ class StoppingContext:
     iteration: int
     score_current: float
     score_best: float
-    score_history: List[float]
+    score_history: list[float]
     start_time: float
     current_time: float
 
@@ -55,7 +55,7 @@ class StoppingCondition(ABC):
         pass
 
     @abstractmethod
-    def get_debug_info(self, context: StoppingContext) -> Dict[str, Any]:
+    def get_debug_info(self, context: StoppingContext) -> dict[str, Any]:
         """Return detailed information for debugging purposes."""
         pass
 
@@ -68,7 +68,7 @@ class StoppingCondition(ABC):
 class TimeExceededCondition(StoppingCondition):
     """Stops when maximum time limit is exceeded."""
 
-    def __init__(self, max_time: Optional[float]):
+    def __init__(self, max_time: float | None):
         super().__init__("TimeExceeded")
         self.max_time = max_time
 
@@ -78,12 +78,15 @@ class TimeExceededCondition(StoppingCondition):
 
         if context.elapsed_time > self.max_time:
             self.triggered = True
-            self.trigger_reason = f"Time limit exceeded: {context.elapsed_time:.2f}s > {self.max_time:.2f}s"
+            self.trigger_reason = (
+                f"Time limit exceeded: "
+                f"{context.elapsed_time:.2f}s > {self.max_time:.2f}s"
+            )
             self.logger.info(self.trigger_reason)
             return True
         return False
 
-    def get_debug_info(self, context: StoppingContext) -> Dict[str, Any]:
+    def get_debug_info(self, context: StoppingContext) -> dict[str, Any]:
         return {
             "condition": self.name,
             "max_time": self.max_time,
@@ -99,7 +102,7 @@ class TimeExceededCondition(StoppingCondition):
 class ScoreExceededCondition(StoppingCondition):
     """Stops when target score is reached or exceeded."""
 
-    def __init__(self, max_score: Optional[float]):
+    def __init__(self, max_score: float | None):
         super().__init__("ScoreExceeded")
         self.max_score = max_score
 
@@ -109,12 +112,15 @@ class ScoreExceededCondition(StoppingCondition):
 
         if context.score_best >= self.max_score:
             self.triggered = True
-            self.trigger_reason = f"Target score reached: {context.score_best:.6f} >= {self.max_score:.6f}"
+            self.trigger_reason = (
+                f"Target score reached: "
+                f"{context.score_best:.6f} >= {self.max_score:.6f}"
+            )
             self.logger.info(self.trigger_reason)
             return True
         return False
 
-    def get_debug_info(self, context: StoppingContext) -> Dict[str, Any]:
+    def get_debug_info(self, context: StoppingContext) -> dict[str, Any]:
         return {
             "condition": self.name,
             "max_score": self.max_score,
@@ -133,8 +139,8 @@ class NoImprovementCondition(StoppingCondition):
     def __init__(
         self,
         n_iter_no_change: int,
-        tol_abs: Optional[float] = None,
-        tol_rel: Optional[float] = None,
+        tol_abs: float | None = None,
+        tol_rel: float | None = None,
     ):
         super().__init__("NoImprovement")
         self.n_iter_no_change = n_iter_no_change
@@ -168,7 +174,10 @@ class NoImprovementCondition(StoppingCondition):
             improvement = abs(current_best - max_score_before)
             if improvement < self.tol_abs:
                 self.triggered = True
-                self.trigger_reason = f"Improvement below absolute tolerance: {improvement:.6f} < {self.tol_abs:.6f}"
+                self.trigger_reason = (
+                    f"Improvement below absolute tolerance: "
+                    f"{improvement:.6f} < {self.tol_abs:.6f}"
+                )
                 self.logger.info(self.trigger_reason)
                 return True
 
@@ -179,13 +188,16 @@ class NoImprovementCondition(StoppingCondition):
             ) * 100
             if improvement_pct < self.tol_rel:
                 self.triggered = True
-                self.trigger_reason = f"Improvement below relative tolerance: {improvement_pct:.2f}% < {self.tol_rel:.2f}%"
+                self.trigger_reason = (
+                    f"Improvement below relative tolerance: "
+                    f"{improvement_pct:.2f}% < {self.tol_rel:.2f}%"
+                )
                 self.logger.info(self.trigger_reason)
                 return True
 
         return False
 
-    def get_debug_info(self, context: StoppingContext) -> Dict[str, Any]:
+    def get_debug_info(self, context: StoppingContext) -> dict[str, Any]:
         iterations_stale = context.iterations_since_improvement
 
         debug_info = {
@@ -216,7 +228,7 @@ class NoImprovementCondition(StoppingCondition):
 class CompositeStoppingCondition(StoppingCondition):
     """Combines multiple stopping conditions with OR logic."""
 
-    def __init__(self, conditions: List[StoppingCondition]):
+    def __init__(self, conditions: list[StoppingCondition]):
         super().__init__("Composite")
         self.conditions = conditions
 
@@ -231,7 +243,7 @@ class CompositeStoppingCondition(StoppingCondition):
                 return True
         return False
 
-    def get_debug_info(self, context: StoppingContext) -> Dict[str, Any]:
+    def get_debug_info(self, context: StoppingContext) -> dict[str, Any]:
         return {
             "condition": self.name,
             "triggered": self.triggered,
@@ -256,13 +268,13 @@ class OptimizationStopper:
     def __init__(
         self,
         start_time: float,
-        max_time: Optional[float] = None,
-        max_score: Optional[float] = None,
-        early_stopping: Optional[Dict[str, Any]] = None,
+        max_time: float | None = None,
+        max_score: float | None = None,
+        early_stopping: dict[str, Any] | None = None,
     ):
         self.start_time = start_time
-        self.conditions: List[StoppingCondition] = []
-        self.score_history: List[float] = []
+        self.conditions: list[StoppingCondition] = []
+        self.score_history: list[float] = []
         self.score_best = -math.inf
         self.iteration = 0
         self.logger = logging.getLogger(f"{__name__}.OptimizationStopper")
@@ -306,7 +318,7 @@ class OptimizationStopper:
 
         return self.composite_condition.should_stop(context)
 
-    def get_debug_info(self) -> Dict[str, Any]:
+    def get_debug_info(self) -> dict[str, Any]:
         """Get comprehensive debugging information about stopping conditions."""
         context = StoppingContext(
             iteration=self.iteration,

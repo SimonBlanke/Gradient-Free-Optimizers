@@ -6,14 +6,14 @@ they produce equivalent results.
 """
 
 import math
+
 import pytest
 
+from gradient_free_optimizers._array_backend import HAS_NUMPY
 from gradient_free_optimizers._array_backend import _numpy as np_backend
 from gradient_free_optimizers._array_backend import _pure as pure_backend
-from gradient_free_optimizers._array_backend import HAS_NUMPY
 
 from .conftest import arrays_close, to_list
-
 
 # =============================================================================
 # Array Creation Tests
@@ -54,7 +54,7 @@ class TestArrayCreation:
         assert np_arr.shape == pure_arr.shape
 
     @pytest.mark.parametrize(
-        "start,stop,num",
+        ("start", "stop", "num"),
         [
             (0, 10, 5),
             (0, 1, 11),
@@ -68,7 +68,7 @@ class TestArrayCreation:
         assert arrays_close(np_arr, pure_arr)
 
     @pytest.mark.parametrize(
-        "start,stop,step",
+        ("start", "stop", "step"),
         [
             (0, 10, 1),
             (0, 10, 2),
@@ -172,7 +172,7 @@ class TestClippingAndRounding:
     """Test clipping and rounding operations."""
 
     @pytest.mark.parametrize(
-        "values,a_min,a_max,expected",
+        ("values", "a_min", "a_max", "expected"),
         [
             ([1, 2, 3, 4, 5], 2, 4, [2, 2, 3, 4, 4]),
             ([-5, 0, 5, 10], 0, 5, [0, 0, 5, 5]),
@@ -186,7 +186,7 @@ class TestClippingAndRounding:
         assert to_list(pure_result) == expected
 
     @pytest.mark.parametrize(
-        "values,expected",
+        ("values", "expected"),
         [
             ([1.2, 2.5, 3.7, 4.1], [1, 2, 4, 4]),
             ([0.4, 0.5, 0.6], [0, 0, 1]),
@@ -453,18 +453,14 @@ class TestComparison:
         a = [1, 5, 3, 7]
         b = [2, 4, 6, 0]
         np_result = np_backend.maximum(np_backend.array(a), np_backend.array(b))
-        pure_result = pure_backend.maximum(
-            pure_backend.array(a), pure_backend.array(b)
-        )
+        pure_result = pure_backend.maximum(pure_backend.array(a), pure_backend.array(b))
         assert to_list(np_result) == to_list(pure_result) == [2, 5, 6, 7]
 
     def test_minimum(self):
         a = [1, 5, 3, 7]
         b = [2, 4, 6, 0]
         np_result = np_backend.minimum(np_backend.array(a), np_backend.array(b))
-        pure_result = pure_backend.minimum(
-            pure_backend.array(a), pure_backend.array(b)
-        )
+        pure_result = pure_backend.minimum(pure_backend.array(a), pure_backend.array(b))
         assert to_list(np_result) == to_list(pure_result) == [1, 4, 3, 0]
 
     def test_isnan(self):

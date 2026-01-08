@@ -18,7 +18,7 @@ class Particle(HillClimbingOptimizer):
         social_weight=0.5,
         temp_weight=0.2,
         rand_rest_p=0.03,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.global_pos_best = None
@@ -42,7 +42,11 @@ class Particle(HillClimbingOptimizer):
         r1, r2 = random.random(), random.random()
 
         A = self.inertia * array(self.velo)
-        B = self.cognitive_weight * r1 * (array(self.pos_best) - array(self.pos_current))
+        B = (
+            self.cognitive_weight
+            * r1
+            * (array(self.pos_best) - array(self.pos_current))
+        )
         C = (
             self.social_weight
             * r2

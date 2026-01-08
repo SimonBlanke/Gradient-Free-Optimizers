@@ -3,7 +3,7 @@
 # License: MIT License
 
 """
-API Freeze Tests for Experimental Optimizers
+API Freeze Tests for Experimental Optimizers.
 
 These tests ensure that the public API of experimental optimizers remains stable.
 Any changes to parameter names, default values, or method signatures will
@@ -14,10 +14,8 @@ Experimental optimizers covered:
 """
 
 import numpy as np
-import pytest
 
 from gradient_free_optimizers import RandomAnnealingOptimizer
-
 
 # Minimal search space and objective for smoke tests
 SEARCH_SPACE = {"x": np.linspace(-1, 1, 5)}

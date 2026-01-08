@@ -1,6 +1,5 @@
-import pytest
-import random
 import numpy as np
+import pytest
 
 from gradient_free_optimizers.optimizers.core_optimizer.converter import Converter
 

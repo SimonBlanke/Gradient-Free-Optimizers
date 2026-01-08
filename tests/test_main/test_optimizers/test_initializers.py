@@ -1,7 +1,7 @@
-import pytest
 import numpy as np
+import pytest
 
-from ._parametrize import optimizers, optimizers_2, optimizers_representative
+from ._parametrize import optimizers, optimizers_representative
 
 
 def objective_function(para):

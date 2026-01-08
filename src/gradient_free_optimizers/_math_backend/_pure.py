@@ -6,18 +6,20 @@ used by GFO that would normally come from SciPy.
 """
 
 import math
-from typing import Optional, Tuple, Union, List, Any
 
 # Try to import numpy, fall back to pure array backend
 try:
     import numpy as np
+
     HAS_NUMPY = True
 except ImportError:
     from gradient_free_optimizers._array_backend import _pure as np
+
     HAS_NUMPY = False
 
 
 # === Statistical Functions ===
+
 
 def norm_cdf(x, loc=0, scale=1):
     """
@@ -33,9 +35,7 @@ def norm_cdf(x, loc=0, scale=1):
 
 
 def norm_pdf(x, loc=0, scale=1):
-    """
-    Probability density function of normal distribution.
-    """
+    """Probability density function of normal distribution."""
     if hasattr(x, "__iter__"):
         return np.array([norm_pdf(xi, loc, scale) for xi in x])
 
@@ -69,6 +69,7 @@ def _erf(x):
 
 
 # === Linear Algebra ===
+
 
 def cholesky(a, lower=True):
     """
@@ -224,7 +225,8 @@ def solve_triangular(a, b, lower=True):
         return x
     else:
         raise NotImplementedError(
-            "solve_triangular requires numpy. Install numpy or scipy for full functionality."
+            "solve_triangular requires numpy. "
+            "Install numpy or scipy for full functionality."
         )
 
 
@@ -253,8 +255,10 @@ def _solve_triangular_1d(a, b, lower):
 
 # === Optimization ===
 
+
 class OptimizeResult:
     """Simple result container for minimize."""
+
     def __init__(self, x, fun, success, message=""):
         self.x = x
         self.fun = fun
@@ -327,14 +331,12 @@ def minimize(fun, x0, method=None, bounds=None, options=None):
                 break
 
     return OptimizeResult(
-        x=x,
-        fun=best_f,
-        success=True,
-        message="Optimization terminated successfully."
+        x=x, fun=best_f, success=True, message="Optimization terminated successfully."
     )
 
 
 # === Distance Functions ===
+
 
 def cdist(xa, xb, metric="euclidean"):
     """
@@ -397,6 +399,7 @@ def cdist(xa, xb, metric="euclidean"):
 
 
 # === Special Functions ===
+
 
 def logsumexp(a, axis=None, keepdims=False):
     """

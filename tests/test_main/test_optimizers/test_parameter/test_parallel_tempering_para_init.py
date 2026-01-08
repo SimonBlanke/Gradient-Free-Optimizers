@@ -2,12 +2,15 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import pytest
 import numpy as np
+import pytest
 
-from gradient_free_optimizers import ParallelTemperingOptimizer
+from gradient_free_optimizers import (
+    ParallelTemperingOptimizer,
+    SimulatedAnnealingOptimizer,
+)
+
 from ._base_para_test import _base_para_test_func
-from gradient_free_optimizers import SimulatedAnnealingOptimizer
 
 
 def objective_function(para):

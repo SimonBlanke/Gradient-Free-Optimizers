@@ -4,15 +4,15 @@ from ._base_function import BaseFunction
 
 
 class AckleyFunction(BaseFunction):
-    """
-    Implements the Ackley function, a common benchmark function for optimization
-    algorithms. Inherits from BaseFunction.
+    """Ackley function benchmark for testing optimization algorithms.
 
-    Attributes:
+    Attributes
+    ----------
         A (float): A constant used in the Ackley function.
         angle (float): The angle in radians used for cosine calculations.
 
-    Methods:
+    Methods
+    -------
         objective_function(para): Computes the Ackley function value for given
         parameters 'x0' and 'x1'.
 

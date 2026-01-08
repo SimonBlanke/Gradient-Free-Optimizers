@@ -5,10 +5,11 @@
 from __future__ import annotations
 
 import random
-from typing import Any, Callable
+from collections.abc import Callable
+from typing import Any
 
-from .hill_climbing_optimizer import HillClimbingOptimizer
 from ..core_optimizer.converter import ArrayLike
+from .hill_climbing_optimizer import HillClimbingOptimizer
 
 
 def _arrays_equal(a: Any, b: Any) -> bool:

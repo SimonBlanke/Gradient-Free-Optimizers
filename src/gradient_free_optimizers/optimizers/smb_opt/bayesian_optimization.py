@@ -2,17 +2,16 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-import numpy as np
-from scipy.stats import norm
 from gradient_free_optimizers._array_backend import (
     array as gfo_array,
+)
+from gradient_free_optimizers._array_backend import (
     random as np_random,
 )
 
+from .acquisition_function import ExpectedImprovement
 from .smbo import SMBO
 from .surrogate_models import GPR
-from .acquisition_function import ExpectedImprovement
-from ._normalize import normalize
 
 
 def normalize(arr):
