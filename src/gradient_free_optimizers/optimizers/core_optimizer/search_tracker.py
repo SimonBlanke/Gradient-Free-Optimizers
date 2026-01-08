@@ -3,6 +3,7 @@
 # License: MIT License
 
 import math
+from functools import wraps
 
 from ..._array_backend import isinf, isnan
 
@@ -39,6 +40,7 @@ class SearchTracker:
     ##################### track new #####################
 
     def track_new_pos(func):
+        @wraps(func)
         def wrapper(self, *args, **kwargs):
             self.pos_new = func(self, *args, **kwargs)
             self.nth_init += 1
@@ -47,6 +49,7 @@ class SearchTracker:
         return wrapper
 
     def track_new_score(func):
+        @wraps(func)
         def wrapper(self, score):
             self.score_new = score
             _return_ = func(self, score)

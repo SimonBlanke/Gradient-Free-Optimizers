@@ -4,6 +4,7 @@
 
 
 import random
+from functools import wraps
 
 from ..._array_backend import rint, clip, array, random as np_random
 from ..._math_backend import cdist
@@ -27,6 +28,65 @@ def _get_dist_func(name):
 
 
 class CoreOptimizer(SearchTracker):
+    """
+    Core optimization mechanics for position generation and evaluation.
+
+    CoreOptimizer provides the fundamental building blocks that all
+    optimization algorithms use: position tracking, search space conversion,
+    initialization handling, and movement utilities. It bridges the gap
+    between abstract optimization logic and concrete array manipulations.
+
+    This class manages:
+
+    - **Position Tracking**: Via inheritance from SearchTracker, maintains
+      current, new, and best positions with their scores
+    - **Search Space Conversion**: The ``conv`` (Converter) object handles
+      transformations between positions (array indices), values (actual
+      parameter values), and parameters (dict format)
+    - **Initialization**: The ``init`` (Initializer) object generates
+      starting positions based on the initialization strategy
+    - **Movement Utilities**: Methods like ``move_climb`` and ``move_random``
+      for generating candidate positions
+
+    The position representation uses integer indices into the search space
+    arrays, which enables efficient constraint checking and discrete
+    optimization. The Converter handles mapping these to actual values.
+
+    Parameters
+    ----------
+    search_space : dict[str, array-like]
+        Dictionary mapping parameter names to arrays of possible values.
+    initialize : dict
+        Initialization configuration passed to Initializer.
+    constraints : list[callable]
+        Constraint functions passed to Converter.
+    random_state : int or None
+        Random seed for reproducibility.
+    rand_rest_p : float
+        Probability of random restart (used by ``random_iteration`` decorator).
+    nth_process : int or None
+        Process identifier for parallel scenarios.
+
+    Attributes
+    ----------
+    conv : Converter
+        Handles position/value/parameter conversions and constraint checking.
+    init : Initializer
+        Generates initial positions based on the initialization strategy.
+    nth_init : int
+        Counter for initialization steps completed.
+    nth_trial : int
+        Counter for total evaluations (init + iterations).
+    search_state : str
+        Either "init" (initialization phase) or "iter" (iteration phase).
+
+    See Also
+    --------
+    SearchTracker : Tracks positions and scores throughout optimization.
+    Converter : Handles search space transformations.
+    Initializer : Generates initial positions.
+    """
+
     def __init__(
         self,
         search_space,
@@ -55,6 +115,7 @@ class CoreOptimizer(SearchTracker):
         self.search_state = "init"
 
     def random_iteration(func):
+        @wraps(func)
         def wrapper(self, *args, **kwargs):
             if self.rand_rest_p > random.uniform(0, 1):
                 return self.move_random()
