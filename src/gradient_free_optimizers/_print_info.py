@@ -7,6 +7,13 @@ indent = "  "
 
 
 def _print_times(eval_time, iter_time, n_iter):
+    # Guard against division by zero (can happen on Windows with low timer resolution)
+    if iter_time == 0:
+        print(indent, "Evaluation time   :", eval_time, "sec")
+        print(indent, "Optimization time :", 0, "sec")
+        print(indent, "Iteration time    :", iter_time, "sec", indent, "[too fast to measure]")
+        print(" ")
+        return
 
     opt_time = iter_time - eval_time
     iterPerSec = n_iter / iter_time
