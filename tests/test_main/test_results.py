@@ -1,3 +1,5 @@
+"""Tests for the search_data DataFrame structure and content."""
+
 import numpy as np
 import pandas as pd
 

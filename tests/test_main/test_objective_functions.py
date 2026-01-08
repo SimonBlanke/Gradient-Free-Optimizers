@@ -1,3 +1,5 @@
+"""Tests for various objective function formats and return types."""
+
 import numpy as np
 from sklearn.datasets import load_iris
 from sklearn.model_selection import cross_val_score

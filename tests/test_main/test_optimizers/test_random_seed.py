@@ -1,3 +1,5 @@
+"""Tests for random_seed attribute accessibility."""
+
 import numpy as np
 import pytest
 

@@ -1,3 +1,5 @@
+"""Tests for verbosity settings and output control."""
+
 import numpy as np
 
 from gradient_free_optimizers import RandomSearchOptimizer

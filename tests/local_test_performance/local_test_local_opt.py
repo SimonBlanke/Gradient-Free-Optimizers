@@ -1,3 +1,5 @@
+"""Performance tests for local optimization algorithms."""
+
 import numpy as np
 import pytest
 from tqdm import tqdm

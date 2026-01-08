@@ -1,3 +1,5 @@
+"""Performance tests for global optimization algorithms."""
+
 import numpy as np
 import pytest
 from surfaces.test_functions.mathematical import RastriginFunction

@@ -1,3 +1,5 @@
+"""Basic smoke tests for all optimizer algorithms."""
+
 import numpy as np
 import pytest
 

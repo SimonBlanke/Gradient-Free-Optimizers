@@ -1,3 +1,5 @@
+"""Performance tests for the grid search optimizer."""
+
 from functools import reduce
 
 import numpy as np

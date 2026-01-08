@@ -1,3 +1,5 @@
+"""Tests for early stopping functionality."""
+
 import numpy as np
 
 from gradient_free_optimizers import (

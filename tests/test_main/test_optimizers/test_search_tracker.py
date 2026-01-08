@@ -1,3 +1,5 @@
+"""Tests for internal position and score tracking during search."""
+
 import numpy as np
 import pytest
 

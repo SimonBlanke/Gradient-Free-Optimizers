@@ -1,3 +1,4 @@
+"""Tests for HillClimbingOptimizer epsilon parameter behavior."""
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License

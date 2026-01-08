@@ -1,3 +1,4 @@
+"""Tests for the replacement parameter in surrogate model-based optimizers."""
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License

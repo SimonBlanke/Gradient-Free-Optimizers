@@ -1,3 +1,5 @@
+"""Tests for reproducibility via random_state parameter."""
+
 import numpy as np
 import pytest
 

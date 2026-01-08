@@ -1,3 +1,5 @@
+"""Tests for early stopping across all optimizers."""
+
 import numpy as np
 import pytest
 

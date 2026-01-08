@@ -1,3 +1,5 @@
+"""Tests for search spaces with single-value dimensions."""
+
 import numpy as np
 import pytest
 

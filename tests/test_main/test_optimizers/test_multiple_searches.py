@@ -1,3 +1,5 @@
+"""Tests for calling search() multiple times on the same optimizer."""
+
 import numpy as np
 import pytest
 

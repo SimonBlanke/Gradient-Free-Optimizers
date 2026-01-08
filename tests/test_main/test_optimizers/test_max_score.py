@@ -1,3 +1,5 @@
+"""Tests for the max_score stopping criterion across all optimizers."""
+
 import time
 
 import numpy as np

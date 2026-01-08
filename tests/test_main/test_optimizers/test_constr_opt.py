@@ -1,3 +1,5 @@
+"""Tests for constrained optimization with constraint functions."""
+
 import numpy as np
 import pytest
 

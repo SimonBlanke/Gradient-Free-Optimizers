@@ -1,3 +1,5 @@
+"""Tests for GitHub issue 15: mixed int/float types in search spaces."""
+
 import numpy as np
 
 from gradient_free_optimizers import RandomSearchOptimizer

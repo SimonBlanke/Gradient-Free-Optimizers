@@ -1,3 +1,6 @@
+"""Helper script that runs optimizer with verbosity disabled."""
+
+
 def warn(*args, **kwargs):
     pass
 

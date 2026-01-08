@@ -1,3 +1,5 @@
+"""Tests for optimizer result attributes like best_score, best_para, and timing."""
+
 import time
 
 import numpy as np

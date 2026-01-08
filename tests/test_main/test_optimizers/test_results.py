@@ -1,3 +1,5 @@
+"""Tests that search results stay within the search space bounds."""
+
 import numpy as np
 import pytest
 

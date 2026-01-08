@@ -1,3 +1,5 @@
+"""Tests that best_score and best_para are correctly tracked."""
+
 import numpy as np
 import pytest
 

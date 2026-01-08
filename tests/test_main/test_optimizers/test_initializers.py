@@ -1,3 +1,5 @@
+"""Tests for optimizer initialization strategies (warm_start, vertices, grid)."""
+
 import numpy as np
 import pytest
 

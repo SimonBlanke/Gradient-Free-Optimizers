@@ -1,3 +1,5 @@
+"""Helper script that runs optimizer with verbosity enabled."""
+
 import numpy as np
 
 from gradient_free_optimizers import RandomSearchOptimizer

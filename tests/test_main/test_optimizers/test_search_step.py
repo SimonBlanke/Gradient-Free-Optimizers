@@ -1,3 +1,5 @@
+"""Tests for the search_step() method for manual iteration control."""
+
 import numpy as np
 import pytest
 

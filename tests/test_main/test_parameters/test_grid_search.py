@@ -1,3 +1,4 @@
+"""Tests for GridSearchOptimizer direction parameter behavior."""
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License

@@ -1,3 +1,5 @@
+"""Tests for built-in test objective functions (Ackley, Sphere)."""
+
 from gradient_free_optimizers import RandomSearchOptimizer
 
 

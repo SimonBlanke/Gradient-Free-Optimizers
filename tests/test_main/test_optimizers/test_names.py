@@ -1,3 +1,5 @@
+"""Tests for optimizer name attributes."""
+
 import numpy as np
 import pytest
 

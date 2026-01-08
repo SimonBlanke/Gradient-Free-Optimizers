@@ -1,3 +1,5 @@
+"""Tests for the low-level optimizer backend API."""
+
 import numpy as np
 import pytest
 

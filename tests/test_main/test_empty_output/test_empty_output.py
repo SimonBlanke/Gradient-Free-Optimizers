@@ -1,3 +1,5 @@
+"""Tests that non-verbose mode produces no stdout output."""
+
 import os
 import subprocess
 

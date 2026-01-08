@@ -1,3 +1,5 @@
+"""Tests for optimizer behavior with large search spaces."""
+
 import numpy as np
 import pytest
 

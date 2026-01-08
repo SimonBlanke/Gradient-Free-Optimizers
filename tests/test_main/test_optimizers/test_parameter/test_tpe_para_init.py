@@ -1,3 +1,4 @@
+"""Tests for TreeStructuredParzenEstimators parameter initialization."""
 # Author: Simon Blanke
 # Email: simon.blanke@yahoo.com
 # License: MIT License

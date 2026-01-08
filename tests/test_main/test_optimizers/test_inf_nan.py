@@ -1,3 +1,5 @@
+"""Tests for handling inf and nan values in objective function returns."""
+
 import random
 
 import numpy as np
