@@ -63,7 +63,7 @@ Solving an issue with a pull request is one of the most difficult ways to contri
 
 ## Open an issue
 
-You can contribute to this project by opening an issue. This could be a question, a bug report, a feature request or other types. In any case you should do a search beforehand to confirm, that a similar issue has not already been opened. 
+You can contribute to this project by opening an issue. This could be a question, a bug report, a feature request or other types. In any case you should do a search beforehand to confirm, that a similar issue has not already been opened.
 
 
 <br>
@@ -88,7 +88,7 @@ This could be a feature that could be very useful for your work, an interesting 
 
 
 <br>
- 
+
 ---
 
 <br>

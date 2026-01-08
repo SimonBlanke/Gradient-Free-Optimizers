@@ -136,7 +136,7 @@ def plot_search_paths(
                 opt_para_name += "\n " + "     " + para_name + ": "
                 opt_para_value += "\n " + str(para_value) + "                "
 
-        if title == True:
+        if title is True:
             title_name = opt.name + "\n" + opt_para_name
             plt.title(title_name, loc="left")
             plt.title(opt_para_value, loc="center")
