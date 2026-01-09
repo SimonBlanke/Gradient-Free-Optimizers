@@ -8,6 +8,10 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
 from gradient_free_optimizers._array_backend import array, exp, zeros_like
+from gradient_free_optimizers._init_utils import (
+    get_default_initialize,
+    get_default_sampling,
+)
 
 from ..core_optimizer.converter import ArrayLike
 from .smbo import SMBO
@@ -40,8 +44,9 @@ class TreeStructuredParzenEstimators(SMBO):
     ----------
     search_space : dict
         Dictionary mapping parameter names to arrays of possible values.
-    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+    initialize : dict, default=None
         Strategy for generating initial positions.
+        If None, uses {"grid": 4, "random": 2, "vertices": 4}.
     constraints : list, optional
         List of constraint functions.
     random_state : int, optional
@@ -54,8 +59,9 @@ class TreeStructuredParzenEstimators(SMBO):
         Previous results to initialize the KDEs.
     max_sample_size : int, default=10000000
         Maximum positions to consider.
-    sampling : dict or False, default={"random": 1000000}
+    sampling : dict or False, default=None
         Sampling strategy for large search spaces.
+        If None, uses {"random": 1000000}.
     replacement : bool, default=True
         Allow re-evaluation of positions.
     gamma_tpe : float, default=0.2
@@ -78,17 +84,22 @@ class TreeStructuredParzenEstimators(SMBO):
     def __init__(
         self,
         search_space: dict[str, Any],
-        initialize: dict[str, int] = {"grid": 4, "random": 2, "vertices": 4},
+        initialize: dict[str, int] | None = None,
         constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
         random_state: int | None = None,
         rand_rest_p: float = 0,
         nth_process: int | None = None,
         warm_start_smbo: pd.DataFrame | None = None,
         max_sample_size: int = 10000000,
-        sampling: dict[str, int] | bool = {"random": 1000000},
+        sampling: dict[str, int] | bool | None = None,
         replacement: bool = True,
         gamma_tpe: float = 0.2,
     ) -> None:
+        if initialize is None:
+            initialize = get_default_initialize()
+        if sampling is None:
+            sampling = get_default_sampling()
+
         super().__init__(
             search_space=search_space,
             initialize=initialize,

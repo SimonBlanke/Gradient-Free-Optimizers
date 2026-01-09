@@ -6,6 +6,10 @@
 # TODO: Refactor to use backend when numpy masked arrays are supported.
 import numpy as np
 
+from gradient_free_optimizers._init_utils import (
+    get_default_initialize,
+    get_default_sampling,
+)
 from gradient_free_optimizers._math_backend import cdist
 
 from ..smb_opt.smbo import SMBO
@@ -62,16 +66,21 @@ class LipschitzOptimizer(SMBO):
     def __init__(
         self,
         search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
+        initialize=None,
         constraints=None,
         random_state=None,
         rand_rest_p=0,
         nth_process=None,
         warm_start_smbo=None,
         max_sample_size=10000000,
-        sampling={"random": 1000000},
+        sampling=None,
         replacement=True,
     ):
+        if initialize is None:
+            initialize = get_default_initialize()
+        if sampling is None:
+            sampling = get_default_sampling()
+
         super().__init__(
             search_space=search_space,
             initialize=initialize,

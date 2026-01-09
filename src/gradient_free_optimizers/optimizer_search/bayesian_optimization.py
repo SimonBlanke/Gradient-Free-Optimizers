@@ -5,6 +5,7 @@
 
 from typing import Literal
 
+from .._init_utils import get_default_initialize, get_default_sampling
 from ..optimizers import BayesianOptimizer as _BayesianOptimizer
 from ..search import Search
 
@@ -62,17 +63,10 @@ class BayesianOptimizer(_BayesianOptimizer, Search):
     sampling : dict
         Configuration for candidate sampling. Default is {"random": 1000000}.
     replacement : bool
-    <<<<<<< HEAD
         Whether to sample candidates with replacement. Default is True.
-    gpr : object
-        The Gaussian Process Regressor configuration. Uses a nonlinear GP
-        by default, suitable for most optimization problems.
-    =======
-        Whether to sample with replacement.
     gpr : object, optional
         The Gaussian Process Regressor to use. Can be None (uses default GPR),
         a class (instantiated automatically), or an instance.
-    >>>>>>> feature/array_and_math_backends
     xi : float
         Exploration-exploitation trade-off parameter for Expected Improvement.
         Higher values favor exploration of uncertain regions. Default is 0.03.
@@ -102,18 +96,25 @@ class BayesianOptimizer(_BayesianOptimizer, Search):
         initialize: dict[
             Literal["grid", "vertices", "random", "warm_start"],
             int | list[dict],
-        ] = {"grid": 4, "random": 2, "vertices": 4},
-        constraints: list[callable] = [],
+        ] = None,
+        constraints: list[callable] = None,
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,
         warm_start_smbo=None,
         max_sample_size: int = 10000000,
-        sampling: dict[Literal["random"], int] = {"random": 1000000},
+        sampling: dict[Literal["random"], int] = None,
         replacement: bool = True,
         gpr=None,
         xi: float = 0.03,
     ):
+        if initialize is None:
+            initialize = get_default_initialize()
+        if constraints is None:
+            constraints = []
+        if sampling is None:
+            sampling = get_default_sampling()
+
         super().__init__(
             search_space=search_space,
             initialize=initialize,

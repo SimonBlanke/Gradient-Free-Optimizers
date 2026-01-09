@@ -3,6 +3,8 @@
 # License: MIT License
 
 
+from gradient_free_optimizers._init_utils import get_default_initialize
+
 from ._spiral import Spiral
 from .base_population_optimizer import BasePopulationOptimizer
 
@@ -18,8 +20,9 @@ class SpiralOptimization(BasePopulationOptimizer):
     ----------
     search_space : dict
         Dictionary mapping parameter names to arrays of possible values.
-    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+    initialize : dict, default=None
         Strategy for generating initial positions.
+        If None, uses {"grid": 4, "random": 2, "vertices": 4}.
     constraints : list, optional
         List of constraint functions.
     random_state : int, optional
@@ -44,7 +47,7 @@ class SpiralOptimization(BasePopulationOptimizer):
     def __init__(
         self,
         search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
+        initialize=None,
         constraints=None,
         random_state=None,
         rand_rest_p=0,
@@ -52,6 +55,9 @@ class SpiralOptimization(BasePopulationOptimizer):
         population=10,
         decay_rate=0.99,
     ):
+        if initialize is None:
+            initialize = get_default_initialize()
+
         super().__init__(
             search_space=search_space,
             initialize=initialize,

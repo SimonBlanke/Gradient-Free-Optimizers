@@ -3,6 +3,7 @@
 # License: MIT License
 
 from gradient_free_optimizers._array_backend import array
+from gradient_free_optimizers._init_utils import get_default_initialize
 
 from ..base_optimizer import BaseOptimizer
 
@@ -18,8 +19,9 @@ class OrthogonalGridSearchOptimizer(BaseOptimizer):
     ----------
     search_space : dict
         Dictionary mapping parameter names to arrays of possible values.
-    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+    initialize : dict, default=None
         Strategy for generating initial positions.
+        If None, uses {"grid": 4, "random": 2, "vertices": 4}.
     constraints : list, optional
         List of constraint functions.
     random_state : int, optional
@@ -35,13 +37,16 @@ class OrthogonalGridSearchOptimizer(BaseOptimizer):
     def __init__(
         self,
         search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
+        initialize=None,
         constraints=None,
         random_state=None,
         rand_rest_p=0,
         nth_process=None,
         step_size=1,
     ):
+        if initialize is None:
+            initialize = get_default_initialize()
+
         super().__init__(
             search_space=search_space,
             initialize=initialize,

@@ -10,6 +10,7 @@ from typing import Any
 
 from ..core_optimizer.converter import ArrayLike
 from .hill_climbing_optimizer import HillClimbingOptimizer
+from gradient_free_optimizers._init_utils import get_default_initialize
 
 
 def _arrays_equal(a: Any, b: Any) -> bool:
@@ -52,8 +53,9 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
     ----------
     search_space : dict
         Dictionary mapping parameter names to arrays of possible values.
-    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+    initialize : dict, default=None
         Strategy for generating initial simplex vertices.
+        If None, uses {"grid": 4, "random": 2, "vertices": 4}.
     constraints : list, optional
         List of constraint functions.
     random_state : int, optional
@@ -82,7 +84,7 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
     def __init__(
         self,
         search_space: dict[str, Any],
-        initialize: dict[str, int] = {"grid": 4, "random": 2, "vertices": 4},
+        initialize: dict[str, int] | None = None,
         constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
         random_state: int | None = None,
         rand_rest_p: float = 0,
@@ -92,6 +94,8 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
         beta: float = 0.5,
         sigma: float = 0.5,
     ) -> None:
+        if initialize is None:
+            initialize = get_default_initialize()
         super().__init__(
             search_space=search_space,
             initialize=initialize,

@@ -3,6 +3,7 @@
 # License: MIT License
 
 from gradient_free_optimizers._array_backend import argmax, array, linalg
+from gradient_free_optimizers._init_utils import get_default_initialize
 
 from ...local_opt import HillClimbingOptimizer
 from .direction import Direction
@@ -37,7 +38,7 @@ class PowellsMethod(HillClimbingOptimizer):
     def __init__(
         self,
         search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
+        initialize=None,
         constraints=None,
         random_state=None,
         rand_rest_p=0,
@@ -57,7 +58,7 @@ class PowellsMethod(HillClimbingOptimizer):
         search_space : dict
             Dictionary defining the search space for each parameter.
         initialize : dict, optional
-            Initialization strategy.
+            Initialization strategy. If None, uses {"grid": 4, "random": 2, "vertices": 4}.
         constraints : list, optional
             List of constraint functions.
         random_state : int, optional
@@ -81,6 +82,9 @@ class PowellsMethod(HillClimbingOptimizer):
             improvements across all directions falls below this threshold,
             the optimizer switches to random exploration.
         """
+        if initialize is None:
+            initialize = get_default_initialize()
+
         super().__init__(
             search_space=search_space,
             initialize=initialize,

@@ -5,6 +5,7 @@
 
 from typing import Literal
 
+from .._init_utils import get_default_initialize
 from ..optimizers import (
     RandomRestartHillClimbingOptimizer as _RandomRestartHillClimbingOptimizer,
 )
@@ -89,8 +90,8 @@ class RandomRestartHillClimbingOptimizer(_RandomRestartHillClimbingOptimizer, Se
         initialize: dict[
             Literal["grid", "vertices", "random", "warm_start"],
             int | list[dict],
-        ] = {"grid": 4, "random": 2, "vertices": 4},
-        constraints: list[callable] = [],
+        ] = None,
+        constraints: list[callable] = None,
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,
@@ -99,6 +100,11 @@ class RandomRestartHillClimbingOptimizer(_RandomRestartHillClimbingOptimizer, Se
         n_neighbours: int = 3,
         n_iter_restart: int = 10,
     ):
+        if initialize is None:
+            initialize = get_default_initialize()
+        if constraints is None:
+            constraints = []
+
         super().__init__(
             search_space=search_space,
             initialize=initialize,

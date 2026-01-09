@@ -5,6 +5,7 @@
 
 from typing import Literal
 
+from .._init_utils import get_default_initialize
 from ..optimizers import RandomAnnealingOptimizer as _RandomAnnealingOptimizer
 from ..search import Search
 
@@ -93,8 +94,8 @@ class RandomAnnealingOptimizer(_RandomAnnealingOptimizer, Search):
         initialize: dict[
             Literal["grid", "vertices", "random", "warm_start"],
             int | list[dict],
-        ] = {"grid": 4, "random": 2, "vertices": 4},
-        constraints: list[callable] = [],
+        ] = None,
+        constraints: list[callable] = None,
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,
@@ -104,6 +105,11 @@ class RandomAnnealingOptimizer(_RandomAnnealingOptimizer, Search):
         annealing_rate=0.98,
         start_temp=10,
     ):
+        if initialize is None:
+            initialize = get_default_initialize()
+        if constraints is None:
+            constraints = []
+
         super().__init__(
             search_space=search_space,
             initialize=initialize,

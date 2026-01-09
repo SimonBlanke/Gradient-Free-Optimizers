@@ -5,6 +5,7 @@
 
 from typing import Literal
 
+from .._init_utils import get_default_initialize
 from ..optimizers import ParticleSwarmOptimizer as _ParticleSwarmOptimizer
 from ..search import Search
 
@@ -99,8 +100,8 @@ class ParticleSwarmOptimizer(_ParticleSwarmOptimizer, Search):
         initialize: dict[
             Literal["grid", "vertices", "random", "warm_start"],
             int | list[dict],
-        ] = {"grid": 4, "random": 2, "vertices": 4},
-        constraints: list[callable] = [],
+        ] = None,
+        constraints: list[callable] = None,
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,
@@ -110,6 +111,11 @@ class ParticleSwarmOptimizer(_ParticleSwarmOptimizer, Search):
         social_weight: float = 0.5,
         temp_weight: float = 0.2,
     ):
+        if initialize is None:
+            initialize = get_default_initialize()
+        if constraints is None:
+            constraints = []
+
         super().__init__(
             search_space=search_space,
             initialize=initialize,

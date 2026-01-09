@@ -5,6 +5,7 @@
 
 from typing import Literal
 
+from .._init_utils import get_default_initialize
 from ..optimizers import PowellsMethod as _PowellsMethod
 from ..search import Search
 
@@ -102,8 +103,8 @@ class PowellsMethod(_PowellsMethod, Search):
         initialize: dict[
             Literal["grid", "vertices", "random", "warm_start"],
             int | list[dict],
-        ] = {"grid": 4, "random": 2, "vertices": 4},
-        constraints: list[callable] = [],
+        ] = None,
+        constraints: list[callable] = None,
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,
@@ -114,6 +115,11 @@ class PowellsMethod(_PowellsMethod, Search):
         line_search: Literal["grid", "golden", "hill_climb"] = "grid",
         convergence_threshold: float = 1e-8,
     ):
+        if initialize is None:
+            initialize = get_default_initialize()
+        if constraints is None:
+            constraints = []
+
         super().__init__(
             search_space=search_space,
             initialize=initialize,

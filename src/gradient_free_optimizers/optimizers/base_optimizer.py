@@ -7,6 +7,8 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
+from gradient_free_optimizers._init_utils import get_default_initialize
+
 from .core_optimizer import CoreOptimizer
 
 
@@ -37,8 +39,9 @@ class BaseOptimizer(CoreOptimizer):
     search_space : dict[str, array-like]
         Dictionary mapping parameter names to arrays of possible values.
         Each parameter is searched over its corresponding array.
-    initialize : dict[str, int], default={"grid": 4, "random": 2, "vertices": 4}
-        Initialization strategy. Keys can be:
+    initialize : dict[str, int] or None, default=None
+        Initialization strategy. If None, uses {"grid": 4, "random": 2, "vertices": 4}.
+        Keys can be:
 
         - "grid": Number of positions from a grid pattern
         - "random": Number of random positions
@@ -71,12 +74,15 @@ class BaseOptimizer(CoreOptimizer):
     def __init__(
         self,
         search_space: dict[str, Any],
-        initialize: dict[str, int] = {"grid": 4, "random": 2, "vertices": 4},
+        initialize: dict[str, int] | None = None,
         constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
         random_state: int | None = None,
         rand_rest_p: float = 0,
         nth_process: int | None = None,
     ) -> None:
+        if initialize is None:
+            initialize = get_default_initialize()
+
         super().__init__(
             search_space=search_space,
             initialize=initialize,

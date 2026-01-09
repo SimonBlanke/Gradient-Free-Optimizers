@@ -9,6 +9,7 @@ from collections.abc import Callable
 from typing import Any
 
 from .stochastic_hill_climbing import StochasticHillClimbingOptimizer
+from gradient_free_optimizers._init_utils import get_default_initialize
 
 
 class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer):
@@ -22,8 +23,9 @@ class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer):
     ----------
     search_space : dict
         Dictionary mapping parameter names to arrays of possible values.
-    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+    initialize : dict, default=None
         Strategy for generating initial positions.
+        If None, uses {"grid": 4, "random": 2, "vertices": 4}.
     constraints : list, optional
         List of constraint functions.
     random_state : int, optional
@@ -54,7 +56,7 @@ class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer):
     def __init__(
         self,
         search_space: dict[str, Any],
-        initialize: dict[str, int] = {"grid": 4, "random": 2, "vertices": 4},
+        initialize: dict[str, int] | None = None,
         constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
         random_state: int | None = None,
         rand_rest_p: float = 0,
@@ -65,6 +67,8 @@ class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer):
         annealing_rate: float = 0.97,
         start_temp: float = 1,
     ) -> None:
+        if initialize is None:
+            initialize = get_default_initialize()
         super().__init__(
             search_space=search_space,
             initialize=initialize,

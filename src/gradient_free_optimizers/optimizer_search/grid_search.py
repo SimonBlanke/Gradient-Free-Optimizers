@@ -5,6 +5,7 @@
 
 from typing import Literal
 
+from .._init_utils import get_default_initialize
 from ..optimizers import GridSearchOptimizer as _GridSearchOptimizer
 from ..search import Search
 
@@ -86,14 +87,19 @@ class GridSearchOptimizer(_GridSearchOptimizer, Search):
         initialize: dict[
             Literal["grid", "vertices", "random", "warm_start"],
             int | list[dict],
-        ] = {"grid": 4, "random": 2, "vertices": 4},
-        constraints: list[callable] = [],
+        ] = None,
+        constraints: list[callable] = None,
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,
         step_size: int = 1,
         direction: Literal["diagonal", "orthogonal"] = "diagonal",
     ):
+        if initialize is None:
+            initialize = get_default_initialize()
+        if constraints is None:
+            constraints = []
+
         super().__init__(
             search_space=search_space,
             initialize=initialize,

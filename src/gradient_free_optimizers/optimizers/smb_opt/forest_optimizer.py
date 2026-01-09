@@ -10,6 +10,10 @@ from typing import TYPE_CHECKING, Any, Literal
 from gradient_free_optimizers._array_backend import (
     array as gfo_array,
 )
+from gradient_free_optimizers._init_utils import (
+    get_default_initialize,
+    get_default_sampling,
+)
 
 from ..core_optimizer.converter import ArrayLike
 from ._normalize import normalize
@@ -45,8 +49,9 @@ class ForestOptimizer(SMBO):
     ----------
     search_space : dict
         Dictionary mapping parameter names to arrays of possible values.
-    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+    initialize : dict, default=None
         Strategy for generating initial positions.
+        If None, uses {"grid": 4, "random": 2, "vertices": 4}.
     constraints : list, optional
         List of constraint functions.
     random_state : int, optional
@@ -59,8 +64,9 @@ class ForestOptimizer(SMBO):
         Previous results to initialize the model.
     max_sample_size : int, default=10000000
         Maximum positions to consider.
-    sampling : dict or False, default={"random": 1000000}
+    sampling : dict or False, default=None
         Sampling strategy for large search spaces.
+        If None, uses {"random": 1000000}.
     replacement : bool, default=True
         Allow re-evaluation of positions.
     tree_regressor : str, default="extra_tree"
@@ -86,21 +92,28 @@ class ForestOptimizer(SMBO):
     def __init__(
         self,
         search_space: dict[str, Any],
-        initialize: dict[str, int] = {"grid": 4, "random": 2, "vertices": 4},
+        initialize: dict[str, int] | None = None,
         constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
         random_state: int | None = None,
         rand_rest_p: float = 0,
         nth_process: int | None = None,
         warm_start_smbo: pd.DataFrame | None = None,
         max_sample_size: int = 10000000,
-        sampling: dict[str, int] | Literal[False] = {"random": 1000000},
+        sampling: dict[str, int] | Literal[False] | None = None,
         replacement: bool = True,
         tree_regressor: Literal[
             "random_forest", "extra_tree", "gradient_boost"
         ] = "extra_tree",
-        tree_para: dict[str, Any] = {"n_estimators": 100},
+        tree_para: dict[str, Any] | None = None,
         xi: float = 0.03,
     ) -> None:
+        if initialize is None:
+            initialize = get_default_initialize()
+        if sampling is None:
+            sampling = get_default_sampling()
+        if tree_para is None:
+            tree_para = {"n_estimators": 100}
+
         super().__init__(
             search_space=search_space,
             initialize=initialize,

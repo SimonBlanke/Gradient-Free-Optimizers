@@ -5,6 +5,7 @@
 
 from typing import Literal
 
+from .._init_utils import get_default_initialize
 from ..optimizers import (
     RepulsingHillClimbingOptimizer as _RepulsingHillClimbingOptimizer,
 )
@@ -90,8 +91,8 @@ class RepulsingHillClimbingOptimizer(_RepulsingHillClimbingOptimizer, Search):
         initialize: dict[
             Literal["grid", "vertices", "random", "warm_start"],
             int | list[dict],
-        ] = {"grid": 4, "random": 2, "vertices": 4},
-        constraints: list[callable] = [],
+        ] = None,
+        constraints: list[callable] = None,
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,
@@ -100,6 +101,11 @@ class RepulsingHillClimbingOptimizer(_RepulsingHillClimbingOptimizer, Search):
         n_neighbours: int = 3,
         repulsion_factor: float = 5,
     ):
+        if initialize is None:
+            initialize = get_default_initialize()
+        if constraints is None:
+            constraints = []
+
         super().__init__(
             search_space=search_space,
             initialize=initialize,

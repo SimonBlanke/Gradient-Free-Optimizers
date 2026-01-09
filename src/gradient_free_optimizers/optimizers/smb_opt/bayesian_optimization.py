@@ -8,6 +8,10 @@ from gradient_free_optimizers._array_backend import (
 from gradient_free_optimizers._array_backend import (
     random as np_random,
 )
+from gradient_free_optimizers._init_utils import (
+    get_default_initialize,
+    get_default_sampling,
+)
 
 from .acquisition_function import ExpectedImprovement
 from .smbo import SMBO
@@ -38,8 +42,9 @@ class BayesianOptimizer(SMBO):
     ----------
     search_space : dict
         Dictionary mapping parameter names to arrays of possible values.
-    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+    initialize : dict, default=None
         Strategy for generating initial positions.
+        If None, uses {"grid": 4, "random": 2, "vertices": 4}.
     constraints : list, optional
         List of constraint functions.
     random_state : int, optional
@@ -52,8 +57,9 @@ class BayesianOptimizer(SMBO):
         Previous results to initialize the GP.
     max_sample_size : int, default=10000000
         Maximum positions to consider.
-    sampling : dict or False, default={"random": 1000000}
+    sampling : dict or False, default=None
         Sampling strategy for large search spaces.
+        If None, uses {"random": 1000000}.
     replacement : bool, default=True
         Allow re-evaluation of positions.
     gpr : object, default=GPR()
@@ -78,18 +84,23 @@ class BayesianOptimizer(SMBO):
     def __init__(
         self,
         search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
+        initialize=None,
         constraints=None,
         random_state=None,
         rand_rest_p=0,
         nth_process=None,
         warm_start_smbo=None,
         max_sample_size=10000000,
-        sampling={"random": 1000000},
+        sampling=None,
         replacement=True,
         gpr=None,
         xi=0.03,
     ):
+        if initialize is None:
+            initialize = get_default_initialize()
+        if sampling is None:
+            sampling = get_default_sampling()
+
         super().__init__(
             search_space=search_space,
             initialize=initialize,

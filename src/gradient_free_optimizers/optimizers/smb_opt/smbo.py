@@ -11,6 +11,11 @@ from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 
+from gradient_free_optimizers._init_utils import (
+    get_default_initialize,
+    get_default_sampling,
+)
+
 from ..base_optimizer import BaseOptimizer
 from ..core_optimizer.converter import ArrayLike
 from .sampling import InitialSampler
@@ -47,8 +52,9 @@ class SMBO(BaseOptimizer):
     ----------
     search_space : dict
         Dictionary mapping parameter names to arrays of possible values.
-    initialize : dict, default={"grid": 4, "random": 2, "vertices": 4}
+    initialize : dict or None, default=None
         Strategy for generating initial positions before model-based search.
+        If None, uses {"grid": 4, "random": 2, "vertices": 4}.
     constraints : list, optional
         List of constraint functions that filter valid positions.
     random_state : int, optional
@@ -61,8 +67,9 @@ class SMBO(BaseOptimizer):
         Previous optimization results to initialize the surrogate model.
     max_sample_size : int, default=10000000
         Maximum number of positions to consider for sampling.
-    sampling : dict or False, default={"random": 1000000}
+    sampling : dict, False, or None, default=None
         Sampling strategy for large search spaces. Use False to disable.
+        If None, uses {"random": 1000000}.
     replacement : bool, default=True
         Whether to allow re-evaluation of the same position.
 
@@ -79,16 +86,21 @@ class SMBO(BaseOptimizer):
     def __init__(
         self,
         search_space: dict[str, Any],
-        initialize: dict[str, int] = {"grid": 4, "random": 2, "vertices": 4},
+        initialize: dict[str, int] | None = None,
         constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
         random_state: int | None = None,
         rand_rest_p: float = 0,
         nth_process: int | None = None,
         warm_start_smbo: pd.DataFrame | None = None,
         max_sample_size: int = 10000000,
-        sampling: dict[str, int] | Literal[False] = {"random": 1000000},
+        sampling: dict[str, int] | Literal[False] | None = None,
         replacement: bool = True,
     ) -> None:
+        if initialize is None:
+            initialize = get_default_initialize()
+        if sampling is None:
+            sampling = get_default_sampling()
+
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -151,6 +163,7 @@ class SMBO(BaseOptimizer):
             self.X_sample = []
             self.Y_sample = []
 
+    @staticmethod
     def track_X_sample(iterate: Callable) -> Callable:
         """Decorator that appends returned position to X_sample."""
 
@@ -161,6 +174,7 @@ class SMBO(BaseOptimizer):
 
         return wrapper
 
+    @staticmethod
     def track_y_sample(evaluate: Callable) -> Callable:
         """Decorator that appends score to Y_sample, skipping invalid scores."""
 

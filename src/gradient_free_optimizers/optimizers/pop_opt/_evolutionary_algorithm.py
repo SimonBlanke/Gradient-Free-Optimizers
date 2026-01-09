@@ -5,6 +5,7 @@
 
 from gradient_free_optimizers._array_backend import array
 from gradient_free_optimizers._array_backend import random as np_random
+from gradient_free_optimizers._init_utils import get_default_initialize
 
 from .base_population_optimizer import BasePopulationOptimizer
 
@@ -13,12 +14,15 @@ class EvolutionaryAlgorithmOptimizer(BasePopulationOptimizer):
     def __init__(
         self,
         search_space,
-        initialize={"grid": 4, "random": 2, "vertices": 4},
+        initialize=None,
         constraints=None,
         random_state=None,
         rand_rest_p=0,
         nth_process=None,
     ) -> None:
+        if initialize is None:
+            initialize = get_default_initialize()
+
         super().__init__(
             search_space=search_space,
             initialize=initialize,
