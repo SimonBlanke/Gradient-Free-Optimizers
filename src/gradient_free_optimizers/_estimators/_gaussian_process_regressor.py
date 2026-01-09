@@ -129,8 +129,10 @@ class GaussianProcessRegressor:
 
         try:
             L = cholesky(K_reg, lower=True)
-        except Exception:
-            # Return high value if Cholesky fails
+        except (ValueError, ArithmeticError):
+            # Cholesky decomposition can fail if the matrix is not positive definite
+            # (e.g., due to numerical issues with near-singular matrices).
+            # Return high value to indicate this is not a good hyperparameter setting.
             return float("inf")
 
         alpha = cho_solve((L, True), self.y)
