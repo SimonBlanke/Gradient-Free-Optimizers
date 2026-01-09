@@ -39,7 +39,10 @@ class SearchTracker:
 
     ##################### track new #####################
 
+    @staticmethod
     def track_new_pos(func):
+        """Decorator that tracks new positions and increments init counter."""
+
         @wraps(func)
         def wrapper(self, *args, **kwargs):
             self.pos_new = func(self, *args, **kwargs)
@@ -48,7 +51,10 @@ class SearchTracker:
 
         return wrapper
 
+    @staticmethod
     def track_new_score(func):
+        """Decorator that tracks new scores and increments trial counter."""
+
         @wraps(func)
         def wrapper(self, score):
             self.score_new = score

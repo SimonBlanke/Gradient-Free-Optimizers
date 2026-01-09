@@ -123,7 +123,14 @@ class CoreOptimizer(SearchTracker):
         self.nth_trial = 0
         self.search_state = "init"
 
+    @staticmethod
     def random_iteration(func: Callable) -> Callable:
+        """Decorator that randomly replaces iteration with random exploration.
+
+        With probability ``rand_rest_p``, returns a random position instead of
+        calling the wrapped iteration method. This helps escape local optima.
+        """
+
         @wraps(func)
         def wrapper(self, *args: Any, **kwargs: Any) -> ArrayLike:
             if self.rand_rest_p > random.uniform(0, 1):
