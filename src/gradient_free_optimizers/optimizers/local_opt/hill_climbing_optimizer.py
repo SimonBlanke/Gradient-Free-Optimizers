@@ -7,9 +7,10 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
+from gradient_free_optimizers._init_utils import get_default_initialize
+
 from ..base_optimizer import BaseOptimizer
 from ..core_optimizer.converter import ArrayLike
-from gradient_free_optimizers._init_utils import get_default_initialize
 
 
 def max_list_idx(list_: list[float]) -> int:

@@ -58,7 +58,8 @@ class PowellsMethod(HillClimbingOptimizer):
         search_space : dict
             Dictionary defining the search space for each parameter.
         initialize : dict, optional
-            Initialization strategy. If None, uses {"grid": 4, "random": 2, "vertices": 4}.
+            Initialization strategy. If None, uses
+            {"grid": 4, "random": 2, "vertices": 4}.
         constraints : list, optional
             List of constraint functions.
         random_state : int, optional

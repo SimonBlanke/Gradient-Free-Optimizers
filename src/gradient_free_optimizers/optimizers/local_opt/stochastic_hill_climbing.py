@@ -9,11 +9,12 @@ from collections.abc import Callable
 from random import random
 from typing import Any
 
+from gradient_free_optimizers._init_utils import get_default_initialize
+
 from ..core_optimizer.parameter_tracker.stochastic_hill_climbing import (
     ParameterTracker,
 )
 from . import HillClimbingOptimizer
-from gradient_free_optimizers._init_utils import get_default_initialize
 
 
 class StochasticHillClimbingOptimizer(HillClimbingOptimizer, ParameterTracker):

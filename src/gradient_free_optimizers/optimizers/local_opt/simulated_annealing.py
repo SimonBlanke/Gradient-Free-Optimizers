@@ -8,8 +8,9 @@ import math
 from collections.abc import Callable
 from typing import Any
 
-from .stochastic_hill_climbing import StochasticHillClimbingOptimizer
 from gradient_free_optimizers._init_utils import get_default_initialize
+
+from .stochastic_hill_climbing import StochasticHillClimbingOptimizer
 
 
 class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer):

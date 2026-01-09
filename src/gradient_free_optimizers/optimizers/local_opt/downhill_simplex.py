@@ -8,9 +8,10 @@ import random
 from collections.abc import Callable
 from typing import Any
 
+from gradient_free_optimizers._init_utils import get_default_initialize
+
 from ..core_optimizer.converter import ArrayLike
 from .hill_climbing_optimizer import HillClimbingOptimizer
-from gradient_free_optimizers._init_utils import get_default_initialize
 
 
 def _arrays_equal(a: Any, b: Any) -> bool:

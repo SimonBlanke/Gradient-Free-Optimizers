@@ -7,9 +7,10 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
+from gradient_free_optimizers._init_utils import get_default_initialize
+
 from ..core_optimizer.converter import ArrayLike
 from . import HillClimbingOptimizer
-from gradient_free_optimizers._init_utils import get_default_initialize
 
 
 class RepulsingHillClimbingOptimizer(HillClimbingOptimizer):
