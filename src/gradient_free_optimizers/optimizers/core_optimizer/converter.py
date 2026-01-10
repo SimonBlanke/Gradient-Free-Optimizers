@@ -8,10 +8,6 @@ from collections.abc import Callable
 from functools import reduce
 from typing import Any, TypeVar
 
-# Pandas is still required for DataFrame operations
-# TODO: Make pandas optional in Phase 3
-import pandas as pd
-
 from gradient_free_optimizers._array_backend import (
     abs as np_abs,
 )
@@ -20,7 +16,8 @@ from gradient_free_optimizers._array_backend import (
     array,
     take,
 )
-from gradient_free_optimizers._result import Result
+
+from ._converter_memory import MemoryOperationsMixin
 
 # Type alias for array-like types (numpy arrays or GFOArray)
 ArrayLike = TypeVar("ArrayLike")
@@ -40,7 +37,7 @@ def check_numpy_array(search_space: dict[str, Any]) -> None:
             )
 
 
-class Converter:
+class Converter(MemoryOperationsMixin):
     """Converts between position, value, and parameter representations.
 
     The Converter handles the transformation between three data representations
@@ -349,119 +346,3 @@ class Converter:
         for value in values:
             paras.append(self.value2para(value))
         return paras
-
-    @returnNoneIfArgNone
-    def positions_scores2memory_dict(
-        self, positions: list[ArrayLike] | None, scores: list[float] | None
-    ) -> dict[tuple[int, ...], Result] | None:
-        """Convert positions and scores to a memory dictionary.
-
-        Parameters
-        ----------
-        positions : list
-            List of position arrays.
-        scores : list
-            List of corresponding scores.
-
-        Returns
-        -------
-        dict
-            Dictionary mapping position tuples to Result objects.
-        """
-        value_tuple_list = list(map(tuple, positions))
-        # Convert scores to Result objects
-        result_objects = [Result(float(score), {}) for score in scores]
-        memory_dict = dict(zip(value_tuple_list, result_objects))
-
-        return memory_dict
-
-    @returnNoneIfArgNone
-    def memory_dict2positions_scores(
-        self, memory_dict: dict[tuple[int, ...], Result] | None
-    ) -> tuple[list[ArrayLike], list[float]] | None:
-        """Convert a memory dictionary to positions and scores.
-
-        Parameters
-        ----------
-        memory_dict : dict
-            Dictionary mapping position tuples to Result objects.
-
-        Returns
-        -------
-        tuple
-            (positions, scores) where positions is a list of arrays
-            and scores is a list of floats.
-        """
-        positions = [array(pos).astype(int) for pos in list(memory_dict.keys())]
-        # Extract scores from Result objects
-        scores = [
-            result.score if isinstance(result, Result) else result
-            for result in memory_dict.values()
-        ]
-
-        return positions, scores
-
-    @returnNoneIfArgNone
-    def dataframe2memory_dict(
-        self, dataframe: pd.DataFrame | None
-    ) -> dict[tuple[int, ...], Result] | None:
-        """Convert a pandas DataFrame to a memory dictionary.
-
-        Used for warm-starting from previous optimization results.
-
-        Parameters
-        ----------
-        dataframe : pd.DataFrame
-            DataFrame with columns for each parameter and a 'score' column.
-
-        Returns
-        -------
-        dict
-            Memory dictionary, or empty dict if parameters don't match.
-        """
-        parameter = set(self.search_space.keys())
-        memory_para = set(dataframe.columns)
-
-        if parameter <= memory_para:
-            values = list(dataframe[self.para_names].values)
-            positions = self.values2positions(values)
-            scores = dataframe["score"]
-
-            memory_dict = self.positions_scores2memory_dict(positions, scores)
-
-            return memory_dict
-        else:
-            missing = parameter - memory_para
-
-            print(
-                "\nWarning:",
-                '"{}"'.format(*missing),
-                "is in search_space but not in memory dataframe",
-            )
-            print("Optimization run will continue without memory warm start\n")
-
-            return {}
-
-    @returnNoneIfArgNone
-    def memory_dict2dataframe(
-        self, memory_dict: dict[tuple[int, ...], Result] | None
-    ) -> pd.DataFrame | None:
-        """Convert a memory dictionary to a pandas DataFrame.
-
-        Parameters
-        ----------
-        memory_dict : dict
-            Memory dictionary mapping position tuples to Result objects.
-
-        Returns
-        -------
-        pd.DataFrame
-            DataFrame with columns for each parameter and a 'score' column.
-        """
-        positions, score = self.memory_dict2positions_scores(memory_dict)
-        values = self.positions2values(positions)
-
-        dataframe = pd.DataFrame(values, columns=self.para_names)
-        dataframe["score"] = score
-
-        return dataframe
