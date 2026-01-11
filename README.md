@@ -1,964 +1,434 @@
 <p align="center">
-  <br>
-  <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers"><img src="./docs/images/gradient_logo_ink.png" height="280"></a>
-  <br>
+  <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers">
+    <img src="./docs/images/gradient_logo_ink.png" width="400" alt="Gradient-Free-Optimizers Logo">
+  </a>
+</p>
+
+---
+
+<h3 align="center">
+Simple and reliable optimization with local, global, population-based and sequential techniques in numerical discrete search spaces.
+</h3>
+
+<p align="center">
+  <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions"><img src="https://img.shields.io/github/actions/workflow/status/SimonBlanke/Gradient-Free-Optimizers/ci.yml?style=flat-square&label=tests" alt="Tests"></a>
+  <a href="https://app.codecov.io/gh/SimonBlanke/Gradient-Free-Optimizers"><img src="https://img.shields.io/codecov/c/github/SimonBlanke/Gradient-Free-Optimizers?style=flat-square" alt="Coverage"></a>
 </p>
 
 <br>
 
----
-
-
-
-<h2 align="center">
-  Simple and reliable optimization with local, global, population-based and sequential techniques in numerical discrete search spaces.
-</h2>
-
-<br>
-
-<table>
-  <tbody>
-    <tr align="left" valign="center">
-      <td>
-        <strong>Master status:</strong>
-      </td>
-      <td>
-        <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions">
-          <img src="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions/workflows/tests_ubuntu.yml/badge.svg?branch=master" alt="img not loaded: try F5 :)">
-        </a>
-        <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions">
-          <img src="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions/workflows/tests_windows.yml/badge.svg?branch=master" alt="img not loaded: try F5 :)">
-        </a>
-        <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions">
-          <img src="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions/workflows/tests_macos.yml/badge.svg?branch=master" alt="img not loaded: try F5 :)">
-        </a>
-        <a href="https://app.codecov.io/gh/SimonBlanke/Gradient-Free-Optimizers">
-          <img src="https://img.shields.io/codecov/c/github/SimonBlanke/Gradient-Free-Optimizers/master" alt="img not loaded: try F5 :)">
-        </a>
-      </td>
-    </tr>
-    <tr align="left" valign="center">
-      <td>
-        <strong>Dev status:</strong>
-      </td>
-      <td>
-        <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions">
-          <img src="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions/workflows/tests_ubuntu.yml/badge.svg?branch=dev" alt="img not loaded: try F5 :)">
-        </a>
-        <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions">
-          <img src="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions/workflows/tests_windows.yml/badge.svg?branch=dev" alt="img not loaded: try F5 :)">
-        </a>
-        <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions">
-          <img src="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions/workflows/tests_macos.yml/badge.svg?branch=dev" alt="img not loaded: try F5 :)">
-        </a>
-        <a href="https://app.codecov.io/gh/SimonBlanke/Gradient-Free-Optimizers">
-          <img src="https://img.shields.io/codecov/c/github/SimonBlanke/Gradient-Free-Optimizers/dev" alt="img not loaded: try F5 :)">
-        </a>
-      </td>
-    </tr>
-    <tr align="left" valign="center">
-      <td>
-         <strong>Code quality:</strong>
-      </td>
-      <td>
-        <a href="https://codeclimate.com/github/SimonBlanke/Gradient-Free-Optimizers">
-        <img src="https://img.shields.io/codeclimate/maintainability/SimonBlanke/Gradient-Free-Optimizers?style=flat-square&logo=code-climate" alt="img not loaded: try F5 :)">
-        </a>
-      </td>
-    </tr>
-    <tr align="left" valign="center">
-      <td>
-        <strong>Latest versions:</strong>
-      </td>
-      <td>
-        <a href="https://pypi.org/project/gradient_free_optimizers/">
-          <img src="https://img.shields.io/pypi/v/Gradient-Free-Optimizers?style=flat-square&logo=PyPi&logoColor=white&color=blue" alt="img not loaded: try F5 :)">
-        </a>
-      </td>
-    </tr>
-  </tbody>
+<table align="center">
+  <tr>
+    <td align="right"><b>Documentation</b></td>
+    <td align="center">▸</td>
+    <td>
+      <a href="https://simonblanke.github.io/gradient-free-optimizers-documentation">Homepage</a> ·
+      <a href="https://simonblanke.github.io/gradient-free-optimizers-documentation/optimizers/">Optimizers</a> ·
+      <a href="https://simonblanke.github.io/gradient-free-optimizers-documentation/api/">API Reference</a> ·
+      <a href="https://simonblanke.github.io/gradient-free-optimizers-documentation/examples/">Examples</a>
+    </td>
+  </tr>
+  <tr>
+    <td align="right"><b>On this page</b></td>
+    <td align="center">▸</td>
+    <td>
+      <a href="#key-features">Features</a> ·
+      <a href="#examples">Examples</a> ·
+      <a href="#core-concepts">Concepts</a> ·
+      <a href="#citation">Citation</a>
+    </td>
+  </tr>
 </table>
-
-<br>
-
-
-
-
-
-
-## Introduction
-
-Gradient-Free-Optimizers provides a collection of easy to use optimization techniques,
-whose objective function only requires an arbitrary score that gets maximized.
-This makes gradient-free methods capable of solving various optimization problems, including:
-- Optimizing arbitrary mathematical functions.
-- Fitting multiple gauss-distributions to data.
-- Hyperparameter-optimization of machine-learning methods.
-
-Gradient-Free-Optimizers is the optimization backend of <a href="https://github.com/SimonBlanke/Hyperactive">Hyperactive</a>  (in v3.0.0 and higher) but it can also be used by itself as a leaner and simpler optimization toolkit.
-
 
 <br>
 
 ---
 
-<div align="center"><a name="menu"></a>
-  <h3>
-    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#optimization-algorithms">Optimization algorithms</a> •
-    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#installation">Installation</a> •
-    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers#examples">Examples</a> •
-    <a href="https://simonblanke.github.io/gradient-free-optimizers-documentation">API reference</a> •
-  </h3>
-</div>
+<a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers">
+  <img src="./docs/gifs/3d_optimizer_animation.gif" width="240" align="right" alt="Bayesian Optimization on Ackley Function">
+</a>
 
----
+**Gradient-Free-Optimizers** is a Python library for gradient-free optimization of black-box functions. It provides a unified interface to 21 optimization algorithms, from simple hill climbing to Bayesian optimization, all operating on discrete numerical search spaces defined via NumPy arrays.
 
+Designed for hyperparameter tuning, simulation optimization, and any scenario where gradients are unavailable or impractical. The library prioritizes simplicity: define your objective function, specify the search space, and run. It serves as the optimization backend for [Hyperactive](https://github.com/SimonBlanke/Hyperactive) but can also be used standalone.
 
-<br>
-
-## Main features
-
-- Easy to use:
-  <details>
-  <summary><b> Simple API-design</b></summary>
-
-  <br>
-
-  You can optimize anything that can be defined in a python function. For example a simple parabola function:
-  ```python
-  def objective_function(para):
-      score = para["x1"] * para["x1"]
-      return -score
-  ```
-
-  Define where to search via numpy ranges:
-  ```python
-  search_space = {
-      "x": np.arange(0, 5, 0.1),
-  }
-  ```
-
-  That`s all the information the algorithm needs to search for the maximum in the objective function:
-  ```python
-  from gradient_free_optimizers import RandomSearchOptimizer
-
-  opt = RandomSearchOptimizer(search_space)
-  opt.search(objective_function, n_iter=100000)
-  ```
-
-
-  </details>
-
-
-  <details>
-  <summary><b> Receive prepared information about ongoing and finished optimization runs</b></summary>
-
-  <br>
-
-  During the optimization you will receive ongoing information in a progress bar:
-    - current best score
-    - the position in the search space of the current best score
-    - the iteration when the current best score was found
-    - other information about the progress native to tqdm
-
-  </details>
-
-
-- High performance:
-  <details>
-  <summary><b> Modern optimization techniques</b></summary>
-
-  <br>
-
-  Gradient-Free-Optimizers provides not just meta-heuristic optimization methods but also sequential model based optimizers like bayesian optimization, which delivers good results for expensive objetive functions like deep-learning models.
-
-  </details>
-
-
-  <details>
-  <summary><b> Lightweight backend</b></summary>
-
-  <br>
-
-  Even for the very simple parabola function the optimization time is about 60% of the entire iteration time when optimizing with random search.  This shows, that (despite all its features) Gradient-Free-Optimizers has an efficient optimization backend without any unnecessary slowdown.
-
-  </details>
-
-
-  <details>
-  <summary><b> Save time with memory dictionary</b></summary>
-
-  <br>
-
-  Per default Gradient-Free-Optimizers will look for the current position in a memory dictionary before evaluating the objective function.
-
-    - If the position is not in the dictionary the objective function will be evaluated and the position and score is saved in the dictionary.
-
-    - If a position is already saved in the dictionary Gradient-Free-Optimizers will just extract the score from it instead of evaluating the objective function. This avoids reevaluating computationally expensive objective functions (machine- or deep-learning) and therefore saves time.
-
-
-  </details>
-
-
-- High reliability:
-  <details>
-  <summary><b> Extensive testing</b></summary>
-
-  <br>
-
-  Gradient-Free-Optimizers is extensivly tested with more than 400 tests in 2500 lines of test code. This includes the testing of:
-    - Each optimization algorithm
-    - Each optimization parameter
-    - All attributes that are part of the public api
-
-  </details>
-
-
-  <details>
-  <summary><b> Performance test for each optimizer</b></summary>
-
-  <br>
-
-  Each optimization algorithm must perform above a certain threshold to be included. Poorly performing algorithms are reworked or scraped.
-
-  </details>
-
-
-<br>
-
-## Optimization algorithms:
-
-Gradient-Free-Optimizers supports a variety of optimization algorithms, which can make choosing the right algorithm a tedious endeavor. The gifs in this section give a visual representation how the different optimization algorithms explore the search space and exploit the collected information about the search space for a convex and non-convex objective function. More detailed explanations of all optimization algorithms can be found in the [official documentation](https://simonblanke.github.io/gradient-free-optimizers-documentation).
-
-
-
-<br>
-
-### Local Optimization
-
-<details>
-<summary><b>Hill Climbing</b></summary>
-
-<br>
-
-Evaluates the score of n neighbours in an epsilon environment and moves to the best one.
-
-<br>
-
-<table style="width:100%">
-  <tr>
-    <th> <b>Convex Function</b> </th>
-    <th> <b>Non-convex Function</b> </th>
-  </tr>
-  <tr>
-    <td> <img src="./docs/gifs/hill_climbing_sphere_function_.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/hill_climbing_ackley_function_.gif" width="100%"> </td>
-  </tr>
-</table>
-
-</details>
-
-
-<details>
-<summary><b>Stochastic Hill Climbing</b></summary>
-
-<br>
-
-Adds a probability to the hill climbing to move to a worse position in the search-space to escape local optima.
-
-<br>
-
-<table style="width:100%">
-  <tr>
-    <th> <b>Convex Function</b> </th>
-    <th> <b>Non-convex Function</b> </th>
-  </tr>
-  <tr>
-    <td> <img src="./docs/gifs/stochastic_hill_climbing_sphere_function_.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/stochastic_hill_climbing_ackley_function_.gif" width="100%"> </td>
-  </tr>
-</table>
-
-</details>
-
-
-<details>
-<summary><b>Repulsing Hill Climbing</b></summary>
-
-<br>
-
-Hill climbing algorithm with the addition of increasing epsilon by a factor if no better neighbour was found.
-
-<br>
-
-<table style="width:100%">
-  <tr>
-    <th> <b>Convex Function</b> </th>
-    <th> <b>Non-convex Function</b> </th>
-  </tr>
-  <tr>
-    <td> <img src="./docs/gifs/repulsing_hill_climbing_sphere_function_.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/repulsing_hill_climbing_ackley_function_.gif" width="100%"> </td>
-  </tr>
-</table>
-
-</details>
-
-
-<details>
-<summary><b>Simulated Annealing</b></summary>
-
-<br>
-
-Adds a probability to the hill climbing to move to a worse position in the search-space to escape local optima with decreasing probability over time.
-
-<br>
-
-<table style="width:100%">
-  <tr>
-    <th> <b>Convex Function</b> </th>
-    <th> <b>Non-convex Function</b> </th>
-  </tr>
-  <tr>
-    <td> <img src="./docs/gifs/simulated_annealing_sphere_function_.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/simulated_annealing_ackley_function_.gif" width="100%"> </td>
-  </tr>
-</table>
-
-</details>
-
-
-<details>
-<summary><b>Downhill Simplex Optimization</b></summary>
-
-<br>
-
-Constructs a simplex from multiple positions that moves through the search-space by reflecting, expanding, contracting or shrinking.
-
-<br>
-
-<table style="width:100%">
-  <tr>
-    <th> <b>Convex Function</b> </th>
-    <th> <b>Non-convex Function</b> </th>
-  </tr>
-  <tr>
-    <td> <img src="./docs/gifs/downhill_simplex_sphere_function_.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/downhill_simplex_ackley_function_.gif" width="100%"> </td>
-  </tr>
-</table>
-
-</details>
-
-<br>
-
-### Global Optimization
-
-<details>
-<summary><b>Random Search</b></summary>
-
-<br>
-
-Moves to random positions in each iteration.
-
-<br>
-
-<table style="width:100%">
-  <tr>
-    <th> <b>Convex Function</b> </th>
-    <th> <b>Non-convex Function</b> </th>
-  </tr>
-  <tr>
-    <td> <img src="./docs/gifs/random_search_sphere_function_.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/random_search_ackley_function_.gif" width="100%"> </td>
-  </tr>
-</table>
-
-</details>
-
-
-<details>
-<summary><b>Grid Search</b></summary>
-
-<br>
-
-Grid-search that moves through search-space diagonal (with step-size=1) starting from a corner.
-
-<br>
-
-<table style="width:100%">
-  <tr>
-    <th> <b>Convex Function</b> </th>
-    <th> <b>Non-convex Function</b> </th>
-  </tr>
-  <tr>
-    <td> <img src="./docs/gifs/grid_search_sphere_function_.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/grid_search_ackley_function_.gif" width="100%"> </td>
-  </tr>
-</table>
-
-</details>
-
-
-<details>
-<summary><b>Random Restart Hill Climbing</b></summary>
-
-<br>
-
-Hill climbingm, that moves to a random position after n iterations.
-
-<br>
-
-<table style="width:100%">
-  <tr>
-    <th> <b>Convex Function</b> </th>
-    <th> <b>Non-convex Function</b> </th>
-  </tr>
-  <tr>
-    <td> <img src="./docs/gifs/random_restart_hill_climbing_sphere_function_.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/random_restart_hill_climbing_ackley_function_.gif" width="100%"> </td>
-  </tr>
-</table>
-
-</details>
-
-
-<details>
-<summary><b>Random Annealing</b></summary>
-
-<br>
-
-Hill Climbing, that has large epsilon at the start of the search decreasing over time.
-
-<br>
-
-<table style="width:100%">
-  <tr>
-    <th> <b>Convex Function</b> </th>
-    <th> <b>Non-convex Function</b> </th>
-  </tr>
-  <tr>
-    <td> <img src="./docs/gifs/random_annealing_sphere_function_.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/random_annealing_ackley_function_.gif" width="100%"> </td>
-  </tr>
-</table>
-
-</details>
-
-
-<details>
-<summary><b>Pattern Search</b></summary>
-
-<br>
-
-Creates cross-shaped collection of positions that move through search-space by moving as a whole towards optima or shrinking the cross.
-
-<br>
-
-<table style="width:100%">
-  <tr>
-    <th> <b>Convex Function</b> </th>
-    <th> <b>Non-convex Function</b> </th>
-  </tr>
-  <tr>
-    <td> <img src="./docs/gifs/pattern_search_sphere_function_.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/pattern_search_ackley_function_.gif" width="100%"> </td>
-  </tr>
-</table>
-
-</details>
-
-
-<details>
-<summary><b>Powell's Method</b></summary>
-
-<br>
-
-Optimizes each search-space dimension at a time with a hill-climbing algorithm.
-
-<br>
-
-<table style="width:100%">
-  <tr>
-    <th> <b>Convex Function</b> </th>
-    <th> <b>Non-convex Function</b> </th>
-  </tr>
-  <tr>
-    <td> <img src="./docs/gifs/powells_method_sphere_function_.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/powells_method_ackley_function_.gif" width="100%"> </td>
-  </tr>
-</table>
-
-</details>
-
-
-<br>
-
-
-
-
-### Population-Based Optimization
-
-<details>
-<summary><b>Parallel Tempering</b></summary>
-
-<br>
-
-Population of n simulated annealers, which occasionally swap transition probabilities.
-
-<br>
-
-<table style="width:100%">
-  <tr>
-    <th> <b>Convex Function</b> </th>
-    <th> <b>Non-convex Function</b> </th>
-  </tr>
-  <tr>
-    <td> <img src="./docs/gifs/parallel_tempering_sphere_function_.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/parallel_tempering_ackley_function_.gif" width="100%"> </td>
-  </tr>
-</table>
-
-</details>
-
-
-<details>
-<summary><b>Particle Swarm Optimization</b></summary>
-
-<br>
-
-Population of n particles attracting each other and moving towards the best particle.
-
-<br>
-
-<table style="width:100%">
-  <tr>
-    <th> <b>Convex Function</b> </th>
-    <th> <b>Non-convex Function</b> </th>
-  </tr>
-  <tr>
-    <td> <img src="./docs/gifs/particle_swarm_optimization_sphere_function_.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/particle_swarm_optimization_ackley_function_.gif" width="100%"> </td>
-  </tr>
-</table>
-
-</details>
-
-
-<details>
-<summary><b>Spiral Optimization</b></summary>
-
-<br>
-
-Population of n particles moving in a spiral pattern around the best position.
-
-
-<br>
-
-<table style="width:100%">
-  <tr>
-    <th> <b>Convex Function</b> </th>
-    <th> <b>Non-convex Function</b> </th>
-  </tr>
-  <tr>
-    <td> <img src="./docs/gifs/spiral_optimization_sphere_function_.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/spiral_optimization_ackley_function_.gif" width="100%"> </td>
-  </tr>
-</table>
-
-</details>
-
-
-
-<details>
-<summary><b>Genetic Algorithm</b></summary>
-
-<br>
-
-Evolutionary algorithm selecting the best individuals in the population, mixing their parameters to get new solutions.
-
-<br>
-
-<table style="width:100%">
-  <tr>
-    <th> <b>Convex Function</b> </th>
-    <th> <b>Non-convex Function</b> </th>
-  </tr>
-  <tr>
-    <td> <img src="./docs/gifs/genetic_algorithm_sphere_function_.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/genetic_algorithm_ackley_function_.gif" width="100%"> </td>
-  </tr>
-</table>
-
-</details>
-
-
-<details>
-<summary><b>Evolution Strategy</b></summary>
-
-<br>
-
-Population of n hill climbers occasionally mixing positional information and removing worst positions from population.
-
-<br>
-
-<table style="width:100%">
-  <tr>
-    <th> <b>Convex Function</b> </th>
-    <th> <b>Non-convex Function</b> </th>
-  </tr>
-  <tr>
-    <td> <img src="./docs/gifs/evolution_strategy_sphere_function_.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/evolution_strategy_ackley_function_.gif" width="100%"> </td>
-  </tr>
-</table>
-
-</details>
-
-
-<details>
-<summary><b>Differential Evolution</b></summary>
-
-<br>
-
-Improves a population of candidate solutions by creating trial vectors through the differential mutation of three randomly selected individuals.
-
-<br>
-
-<table style="width:100%">
-  <tr>
-    <th> <b>Convex Function</b> </th>
-    <th> <b>Non-convex Function</b> </th>
-  </tr>
-  <tr>
-    <td> <img src="./docs/gifs/differential_evolution_sphere_function_.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/differential_evolution_ackley_function_.gif" width="100%"> </td>
-  </tr>
-</table>
-
-</details>
-
-
-<br>
-
-
-### Sequential Model-Based Optimization
-
-<details>
-<summary><b>Bayesian Optimization</b></summary>
-
-<br>
-
-Gaussian process fitting to explored positions and predicting promising new positions.
-
-<br>
-
-<table style="width:100%">
-  <tr>
-    <th> <b>Convex Function</b> </th>
-    <th> <b>Non-convex Function</b> </th>
-  </tr>
-  <tr>
-    <td> <img src="./docs/gifs/bayesian_optimization_sphere_function_.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/bayesian_optimization_ackley_function_.gif" width="100%"> </td>
-  </tr>
-</table>
-
-</details>
-
-
-<details>
-<summary><b>Lipschitz Optimization</b></summary>
-
-<br>
-
-Calculates an upper bound from the distances of the previously explored positions to find new promising positions.
-
-<br>
-
-<table style="width:100%">
-  <tr>
-    <th> <b>Convex Function</b> </th>
-    <th> <b>Non-convex Function</b> </th>
-  </tr>
-  <tr>
-    <td> <img src="./docs/gifs/lipschitz_optimizer_sphere_function_.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/lipschitz_optimizer_ackley_function_.gif" width="100%"> </td>
-  </tr>
-</table>
-
-</details>
-
-
-<details>
-<summary><b>DIRECT algorithm</b></summary>
-
-<br>
-
-Separates search space into subspaces. It evaluates the center position of each subspace to decide which subspace to sepate further.
-
-<br>
-
-<table style="width:100%">
-  <tr>
-    <th> <b>Convex Function</b> </th>
-    <th> <b>Non-convex Function</b> </th>
-  </tr>
-  <tr>
-    <td> <img src="./docs/gifs/direct_algorithm_sphere_function_.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/direct_algorithm_ackley_function_.gif" width="100%"> </td>
-  </tr>
-</table>
-
-</details>
-
-
-<details>
-<summary><b>Tree of Parzen Estimators</b></summary>
-
-<br>
-
-Kernel density estimators fitting to good and bad explored positions and predicting promising new positions.
-
-<br>
-
-<table style="width:100%">
-  <tr>
-    <th> <b>Convex Function</b> </th>
-    <th> <b>Non-convex Function</b> </th>
-  </tr>
-  <tr>
-    <td> <img src="./docs/gifs/tree_structured_parzen_estimators_sphere_function_.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/tree_structured_parzen_estimators_ackley_function_.gif" width="100%"> </td>
-  </tr>
-</table>
-
-</details>
-
-
-<details>
-<summary><b>Forest Optimizer</b></summary>
-
-<br>
-
-Ensemble of decision trees fitting to explored positions and predicting promising new positions.
-
-<br>
-
-<table style="width:100%">
-  <tr>
-    <th> <b>Convex Function</b> </th>
-    <th> <b>Non-convex Function</b> </th>
-  </tr>
-  <tr>
-    <td> <img src="./docs/gifs/forest_optimization_sphere_function_.gif" width="100%"> </td>
-    <td> <img src="./docs/gifs/forest_optimization_ackley_function_.gif" width="100%"> </td>
-  </tr>
-</table>
-
-</details>
-
-
-
-<br>
-
-## Sideprojects and Tools
-
-The following packages are designed to support Gradient-Free-Optimizers and expand its use cases.
-
-| Package                                                                       | Description                                                                          |
-|-------------------------------------------------------------------------------|--------------------------------------------------------------------------------------|
-| [Search-Data-Collector](https://github.com/SimonBlanke/search-data-collector) | Simple tool to save search-data during or after the optimization run into csv-files. |
-| [Search-Data-Explorer](https://github.com/SimonBlanke/search-data-explorer)   | Visualize search-data with plotly inside a streamlit dashboard.
-
-If you want news about Gradient-Free-Optimizers and related projects you can follow me on [twitter](https://twitter.com/blanke_simon).
-
+<p>
+  <a href="https://www.linkedin.com/in/simon-blanke-b6228a1b3/"><img src="https://img.shields.io/badge/LinkedIn-Follow-0A66C2?style=flat-square&logo=linkedin" alt="LinkedIn"></a>
+  <a href="https://github.com/sponsors/SimonBlanke"><img src="https://img.shields.io/badge/Sponsor-EA4AAA?style=flat-square&logo=githubsponsors&logoColor=white" alt="Sponsor"></a>
+</p>
 
 <br>
 
 ## Installation
 
-[![PyPI version](https://badge.fury.io/py/gradient-free-optimizers.svg)](https://badge.fury.io/py/gradient-free-optimizers)
-
-The most recent version of Gradient-Free-Optimizers is available on PyPi:
-
-```console
+```bash
 pip install gradient-free-optimizers
 ```
 
+<p>
+  <a href="https://pypi.org/project/gradient-free-optimizers/"><img src="https://img.shields.io/pypi/v/gradient-free-optimizers?style=flat-square&color=blue" alt="PyPI"></a>
+  <a href="https://pypi.org/project/gradient-free-optimizers/"><img src="https://img.shields.io/pypi/pyversions/gradient-free-optimizers?style=flat-square" alt="Python"></a>
+</p>
+
+<details>
+<summary>Optional dependencies</summary>
+
+```bash
+pip install gradient-free-optimizers[progress]  # Progress bar with tqdm
+pip install gradient-free-optimizers[sklearn]   # scikit-learn for surrogate models
+pip install gradient-free-optimizers[full]      # All optional dependencies
+```
+
+</details>
+
 <br>
 
+## Key Features
+
+<table>
+  <tr>
+    <td width="33%">
+      <a href="https://simonblanke.github.io/gradient-free-optimizers-documentation/optimizers/"><b>21 Optimization Algorithms</b></a><br>
+      <sub>Local, global, population-based, and sequential model-based optimizers. Switch algorithms with one line of code.</sub>
+    </td>
+    <td width="33%">
+      <a href="https://simonblanke.github.io/gradient-free-optimizers-documentation/api/"><b>Zero Configuration</b></a><br>
+      <sub>Sensible defaults for all parameters. Start optimizing immediately without tuning the optimizer itself.</sub>
+    </td>
+    <td width="33%">
+      <a href="https://simonblanke.github.io/gradient-free-optimizers-documentation/api/#memory"><b>Memory System</b></a><br>
+      <sub>Built-in caching prevents redundant evaluations. Critical for expensive objective functions like ML models.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="33%">
+      <a href="https://simonblanke.github.io/gradient-free-optimizers-documentation/api/#search-space"><b>Flexible Search Spaces</b></a><br>
+      <sub>Discrete and continuous parameter types. Define spaces with familiar NumPy syntax using arrays and ranges.</sub>
+    </td>
+    <td width="33%">
+      <a href="https://simonblanke.github.io/gradient-free-optimizers-documentation/api/#constraints"><b>Constraints Support</b></a><br>
+      <sub>Define constraint functions to restrict the search space. Invalid regions are automatically avoided.</sub>
+    </td>
+    <td width="33%">
+      <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers"><b>Production Ready</b></a><br>
+      <sub>Extensive test coverage across Python 3.10-3.14, NumPy 1.x/2.x, and all major operating systems.</sub>
+    </td>
+  </tr>
+</table>
+
+<br>
+
+## Quick Start
+
+```python
+import numpy as np
+from gradient_free_optimizers import HillClimbingOptimizer
+
+# Define objective function (maximize)
+def objective(params):
+    x, y = params["x"], params["y"]
+    return -(x**2 + y**2)  # Negative paraboloid, optimum at (0, 0)
+
+# Define search space
+search_space = {
+    "x": np.arange(-5, 5, 0.1),
+    "y": np.arange(-5, 5, 0.1),
+}
+
+# Run optimization
+opt = HillClimbingOptimizer(search_space)
+opt.search(objective, n_iter=1000)
+
+# Results
+print(f"Best score: {opt.best_score}")
+print(f"Best params: {opt.best_para}")
+```
+
+**Output:**
+```
+Best score: -0.02
+Best params: {'x': 0.1, 'y': 0.1}
+```
+
+<br>
+
+## Core Concepts
+
+```
+                        OPTIMIZATION LOOP
+
+    +--------------+    +--------------+    +--------------+
+    |   Optimizer  |--->|    Search    |--->|  Objective   |
+    |  (Algorithm) |    |    Space     |    |   Function   |
+    +--------------+    +--------------+    +--------------+
+           |                   |                    |
+           |                   |                    |
+           v                   v                    v
+    +----------------------------------------------------+
+    |                    Search Data                      |
+    |           (positions, scores, metadata)             |
+    +----------------------------------------------------+
+```
+
+**Optimizer**: Implements the search strategy. Choose from 21 algorithms across four categories: local search, global search, population-based, and sequential model-based.
+
+**Search Space**: Defines valid parameter combinations as NumPy arrays. Each key is a parameter name, each value is an array of allowed values.
+
+**Objective Function**: Your function to maximize. Takes a dictionary of parameters, returns a score. Use negation to minimize.
+
+**Search Data**: Complete history of all evaluations accessible via `opt.search_data` for analysis and warm-starting future searches.
+
+<br>
 
 ## Examples
 
-<details>
-<summary><b>Convex function</b></summary>
+<details open>
+<summary><b>Hyperparameter Optimization</b></summary>
 
 ```python
-import numpy as np
-from gradient_free_optimizers import RandomSearchOptimizer
-
-
-def parabola_function(para):
-    loss = para["x"] * para["x"]
-    return -loss
-
-
-search_space = {"x": np.arange(-10, 10, 0.1)}
-
-opt = RandomSearchOptimizer(search_space)
-opt.search(parabola_function, n_iter=100000)
-```
-
-</details>
-
-
-<details>
-<summary><b>Non-convex function</b></summary>
-
-```python
-import numpy as np
-from gradient_free_optimizers import RandomSearchOptimizer
-
-
-def ackley_function(pos_new):
-    x = pos_new["x1"]
-    y = pos_new["x2"]
-
-    a1 = -20 * np.exp(-0.2 * np.sqrt(0.5 * (x * x + y * y)))
-    a2 = -np.exp(0.5 * (np.cos(2 * np.pi * x) + np.cos(2 * np.pi * y)))
-    score = a1 + a2 + 20
-    return -score
-
-
-search_space = {
-    "x1": np.arange(-100, 101, 0.1),
-    "x2": np.arange(-100, 101, 0.1),
-}
-
-opt = RandomSearchOptimizer(search_space)
-opt.search(ackley_function, n_iter=30000)
-```
-
-</details>
-
-
-<details>
-<summary><b>Machine learning example</b></summary>
-
-```python
-import numpy as np
-from sklearn.model_selection import cross_val_score
 from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.model_selection import cross_val_score
 from sklearn.datasets import load_wine
+import numpy as np
 
-from gradient_free_optimizers import HillClimbingOptimizer
+from gradient_free_optimizers import BayesianOptimizer
 
+X, y = load_wine(return_X_y=True)
 
-data = load_wine()
-X, y = data.data, data.target
-
-
-def model(para):
-    gbc = GradientBoostingClassifier(
-        n_estimators=para["n_estimators"],
-        max_depth=para["max_depth"],
-        min_samples_split=para["min_samples_split"],
-        min_samples_leaf=para["min_samples_leaf"],
+def objective(params):
+    model = GradientBoostingClassifier(
+        n_estimators=params["n_estimators"],
+        max_depth=params["max_depth"],
+        learning_rate=params["learning_rate"],
     )
-    scores = cross_val_score(gbc, X, y, cv=3)
-
-    return scores.mean()
-
+    return cross_val_score(model, X, y, cv=5).mean()
 
 search_space = {
-    "n_estimators": np.arange(20, 120, 1),
-    "max_depth": np.arange(2, 12, 1),
-    "min_samples_split": np.arange(2, 12, 1),
-    "min_samples_leaf": np.arange(1, 12, 1),
+    "n_estimators": np.arange(50, 300, 10),
+    "max_depth": np.arange(2, 10),
+    "learning_rate": np.logspace(-3, 0, 20),
 }
 
-opt = HillClimbingOptimizer(search_space)
-opt.search(model, n_iter=50)
+opt = BayesianOptimizer(search_space)
+opt.search(objective, n_iter=50)
 ```
 
 </details>
 
 
+
 <details>
-<summary><b>Constrained  Optimization example</b></summary>
+<summary><b>Bayesian Optimization</b></summary>
+
+```python
+import numpy as np
+from gradient_free_optimizers import BayesianOptimizer
+
+def ackley(params):
+    x, y = params["x"], params["y"]
+    return -(
+        -20 * np.exp(-0.2 * np.sqrt(0.5 * (x**2 + y**2)))
+        - np.exp(0.5 * (np.cos(2 * np.pi * x) + np.cos(2 * np.pi * y)))
+        + np.e + 20
+    )
+
+search_space = {
+    "x": np.arange(-5, 5, 0.01),
+    "y": np.arange(-5, 5, 0.01),
+}
+
+opt = BayesianOptimizer(search_space)
+opt.search(ackley, n_iter=100)
+```
+
+</details>
+
+
+
+<details>
+<summary><b>Particle Swarm Optimization</b></summary>
+
+```python
+import numpy as np
+from gradient_free_optimizers import ParticleSwarmOptimizer
+
+def rastrigin(params):
+    A = 10
+    values = [params[f"x{i}"] for i in range(5)]
+    return -sum(v**2 - A * np.cos(2 * np.pi * v) + A for v in values)
+
+search_space = {f"x{i}": np.arange(-5.12, 5.12, 0.1) for i in range(5)}
+
+opt = ParticleSwarmOptimizer(search_space, population=20)
+opt.search(rastrigin, n_iter=500)
+```
+
+</details>
+
+
+
+<details>
+<summary><b>Simulated Annealing</b></summary>
+
+```python
+import numpy as np
+from gradient_free_optimizers import SimulatedAnnealingOptimizer
+
+def sphere(params):
+    return -(params["x"]**2 + params["y"]**2)
+
+search_space = {
+    "x": np.arange(-10, 10, 0.1),
+    "y": np.arange(-10, 10, 0.1),
+}
+
+opt = SimulatedAnnealingOptimizer(
+    search_space,
+    start_temp=1.2,
+    annealing_rate=0.99,
+)
+opt.search(sphere, n_iter=1000)
+```
+
+</details>
+
+
+
+<details>
+<summary><b>Constrained Optimization</b></summary>
 
 ```python
 import numpy as np
 from gradient_free_optimizers import RandomSearchOptimizer
 
+def objective(params):
+    return params["x"] + params["y"]
 
-def convex_function(pos_new):
-    score = -(pos_new["x1"] * pos_new["x1"] + pos_new["x2"] * pos_new["x2"])
-    return score
-
+def constraint(params):
+    # Only positions where x + y < 5 are valid
+    return params["x"] + params["y"] < 5
 
 search_space = {
-    "x1": np.arange(-100, 101, 0.1),
-    "x2": np.arange(-100, 101, 0.1),
+    "x": np.arange(0, 10, 0.1),
+    "y": np.arange(0, 10, 0.1),
 }
 
-
-def constraint_1(para):
-    # only values in 'x1' higher than -5 are valid
-    return para["x1"] > -5
-
-
-# put one or more constraints inside a list
-constraints_list = [constraint_1]
-
-
-# pass list of constraints to the optimizer
-opt = RandomSearchOptimizer(search_space, constraints=constraints_list)
-opt.search(convex_function, n_iter=50)
-
-search_data = opt.search_data
-
-# the search-data does not contain any samples where x1 is equal or below -5
-print("\n search_data \n", search_data, "\n")
+opt = RandomSearchOptimizer(search_space, constraints=[constraint])
+opt.search(objective, n_iter=1000)
 ```
 
 </details>
-
-
 
 <br>
 
-## Gradient Free Optimizers <=> Hyperactive
+<details>
+<summary><b>Memory and Warm Starting</b></summary>
 
-Gradient-Free-Optimizers was created as the optimization backend of the [Hyperactive package](https://github.com/SimonBlanke/Hyperactive). Therefore the algorithms are exactly the same in both packages and deliver the same results.
-However you can still use Gradient-Free-Optimizers as a standalone package.
-The separation of Gradient-Free-Optimizers from Hyperactive enables multiple advantages:
-  - Even easier to use than Hyperactive
-  - Separate and more thorough testing
-  - Other developers can easily use GFOs as an optimizaton backend if desired
-  - Better isolation from the complex information flow in Hyperactive. GFOs only uses positions and scores in a N-dimensional search-space. It returns only the new position after each iteration.
-  - a smaller and cleaner code base, if you want to explore my implementation of these optimization techniques.
+```python
+import numpy as np
+from gradient_free_optimizers import HillClimbingOptimizer
 
-While Gradient-Free-Optimizers is relatively simple, Hyperactive is a more complex project with additional features to make optimization of computationally expensive models (like engineering simulation or machine-/deep-learning models) more convenient.
+def expensive_function(params):
+    # Simulating an expensive computation
+    return -(params["x"]**2 + params["y"]**2)
 
+search_space = {
+    "x": np.arange(-10, 10, 0.1),
+    "y": np.arange(-10, 10, 0.1),
+}
+
+# First search
+opt1 = HillClimbingOptimizer(search_space)
+opt1.search(expensive_function, n_iter=100, memory=True)
+
+# Continue with warm start using previous search data
+opt2 = HillClimbingOptimizer(search_space)
+opt2.search(expensive_function, n_iter=100, memory_warm_start=opt1.search_data)
+```
+
+</details>
+
+
+
+<details>
+<summary><b>Early Stopping</b></summary>
+
+```python
+import numpy as np
+from gradient_free_optimizers import BayesianOptimizer
+
+def objective(params):
+    return -(params["x"]**2 + params["y"]**2)
+
+search_space = {
+    "x": np.arange(-10, 10, 0.1),
+    "y": np.arange(-10, 10, 0.1),
+}
+
+opt = BayesianOptimizer(search_space)
+opt.search(
+    objective,
+    n_iter=1000,
+    max_time=60,           # Stop after 60 seconds
+    max_score=-0.01,       # Stop when score reaches -0.01
+    early_stopping={       # Stop if no improvement for 50 iterations
+        "n_iter_no_change": 50,
+    },
+)
+```
+
+</details>
+
+<br>
+
+## Ecosystem
+
+This library is part of a suite of optimization tools. For updates on these packages, [follow on GitHub](https://github.com/SimonBlanke).
+
+| Package | Description |
+|---------|-------------|
+| [Hyperactive](https://github.com/SimonBlanke/Hyperactive) | Hyperparameter optimization framework with experiment abstraction and ML integrations |
+| [Gradient-Free-Optimizers](https://github.com/SimonBlanke/Gradient-Free-Optimizers) | Core optimization algorithms for black-box function optimization |
+| [Surfaces](https://github.com/SimonBlanke/Surfaces) | Test functions and benchmark surfaces for optimization algorithm evaluation |
+
+<br>
+
+## Documentation
+
+| Resource | Description |
+|----------|-------------|
+| [User Guide](https://simonblanke.github.io/gradient-free-optimizers-documentation) | Comprehensive tutorials and explanations |
+| [API Reference](https://simonblanke.github.io/gradient-free-optimizers-documentation/api/) | Complete API documentation |
+| [Optimizers](https://simonblanke.github.io/gradient-free-optimizers-documentation/optimizers/) | Detailed description of all 21 algorithms |
+| [Examples](https://simonblanke.github.io/gradient-free-optimizers-documentation/examples/) | Code examples for various use cases |
+
+<br>
+
+## Contributing
+
+Contributions welcome! See [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+
+- **Bug reports**: [GitHub Issues](https://github.com/SimonBlanke/Gradient-Free-Optimizers/issues)
+- **Feature requests**: [GitHub Discussions](https://github.com/SimonBlanke/Gradient-Free-Optimizers/discussions)
+- **Questions**: [GitHub Issues](https://github.com/SimonBlanke/Gradient-Free-Optimizers/issues)
 
 <br>
 
 ## Citation
 
-    @Misc{gfo2020,
-      author =   {{Simon Blanke}},
-      title =    {{Gradient-Free-Optimizers}: Simple and reliable optimization with local, global, population-based and sequential techniques in numerical search spaces.},
-      howpublished = {\url{https://github.com/SimonBlanke}},
-      year = {since 2020}
-    }
+If you use this software in your research, please cite:
 
+```bibtex
+@software{gradient_free_optimizers,
+  author = {Simon Blanke},
+  title = {Gradient-Free-Optimizers: Simple and reliable optimization with local, global, population-based and sequential techniques in numerical search spaces},
+  year = {2020},
+  url = {https://github.com/SimonBlanke/Gradient-Free-Optimizers},
+}
+```
 
 <br>
 
 ## License
 
-Gradient-Free-Optimizers is licensed under the following License:
-
-[![LICENSE](https://img.shields.io/github/license/SimonBlanke/Gradient-Free-Optimizers?style=for-the-badge)](https://github.com/SimonBlanke/Gradient-Free-Optimizers/blob/master/LICENSE)
+[MIT License](./LICENSE) - Free for commercial and academic use.
