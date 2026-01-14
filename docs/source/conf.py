@@ -187,9 +187,7 @@ latex_documents = [
     ),
 ]
 
-man_pages = [
-    (master_doc, "gradient_free_optimizers", "GFO Documentation", [author], 1)
-]
+man_pages = [(master_doc, "gradient_free_optimizers", "GFO Documentation", [author], 1)]
 
 texinfo_documents = [
     (
