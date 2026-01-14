@@ -1,0 +1,135 @@
+==============
+Pattern Search
+==============
+
+Pattern Search explores using a structured geometric pattern around the current
+position. It's a deterministic, derivative-free optimization method that
+systematically probes directions without randomness.
+
+
+.. grid:: 2
+    :gutter: 3
+
+    .. grid-item::
+        :columns: 6
+
+        .. figure:: /_static/gifs/pattern_search_sphere_function_.gif
+            :alt: Pattern Search on Sphere function
+
+            **Convex function**: Structured exploration converges
+            to the optimum.
+
+    .. grid-item::
+        :columns: 6
+
+        .. figure:: /_static/gifs/pattern_search_ackley_function_.gif
+            :alt: Pattern Search on Ackley function
+
+            **Multi-modal function**: May get stuck, but pattern
+            shrinking helps escape.
+
+
+Algorithm
+---------
+
+At each iteration:
+
+1. Generate ``n_positions`` in a cross/star pattern around current position
+2. Evaluate all pattern positions
+3. If improvement found: move to best position
+4. If no improvement: shrink the pattern by ``reduction`` factor
+
+The pattern typically forms a cross shape (positive and negative steps along
+each dimension), providing directional information without gradients.
+
+
+Parameters
+----------
+
+.. list-table::
+    :header-rows: 1
+    :widths: 20 15 15 50
+
+    * - Parameter
+      - Type
+      - Default
+      - Description
+    * - ``n_positions``
+      - int
+      - 4
+      - Number of pattern points (typically 2 * n_dimensions)
+    * - ``pattern_size``
+      - float
+      - 0.25
+      - Initial pattern size as fraction of search space
+    * - ``reduction``
+      - float
+      - 0.9
+      - Pattern shrink factor when no improvement
+
+
+Pattern Size and Reduction
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+- **pattern_size**: How far pattern points are from the center
+- **reduction**: How much the pattern shrinks when stuck
+
+.. code-block:: python
+
+    # Large initial pattern, slow shrinking
+    opt = PatternSearch(search_space, pattern_size=0.5, reduction=0.95)
+
+    # Small initial pattern, fast shrinking
+    opt = PatternSearch(search_space, pattern_size=0.1, reduction=0.5)
+
+
+Example
+-------
+
+.. code-block:: python
+
+    import numpy as np
+    from gradient_free_optimizers import PatternSearch
+
+    def rosenbrock(para):
+        x, y = para["x"], para["y"]
+        return -((1 - x)**2 + 100 * (y - x**2)**2)
+
+    search_space = {
+        "x": np.linspace(-5, 5, 100),
+        "y": np.linspace(-5, 5, 100),
+    }
+
+    opt = PatternSearch(
+        search_space,
+        n_positions=4,
+        pattern_size=0.3,
+        reduction=0.9,
+    )
+
+    opt.search(rosenbrock, n_iter=500)
+    print(f"Best: {opt.best_para}, Score: {opt.best_score}")
+
+
+When to Use
+-----------
+
+**Good for:**
+
+- When you want deterministic, reproducible results
+- Problems where structured exploration is intuitive
+- Low to moderate dimensional spaces
+
+**Not ideal for:**
+
+- Very high dimensions (pattern grows with dimensions)
+- Noisy objective functions
+- Functions with many local optima
+
+
+Related Algorithms
+------------------
+
+- :doc:`powells_method` - Sequential 1D optimization
+- :doc:`../local/downhill_simplex` - Geometric simplex approach
+- :doc:`../local/hill_climbing` - Random neighborhood sampling

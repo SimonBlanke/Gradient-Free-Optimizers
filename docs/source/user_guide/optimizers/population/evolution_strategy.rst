@@ -1,0 +1,149 @@
+==================
+Evolution Strategy
+==================
+
+Evolution Strategy (ES) maintains a population of individuals that evolve
+through mutation and selection. Unlike Genetic Algorithm, ES typically focuses
+on continuous optimization and uses different selection mechanisms.
+
+
+.. grid:: 2
+    :gutter: 3
+
+    .. grid-item::
+        :columns: 6
+
+        .. figure:: /_static/gifs/evolution_strategy_sphere_function_.gif
+            :alt: ES on Sphere function
+
+            **Convex function**: Population converges efficiently.
+
+    .. grid-item::
+        :columns: 6
+
+        .. figure:: /_static/gifs/evolution_strategy_ackley_function_.gif
+            :alt: ES on Ackley function
+
+            **Multi-modal function**: Selection pressure guides search.
+
+
+Algorithm
+---------
+
+Each generation:
+
+1. **Mutation**: Create offspring by mutating parents
+2. **Evaluation**: Score all offspring
+3. **Selection**: Select best individuals for next generation
+4. **Crossover** (optional): Mix selected individuals
+
+ES can use different selection schemes:
+
+- **(mu, lambda)**: Select best mu from lambda offspring only
+- **(mu + lambda)**: Select best mu from parents + offspring combined
+
+
+Parameters
+----------
+
+.. list-table::
+    :header-rows: 1
+    :widths: 20 15 15 50
+
+    * - Parameter
+      - Type
+      - Default
+      - Description
+    * - ``population``
+      - int
+      - 10
+      - Population size (mu)
+    * - ``offspring``
+      - int
+      - 20
+      - Offspring per generation (lambda)
+    * - ``mutation_rate``
+      - float
+      - 0.7
+      - Probability of mutation
+    * - ``crossover_rate``
+      - float
+      - 0.3
+      - Probability of crossover
+    * - ``replace_parents``
+      - bool
+      - False
+      - If True: (mu, lambda), if False: (mu + lambda)
+
+
+Selection Pressure
+^^^^^^^^^^^^^^^^^^
+
+- **High offspring/population ratio**: Strong selection, fast convergence
+- **Low ratio**: Weaker selection, more diversity
+
+.. code-block:: python
+
+    # Strong selection (1:3 ratio)
+    opt = EvolutionStrategyOptimizer(
+        search_space,
+        population=10,
+        offspring=30,
+    )
+
+    # Weak selection (1:1.5 ratio)
+    opt = EvolutionStrategyOptimizer(
+        search_space,
+        population=20,
+        offspring=30,
+    )
+
+
+Example
+-------
+
+.. code-block:: python
+
+    import numpy as np
+    from gradient_free_optimizers import EvolutionStrategyOptimizer
+
+    def objective(para):
+        return -(para["x"]**2 + para["y"]**2)
+
+    search_space = {
+        "x": np.linspace(-10, 10, 100),
+        "y": np.linspace(-10, 10, 100),
+    }
+
+    opt = EvolutionStrategyOptimizer(
+        search_space,
+        population=15,
+        offspring=30,
+        mutation_rate=0.5,
+    )
+
+    opt.search(objective, n_iter=200)
+    print(f"Best: {opt.best_para}, Score: {opt.best_score}")
+
+
+When to Use
+-----------
+
+**Good for:**
+
+- Continuous optimization
+- Noisy objective functions (robust selection)
+- Problems where hill climbing variants get stuck
+
+**Compared to GA:**
+
+- ES: Typically continuous, mutation-focused
+- GA: Often discrete, crossover-focused
+
+
+Related Algorithms
+------------------
+
+- :doc:`genetic_algorithm` - Crossover-focused evolution
+- :doc:`differential_evolution` - Self-adaptive step sizes
+- :doc:`particle_swarm` - Swarm-based approach
