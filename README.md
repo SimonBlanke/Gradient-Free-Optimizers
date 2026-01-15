@@ -154,20 +154,30 @@ Best params: {'x': 0.1, 'y': 0.1}
 
 ## Core Concepts
 
-```
-                        OPTIMIZATION LOOP
+```mermaid
+flowchart LR
+    O["Optimizer
+    ━━━━━━━━━━
+    21 algorithms"]
 
-    +--------------+    +--------------+    +--------------+
-    |   Optimizer  |--->|    Search    |--->|  Objective   |
-    |  (Algorithm) |    |    Space     |    |   Function   |
-    +--------------+    +--------------+    +--------------+
-           |                   |                    |
-           |                   |                    |
-           v                   v                    v
-    +----------------------------------------------------+
-    |                    Search Data                      |
-    |           (positions, scores, metadata)             |
-    +----------------------------------------------------+
+    S["Search Space
+    ━━━━━━━━━━━━
+    NumPy arrays"]
+
+    F["Objective
+    ━━━━━━━━━━
+    f(params) → score"]
+
+    D[("Search Data
+    ━━━━━━━━━━━
+    history")]
+
+    O -->|propose| S
+    S -->|params| F
+    F -->|score| O
+
+    O -.-> D
+    D -.->|warm start| O
 ```
 
 **Optimizer**: Implements the search strategy. Choose from 21 algorithms across four categories: local search, global search, population-based, and sequential model-based.
