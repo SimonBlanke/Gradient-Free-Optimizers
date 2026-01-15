@@ -102,16 +102,16 @@ pip install gradient-free-optimizers[full]      # All optional dependencies
   </tr>
   <tr>
     <td width="33%">
-      <a href="https://simonblanke.github.io/gradient-free-optimizers-documentation/api/#search-space"><b>Flexible Search Spaces</b></a><br>
-      <sub>Discrete and continuous parameter types. Define spaces with familiar NumPy syntax using arrays and ranges.</sub>
+      <a href="https://simonblanke.github.io/gradient-free-optimizers-documentation/api/#search-space"><b>Discrete Search Spaces</b></a><br>
+      <sub>Define parameter spaces with familiar NumPy syntax using arrays and ranges.</sub>
     </td>
     <td width="33%">
       <a href="https://simonblanke.github.io/gradient-free-optimizers-documentation/api/#constraints"><b>Constraints Support</b></a><br>
       <sub>Define constraint functions to restrict the search space. Invalid regions are automatically avoided.</sub>
     </td>
     <td width="33%">
-      <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers"><b>Production Ready</b></a><br>
-      <sub>Extensive test coverage across Python 3.10-3.14, NumPy 1.x/2.x, and all major operating systems.</sub>
+      <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers"><b>Minimal Dependencies</b></a><br>
+      <sub>Only pandas required. Optional integrations for progress bars (tqdm) and surrogate models (scikit-learn).</sub>
     </td>
   </tr>
 </table>
