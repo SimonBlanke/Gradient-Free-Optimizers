@@ -181,7 +181,13 @@ class DirectAlgorithm(SMBO):
 
         for search_space_ in sub_search_space_l:
             try:
-                self.subspace_l.append(SubSpace(search_space_))
+                self.subspace_l.append(
+                    SubSpace(
+                        search_space_,
+                        dim_types=self.conv.dim_types,
+                        dim_infos=self.conv.dim_infos,
+                    )
+                )
             except IndexError:
                 # IndexError can occur when a dimension has been split into
                 # sub-arrays that are too small (e.g., empty or single-element).
@@ -206,7 +212,11 @@ class DirectAlgorithm(SMBO):
         return next_subspace
 
     def finish_initialization(self):
-        subspace = SubSpace(self.conv.pos_space)
+        subspace = SubSpace(
+            self.conv.pos_space,
+            dim_types=self.conv.dim_types,
+            dim_infos=self.conv.dim_infos,
+        )
         self.subspace_l.append(subspace)
         self.search_state = "iter"
 
