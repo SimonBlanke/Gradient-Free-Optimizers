@@ -57,14 +57,21 @@ def mixed_distance(pos1, pos2, dim_types, dim_infos):
 
 
 class SubSpace:
-    def __init__(self, search_space):
+    def __init__(self, search_space, dim_types=None, dim_infos=None):
         self.search_space = search_space
+        self.dim_types = dim_types
+        self.dim_infos = dim_infos
 
         self.score = None
         self.center_pos = self.center_pos_()
         self.biggest_dim = self.biggest_dim_()
 
     def center_pos_(self):
+        """Compute center position of the subspace.
+
+        Preserves float values for continuous dimensions instead of
+        forcing to int.
+        """
         center_pos = []
 
         for dim in list(self.search_space.keys()):
@@ -74,7 +81,7 @@ class SubSpace:
 
             center_pos.append(dim_array[center_idx])
 
-        return array(center_pos).astype(int)
+        return array(center_pos)
 
     def biggest_dim_(self):
         largest_dim = None
@@ -96,6 +103,7 @@ class SubSpace:
         return largest_dim
 
     def lipschitz_bound_(self, score, K=1):
+        """Compute Lipschitz bound using type-aware distance."""
         self.score = score
 
         furthest_pos_ = []
@@ -105,7 +113,9 @@ class SubSpace:
             furthest_pos_.append(dim_array[0])
         furthest_pos = array(furthest_pos_)
 
-        dist = cdist(furthest_pos.reshape(1, -1), self.center_pos.reshape(1, -1))
+        dist = mixed_distance(
+            furthest_pos, self.center_pos, self.dim_types, self.dim_infos
+        )
 
         self.lipschitz_bound = score + K * dist
 
