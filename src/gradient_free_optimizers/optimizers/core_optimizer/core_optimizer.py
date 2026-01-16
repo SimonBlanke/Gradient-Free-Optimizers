@@ -18,7 +18,6 @@ from gradient_free_optimizers._array_backend import (
     random as np_random,
 )
 from gradient_free_optimizers._dimension_types import DimensionType
-from gradient_free_optimizers._math_backend import cdist
 
 from .converter import ArrayLike, Converter
 from .init_positions import Initializer
@@ -159,22 +158,31 @@ class CoreOptimizer(SearchTracker):
             epsilon_mod *= 1.01
 
     def conv2pos(self, pos: ArrayLike) -> ArrayLike:
+        """Convert and clip position to valid integer indices.
+
+        Rounds positions to integers and clips to search space bounds.
+        If the position was far outside the bounds (average clipping > 50%
+        of dimension size), returns a random position to avoid wall-sticking.
+        """
         # position to int
         r_pos = rint(pos)
 
         n_zeros = [0] * len(self.conv.max_positions)
         # clip into search space boundaries
-        pos = clip(r_pos, n_zeros, self.conv.max_positions).astype(int)
+        pos_clipped = clip(r_pos, n_zeros, self.conv.max_positions).astype(int)
 
-        r_pos_2d = array(r_pos).reshape((1, -1))
-        pos_2d = array(pos).reshape((1, -1))
-        dist = cdist(r_pos_2d, pos_2d)
-        threshold = self.conv.search_space_size / (100**self.conv.n_dimensions)
+        # Check if position was far outside bounds (wall-sticking prevention)
+        # Use average relative clip per dimension - works for any n_dimensions
+        clip_amounts = [abs(r_pos[i] - pos_clipped[i]) for i in range(len(r_pos))]
+        dim_sizes = [max(1, m) for m in self.conv.max_positions]  # Avoid div by 0
+        relative_clips = [c / s for c, s in zip(clip_amounts, dim_sizes)]
+        avg_relative_clip = sum(relative_clips) / len(relative_clips)
 
-        if dist[0][0] > threshold:
+        # If average clip > 50% of dimension size, position was way outside
+        if avg_relative_clip > 0.5:
             return self.move_random()
 
-        return pos
+        return pos_clipped
 
     def move_random(self) -> ArrayLike:
         while True:
