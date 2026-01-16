@@ -349,7 +349,8 @@ class Converter(MemoryOperationsMixin):
         """Convert values to position indices.
 
         Finds the closest matching position for each value by minimizing
-        the absolute difference to search space entries.
+        the absolute difference to search space entries (for numerical types)
+        or by exact match (for categorical types).
 
         Parameters
         ----------
@@ -367,8 +368,17 @@ class Converter(MemoryOperationsMixin):
             if self.dim_types[n] == DimensionType.CONTINUOUS:
                 # For continuous dimensions, the value is the position
                 position.append(float(value[n]))
+            elif self.dim_types[n] == DimensionType.CATEGORICAL:
+                # For categorical dimensions, find exact match
+                values_list = list(space_dim)
+                try:
+                    pos = values_list.index(value[n])
+                except ValueError:
+                    # If not found, default to first position
+                    pos = 0
+                position.append(pos)
             else:
-                # Find index of closest value for discrete/categorical
+                # For discrete numerical, find closest value by numerical distance
                 diffs = np_abs(array([value[n] - v for v in space_dim]))
                 pos = (
                     int(diffs.argmin())
@@ -495,10 +505,17 @@ class Converter(MemoryOperationsMixin):
 
         for n, space_dim in enumerate(self.search_space_values):
             pos_1d = [pos[n] for pos in positions]
-            if hasattr(space_dim, "__getitem__"):
-                value_ = [space_dim[p] for p in pos_1d]
+
+            if self.dim_types[n] == DimensionType.CONTINUOUS:
+                # For continuous dimensions, positions are the actual values (floats)
+                value_ = [float(p) for p in pos_1d]
             else:
-                value_ = take(space_dim, pos_1d)
+                # For discrete/categorical, positions are indices (ints)
+                if hasattr(space_dim, "__getitem__"):
+                    value_ = [space_dim[int(p)] for p in pos_1d]
+                else:
+                    value_ = take(space_dim, [int(p) for p in pos_1d])
+
             values.append(value_)
 
         values = [list(t) for t in zip(*values)]
