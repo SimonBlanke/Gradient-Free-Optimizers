@@ -34,7 +34,7 @@ class Individual(HillClimbingOptimizer):
         self.sigma_new = self.sigma * math.exp(self.tau * np_random.normal())
         self.sigma_new = max(self.sigma_min, min(self.sigma_new, self.sigma_max))
 
-        return self.move_climb(
+        return self.move_climb_typed(
             self.pos_current,
             epsilon=self.sigma_new,
             distribution=self.distribution,

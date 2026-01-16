@@ -135,7 +135,11 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
 
     @HillClimbingOptimizer.track_new_pos
     def iterate(self) -> ArrayLike:
-        """Generate next simplex position via reflection/expansion/contraction."""
+        """Generate next simplex position via reflection/expansion/contraction.
+
+        Uses type-aware position conversion that handles discrete, continuous,
+        and categorical dimensions appropriately.
+        """
         simplex_stale = all(
             _arrays_equal(self.simplex_pos[0], array) for array in self.simplex_pos
         )
@@ -157,14 +161,14 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
             r_pos = self.center_array + self.alpha * (
                 self.center_array - self.simplex_pos[-1]
             )
-            self.r_pos = self.conv2pos(r_pos)
+            self.r_pos = self.conv2pos_typed(r_pos)
             pos_new = self.r_pos
 
         elif self.simplex_step == 2:
             e_pos = self.center_array + self.gamma * (
                 self.center_array - self.simplex_pos[-1]
             )
-            self.e_pos = self.conv2pos(e_pos)
+            self.e_pos = self.conv2pos_typed(e_pos)
             self.simplex_step = 1
 
             pos_new = self.e_pos
@@ -172,7 +176,7 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
         elif self.simplex_step == 3:
             # iter Contraction
             c_pos = self.h_pos + self.beta * (self.center_array - self.h_pos)
-            c_pos = self.conv2pos(c_pos)
+            c_pos = self.conv2pos_typed(c_pos)
 
             pos_new = c_pos
 
@@ -181,12 +185,12 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
             pos = self.simplex_pos[self.compress_idx]
             pos = pos + self.sigma * (self.simplex_pos[0] - pos)
 
-            pos_new = self.conv2pos(pos)
+            pos_new = self.conv2pos_typed(pos)
 
         if self.conv.not_in_constraint(pos_new):
             return pos_new
 
-        return self.move_climb(
+        return self.move_climb_typed(
             pos_new, epsilon=self.epsilon, distribution=self.distribution
         )
 

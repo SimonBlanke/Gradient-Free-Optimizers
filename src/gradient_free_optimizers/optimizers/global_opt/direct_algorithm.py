@@ -177,7 +177,7 @@ class DirectAlgorithm(SMBO):
                 if self.conv.not_in_constraint(pos):
                     return pos
 
-            return self.move_climb(pos, epsilon_mod=0.3)
+            return self.move_climb_typed(pos, epsilon_mod=0.3)
 
     @SMBO.track_new_score
     def evaluate(self, score_new):

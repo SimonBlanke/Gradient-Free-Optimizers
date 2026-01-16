@@ -17,6 +17,7 @@ from gradient_free_optimizers._array_backend import (
 from gradient_free_optimizers._array_backend import (
     random as np_random,
 )
+from gradient_free_optimizers._dimension_types import DimensionType
 from gradient_free_optimizers._math_backend import cdist
 
 from .converter import ArrayLike, Converter
@@ -195,3 +196,173 @@ class CoreOptimizer(SearchTracker):
         if self.pos_current is None:
             self.pos_current = self.pos_new
             self.score_current = score_new
+
+    # ═══════════════════════════════════════════════════════════════════════
+    # TYPE-AWARE METHODS FOR EXTENDED SEARCH SPACE SUPPORT
+    # These methods handle discrete, continuous, and categorical dimensions.
+    # In legacy mode (all discrete-numerical), they delegate to original methods.
+    # ═══════════════════════════════════════════════════════════════════════
+
+    def move_climb_typed(
+        self,
+        pos: ArrayLike,
+        epsilon: float = 0.03,
+        distribution: str = "normal",
+        epsilon_mod: float = 1,
+    ) -> ArrayLike:
+        """Type-aware hill climbing movement.
+
+        In legacy mode (all discrete-numerical dimensions), delegates to
+        the original move_climb method. For mixed dimension types, handles
+        each type appropriately:
+        - Discrete numerical: Gaussian noise scaled by dimension size
+        - Continuous: Gaussian noise scaled by range
+        - Categorical: Probabilistic category switch
+
+        Parameters
+        ----------
+        pos : array-like
+            Current position to move from.
+        epsilon : float
+            Step size parameter (0 to 1).
+        distribution : str
+            Noise distribution ("normal", "laplace", "logistic", "gumbel").
+        epsilon_mod : float
+            Modifier for epsilon, increased on constraint violations.
+
+        Returns
+        -------
+        array-like
+            New position satisfying all constraints.
+        """
+        if self.conv.is_legacy_mode:
+            return self.move_climb(pos, epsilon, distribution, epsilon_mod)
+
+        return self._move_climb_mixed_types(pos, epsilon, distribution, epsilon_mod)
+
+    def _move_climb_mixed_types(
+        self,
+        pos: ArrayLike,
+        epsilon: float,
+        distribution: str,
+        epsilon_mod: float,
+    ) -> ArrayLike:
+        """Internal implementation for mixed dimension types."""
+        dist_func = _get_dist_func(distribution)
+
+        while True:
+            new_pos = []
+
+            for idx, dim_type in enumerate(self.conv.dim_types):
+                if dim_type == DimensionType.DISCRETE_NUMERICAL:
+                    # Gaussian noise scaled by dimension size
+                    max_pos = self.conv.dim_infos[idx].bounds[1]
+                    sigma = max_pos * epsilon * epsilon_mod
+                    noise = dist_func(0, sigma)
+                    new_val = pos[idx] + noise
+                    new_pos.append(new_val)
+
+                elif dim_type == DimensionType.CONTINUOUS:
+                    # Gaussian noise scaled by range
+                    min_val, max_val = self.conv.dim_infos[idx].bounds
+                    range_size = max_val - min_val
+                    sigma = range_size * epsilon * epsilon_mod
+                    noise = dist_func(0, sigma)
+                    new_val = pos[idx] + noise
+                    new_pos.append(new_val)
+
+                elif dim_type == DimensionType.CATEGORICAL:
+                    # Probabilistic category switch
+                    if random.random() < epsilon * epsilon_mod:
+                        max_idx = self.conv.dim_infos[idx].bounds[1]
+                        new_pos.append(random.randint(0, max_idx))
+                    else:
+                        new_pos.append(pos[idx])
+
+            new_pos = self.conv2pos_typed(array(new_pos))
+
+            if self.conv.not_in_constraint(new_pos):
+                return new_pos
+
+            epsilon_mod *= 1.01
+
+    def move_random_typed(self) -> ArrayLike:
+        """Type-aware random position generation.
+
+        In legacy mode, delegates to the original move_random method.
+        For mixed dimension types, generates appropriate random values
+        for each dimension type.
+
+        Returns
+        -------
+        array-like
+            Random position satisfying all constraints.
+        """
+        if self.conv.is_legacy_mode:
+            return self.move_random()
+
+        return self._move_random_mixed_types()
+
+    def _move_random_mixed_types(self) -> ArrayLike:
+        """Internal implementation for mixed dimension types."""
+        while True:
+            pos = []
+
+            for idx, dim_type in enumerate(self.conv.dim_types):
+                bounds = self.conv.dim_infos[idx].bounds
+
+                if dim_type == DimensionType.CONTINUOUS:
+                    # Uniform random in continuous range
+                    pos.append(random.uniform(bounds[0], bounds[1]))
+                else:
+                    # Random index for discrete/categorical
+                    pos.append(random.randint(int(bounds[0]), int(bounds[1])))
+
+            pos = array(pos)
+
+            if self.conv.not_in_constraint(pos):
+                return pos
+
+    def conv2pos_typed(self, pos: ArrayLike) -> ArrayLike:
+        """Type-aware position conversion and clipping.
+
+        In legacy mode, delegates to the original conv2pos method.
+        For mixed dimension types, handles each type appropriately:
+        - Discrete numerical: Round and clip to valid indices
+        - Continuous: Clip to bounds (no rounding)
+        - Categorical: Round and clip to valid category indices
+
+        Parameters
+        ----------
+        pos : array-like
+            Position to convert/clip.
+
+        Returns
+        -------
+        array-like
+            Valid position within search space bounds.
+        """
+        if self.conv.is_legacy_mode:
+            return self.conv2pos(pos)
+
+        return self._conv2pos_mixed_types(pos)
+
+    def _conv2pos_mixed_types(self, pos: ArrayLike) -> ArrayLike:
+        """Internal implementation for mixed dimension types."""
+        clipped = []
+
+        for idx, dim_type in enumerate(self.conv.dim_types):
+            bounds = self.conv.dim_infos[idx].bounds
+            val = pos[idx]
+
+            if dim_type == DimensionType.CONTINUOUS:
+                # Clip to bounds, keep as float
+                clipped_val = max(bounds[0], min(bounds[1], float(val)))
+                clipped.append(clipped_val)
+            else:
+                # Round and clip to integer indices
+                rounded = round(val)
+                clipped_val = int(max(bounds[0], min(bounds[1], rounded)))
+                clipped.append(clipped_val)
+
+        return array(clipped)

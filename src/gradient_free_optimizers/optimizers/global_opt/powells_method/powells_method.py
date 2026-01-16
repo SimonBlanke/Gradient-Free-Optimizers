@@ -199,7 +199,7 @@ class PowellsMethod(HillClimbingOptimizer):
         """Generate the next position to evaluate."""
         # If converged, fall back to hill climbing exploration
         if self.converged:
-            return self.move_climb(
+            return self.move_climb_typed(
                 self.pos_current,
                 epsilon=self.epsilon,
                 distribution=self.distribution,
@@ -214,7 +214,7 @@ class PowellsMethod(HillClimbingOptimizer):
                 self._complete_cycle()
                 # Check if we just converged
                 if self.converged:
-                    return self.move_climb(
+                    return self.move_climb_typed(
                         self.pos_current,
                         epsilon=self.epsilon,
                         distribution=self.distribution,
@@ -250,7 +250,7 @@ class PowellsMethod(HillClimbingOptimizer):
 
         # Fallback if no position available
         if pos_new is None:
-            pos_new = self.move_climb(
+            pos_new = self.move_climb_typed(
                 self.pos_current,
                 epsilon=self.epsilon,
                 distribution=self.distribution,

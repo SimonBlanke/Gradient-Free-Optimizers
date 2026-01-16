@@ -82,14 +82,18 @@ class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer):
     @HillClimbingOptimizer.track_new_pos
     @HillClimbingOptimizer.random_iteration
     def iterate(self):
-        """Hill climb or random restart based on iteration count."""
+        """Hill climb or random restart based on iteration count.
+
+        Uses type-aware movement that handles discrete, continuous,
+        and categorical dimensions appropriately.
+        """
         notZero = self.nth_trial != 0
         modZero = self.nth_trial % self.n_iter_restart == 0
 
         if notZero and modZero:
-            return self.move_random()
+            return self.move_random_typed()
         else:
-            return self.move_climb(
+            return self.move_climb_typed(
                 self.pos_current,
                 epsilon=self.epsilon,
                 distribution=self.distribution,

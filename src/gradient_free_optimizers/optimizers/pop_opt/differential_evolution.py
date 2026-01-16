@@ -96,7 +96,7 @@ class DifferentialEvolutionOptimizer(EvolutionaryAlgorithmOptimizer):
         while True:
             if self.conv.not_in_constraint(position):
                 return position
-            position = self.p_current.move_climb(position, epsilon_mod=0.3)
+            position = self.p_current.move_climb_typed(position, epsilon_mod=0.3)
 
     @EvolutionaryAlgorithmOptimizer.track_new_pos
     def init_pos(self) -> ArrayLike:
@@ -118,10 +118,10 @@ class DifferentialEvolutionOptimizer(EvolutionaryAlgorithmOptimizer):
             [target_vector, mutant_vector],
             crossover_rates,
         )
-        pos_new = self.conv2pos(pos_new)
+        pos_new = self.conv2pos_typed(pos_new)
         pos_new = self._constraint_loop(pos_new)
 
-        self.p_current.pos_new = self.conv2pos(pos_new)
+        self.p_current.pos_new = self.conv2pos_typed(pos_new)
         return self.p_current.pos_new
 
     @EvolutionaryAlgorithmOptimizer.track_new_score

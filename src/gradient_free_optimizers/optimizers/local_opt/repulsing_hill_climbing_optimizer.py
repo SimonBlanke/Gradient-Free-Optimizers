@@ -85,8 +85,12 @@ class RepulsingHillClimbingOptimizer(HillClimbingOptimizer):
 
     @HillClimbingOptimizer.track_new_pos
     def iterate(self) -> ArrayLike:
-        """Generate next position with adaptive step size."""
-        return self.move_climb(
+        """Generate next position with adaptive step size.
+
+        Uses type-aware movement that handles discrete, continuous,
+        and categorical dimensions appropriately.
+        """
+        return self.move_climb_typed(
             self.pos_current,
             epsilon=self.epsilon,
             distribution=self.distribution,

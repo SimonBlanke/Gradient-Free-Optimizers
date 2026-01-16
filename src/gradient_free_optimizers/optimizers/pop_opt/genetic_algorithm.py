@@ -131,7 +131,7 @@ class GeneticAlgorithmOptimizer(EvolutionaryAlgorithmOptimizer):
         while True:
             if self.conv.not_in_constraint(position):
                 return position
-            position = self.p_current.move_climb(position, epsilon_mod=0.3)
+            position = self.p_current.move_climb_typed(position, epsilon_mod=0.3)
 
     @EvolutionaryAlgorithmOptimizer.track_new_pos
     def init_pos(self) -> ArrayLike:

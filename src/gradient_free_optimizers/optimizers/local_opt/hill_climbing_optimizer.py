@@ -7,6 +7,7 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import Any
 
+from gradient_free_optimizers._dimension_iterator import DimensionIteratorMixin
 from gradient_free_optimizers._init_utils import get_default_initialize
 
 from ..base_optimizer import BaseOptimizer
@@ -19,7 +20,7 @@ def max_list_idx(list_: list[float]) -> int:
     return max_item_idx[-1:][0]
 
 
-class HillClimbingOptimizer(BaseOptimizer):
+class HillClimbingOptimizer(BaseOptimizer, DimensionIteratorMixin):
     """Simple hill climbing optimizer that greedily moves toward better solutions.
 
     Evaluates multiple neighbors around the current position and moves to the
@@ -84,8 +85,12 @@ class HillClimbingOptimizer(BaseOptimizer):
     @BaseOptimizer.track_new_pos
     @BaseOptimizer.random_iteration
     def iterate(self) -> ArrayLike:
-        """Generate next position by climbing from current position."""
-        return self.move_climb(
+        """Generate next position by climbing from current position.
+
+        Uses type-aware movement that handles discrete, continuous,
+        and categorical dimensions appropriately.
+        """
+        return self.move_climb_typed(
             self.pos_current,
             epsilon=self.epsilon,
             distribution=self.distribution,
