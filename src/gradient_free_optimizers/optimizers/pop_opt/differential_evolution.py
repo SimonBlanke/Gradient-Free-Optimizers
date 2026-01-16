@@ -9,6 +9,7 @@ from collections.abc import Callable
 from typing import Any
 
 from gradient_free_optimizers._array_backend import array
+from gradient_free_optimizers._dimension_types import DimensionType
 from gradient_free_optimizers._init_utils import get_default_initialize
 
 from ..core_optimizer.converter import ArrayLike
@@ -87,10 +88,36 @@ class DifferentialEvolutionOptimizer(EvolutionaryAlgorithmOptimizer):
         self.offspring_l = []
 
     def mutation(self, f: float = 1) -> ArrayLike:
-        ind_selected = random.sample(self.individuals, 3)
+        """Generate mutant vector using type-aware differential mutation.
 
+        For continuous and discrete-numerical dimensions, uses standard DE
+        mutation: x_1 + F * (x_2 - x_3).
+
+        For categorical dimensions, uses probabilistic parent selection since
+        arithmetic operations on category indices are meaningless.
+        """
+        ind_selected = random.sample(self.individuals, 3)
         x_1, x_2, x_3 = (ind.pos_best for ind in ind_selected)
-        return array(x_1) + self.mutation_rate * (array(x_2) - array(x_3))
+
+        # Fast path for legacy mode (all discrete-numerical)
+        if self.conv.is_legacy_mode:
+            return array(x_1) + self.mutation_rate * (array(x_2) - array(x_3))
+
+        # Type-aware mutation for mixed dimension types
+        mutant = []
+        for idx, dim_type in enumerate(self.conv.dim_types):
+            if dim_type == DimensionType.CATEGORICAL:
+                # Probabilistic selection from parents for categorical dims
+                if random.random() < self.mutation_rate:
+                    # Pick randomly from one of the three parents
+                    mutant.append(random.choice([x_1[idx], x_2[idx], x_3[idx]]))
+                else:
+                    mutant.append(x_1[idx])
+            else:
+                # Standard DE mutation for continuous and discrete-numerical
+                mutant.append(x_1[idx] + self.mutation_rate * (x_2[idx] - x_3[idx]))
+
+        return array(mutant)
 
     def _constraint_loop(self, position: ArrayLike) -> ArrayLike:
         while True:
