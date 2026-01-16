@@ -7,15 +7,22 @@ categorical) with appropriate iteration strategies.
 The mixin provides:
 1. A unified interface for type-aware iteration
 2. Default implementations that delegate to CoreOptimizer methods
-3. Abstract methods for vectorized implementations (for future JAX/CuPy support)
+3. Vectorized implementations for large search spaces (1000+ dimensions)
 """
 
 from __future__ import annotations
 
+import random
 from typing import TYPE_CHECKING, Any
+
+from ._array_backend import array
+from ._array_backend import random as np_random
 
 if TYPE_CHECKING:
     from .optimizers.core_optimizer.converter import ArrayLike
+
+# Threshold for automatic vectorization (number of dimensions)
+VECTORIZATION_THRESHOLD = 1000
 
 
 class DimensionIteratorMixin:
@@ -119,17 +126,23 @@ class DimensionIteratorMixin:
     # ═══════════════════════════════════════════════════════════════════════
 
     def _can_vectorize(self) -> bool:
-        """Check if vectorized iteration is available for this optimizer.
+        """Check if vectorized iteration is available and beneficial.
 
-        Override this method to enable vectorization. The default
-        implementation returns False.
+        Returns True if:
+        1. The search space has more dimensions than VECTORIZATION_THRESHOLD
+        2. The mixin has vectorized implementations available
+
+        Override this method to customize vectorization behavior.
 
         Returns
         -------
         bool
-            True if vectorized iteration is implemented and should be used.
+            True if vectorized iteration should be used.
         """
-        return False
+        # Check if we have enough dimensions to benefit from vectorization
+        if not hasattr(self, "conv"):
+            return False
+        return self.conv.n_dimensions >= VECTORIZATION_THRESHOLD
 
     def _iterate_position_vectorized(
         self,
@@ -207,10 +220,10 @@ class DimensionIteratorMixin:
         max_positions: list[int],
         **kwargs: Any,
     ) -> list[float]:
-        """Iterate all discrete-numerical dimensions together.
+        """Iterate all discrete-numerical dimensions together (vectorized).
 
-        Override this method to provide a vectorized implementation.
-        The default implementation raises NotImplementedError.
+        Applies Gaussian noise scaled by dimension size to all discrete
+        dimensions in a single array operation.
 
         Parameters
         ----------
@@ -219,35 +232,38 @@ class DimensionIteratorMixin:
         max_positions : list
             Maximum position index for each dimension.
         **kwargs : dict
-            Algorithm-specific parameters.
+            Algorithm-specific parameters (epsilon, epsilon_mod).
 
         Returns
         -------
         list
             New values for all discrete-numerical dimensions.
-
-        Raises
-        ------
-        NotImplementedError
-            If not overridden in subclass.
         """
-        raise NotImplementedError(
-            f"{self.__class__.__name__} does not implement vectorized "
-            f"iteration for discrete-numerical dimensions. "
-            f"Override _iterate_discrete_numerical_all() or set "
-            f"_can_vectorize() to return False."
-        )
+        epsilon = kwargs.get("epsilon", getattr(self, "epsilon", 0.03))
+        epsilon_mod = kwargs.get("epsilon_mod", 1.0)
+
+        # Convert to arrays for vectorized operations
+        values = array(current_values)
+        max_pos = array(max_positions)
+
+        # Generate Gaussian noise scaled by dimension sizes
+        sigmas = max_pos * epsilon * epsilon_mod
+        # Use array of random values
+        noise = array([np_random.normal(0, float(s)) for s in sigmas])
+
+        new_values = values + noise
+        return list(new_values)
 
     def _iterate_continuous_all(
         self,
         current_values: list[float],
-        bounds: list[tuple],
+        bounds: list[tuple[float, float]],
         **kwargs: Any,
     ) -> list[float]:
-        """Iterate all continuous dimensions together.
+        """Iterate all continuous dimensions together (vectorized).
 
-        Override this method to provide a vectorized implementation.
-        The default implementation raises NotImplementedError.
+        Applies Gaussian noise scaled by range to all continuous
+        dimensions in a single array operation.
 
         Parameters
         ----------
@@ -256,24 +272,26 @@ class DimensionIteratorMixin:
         bounds : list
             List of (min, max) tuples for each dimension.
         **kwargs : dict
-            Algorithm-specific parameters.
+            Algorithm-specific parameters (epsilon, epsilon_mod).
 
         Returns
         -------
         list
             New values for all continuous dimensions.
-
-        Raises
-        ------
-        NotImplementedError
-            If not overridden in subclass.
         """
-        raise NotImplementedError(
-            f"{self.__class__.__name__} does not implement vectorized "
-            f"iteration for continuous dimensions. "
-            f"Override _iterate_continuous_all() or set "
-            f"_can_vectorize() to return False."
-        )
+        epsilon = kwargs.get("epsilon", getattr(self, "epsilon", 0.03))
+        epsilon_mod = kwargs.get("epsilon_mod", 1.0)
+
+        # Convert to arrays for vectorized operations
+        values = array(current_values)
+        ranges = array([b[1] - b[0] for b in bounds])
+
+        # Generate Gaussian noise scaled by ranges
+        sigmas = ranges * epsilon * epsilon_mod
+        noise = array([np_random.normal(0, float(s)) for s in sigmas])
+
+        new_values = values + noise
+        return list(new_values)
 
     def _iterate_categorical_all(
         self,
@@ -281,10 +299,10 @@ class DimensionIteratorMixin:
         n_categories: list[int],
         **kwargs: Any,
     ) -> list[int]:
-        """Iterate all categorical dimensions together.
+        """Iterate all categorical dimensions together (vectorized).
 
-        Override this method to provide a vectorized implementation.
-        The default implementation raises NotImplementedError.
+        Applies probabilistic category switching to all categorical
+        dimensions.
 
         Parameters
         ----------
@@ -293,21 +311,24 @@ class DimensionIteratorMixin:
         n_categories : list
             Number of categories for each dimension.
         **kwargs : dict
-            Algorithm-specific parameters.
+            Algorithm-specific parameters (epsilon, epsilon_mod).
 
         Returns
         -------
         list
             New category indices for all categorical dimensions.
-
-        Raises
-        ------
-        NotImplementedError
-            If not overridden in subclass.
         """
-        raise NotImplementedError(
-            f"{self.__class__.__name__} does not implement vectorized "
-            f"iteration for categorical dimensions. "
-            f"Override _iterate_categorical_all() or set "
-            f"_can_vectorize() to return False."
-        )
+        epsilon = kwargs.get("epsilon", getattr(self, "epsilon", 0.03))
+        epsilon_mod = kwargs.get("epsilon_mod", 1.0)
+        switch_prob = epsilon * epsilon_mod
+
+        new_values = []
+        for val, n_cat in zip(current_values, n_categories):
+            if random.random() < switch_prob:  # noqa: S311
+                # Switch to random category
+                new_values.append(random.randint(0, n_cat - 1))  # noqa: S311
+            else:
+                # Keep current category
+                new_values.append(int(val))
+
+        return new_values
