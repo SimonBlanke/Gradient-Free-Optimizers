@@ -5,7 +5,8 @@
 import math
 import random
 
-from gradient_free_optimizers._array_backend import array, array_split
+from gradient_free_optimizers._array_backend import array, array_split, sqrt
+from gradient_free_optimizers._dimension_types import DimensionType
 from gradient_free_optimizers._init_utils import (
     get_default_initialize,
     get_default_sampling,
@@ -13,6 +14,46 @@ from gradient_free_optimizers._init_utils import (
 from gradient_free_optimizers._math_backend import cdist
 
 from ..smb_opt.smbo import SMBO
+
+
+def mixed_distance(pos1, pos2, dim_types, dim_infos):
+    """Compute Gower-like distance for mixed dimension types.
+
+    For continuous dimensions: normalized Euclidean (diff / range).
+    For discrete-numerical dimensions: normalized by dimension size.
+    For categorical dimensions: Hamming (0 if same, 1 if different).
+
+    All components are averaged and returned as sqrt of mean squared distance.
+    """
+    if dim_types is None:
+        # Legacy mode: use simple Euclidean
+        return cdist(pos1.reshape(1, -1), pos2.reshape(1, -1))[0, 0]
+
+    total_dist = 0.0
+    n_dims = len(dim_types)
+
+    for idx, dim_type in enumerate(dim_types):
+        if dim_type == DimensionType.CONTINUOUS:
+            # Normalized Euclidean for continuous
+            range_size = dim_infos[idx].bounds[1] - dim_infos[idx].bounds[0]
+            if range_size > 0:
+                diff = (pos1[idx] - pos2[idx]) / range_size
+            else:
+                diff = 0
+            total_dist += diff**2
+        elif dim_type == DimensionType.CATEGORICAL:
+            # Hamming: 0 if same, 1 if different
+            total_dist += 0.0 if pos1[idx] == pos2[idx] else 1.0
+        else:  # DISCRETE_NUMERICAL
+            # Normalized by dimension size
+            max_pos = dim_infos[idx].bounds[1]
+            if max_pos > 0:
+                diff = (pos1[idx] - pos2[idx]) / max_pos
+            else:
+                diff = 0
+            total_dist += diff**2
+
+    return sqrt(total_dist / n_dims) if n_dims > 0 else 0.0
 
 
 class SubSpace:
