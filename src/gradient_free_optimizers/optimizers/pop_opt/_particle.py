@@ -5,6 +5,7 @@
 import random
 
 from gradient_free_optimizers._array_backend import array, clip
+from gradient_free_optimizers._dimension_types import DimensionType
 
 from ..local_opt import HillClimbingOptimizer
 
@@ -30,11 +31,39 @@ class Particle(HillClimbingOptimizer):
         self.rand_rest_p = rand_rest_p
 
     def _move_part(self, pos, velo):
-        pos_new = (array(pos) + array(velo)).astype(int)
-        # limit movement
-        n_zeros = [0] * len(self.conv.max_positions)
+        """Apply velocity to position with type-aware handling.
 
-        return clip(pos_new, n_zeros, self.conv.max_positions)
+        For discrete-numerical dimensions: standard velocity addition with rounding.
+        For continuous dimensions: velocity addition preserving float precision.
+        For categorical dimensions: velocity magnitude determines switch probability.
+        """
+        # Fast path for legacy mode (all discrete-numerical)
+        if self.conv.is_legacy_mode:
+            pos_new = (array(pos) + array(velo)).astype(int)
+            n_zeros = [0] * len(self.conv.max_positions)
+            return clip(pos_new, n_zeros, self.conv.max_positions)
+
+        # Type-aware movement for mixed dimension types
+        pos_new = []
+        for idx, dim_type in enumerate(self.conv.dim_types):
+            if dim_type == DimensionType.CONTINUOUS:
+                # Keep as float, will be clipped by conv2pos_typed
+                new_val = float(pos[idx]) + float(velo[idx])
+                pos_new.append(new_val)
+            elif dim_type == DimensionType.CATEGORICAL:
+                # Velocity magnitude determines switch probability
+                # Higher velocity = higher chance of random category jump
+                max_idx = self.conv.dim_infos[idx].bounds[1]
+                switch_prob = min(1.0, abs(velo[idx]) / (max_idx + 1))
+                if random.random() < switch_prob:
+                    pos_new.append(random.randint(0, max_idx))
+                else:
+                    pos_new.append(int(pos[idx]))
+            else:  # DISCRETE_NUMERICAL
+                new_val = int(round(pos[idx] + velo[idx]))
+                pos_new.append(new_val)
+
+        return self.conv2pos_typed(array(pos_new))
 
     @HillClimbingOptimizer.track_new_pos
     @HillClimbingOptimizer.random_iteration
