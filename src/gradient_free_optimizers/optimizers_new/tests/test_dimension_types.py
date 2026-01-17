@@ -24,7 +24,9 @@ import pytest
 # Import from optimizer_search/ - these are the complete optimizers with search()
 from ...optimizer_search import (
     HillClimbingOptimizer,
+    RandomRestartHillClimbingOptimizer,
     RandomSearchOptimizer,
+    RepulsingHillClimbingOptimizer,
     SimulatedAnnealingOptimizer,
     StochasticHillClimbingOptimizer,
 )
@@ -38,6 +40,8 @@ OPTIMIZERS = [
     RandomSearchOptimizer,
     StochasticHillClimbingOptimizer,
     SimulatedAnnealingOptimizer,
+    RepulsingHillClimbingOptimizer,
+    RandomRestartHillClimbingOptimizer,
 ]
 
 

@@ -22,15 +22,15 @@ The key goals are:
 | `RandomSearchOptimizer` | DONE | 100 passed |
 | `StochasticHillClimbingOptimizer` | DONE | 74 passed |
 | `SimulatedAnnealingOptimizer` | DONE | 106 passed |
+| `RepulsingHillClimbingOptimizer` | DONE | 74 passed |
+| `RandomRestartHillClimbingOptimizer` | DONE | 71 passed |
 | `Converter` | DONE (copied) | - |
 | `Initializer` | DONE (copied) | - |
 | Search Integration | DONE | - |
 
 ### Pending Migration
 
-| Optimizer | Priority | Notes |
-|-----------|----------|-------|
-| `RepulsingHillClimbingOptimizer` | High | Extends HillClimbing |
+All local optimizers are now migrated! Next priority:
 | `ParticleSwarmOptimizer` | Medium | Population-based |
 | `DifferentialEvolutionOptimizer` | Medium | Population-based |
 | `BayesianOptimizer` | Low | Complex surrogate model |

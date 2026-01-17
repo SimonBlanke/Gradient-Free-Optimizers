@@ -88,8 +88,9 @@ class HillClimbingOptimizer(CoreOptimizer):
         self.distribution = distribution
         self.n_neighbours = n_neighbours
 
-        # Initialize RNG for reproducibility
-        self._rng = np.random.default_rng(random_state)
+        # Initialize RNG for reproducibility using the actual seed
+        # (self.random_seed is set by CoreOptimizer and accounts for nth_process)
+        self._rng = np.random.default_rng(self.random_seed)
 
         # Validate distribution parameter
         if distribution not in self._DISTRIBUTIONS:

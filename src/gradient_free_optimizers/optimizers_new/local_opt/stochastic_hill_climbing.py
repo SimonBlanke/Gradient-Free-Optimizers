@@ -91,6 +91,10 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer):
         self.p_accept = p_accept
         self.temp = 1  # Constant temperature for stochastic hill climbing
 
+        # Transition tracking (for diagnostics)
+        self.n_transitions = 0
+        self.n_considered_transitions = 0
+
     # ═══════════════════════════════════════════════════════════════════════════
     # ACCEPTANCE PROBABILITY CALCULATION
     # ═══════════════════════════════════════════════════════════════════════════
@@ -161,10 +165,12 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer):
             super()._evaluate(score_new)
         else:
             # Score is worse - consider stochastic acceptance
+            self.n_considered_transitions += 1
             p_accept = self._p_accept_default()
 
             if self._rng.random() < p_accept:
-                # Accept the worse solution
+                # Accept the worse solution (this is what n_transitions counts)
+                self.n_transitions += 1
                 self._update_current(self.pos_new, score_new)
 
             # Always update best (in case this is somehow better than global best)
