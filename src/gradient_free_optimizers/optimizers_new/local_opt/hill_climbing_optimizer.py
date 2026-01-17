@@ -118,7 +118,8 @@ class HillClimbingOptimizer(CoreOptimizer):
                     bounds[:, 0] = min values
                     bounds[:, 1] = max values
 
-        Returns:
+        Returns
+        -------
             New values with noise added (not yet clipped to bounds)
         """
         # Calculate range for each dimension
@@ -147,7 +148,8 @@ class HillClimbingOptimizer(CoreOptimizer):
             current: Current category indices, shape (n_categorical,)
             n_categories: Number of categories per dimension, shape (n_categorical,)
 
-        Returns:
+        Returns
+        -------
             New category indices (integers)
         """
         n = len(current)
@@ -157,9 +159,7 @@ class HillClimbingOptimizer(CoreOptimizer):
 
         # Generate random categories for switching dimensions
         # Use uniform distribution over [0, n_categories)
-        random_cats = np.floor(
-            self._rng.random(n) * n_categories
-        ).astype(np.int64)
+        random_cats = np.floor(self._rng.random(n) * n_categories).astype(np.int64)
 
         # Apply switch: use random if switching, otherwise keep current
         return np.where(switch_mask, random_cats, current.astype(np.int64))
@@ -180,7 +180,8 @@ class HillClimbingOptimizer(CoreOptimizer):
                     bounds[:, 0] = min index (typically 0)
                     bounds[:, 1] = max index
 
-        Returns:
+        Returns
+        -------
             New positions with noise added (float, will be rounded)
         """
         # Use max position to scale sigma (similar to continuous)
@@ -216,8 +217,8 @@ class HillClimbingOptimizer(CoreOptimizer):
         # Every n_neighbours trials, select the best among recent samples
         if self.nth_trial % self.n_neighbours == 0:
             # Get the last n_neighbours scores and positions
-            recent_scores = self.scores_valid[-self.n_neighbours:]
-            recent_positions = self.positions_valid[-self.n_neighbours:]
+            recent_scores = self.scores_valid[-self.n_neighbours :]
+            recent_positions = self.positions_valid[-self.n_neighbours :]
 
             # Find the best among recent samples
             best_idx = np.argmax(recent_scores)

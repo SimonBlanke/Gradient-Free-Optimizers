@@ -19,6 +19,9 @@ The key goals are:
 |-----------|--------|-------|
 | `CoreOptimizer` | DONE | - |
 | `HillClimbingOptimizer` | DONE | 324 passed |
+| `RandomSearchOptimizer` | DONE | 100 passed |
+| `StochasticHillClimbingOptimizer` | DONE | 74 passed |
+| `SimulatedAnnealingOptimizer` | DONE | 106 passed |
 | `Converter` | DONE (copied) | - |
 | `Initializer` | DONE (copied) | - |
 | Search Integration | DONE | - |
@@ -27,10 +30,7 @@ The key goals are:
 
 | Optimizer | Priority | Notes |
 |-----------|----------|-------|
-| `SimulatedAnnealingOptimizer` | High | Extends HillClimbing |
-| `StochasticHillClimbingOptimizer` | High | Extends HillClimbing |
 | `RepulsingHillClimbingOptimizer` | High | Extends HillClimbing |
-| `RandomSearchOptimizer` | Medium | Simple implementation |
 | `ParticleSwarmOptimizer` | Medium | Population-based |
 | `DifferentialEvolutionOptimizer` | Medium | Population-based |
 | `BayesianOptimizer` | Low | Complex surrogate model |
@@ -287,6 +287,82 @@ When implementing a new optimizer:
 - [ ] Add to `optimizers_new/__init__.py`
 - [ ] Swap import in `optimizer_search/`
 - [ ] Run tests: `pytest tests/ -k "OptimizerName" -v`
+- [ ] Add optimizer to `tests/test_dimension_types.py` OPTIMIZERS list
+- [ ] Add optimizer to `tests/test_vectorization.py` OPTIMIZERS list
+
+## Testing Strategy
+
+We have two dedicated test files for verifying optimizer implementations:
+
+### test_dimension_types.py
+
+Tests that each optimizer correctly handles all dimension types:
+
+| Test Category | What it Tests |
+|---------------|---------------|
+| Continuous | Values in range, float types, single dimension |
+| Categorical | Valid options, preserved types (str, bool), binary categories |
+| Discrete | Exact value match (no interpolation), valid values |
+| Mixed | All three types combined, correct types per dimension |
+| Edge Cases | Narrow ranges, large category sets, single dimensions |
+| Reproducibility | Same random_state = same results |
+
+**Usage:**
+```bash
+# Run all dimension type tests
+pytest optimizers_new/tests/test_dimension_types.py -v
+
+# Run for specific optimizer
+pytest optimizers_new/tests/test_dimension_types.py -v -k "HillClimbing"
+```
+
+### test_vectorization.py
+
+Tests that batch operations work correctly with many dimensions:
+
+| Test Category | What it Tests |
+|---------------|---------------|
+| Mask Creation | Correct masks for continuous/categorical/discrete |
+| Bounds Arrays | Correct shapes for bounds/sizes arrays |
+| Batch Methods | Methods receive vectorized inputs |
+| 50 Dimensions | Moderate scale, fast for CI |
+| 200+ Dimensions | Marked `@pytest.mark.slow` for optional runs |
+| Position Arrays | Correct length and value types |
+| Clipping | All values stay within valid bounds |
+
+**CI Strategy:**
+- Default tests use 50 dimensions (fast, ~1 second)
+- High-dimension tests (200+) are marked `@pytest.mark.slow`
+- Run slow tests periodically: `pytest -m slow`
+
+**Usage:**
+```bash
+# Run fast vectorization tests only
+pytest optimizers_new/tests/test_vectorization.py -v -m "not slow"
+
+# Run all tests including slow ones
+pytest optimizers_new/tests/test_vectorization.py -v
+```
+
+### Adding a New Optimizer to Tests
+
+When implementing a new optimizer, add it to both test files:
+
+```python
+# In test_dimension_types.py AND test_vectorization.py
+
+from ..local_opt import HillClimbingOptimizer
+from ..global_opt import RandomSearchOptimizer
+from ..local_opt import YourNewOptimizer  # Add import
+
+OPTIMIZERS = [
+    HillClimbingOptimizer,
+    RandomSearchOptimizer,
+    YourNewOptimizer,  # Add to list
+]
+```
+
+All parametrized tests will automatically run for the new optimizer.
 
 ## Key Fixes During Integration
 

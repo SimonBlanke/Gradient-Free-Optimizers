@@ -62,7 +62,9 @@ class TestHillClimbingTemplatePattern:
         """Test continuous bounds array shape."""
         assert optimizer._continuous_bounds.shape == (2, 2)
         # Check bounds are reasonable
-        assert np.all(optimizer._continuous_bounds[:, 0] < optimizer._continuous_bounds[:, 1])
+        assert np.all(
+            optimizer._continuous_bounds[:, 0] < optimizer._continuous_bounds[:, 1]
+        )
 
     def test_categorical_sizes_shape(self, optimizer):
         """Test categorical sizes array shape."""
@@ -77,8 +79,12 @@ class TestHillClimbingTemplatePattern:
         # Check bounds start at 0
         assert np.all(optimizer._discrete_bounds[:, 0] == 0)
         # Check max indices
-        assert optimizer._discrete_bounds[0, 1] == 4  # hidden_layers (5 values -> max idx 4)
-        assert optimizer._discrete_bounds[1, 1] == 4  # batch_size (5 values -> max idx 4)
+        assert (
+            optimizer._discrete_bounds[0, 1] == 4
+        )  # hidden_layers (5 values -> max idx 4)
+        assert (
+            optimizer._discrete_bounds[1, 1] == 4
+        )  # batch_size (5 values -> max idx 4)
 
     def test_iterate_continuous_batch(self, optimizer):
         """Test continuous batch iteration generates valid values."""
@@ -128,7 +134,7 @@ class TestHillClimbingTemplatePattern:
         # Set continuous values (first 2 dimensions based on mask)
         cont_indices = np.where(optimizer._continuous_mask)[0]
         position[cont_indices[0]] = -1.0  # below min
-        position[cont_indices[1]] = 2.0   # above max
+        position[cont_indices[1]] = 2.0  # above max
 
         clipped = optimizer._clip_position(position)
 
@@ -176,7 +182,11 @@ class TestHillClimbingTemplatePattern:
         # Continuous should be within bounds
         cont_idx = np.where(optimizer._continuous_mask)[0]
         for i, idx in enumerate(cont_idx):
-            assert optimizer._continuous_bounds[i, 0] <= new_pos[idx] <= optimizer._continuous_bounds[i, 1]
+            assert (
+                optimizer._continuous_bounds[i, 0]
+                <= new_pos[idx]
+                <= optimizer._continuous_bounds[i, 1]
+            )
 
         # Categorical should be integer indices
         cat_idx = np.where(optimizer._categorical_mask)[0]
@@ -187,7 +197,11 @@ class TestHillClimbingTemplatePattern:
         # Discrete should be integer indices
         disc_idx = np.where(optimizer._discrete_mask)[0]
         for i, idx in enumerate(disc_idx):
-            assert optimizer._discrete_bounds[i, 0] <= new_pos[idx] <= optimizer._discrete_bounds[i, 1]
+            assert (
+                optimizer._discrete_bounds[i, 0]
+                <= new_pos[idx]
+                <= optimizer._discrete_bounds[i, 1]
+            )
             assert new_pos[idx] == int(new_pos[idx])
 
 
@@ -282,9 +296,9 @@ class TestHillClimbingEvaluate:
         assert optimizer.nth_trial == 1
         assert len(optimizer.scores_valid) == 1
 
-        # But best should not be set yet (n_neighbours=3, only 1 eval)
-        # _evaluate only updates after n_neighbours trials
-        assert optimizer.score_best is None
+        # After first evaluation, best IS set (CoreOptimizer initializes it)
+        # This is needed for Search progress tracking
+        assert optimizer.score_best == 1.0
 
         # Complete 2 more evaluations
         optimizer.pos_new = np.array([7.0, 7.0])
@@ -292,7 +306,7 @@ class TestHillClimbingEvaluate:
         optimizer.pos_new = np.array([8.0, 8.0])
         optimizer.evaluate(3.0)
 
-        # Now _evaluate should have run and updated best
+        # After n_neighbours (3), _evaluate runs and updates best to the best score
         assert optimizer.score_best == 3.0
 
 

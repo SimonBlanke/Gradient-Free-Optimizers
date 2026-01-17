@@ -245,42 +245,63 @@ class CoreOptimizer(BaseOptimizer):
         1. Creating an empty position array
         2. Calling batch methods for each dimension type that has elements
         3. Clipping the result to valid bounds
+        4. Checking constraints (regenerate if violated)
 
         Returns
         -------
             New position as numpy array
         """
-        n_dims = len(self.pos_current)
-        new_pos = np.empty(n_dims)
+        # Retry loop for constraint satisfaction
+        max_retries = 100
+        for _ in range(max_retries):
+            clipped_pos = self._generate_position()
 
-        # Process continuous dimensions
-        if self._continuous_mask is not None and self._continuous_mask.any():
-            new_pos[self._continuous_mask] = self._iterate_continuous_batch(
-                current=self.pos_current[self._continuous_mask],
-                bounds=self._continuous_bounds,
-            )
-
-        # Process categorical dimensions
-        if self._categorical_mask is not None and self._categorical_mask.any():
-            new_pos[self._categorical_mask] = self._iterate_categorical_batch(
-                current=self.pos_current[self._categorical_mask],
-                n_categories=self._categorical_sizes,
-            )
-
-        # Process discrete-numerical dimensions
-        if self._discrete_mask is not None and self._discrete_mask.any():
-            new_pos[self._discrete_mask] = self._iterate_discrete_batch(
-                current=self.pos_current[self._discrete_mask],
-                bounds=self._discrete_bounds,
-            )
-
-        clipped_pos = self._clip_position(new_pos)
+            # Check constraints
+            if self.conv.not_in_constraint(clipped_pos):
+                break
+        # If max retries exceeded, use the last generated position anyway
 
         # Track as new position (for evaluate())
         self.pos_new = clipped_pos
         self.pos_new_list.append(clipped_pos)
 
         return clipped_pos
+
+    def _generate_position(self):
+        """Generate a single candidate position (internal helper).
+
+        Returns
+        -------
+            Clipped position as numpy array
+        """
+        n_dims = len(self.search_space)
+        new_pos = np.empty(n_dims)
+
+        # Process continuous dimensions
+        if self._continuous_mask is not None and self._continuous_mask.any():
+            current = self.pos_current[self._continuous_mask] if self.pos_current is not None else np.zeros(self._continuous_mask.sum())
+            new_pos[self._continuous_mask] = self._iterate_continuous_batch(
+                current=current,
+                bounds=self._continuous_bounds,
+            )
+
+        # Process categorical dimensions
+        if self._categorical_mask is not None and self._categorical_mask.any():
+            current = self.pos_current[self._categorical_mask] if self.pos_current is not None else np.zeros(self._categorical_mask.sum())
+            new_pos[self._categorical_mask] = self._iterate_categorical_batch(
+                current=current,
+                n_categories=self._categorical_sizes,
+            )
+
+        # Process discrete-numerical dimensions
+        if self._discrete_mask is not None and self._discrete_mask.any():
+            current = self.pos_current[self._discrete_mask] if self.pos_current is not None else np.zeros(self._discrete_mask.sum())
+            new_pos[self._discrete_mask] = self._iterate_discrete_batch(
+                current=current,
+                bounds=self._discrete_bounds,
+            )
+
+        return self._clip_position(new_pos)
 
     # ═══════════════════════════════════════════════════════════════════════════
     # CLIPPING AND VALIDATION
@@ -296,7 +317,8 @@ class CoreOptimizer(BaseOptimizer):
         Args:
             position: Raw position that may be out of bounds
 
-        Returns:
+        Returns
+        -------
             Clipped position within valid bounds
         """
         clipped = position.copy()
@@ -339,10 +361,29 @@ class CoreOptimizer(BaseOptimizer):
         1. Common tracking (scores, positions, trial count)
         2. Algorithm-specific acceptance/update logic via _evaluate()
 
+        This method handles both initialization and iteration phases for
+        backward compatibility with the backend API.
+
         Args:
             score_new: Score of the most recently evaluated position
         """
         self._track_score(score_new)
+
+        # Handle initialization phase (first evaluation or pos_best is None)
+        if self.pos_best is None:
+            self.pos_best = self.pos_new.copy()
+            self.score_best = score_new
+            self.pos_best_list.append(self.pos_best)
+            self.score_best_list.append(self.score_best)
+            self.best_since_iter = self.nth_trial
+
+        if self.pos_current is None:
+            self.pos_current = self.pos_new.copy()
+            self.score_current = score_new
+            self.pos_current_list.append(self.pos_current)
+            self.score_current_list.append(self.score_current)
+
+        # Delegate to algorithm-specific evaluation
         self._evaluate(score_new)
 
     def _track_score(self, score_new):
@@ -416,7 +457,7 @@ class CoreOptimizer(BaseOptimizer):
             or None if no evaluation has been performed yet.
         """
         # If explicitly set, return that value
-        if hasattr(self, '_best_para') and self._best_para is not None:
+        if hasattr(self, "_best_para") and self._best_para is not None:
             return self._best_para
         # Otherwise compute from pos_best
         if self.pos_best is None:
@@ -440,7 +481,7 @@ class CoreOptimizer(BaseOptimizer):
             or None if no evaluation has been performed yet.
         """
         # If explicitly set, return that value
-        if hasattr(self, '_best_value') and self._best_value is not None:
+        if hasattr(self, "_best_value") and self._best_value is not None:
             return self._best_value
         # Otherwise compute from pos_best
         if self.pos_best is None:
