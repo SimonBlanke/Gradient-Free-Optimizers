@@ -6,7 +6,7 @@
 from typing import Literal
 
 from .._init_utils import get_default_initialize, get_default_sampling
-from ..optimizers import ForestOptimizer as _ForestOptimizer
+from ..optimizers_new import ForestOptimizer as _ForestOptimizer
 from ..search import Search
 
 

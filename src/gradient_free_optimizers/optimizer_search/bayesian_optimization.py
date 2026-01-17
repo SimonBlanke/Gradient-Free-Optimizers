@@ -6,7 +6,7 @@
 from typing import Literal
 
 from .._init_utils import get_default_initialize, get_default_sampling
-from ..optimizers import BayesianOptimizer as _BayesianOptimizer
+from ..optimizers_new import BayesianOptimizer as _BayesianOptimizer
 from ..search import Search
 
 
