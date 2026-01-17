@@ -6,7 +6,7 @@
 from typing import Literal
 
 from .._init_utils import get_default_initialize
-from ..optimizers import (
+from ..optimizers_new import (
     SimulatedAnnealingOptimizer as _SimulatedAnnealingOptimizer,
 )
 from ..search import Search

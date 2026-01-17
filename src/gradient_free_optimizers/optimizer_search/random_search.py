@@ -6,7 +6,7 @@
 from typing import Literal
 
 from .._init_utils import get_default_initialize
-from ..optimizers import RandomSearchOptimizer as _RandomSearchOptimizer
+from ..optimizers_new import RandomSearchOptimizer as _RandomSearchOptimizer
 from ..search import Search
 
 
