@@ -6,7 +6,7 @@
 from typing import Literal
 
 from .._init_utils import get_default_initialize
-from ..optimizers import HillClimbingOptimizer as _HillClimbingOptimizer
+from ..optimizers_new import HillClimbingOptimizer as _HillClimbingOptimizer
 from ..search import Search
 
 

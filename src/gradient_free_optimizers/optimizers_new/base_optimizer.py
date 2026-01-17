@@ -65,6 +65,10 @@ class BaseOptimizer(ABC):
             rand_rest_p: Probability of random restart
             nth_process: Process index for parallel optimization
         """
+        # Call super().__init__() for cooperative multiple inheritance
+        # This ensures Search.__init__() is called when combined with Search
+        super().__init__()
+
         self.search_space = search_space
         self.initialize = initialize
         self.constraints = constraints
@@ -78,26 +82,13 @@ class BaseOptimizer(ABC):
         self.score_current = None
         self.score_best = None
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # PUBLIC API
-    # ═══════════════════════════════════════════════════════════════════════════
-
-    def search(self, objective_function, n_iter, **kwargs):
-        """Run the optimization search.
-
-        Args:
-            objective_function: Function to optimize
-            n_iter: Number of iterations
-            **kwargs: Additional arguments passed to search
-
-        Returns
-        -------
-            Self for method chaining
-        """
-        raise NotImplementedError("Subclasses must implement search()")
+        # List of optimizers (for single optimizer, just [self])
+        # Population-based optimizers may override this with their population
+        self.optimizers = [self]
 
     # ═══════════════════════════════════════════════════════════════════════════
     # TEMPLATE METHOD: ORCHESTRATION
+    # Note: search() is provided by the Search class mixin in optimizer_search/
     # ═══════════════════════════════════════════════════════════════════════════
 
     def iterate(self):
@@ -252,7 +243,9 @@ class BaseOptimizer(ABC):
         """Return the best score found."""
         return self.score_best
 
-    @property
-    def search_data(self):
-        """Return the search history as a DataFrame."""
-        raise NotImplementedError("Subclasses must implement search_data property")
+    @best_score.setter
+    def best_score(self, value):
+        """Set the best score."""
+        self.score_best = value
+
+    # Note: search_data is provided by the Search class mixin in optimizer_search/
