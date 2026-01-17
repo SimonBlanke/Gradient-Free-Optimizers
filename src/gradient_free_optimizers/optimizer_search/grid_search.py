@@ -6,7 +6,7 @@
 from typing import Literal
 
 from .._init_utils import get_default_initialize
-from ..optimizers import GridSearchOptimizer as _GridSearchOptimizer
+from ..optimizers_new import GridSearchOptimizer as _GridSearchOptimizer
 from ..search import Search
 
 
