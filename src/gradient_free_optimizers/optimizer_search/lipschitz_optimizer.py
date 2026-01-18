@@ -6,7 +6,7 @@
 from typing import Literal
 
 from .._init_utils import get_default_initialize, get_default_sampling
-from ..optimizers import LipschitzOptimizer as _LipschitzOptimizer
+from ..optimizers_new import LipschitzOptimizer as _LipschitzOptimizer
 from ..search import Search
 
 

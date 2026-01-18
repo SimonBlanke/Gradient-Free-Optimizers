@@ -6,7 +6,7 @@
 from typing import Literal
 
 from .._init_utils import get_default_initialize, get_default_sampling
-from ..optimizers import DirectAlgorithm as _DirectAlgorithm
+from ..optimizers_new import DirectAlgorithm as _DirectAlgorithm
 from ..search import Search
 
 
