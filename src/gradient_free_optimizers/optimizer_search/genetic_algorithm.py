@@ -6,7 +6,7 @@
 from typing import Literal
 
 from .._init_utils import get_default_initialize
-from ..optimizers import GeneticAlgorithmOptimizer as _GeneticAlgorithmOptimizer
+from ..optimizers_new import GeneticAlgorithmOptimizer as _GeneticAlgorithmOptimizer
 from ..search import Search
 
 

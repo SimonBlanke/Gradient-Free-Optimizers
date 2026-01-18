@@ -8,21 +8,58 @@ Evolution Strategy (ES) Optimizer.
 Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
 """
 
+from __future__ import annotations
+
+import random
+from typing import TYPE_CHECKING, Any, Callable
+
 import numpy as np
 
 from .base_population_optimizer import BasePopulationOptimizer
+from ._individual import Individual
+
+if TYPE_CHECKING:
+    pass
 
 
 class EvolutionStrategyOptimizer(BasePopulationOptimizer):
-    """Evolution Strategy optimizer with self-adaptive mutation.
+    """Evolution Strategy optimization algorithm.
 
     Dimension Support:
         - Continuous: YES (adaptive Gaussian mutation)
         - Categorical: YES (probabilistic mutation)
         - Discrete: YES (adaptive Gaussian mutation, rounded)
 
-    Uses (mu, lambda) or (mu + lambda) selection with
-    self-adaptive mutation step sizes.
+    Uses mutation and recombination to evolve a population. Can operate
+    in (mu, lambda) mode where parents are replaced, or (mu + lambda)
+    mode where parents compete with offspring.
+
+    The key difference from Genetic Algorithm is the emphasis on
+    self-adaptive mutation step sizes (sigma) that evolve with the
+    population.
+
+    Parameters
+    ----------
+    search_space : dict
+        Dictionary mapping parameter names to search dimension definitions.
+    initialize : dict, optional
+        Strategy for generating initial positions.
+    constraints : list, optional
+        List of constraint functions.
+    random_state : int, optional
+        Seed for random number generation.
+    rand_rest_p : float, default=0
+        Probability of random restart.
+    nth_process : int, optional
+        Process index for parallel optimization.
+    population : int, default=10
+        Number of parent individuals (mu).
+    offspring : int, default=20
+        Number of offspring to generate (lambda).
+    mutation_rate : float, default=0.7
+        Probability of mutation operation.
+    crossover_rate : float, default=0.3
+        Probability of crossover/recombination operation.
     """
 
     name = "Evolution Strategy"
@@ -34,16 +71,17 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
 
     def __init__(
         self,
-        search_space,
-        initialize=None,
-        constraints=None,
-        random_state=None,
-        rand_rest_p=0,
-        nth_process=None,
-        population=10,
-        mutation_rate=0.1,
-        sigma=1.0,
-    ):
+        search_space: dict[str, Any],
+        initialize: dict[str, int] | None = None,
+        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
+        random_state: int | None = None,
+        rand_rest_p: float = 0,
+        nth_process: int | None = None,
+        population: int = 10,
+        offspring: int = 20,
+        mutation_rate: float = 0.7,
+        crossover_rate: float = 0.3,
+    ) -> None:
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -53,50 +91,232 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
             nth_process=nth_process,
             population=population,
         )
+
+        self.offspring = offspring
         self.mutation_rate = mutation_rate
-        self.sigma = sigma  # Initial mutation step size
+        self.crossover_rate = crossover_rate
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # ES-SPECIFIC ITERATION
-    # ═══════════════════════════════════════════════════════════════════════════
+        # Create population of individuals
+        self.individuals = self._create_population(Individual)
+        self.optimizers = self.individuals
 
-    def iterate(self):
-        """ES iteration with self-adaptive mutation."""
-        # TODO: Implement ES iteration with sigma adaptation
-        raise NotImplementedError("iterate() not yet implemented")
+        # Initialize RNG for reproducibility
+        self._rng = np.random.default_rng(self.random_seed)
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # TEMPLATE METHODS
-    # ═══════════════════════════════════════════════════════════════════════════
+        # State for iterate
+        self.rnd_int = 0
+        self.n_ind = len(self.individuals)
 
-    def _iterate_continuous_batch(
-        self,
-        current: np.ndarray,
-        bounds: np.ndarray,
-    ) -> np.ndarray:
-        """Adaptive Gaussian mutation for continuous dimensions."""
-        # TODO: Implement adaptive mutation
-        raise NotImplementedError("_iterate_continuous_batch() not yet implemented")
+    def discrete_recombination(self, parent_pos_l, crossover_rates=None):
+        """Combine parent positions using discrete recombination.
 
-    def _iterate_categorical_batch(
-        self,
-        current: np.ndarray,
-        n_categories: np.ndarray,
-    ) -> np.ndarray:
-        """Probabilistic mutation for categorical dimensions."""
-        # TODO: Implement category mutation
-        raise NotImplementedError("_iterate_categorical_batch() not yet implemented")
+        For each dimension, randomly select from one of the parents.
 
-    def _iterate_discrete_batch(
-        self,
-        current: np.ndarray,
-        bounds: np.ndarray,
-    ) -> np.ndarray:
-        """Adaptive Gaussian mutation for discrete dimensions."""
-        # TODO: Implement adaptive mutation
-        raise NotImplementedError("_iterate_discrete_batch() not yet implemented")
+        Parameters
+        ----------
+        parent_pos_l : list of np.ndarray
+            List of parent positions.
+        crossover_rates : list of float, optional
+            Probability weights for each parent. If None, uniform selection.
 
-    def evaluate(self, score_new):
-        """Evaluate and select survivors."""
-        # TODO: Implement ES evaluation
-        raise NotImplementedError("evaluate() not yet implemented")
+        Returns
+        -------
+        np.ndarray
+            Offspring position.
+        """
+        n_parents = len(parent_pos_l)
+        size = len(parent_pos_l[0])
+
+        if crossover_rates is None:
+            crossover_rates = [1.0 / n_parents] * n_parents
+
+        choice = []
+        for _ in range(size):
+            choice.append(self._rng.choice(n_parents, p=crossover_rates))
+
+        result = []
+        for i, parent_idx in enumerate(choice):
+            result.append(parent_pos_l[parent_idx][i])
+
+        return np.array(result)
+
+    def _cross(self):
+        """Perform recombination (crossover) operation.
+
+        Selects a second parent different from the current one,
+        performs discrete recombination, and assigns the result
+        to the worst individual in the population.
+
+        Returns
+        -------
+        np.ndarray
+            New position from recombination.
+        """
+        # Select a second parent different from current
+        if self.n_ind > 2:
+            available = [i for i in range(self.n_ind - 1) if i != self.rnd_int]
+        else:
+            available = [i for i in range(self.n_ind) if i != self.rnd_int]
+
+        if not available:
+            # Fallback to mutation
+            return self.p_current.iterate()
+
+        rnd_int2 = random.choice(available)
+
+        p_sec = self.pop_sorted[rnd_int2]
+        p_worst = self.pop_sorted[-1]
+
+        # Guard against None positions
+        if self.p_current.pos_current is None or p_sec.pos_current is None:
+            return self.p_current.iterate()
+
+        # Recombine the two parents
+        two_best_pos = [self.p_current.pos_current, p_sec.pos_current]
+        pos_new = self.discrete_recombination(two_best_pos)
+
+        # Assign to worst individual
+        self.p_current = p_worst
+        p_worst.pos_new = pos_new
+        p_worst.pos_new_list.append(pos_new)
+
+        # Handle constraints
+        if not self.conv.not_in_constraint(pos_new):
+            pos_new = self.p_current.move_climb_typed(pos_new)
+            self.p_current.pos_new = pos_new
+            if self.p_current.pos_new_list:
+                self.p_current.pos_new_list[-1] = pos_new
+
+        return pos_new
+
+    def init_pos(self) -> np.ndarray:
+        """Initialize current individual and return its starting position.
+
+        Returns
+        -------
+        np.ndarray
+            Initial position for the current individual.
+        """
+        nth_pop = self.nth_trial % len(self.individuals)
+        self.p_current = self.individuals[nth_pop]
+
+        # Get initial position from individual
+        if self.p_current.nth_init < len(self.p_current.init.init_positions_l):
+            pos = self.p_current.init_pos()
+        else:
+            # Fall back to random position
+            pos = self.p_current.init.move_random_typed()
+            self.p_current.pos_current = pos
+            self.p_current.pos_new = pos
+            self.p_current.pos_new_list.append(pos)
+
+        # Check constraints
+        if not self.conv.not_in_constraint(pos):
+            max_tries = 100
+            for _ in range(max_tries):
+                pos = self.p_current.init.move_random_typed()
+                if self.conv.not_in_constraint(pos):
+                    break
+            self.p_current.pos_current = pos
+            self.p_current.pos_new = pos
+            if self.p_current.pos_new_list:
+                self.p_current.pos_new_list[-1] = pos
+
+        # Track position on main optimizer
+        self.pos_new = pos
+        self.pos_new_list.append(pos)
+
+        return pos
+
+    def evaluate_init(self, score_new: float) -> None:
+        """Evaluate during initialization phase.
+
+        Tracks score on both main optimizer and current individual.
+        """
+        # Track on main optimizer (this increments nth_trial)
+        self._track_score(score_new)
+
+        # Track on current individual
+        self.p_current.evaluate_init(score_new)
+
+        # Update tracking
+        self._update_best(self.pos_new, score_new)
+        self._update_current(self.pos_new, score_new)
+
+    def iterate(self) -> np.ndarray:
+        """Generate next position via mutation or recombination.
+
+        With probability proportional to mutation_rate, apply mutation.
+        Otherwise, use recombination to combine two parents.
+
+        Returns
+        -------
+        np.ndarray
+            New position for evaluation.
+        """
+        self.n_ind = len(self.individuals)
+
+        # Single individual: just mutate
+        if self.n_ind == 1:
+            self.p_current = self.individuals[0]
+            pos_new = self.p_current.iterate()
+            self.pos_new = pos_new
+            self.pos_new_list.append(pos_new)
+            return pos_new
+
+        # Sort and select random individual
+        self.sort_pop_best_score()
+        self.rnd_int = random.randint(0, len(self.pop_sorted) - 1)
+        self.p_current = self.pop_sorted[self.rnd_int]
+
+        # Decide: mutation or recombination
+        total_rate = self.mutation_rate + self.crossover_rate
+        rand = self._rng.uniform(0, total_rate)
+
+        pos_count_before = len(self.p_current.pos_new_list)
+
+        if rand <= self.mutation_rate:
+            # Mutation: use individual's iterate (hill climbing with adaptive sigma)
+            pos_new = self.p_current.iterate()
+
+            # Check constraints
+            if not self.conv.not_in_constraint(pos_new):
+                # Restore and try random
+                while len(self.p_current.pos_new_list) > pos_count_before:
+                    self.p_current.pos_new_list.pop()
+
+                max_tries = 100
+                for _ in range(max_tries):
+                    pos_new = self.p_current.init.move_random_typed()
+                    if self.conv.not_in_constraint(pos_new):
+                        break
+
+                self.p_current.pos_new = pos_new
+                self.p_current.pos_new_list.append(pos_new)
+        else:
+            # Recombination
+            pos_new = self._cross()
+
+        # Track position on main optimizer
+        self.pos_new = pos_new
+        self.pos_new_list.append(pos_new)
+
+        return pos_new
+
+    def _evaluate(self, score_new: float) -> None:
+        """Evaluate current individual.
+
+        Delegates to the individual's evaluate method which handles
+        personal best tracking and sigma adaptation.
+
+        Parameters
+        ----------
+        score_new : float
+            Score of the most recently evaluated position.
+        """
+        # Delegate to current individual
+        self.p_current.evaluate(score_new)
+
+        # Update global tracking
+        self._update_best(self.pos_new, score_new)
+        self._update_current(self.pos_new, score_new)
