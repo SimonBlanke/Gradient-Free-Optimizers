@@ -6,7 +6,7 @@
 from typing import Literal
 
 from .._init_utils import get_default_initialize
-from ..optimizers import ParticleSwarmOptimizer as _ParticleSwarmOptimizer
+from ..optimizers_new import ParticleSwarmOptimizer as _ParticleSwarmOptimizer
 from ..search import Search
 
 

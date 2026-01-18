@@ -175,14 +175,21 @@ class BasePopulationOptimizer(CoreOptimizer):
         return nth_iter
 
     def sort_pop_best_score(self):
-        """Sort population by current score (best first)."""
+        """Sort population by current score (best first).
+
+        Handles None scores by treating them as -infinity (worst).
+        """
         scores_list = []
         for _p_ in self.optimizers:
             scores_list.append(_p_.score_current)
 
         # Sort indices by score descending (pure Python)
+        # Handle None scores by treating them as -infinity
         indexed = list(enumerate(scores_list))
-        indexed.sort(key=lambda x: x[1], reverse=True)
+        indexed.sort(
+            key=lambda x: x[1] if x[1] is not None else float("-inf"),
+            reverse=True
+        )
         idx_sorted_ind = [i for i, _ in indexed]
 
         self.pop_sorted = [self.optimizers[i] for i in idx_sorted_ind]

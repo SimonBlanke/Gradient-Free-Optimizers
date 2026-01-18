@@ -6,7 +6,7 @@
 from typing import Literal
 
 from .._init_utils import get_default_initialize
-from ..optimizers import SpiralOptimization as _SpiralOptimization
+from ..optimizers_new import SpiralOptimization as _SpiralOptimization
 from ..search import Search
 
 
