@@ -26,6 +26,7 @@ from .global_opt import (
     DirectAlgorithm,
     LipschitzOptimizer,
     PatternSearch,
+    PowellsMethod,
     RandomRestartHillClimbingOptimizer,
     RandomSearchOptimizer,
 )
@@ -79,6 +80,7 @@ __all__ = [
     "RandomSearchOptimizer",
     "RandomRestartHillClimbingOptimizer",
     "PatternSearch",
+    "PowellsMethod",
     "DirectAlgorithm",
     "LipschitzOptimizer",
     # Population

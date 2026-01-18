@@ -79,6 +79,7 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
         nth_process: int | None = None,
         population: int = 10,
         offspring: int = 20,
+        replace_parents: bool = False,
         mutation_rate: float = 0.7,
         crossover_rate: float = 0.3,
     ) -> None:
@@ -93,6 +94,7 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
         )
 
         self.offspring = offspring
+        self.replace_parents = replace_parents  # (mu,lambda) vs (mu+lambda)
         self.mutation_rate = mutation_rate
         self.crossover_rate = crossover_rate
 

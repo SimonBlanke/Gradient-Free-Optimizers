@@ -88,6 +88,7 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
         nth_process: int | None = None,
         population: int = 10,
         offspring: int = 10,
+        crossover: str = "discrete-recombination",
         n_parents: int = 2,
         mutation_rate: float = 0.5,
         crossover_rate: float = 0.5,
@@ -103,6 +104,7 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
         )
 
         self.offspring = offspring
+        self.crossover = crossover  # Currently only "discrete-recombination" supported
         self.n_parents = n_parents
         self.mutation_rate = mutation_rate
         self.crossover_rate = crossover_rate

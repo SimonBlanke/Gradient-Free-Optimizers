@@ -6,7 +6,7 @@
 from typing import Literal
 
 from .._init_utils import get_default_initialize
-from ..optimizers import PatternSearch as _PatternSearch
+from ..optimizers_new import PatternSearch as _PatternSearch
 from ..search import Search
 
 

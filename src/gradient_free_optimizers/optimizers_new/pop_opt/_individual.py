@@ -127,14 +127,15 @@ class Individual(HillClimbingOptimizer):
         """Perform typed iteration using dimension masks.
 
         This is copied from CoreOptimizer.iterate() but takes a position argument.
+        Uses the dimension masks set up by _setup_dimension_masks() in CoreOptimizer.
         """
         n_dims = len(pos_current)
         new_pos = np.empty(n_dims, dtype=object)
 
         # Handle continuous dimensions
-        if self.conv.continuous_mask is not None and len(self.conv.continuous_mask) > 0:
-            cont_mask = self.conv.continuous_mask
-            cont_bounds = self.conv.continuous_bounds
+        if self._continuous_bounds is not None:
+            cont_mask = self._continuous_mask
+            cont_bounds = self._continuous_bounds
             cont_current = pos_current[cont_mask].astype(float)
             cont_new = self._iterate_continuous_batch(cont_current, cont_bounds)
             # Clip to bounds
@@ -142,9 +143,9 @@ class Individual(HillClimbingOptimizer):
             new_pos[cont_mask] = cont_new
 
         # Handle categorical dimensions
-        if self.conv.categorical_mask is not None and len(self.conv.categorical_mask) > 0:
-            cat_mask = self.conv.categorical_mask
-            n_cats = self.conv.n_categories
+        if self._categorical_sizes is not None:
+            cat_mask = self._categorical_mask
+            n_cats = self._categorical_sizes
             cat_current = pos_current[cat_mask].astype(int)
             cat_new = self._iterate_categorical_batch(cat_current, n_cats)
             # Clip to valid range
@@ -152,9 +153,9 @@ class Individual(HillClimbingOptimizer):
             new_pos[cat_mask] = cat_new
 
         # Handle discrete dimensions
-        if self.conv.discrete_mask is not None and len(self.conv.discrete_mask) > 0:
-            disc_mask = self.conv.discrete_mask
-            disc_bounds = self.conv.discrete_bounds
+        if self._discrete_bounds is not None:
+            disc_mask = self._discrete_mask
+            disc_bounds = self._discrete_bounds
             disc_current = pos_current[disc_mask].astype(float)
             disc_new = self._iterate_discrete_batch(disc_current, disc_bounds)
             # Round and clip to bounds
