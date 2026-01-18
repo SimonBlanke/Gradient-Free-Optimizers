@@ -9,21 +9,92 @@ Supports: CONTINUOUS, DISCRETE_NUMERICAL
 Note: Categorical dimensions require special handling in simplex methods.
 """
 
+from __future__ import annotations
+
+import random
+from typing import TYPE_CHECKING, Any, Callable
+
 import numpy as np
 
-from ..core_optimizer import CoreOptimizer
+from .hill_climbing_optimizer import HillClimbingOptimizer
+
+if TYPE_CHECKING:
+    pass
 
 
-class DownhillSimplexOptimizer(CoreOptimizer):
-    """Downhill Simplex (Nelder-Mead) optimizer.
+def _arrays_equal(a: Any, b: Any) -> bool:
+    """Check if two arrays are element-wise equal."""
+    if hasattr(a, "__len__") and hasattr(b, "__len__"):
+        if len(a) != len(b):
+            return False
+        return all(x == y for x, y in zip(a, b))
+    return a == b
+
+
+def _sort_list_idx(list_: list[float]) -> list[int]:
+    """Return indices that would sort the list in descending order."""
+    indexed = list(enumerate(list_))
+    indexed.sort(key=lambda x: x[1], reverse=True)
+    return [i for i, _ in indexed]
+
+
+def _centroid(array_list: list) -> np.ndarray:
+    """Calculate centroid of a list of arrays."""
+    n_dims = len(array_list[0])
+    result = []
+
+    for idx in range(n_dims):
+        center_dim_pos = [arr[idx] for arr in array_list]
+        center_dim_mean = sum(center_dim_pos) / len(center_dim_pos)
+        result.append(center_dim_mean)
+
+    return np.array(result)
+
+
+class DownhillSimplexOptimizer(HillClimbingOptimizer):
+    """Nelder-Mead downhill simplex optimizer.
 
     Dimension Support:
         - Continuous: YES (native simplex operations)
         - Categorical: LIMITED (simplex operations don't naturally apply)
         - Discrete: YES (with rounding)
 
-    The Nelder-Mead simplex method uses geometric operations
-    (reflection, expansion, contraction) on a simplex of n+1 points.
+    The Nelder-Mead simplex method maintains a simplex of n+1 points in
+    n-dimensional space and iteratively transforms it through reflection,
+    expansion, contraction, and shrinkage operations to find the optimum.
+
+    Algorithm:
+    1. Initialize simplex with n+1 vertices
+    2. Sort vertices by function value
+    3. Compute centroid of best n vertices
+    4. Try reflection: if better than best, try expansion
+    5. If reflection is middle-quality, accept it
+    6. If reflection is poor, try contraction
+    7. If contraction fails, shrink entire simplex toward best
+    8. Repeat until convergence
+
+    Parameters
+    ----------
+    search_space : dict
+        Dictionary mapping parameter names to search dimension definitions.
+    initialize : dict, optional
+        Strategy for generating initial simplex vertices.
+    constraints : list, optional
+        List of constraint functions.
+    random_state : int, optional
+        Seed for random number generation.
+    rand_rest_p : float, default=0
+        Probability of random restart.
+    nth_process : int, optional
+        Process index for parallel optimization.
+    alpha : float, default=1.0
+        Reflection coefficient.
+    gamma : float, default=2.0
+        Expansion coefficient.
+    beta : float, default=0.5
+        Contraction coefficient.
+    sigma : float, default=0.5
+        Shrinkage coefficient.
     """
 
     name = "Downhill Simplex"
@@ -35,17 +106,20 @@ class DownhillSimplexOptimizer(CoreOptimizer):
 
     def __init__(
         self,
-        search_space,
-        initialize=None,
-        constraints=None,
-        random_state=None,
-        rand_rest_p=0,
-        nth_process=None,
-        alpha=1.0,
-        gamma=2.0,
-        beta=0.5,
-        sigma=0.5,
-    ):
+        search_space: dict[str, Any],
+        initialize: dict[str, int] | None = None,
+        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
+        random_state: int | None = None,
+        rand_rest_p: float = 0,
+        nth_process: int | None = None,
+        epsilon: float = 0.03,
+        distribution: str = "normal",
+        n_neighbours: int = 3,
+        alpha: float = 1.0,
+        gamma: float = 2.0,
+        beta: float = 0.5,
+        sigma: float = 0.5,
+    ) -> None:
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -53,50 +127,242 @@ class DownhillSimplexOptimizer(CoreOptimizer):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
+            epsilon=epsilon,
+            distribution=distribution,
+            n_neighbours=n_neighbours,
         )
+
         self.alpha = alpha  # Reflection coefficient
         self.gamma = gamma  # Expansion coefficient
         self.beta = beta  # Contraction coefficient
         self.sigma = sigma  # Shrink coefficient
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # TEMPLATE METHODS
-    # ═══════════════════════════════════════════════════════════════════════════
+        # Number of simplex vertices = dimensions + 1
+        self.n_simp_positions = len(self.conv.search_space) + 1
 
-    def _iterate_continuous_batch(
-        self,
-        current: np.ndarray,
-        bounds: np.ndarray,
-    ) -> np.ndarray:
-        """Simplex operations for continuous dimensions."""
-        # TODO: Implement simplex reflection/expansion/contraction
-        raise NotImplementedError("_iterate_continuous_batch() not yet implemented")
+        # Simplex state
+        self.simplex_pos = []
+        self.simplex_scores = []
+        self.simplex_step = 0
 
-    def _iterate_categorical_batch(
-        self,
-        current: np.ndarray,
-        n_categories: np.ndarray,
-    ) -> np.ndarray:
-        """Categorical dimensions in simplex are challenging.
+        # Ensure we have enough initial positions for the simplex
+        diff_init = self.n_simp_positions - self.init.n_inits
+        if diff_init > 0:
+            self.init.add_n_random_init_pos(diff_init)
 
-        Simplex methods rely on continuous geometric operations which
-        don't naturally apply to categorical dimensions.
+        # Working variables for simplex operations
+        self.center_array = None
+        self.r_pos = None
+        self.r_score = None
+        self.e_pos = None
+        self.e_score = None
+        self.c_pos = None
+        self.c_score = None
+        self.h_pos = None
+        self.h_score = None
+        self.compress_idx = 0
+
+    def conv2pos_typed(self, pos):
+        """Convert position to valid position with proper types.
+
+        Handles continuous, categorical, and discrete dimensions appropriately.
         """
-        raise NotImplementedError(
-            f"{self.__class__.__name__} has limited support for categorical "
-            f"dimensions. Simplex operations don't naturally apply to categories."
+        pos_new = []
+        dim_names = list(self.search_space.keys())
+
+        for i, name in enumerate(dim_names):
+            dim_def = self.search_space[name]
+            val = pos[i]
+
+            if isinstance(dim_def, tuple):
+                # Continuous: clip to bounds
+                pos_new.append(np.clip(val, dim_def[0], dim_def[1]))
+            elif isinstance(dim_def, list):
+                # Categorical: clip to valid indices
+                pos_new.append(int(np.clip(round(val), 0, len(dim_def) - 1)))
+            elif isinstance(dim_def, np.ndarray):
+                # Discrete: clip to valid indices
+                pos_new.append(int(np.clip(round(val), 0, len(dim_def) - 1)))
+            else:
+                pos_new.append(val)
+
+        return np.array(pos_new)
+
+    def finish_initialization(self) -> None:
+        """Initialize the simplex from evaluated positions."""
+        # Sort initial positions by score (best first)
+        idx_sorted = _sort_list_idx(self.scores_valid)
+        self.simplex_pos = [self.positions_valid[idx].copy() for idx in idx_sorted]
+        self.simplex_scores = [self.scores_valid[idx] for idx in idx_sorted]
+
+        self.simplex_step = 1
+        self.search_state = "iter"
+
+    def iterate(self) -> np.ndarray:
+        """Generate next simplex position via reflection/expansion/contraction.
+
+        Returns
+        -------
+        np.ndarray
+            Next position for evaluation.
+        """
+        # Check if simplex is stale (all vertices same)
+        simplex_stale = all(
+            _arrays_equal(self.simplex_pos[0], arr) for arr in self.simplex_pos
         )
 
-    def _iterate_discrete_batch(
-        self,
-        current: np.ndarray,
-        bounds: np.ndarray,
-    ) -> np.ndarray:
-        """Simplex operations for discrete dimensions (with rounding)."""
-        # TODO: Implement simplex operations with rounding
-        raise NotImplementedError("_iterate_discrete_batch() not yet implemented")
+        if simplex_stale:
+            # Reset simplex from all evaluated positions
+            idx_sorted = _sort_list_idx(self.scores_valid)
+            self.simplex_pos = [self.positions_valid[idx].copy() for idx in idx_sorted[: self.n_simp_positions]]
+            self.simplex_scores = [self.scores_valid[idx] for idx in idx_sorted[: self.n_simp_positions]]
+            self.simplex_step = 1
 
-    def evaluate(self, score_new):
-        """Evaluate and update simplex."""
-        # TODO: Implement simplex update logic
-        raise NotImplementedError("evaluate() not yet implemented")
+        if self.simplex_step == 1:
+            # Step 1: Reflection
+            # Sort simplex by score (best first)
+            idx_sorted = _sort_list_idx(self.simplex_scores)
+            self.simplex_pos = [self.simplex_pos[idx] for idx in idx_sorted]
+            self.simplex_scores = [self.simplex_scores[idx] for idx in idx_sorted]
+
+            # Compute centroid of all but worst vertex
+            self.center_array = _centroid(self.simplex_pos[:-1])
+
+            # Reflection point: center + alpha * (center - worst)
+            r_pos = self.center_array + self.alpha * (
+                self.center_array - self.simplex_pos[-1]
+            )
+            self.r_pos = self.conv2pos_typed(r_pos)
+            pos_new = self.r_pos
+
+        elif self.simplex_step == 2:
+            # Step 2: Expansion
+            e_pos = self.center_array + self.gamma * (
+                self.center_array - self.simplex_pos[-1]
+            )
+            self.e_pos = self.conv2pos_typed(e_pos)
+            self.simplex_step = 1
+
+            pos_new = self.e_pos
+
+        elif self.simplex_step == 3:
+            # Step 3: Contraction
+            c_pos = self.h_pos + self.beta * (self.center_array - self.h_pos)
+            c_pos = self.conv2pos_typed(c_pos)
+
+            pos_new = c_pos
+
+        elif self.simplex_step == 4:
+            # Step 4: Shrink
+            pos = self.simplex_pos[self.compress_idx]
+            pos = np.array(pos) + self.sigma * (np.array(self.simplex_pos[0]) - np.array(pos))
+
+            pos_new = self.conv2pos_typed(pos)
+
+        else:
+            # Fallback
+            pos_new = self._move_random()
+
+        # Handle constraints
+        if self.conv.not_in_constraint(pos_new):
+            self.pos_new = pos_new
+            self.pos_new_list.append(pos_new)
+            return pos_new
+
+        # If constraint violated, fall back to hill climb move
+        pos_new = self._move_climb(
+            pos_new, epsilon=self.epsilon, distribution=self.distribution
+        )
+        self.pos_new = pos_new
+        self.pos_new_list.append(pos_new)
+        return pos_new
+
+    def _evaluate(self, score_new: float) -> None:
+        """Evaluate score and update simplex state machine.
+
+        Parameters
+        ----------
+        score_new : float
+            Score for the most recently evaluated position.
+        """
+        prev_pos = self.pos_new
+
+        if self.simplex_step == 1:
+            # Evaluate reflection
+            self.r_score = score_new
+
+            if self.r_score > self.simplex_scores[0]:
+                # Reflection is better than best: try expansion
+                self.simplex_step = 2
+
+            elif self.r_score > self.simplex_scores[-2]:
+                # Reflection is better than second-worst: accept it
+                self.simplex_pos[-1] = self.r_pos.copy()
+                self.simplex_scores[-1] = self.r_score
+                self.simplex_step = 1
+
+            else:
+                # Reflection is poor: prepare for contraction
+                if self.simplex_scores[-1] > self.r_score:
+                    self.h_pos = np.array(self.simplex_pos[-1])
+                    self.h_score = self.simplex_scores[-1]
+                else:
+                    self.h_pos = np.array(self.r_pos)
+                    self.h_score = self.r_score
+
+                self.simplex_step = 3
+
+        elif self.simplex_step == 2:
+            # Evaluate expansion
+            self.e_score = score_new
+
+            if self.e_score > self.r_score:
+                # Expansion is better: use it
+                self.simplex_pos[-1] = self.e_pos.copy()
+                self.simplex_scores[-1] = self.e_score
+            else:
+                # Reflection was better: use reflection
+                self.simplex_pos[-1] = self.r_pos.copy()
+                self.simplex_scores[-1] = self.r_score
+
+            self.simplex_step = 1
+
+        elif self.simplex_step == 3:
+            # Evaluate contraction
+            self.c_pos = prev_pos
+            self.c_score = score_new
+
+            if self.c_score > self.simplex_scores[-1]:
+                # Contraction improved: accept it
+                self.simplex_scores[-1] = self.c_score
+                self.simplex_pos[-1] = self.c_pos.copy()
+                self.simplex_step = 1
+            else:
+                # Contraction failed: start shrink
+                self.simplex_step = 4
+                self.compress_idx = 1  # Start from second vertex (skip best)
+
+        elif self.simplex_step == 4:
+            # Evaluate shrink
+            self.simplex_scores[self.compress_idx] = score_new
+            self.simplex_pos[self.compress_idx] = prev_pos.copy()
+
+            self.compress_idx += 1
+
+            if self.compress_idx >= self.n_simp_positions:
+                # Shrink complete: back to reflection
+                self.simplex_step = 1
+
+        # Update best position tracking
+        self._update_best(self.pos_new, score_new)
+        self._update_current(self.pos_new, score_new)
+
+    def _move_climb(self, pos, epsilon, distribution):
+        """Hill climbing fallback move."""
+        return self.init.move_climb_typed(
+            pos, epsilon=epsilon, distribution=distribution
+        )
+
+    def _move_random(self):
+        """Generate random position."""
+        return self.init.move_random_typed()
