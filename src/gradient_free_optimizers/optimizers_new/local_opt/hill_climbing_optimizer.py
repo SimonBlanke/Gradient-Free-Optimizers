@@ -221,6 +221,10 @@ class HillClimbingOptimizer(CoreOptimizer):
             recent_scores = self.scores_valid[-self.n_neighbours :]
             recent_positions = self.positions_valid[-self.n_neighbours :]
 
+            # Guard against empty scores (all were inf/nan)
+            if not recent_scores:
+                return
+
             # Find the best among recent samples
             best_idx = np.argmax(recent_scores)
             best_score = recent_scores[best_idx]
