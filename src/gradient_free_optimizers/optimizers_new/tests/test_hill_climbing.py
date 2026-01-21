@@ -88,26 +88,30 @@ class TestHillClimbingTemplatePattern:
 
     def test_iterate_continuous_batch(self, optimizer):
         """Test continuous batch iteration generates valid values."""
+        # Set up state for parameterless method access
         current = np.array([0.05, 0.5])  # learning_rate, momentum
-        bounds = optimizer._continuous_bounds
+        full_pos = np.array([0.05, 0.5, 1, 2, 2.0, 3.0])
+        optimizer._pos_current = full_pos
 
-        new_vals = optimizer._iterate_continuous_batch(current, bounds)
+        new_vals = optimizer._iterate_continuous_batch()
 
-        # Should return same shape
+        # Should return same shape as continuous mask
         assert new_vals.shape == current.shape
         # Values should be different (with very high probability given epsilon=0.1)
         assert not np.allclose(new_vals, current)
 
     def test_iterate_categorical_batch(self, optimizer):
         """Test categorical batch iteration generates valid indices."""
+        # Set up state for parameterless method access
+        full_pos = np.array([0.05, 0.5, 1, 2, 2.0, 3.0])
+        optimizer._pos_current = full_pos
         current = np.array([1, 2])  # relu idx, rmsprop idx
-        n_categories = optimizer._categorical_sizes
 
         # Run many times to test probabilistic switching
         np.random.seed(42)
         all_same = True
         for _ in range(100):
-            new_vals = optimizer._iterate_categorical_batch(current, n_categories)
+            new_vals = optimizer._iterate_categorical_batch()
             if not np.array_equal(new_vals, current):
                 all_same = False
                 break
@@ -117,12 +121,14 @@ class TestHillClimbingTemplatePattern:
 
     def test_iterate_discrete_batch(self, optimizer):
         """Test discrete batch iteration generates values."""
+        # Set up state for parameterless method access
+        full_pos = np.array([0.05, 0.5, 1, 2, 2.0, 3.0])
+        optimizer._pos_current = full_pos
         current = np.array([2.0, 3.0])  # hidden_layers idx, batch_size idx
-        bounds = optimizer._discrete_bounds
 
-        new_vals = optimizer._iterate_discrete_batch(current, bounds)
+        new_vals = optimizer._iterate_discrete_batch()
 
-        # Should return same shape
+        # Should return same shape as discrete mask
         assert new_vals.shape == current.shape
         # Values should be different (with high probability)
         assert not np.allclose(new_vals, current)

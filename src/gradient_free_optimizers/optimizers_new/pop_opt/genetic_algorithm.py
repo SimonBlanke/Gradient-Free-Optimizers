@@ -246,8 +246,7 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
             # Fall back to random position
             pos = self.p_current.init.move_random_typed()
             self.p_current.pos_current = pos
-            self.p_current.pos_new = pos
-            self.p_current.pos_new_list.append(pos)
+            self.p_current.pos_new = pos  # Property setter auto-appends
 
         # Check constraints
         if not self.conv.not_in_constraint(pos):
@@ -261,9 +260,8 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
             if self.p_current.pos_new_list:
                 self.p_current.pos_new_list[-1] = pos
 
-        # Track position on main optimizer
+        # Track position on main optimizer (property setter auto-appends)
         self.pos_new = pos
-        self.pos_new_list.append(pos)
 
         return pos
 
@@ -299,8 +297,7 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
         if n_ind == 1:
             self.p_current = self.individuals[0]
             pos_new = self.p_current.iterate()
-            self.pos_new = pos_new
-            self.pos_new_list.append(pos_new)
+            self.pos_new = pos_new  # Property setter auto-appends
             return pos_new
 
         # Select a random individual (weighted toward fitter ones)
@@ -329,8 +326,7 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
                     if self.conv.not_in_constraint(pos_new):
                         break
 
-                self.p_current.pos_new = pos_new
-                self.p_current.pos_new_list.append(pos_new)
+                self.p_current.pos_new = pos_new  # Property setter auto-appends
         else:
             # Crossover: get offspring from queue (generate if empty)
             if not self.offspring_l:
@@ -338,15 +334,13 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
 
             if self.offspring_l:
                 pos_new = self.offspring_l.pop(0)
-                self.p_current.pos_new = pos_new
-                self.p_current.pos_new_list.append(pos_new)
+                self.p_current.pos_new = pos_new  # Property setter auto-appends
             else:
                 # Fallback to mutation if crossover failed
                 pos_new = self.p_current.iterate()
 
-        # Track position on main optimizer
+        # Track position on main optimizer (property setter auto-appends)
         self.pos_new = pos_new
-        self.pos_new_list.append(pos_new)
 
         return pos_new
 

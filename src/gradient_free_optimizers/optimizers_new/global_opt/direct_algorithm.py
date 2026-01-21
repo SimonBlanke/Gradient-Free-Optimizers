@@ -314,8 +314,7 @@ class DirectAlgorithm(SMBO):
             if self.current_subspace:
                 pos = self.current_subspace.center_pos
                 if self.conv.not_in_constraint(pos):
-                    self.pos_new = pos
-                    self.pos_new_list.append(pos)
+                    self.pos_new = pos  # Property setter auto-appends
                     self.X_sample.append(pos)
                     return pos
             else:
@@ -325,17 +324,27 @@ class DirectAlgorithm(SMBO):
 
                 pos = self.subspace_l[-1].center_pos
                 if self.conv.not_in_constraint(pos):
-                    self.pos_new = pos
-                    self.pos_new_list.append(pos)
+                    self.pos_new = pos  # Property setter auto-appends
                     self.X_sample.append(pos)
                     return pos
 
             # If constraint violated, do hill climb move
             pos = self._move_random()
-            self.pos_new = pos
-            self.pos_new_list.append(pos)
+            self.pos_new = pos  # Property setter auto-appends
             self.X_sample.append(pos)
             return pos
+
+    def _iterate_continuous_batch(self) -> np.ndarray:
+        """Not used - DIRECT uses subspace division algorithm."""
+        raise NotImplementedError("DIRECT uses subspace division algorithm")
+
+    def _iterate_categorical_batch(self) -> np.ndarray:
+        """Not used - DIRECT uses subspace division algorithm."""
+        raise NotImplementedError("DIRECT uses subspace division algorithm")
+
+    def _iterate_discrete_batch(self) -> np.ndarray:
+        """Not used - DIRECT uses subspace division algorithm."""
+        raise NotImplementedError("DIRECT uses subspace division algorithm")
 
     def _evaluate(self, score_new: float) -> None:
         """Update the current subspace's Lipschitz bound.

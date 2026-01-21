@@ -116,11 +116,22 @@ class GridSearchOptimizer(CoreOptimizer):
         """
         pos = self.grid_search_opt.iterate()
 
-        # Track in parent optimizer
+        # Track in parent optimizer (property setter auto-appends to pos_new_list)
         self.pos_new = pos
-        self.pos_new_list.append(pos)
 
         return pos
+
+    def _iterate_continuous_batch(self) -> "np.ndarray":
+        """Not used by GridSearch - uses systematic grid traversal."""
+        raise NotImplementedError("GridSearch uses systematic grid traversal")
+
+    def _iterate_categorical_batch(self) -> "np.ndarray":
+        """Not used by GridSearch - uses systematic grid traversal."""
+        raise NotImplementedError("GridSearch uses systematic grid traversal")
+
+    def _iterate_discrete_batch(self) -> "np.ndarray":
+        """Not used by GridSearch - uses systematic grid traversal."""
+        raise NotImplementedError("GridSearch uses systematic grid traversal")
 
     def _evaluate(self, score_new):
         """Greedy evaluation - track best position.

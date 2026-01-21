@@ -131,8 +131,7 @@ class Spiral(HillClimbingOptimizer):
         if center_pos is None or self.pos_current is None:
             # Fall back to random move during early iterations
             pos_new = self.init.move_random_typed()
-            self.pos_new = pos_new
-            self.pos_new_list.append(pos_new)
+            self.pos_new = pos_new  # Property setter auto-appends
             return pos_new
 
         # Update decay factor
@@ -169,9 +168,8 @@ class Spiral(HillClimbingOptimizer):
         else:
             pos_new = self.conv2pos_typed(new_pos)
 
-        # Track position
+        # Track position (property setter auto-appends)
         self.pos_new = pos_new
-        self.pos_new_list.append(pos_new)
 
         return pos_new
 

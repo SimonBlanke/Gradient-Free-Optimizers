@@ -85,10 +85,6 @@ class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer):
         )
         self.n_iter_restart = n_iter_restart
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # OVERRIDE: Position generation with periodic random restarts
-    # ═══════════════════════════════════════════════════════════════════════════
-
     def _generate_position(self):
         """Generate a position - either climbing or random restart.
 

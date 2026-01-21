@@ -99,30 +99,25 @@ class HillClimbingOptimizer(CoreOptimizer):
                 f"Choose from: {list(self._DISTRIBUTIONS.keys())}"
             )
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # TEMPLATE METHODS: Dimension-type-specific iteration
-    # ═══════════════════════════════════════════════════════════════════════════
-
-    def _iterate_continuous_batch(
-        self,
-        current: np.ndarray,
-        bounds: np.ndarray,
-    ) -> np.ndarray:
+    def _iterate_continuous_batch(self) -> np.ndarray:
         """Generate new continuous values using Gaussian noise scaled by range.
+
+        Accesses state via:
+            - self.pos_current[self._continuous_mask]
+            - self._continuous_bounds
 
         The noise magnitude is proportional to the dimension's range,
         ensuring consistent exploration behavior regardless of scale.
 
-        Args:
-            current: Current values, shape (n_continuous,)
-            bounds: Min/max bounds, shape (n_continuous, 2)
-                    bounds[:, 0] = min values
-                    bounds[:, 1] = max values
-
         Returns
         -------
+        np.ndarray
             New values with noise added (not yet clipped to bounds)
         """
+        # Access state from instance
+        current = self._pos_current[self._continuous_mask]
+        bounds = self._continuous_bounds
+
         # Calculate range for each dimension
         ranges = bounds[:, 1] - bounds[:, 0]
 
@@ -135,24 +130,25 @@ class HillClimbingOptimizer(CoreOptimizer):
 
         return current + noise
 
-    def _iterate_categorical_batch(
-        self,
-        current: np.ndarray,
-        n_categories: np.ndarray,
-    ) -> np.ndarray:
+    def _iterate_categorical_batch(self) -> np.ndarray:
         """Generate new categorical values using probabilistic switching.
+
+        Accesses state via:
+            - self.pos_current[self._categorical_mask]
+            - self._categorical_sizes
 
         With probability epsilon, switch to a random category.
         Otherwise, keep the current category.
 
-        Args:
-            current: Current category indices, shape (n_categorical,)
-            n_categories: Number of categories per dimension, shape (n_categorical,)
-
         Returns
         -------
+        np.ndarray
             New category indices (integers)
         """
+        # Access state from instance
+        current = self._pos_current[self._categorical_mask]
+        n_categories = self._categorical_sizes
+
         n = len(current)
 
         # Determine which dimensions will switch (Bernoulli trial)
@@ -165,26 +161,25 @@ class HillClimbingOptimizer(CoreOptimizer):
         # Apply switch: use random if switching, otherwise keep current
         return np.where(switch_mask, random_cats, current.astype(np.int64))
 
-    def _iterate_discrete_batch(
-        self,
-        current: np.ndarray,
-        bounds: np.ndarray,
-    ) -> np.ndarray:
+    def _iterate_discrete_batch(self) -> np.ndarray:
         """Generate new discrete values using Gaussian noise.
+
+        Accesses state via:
+            - self.pos_current[self._discrete_mask]
+            - self._discrete_bounds
 
         Similar to continuous, but operates on discrete indices.
         The result will be rounded to integers by _clip_position.
 
-        Args:
-            current: Current positions (indices), shape (n_discrete,)
-            bounds: Min/max bounds, shape (n_discrete, 2)
-                    bounds[:, 0] = min index (typically 0)
-                    bounds[:, 1] = max index
-
         Returns
         -------
+        np.ndarray
             New positions with noise added (float, will be rounded)
         """
+        # Access state from instance
+        current = self._pos_current[self._discrete_mask]
+        bounds = self._discrete_bounds
+
         # Use max position to scale sigma (similar to continuous)
         max_positions = bounds[:, 1]
         sigmas = max_positions * self.epsilon
@@ -197,10 +192,6 @@ class HillClimbingOptimizer(CoreOptimizer):
         noise = noise_fn(self._rng, sigmas, len(current))
 
         return current + noise
-
-    # ═══════════════════════════════════════════════════════════════════════════
-    # EVALUATE: Greedy Hill Climbing with n_neighbours
-    # ═══════════════════════════════════════════════════════════════════════════
 
     def _evaluate(self, score_new):
         """Greedy selection after n_neighbours trials.

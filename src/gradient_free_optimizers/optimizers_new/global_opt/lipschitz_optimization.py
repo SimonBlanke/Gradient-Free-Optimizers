@@ -218,8 +218,8 @@ class LipschitzOptimizer(SMBO):
         all_pos_comb_sorted = self.pos_comb[index_best]
         pos_best = all_pos_comb_sorted[0]
 
+        # Property setter auto-appends to pos_new_list
         self.pos_new = pos_best
-        self.pos_new_list.append(pos_best)
         self.X_sample.append(pos_best)
 
         return pos_best

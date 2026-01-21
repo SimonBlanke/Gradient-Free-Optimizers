@@ -37,10 +37,6 @@ from ...optimizer_search import (
     StochasticHillClimbingOptimizer,
 )
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# OPTIMIZER LIST - Add new optimizers here as they are implemented
-# ═══════════════════════════════════════════════════════════════════════════════
-
 OPTIMIZERS = [
     HillClimbingOptimizer,
     RandomSearchOptimizer,
@@ -49,11 +45,6 @@ OPTIMIZERS = [
     RepulsingHillClimbingOptimizer,
     RandomRestartHillClimbingOptimizer,
 ]
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# HELPER: Generate high-dimensional search spaces
-# ═══════════════════════════════════════════════════════════════════════════════
 
 
 def make_continuous_space(n_dims: int) -> dict:
@@ -99,11 +90,6 @@ def simple_objective(para):
         elif isinstance(value, bool):
             total += 1 if value else 0
     return -abs(total)  # Maximize towards 0
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# TESTS: Dimension Mask Creation
-# ═══════════════════════════════════════════════════════════════════════════════
 
 
 @pytest.mark.parametrize("OptimizerClass", OPTIMIZERS)
@@ -170,11 +156,6 @@ def test_bounds_arrays_shape(OptimizerClass):
     assert opt._discrete_bounds.shape == (4, 2)
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# TESTS: Batch Method Verification (via Mocking)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
 @pytest.mark.parametrize("OptimizerClass", OPTIMIZERS)
 def test_continuous_batch_called_with_array(OptimizerClass):
     """Verify _iterate_continuous_batch receives vectorized input."""
@@ -215,11 +196,6 @@ def test_discrete_batch_processes_all_dims(OptimizerClass):
     assert opt._discrete_bounds.shape == (18, 2)
     assert all(opt._discrete_bounds[:, 0] == 0)
     assert all(opt._discrete_bounds[:, 1] == 7)  # n_values - 1
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# TESTS: Correctness with Many Dimensions (Moderate for CI)
-# ═══════════════════════════════════════════════════════════════════════════════
 
 
 @pytest.mark.parametrize("OptimizerClass", OPTIMIZERS)
@@ -277,11 +253,6 @@ def test_mixed_50_dimensions(OptimizerClass):
     assert len(opt.best_para) == 50
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# TESTS: High Dimension Tests (marked slow for optional CI runs)
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
 @pytest.mark.slow
 @pytest.mark.parametrize("OptimizerClass", OPTIMIZERS)
 def test_200_continuous_dimensions(OptimizerClass):
@@ -316,11 +287,6 @@ def test_500_continuous_dimensions(OptimizerClass):
 
     assert opt.best_para is not None
     assert len(opt.best_para) == 500
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# TESTS: Position Array Consistency
-# ═══════════════════════════════════════════════════════════════════════════════
 
 
 @pytest.mark.parametrize("OptimizerClass", OPTIMIZERS)
@@ -360,11 +326,6 @@ def test_position_values_correct_types(OptimizerClass):
         assert 0 <= pos[i] < 5  # 5 values in discrete array
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# TESTS: Reproducibility with Many Dimensions
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
 @pytest.mark.parametrize("OptimizerClass", OPTIMIZERS)
 def test_reproducibility_50_dimensions(OptimizerClass):
     """Test that results are reproducible with 50 dimensions."""
@@ -378,11 +339,6 @@ def test_reproducibility_50_dimensions(OptimizerClass):
 
     assert opt1.best_para == opt2.best_para
     assert opt1.best_score == opt2.best_score
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# TESTS: Clipping Works for All Dimension Types
-# ═══════════════════════════════════════════════════════════════════════════════
 
 
 @pytest.mark.parametrize("OptimizerClass", OPTIMIZERS)

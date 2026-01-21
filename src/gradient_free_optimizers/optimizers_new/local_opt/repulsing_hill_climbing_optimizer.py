@@ -87,19 +87,16 @@ class RepulsingHillClimbingOptimizer(HillClimbingOptimizer):
         self.repulsion_factor = repulsion_factor
         self.epsilon_mod = 1  # Multiplier for epsilon, increases when stuck
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # OVERRIDE BATCH METHODS: Use epsilon * epsilon_mod
-    # ═══════════════════════════════════════════════════════════════════════════
-
-    def _iterate_continuous_batch(
-        self,
-        current: np.ndarray,
-        bounds: np.ndarray,
-    ) -> np.ndarray:
+    def _iterate_continuous_batch(self) -> np.ndarray:
         """Generate new continuous values with adaptive step size.
+
+        Accesses via: self._pos_current, self._continuous_bounds
 
         Uses epsilon * epsilon_mod to allow larger steps when stuck.
         """
+        current = self._pos_current[self._continuous_mask]
+        bounds = self._continuous_bounds
+
         ranges = bounds[:, 1] - bounds[:, 0]
         effective_epsilon = self.epsilon * self.epsilon_mod
         sigmas = ranges * effective_epsilon
@@ -109,15 +106,16 @@ class RepulsingHillClimbingOptimizer(HillClimbingOptimizer):
 
         return current + noise
 
-    def _iterate_categorical_batch(
-        self,
-        current: np.ndarray,
-        n_categories: np.ndarray,
-    ) -> np.ndarray:
+    def _iterate_categorical_batch(self) -> np.ndarray:
         """Generate new categorical values with adaptive switch probability.
+
+        Accesses via: self._pos_current, self._categorical_sizes
 
         Uses epsilon * epsilon_mod for higher switch probability when stuck.
         """
+        current = self._pos_current[self._categorical_mask]
+        n_categories = self._categorical_sizes
+
         n = len(current)
         effective_epsilon = self.epsilon * self.epsilon_mod
 
@@ -127,15 +125,16 @@ class RepulsingHillClimbingOptimizer(HillClimbingOptimizer):
 
         return np.where(switch_mask, random_cats, current.astype(np.int64))
 
-    def _iterate_discrete_batch(
-        self,
-        current: np.ndarray,
-        bounds: np.ndarray,
-    ) -> np.ndarray:
+    def _iterate_discrete_batch(self) -> np.ndarray:
         """Generate new discrete values with adaptive step size.
+
+        Accesses via: self._pos_current, self._discrete_bounds
 
         Uses epsilon * epsilon_mod to allow larger steps when stuck.
         """
+        current = self._pos_current[self._discrete_mask]
+        bounds = self._discrete_bounds
+
         max_positions = bounds[:, 1]
         effective_epsilon = self.epsilon * self.epsilon_mod
         sigmas = max_positions * effective_epsilon
@@ -146,10 +145,6 @@ class RepulsingHillClimbingOptimizer(HillClimbingOptimizer):
         noise = noise_fn(self._rng, sigmas, len(current))
 
         return current + noise
-
-    # ═══════════════════════════════════════════════════════════════════════════
-    # EVALUATE: Adjust epsilon_mod based on improvement
-    # ═══════════════════════════════════════════════════════════════════════════
 
     def _evaluate(self, score_new):
         """Evaluate with adaptive step size adjustment.

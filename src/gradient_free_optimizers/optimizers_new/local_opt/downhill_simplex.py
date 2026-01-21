@@ -5,18 +5,20 @@
 """
 Downhill Simplex (Nelder-Mead) Optimizer.
 
-Supports: CONTINUOUS, DISCRETE_NUMERICAL
-Note: Categorical dimensions require special handling in simplex methods.
+Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
+
+This optimizer uses the "State vor iterate()" pattern:
+- Computes the full next position BEFORE _iterate_*_batch() methods are called
+- The _iterate_*_batch() methods just extract the appropriate dimension components
 """
 
 from __future__ import annotations
 
-import random
 from typing import TYPE_CHECKING, Any, Callable
 
 import numpy as np
 
-from .hill_climbing_optimizer import HillClimbingOptimizer
+from ..core_optimizer import CoreOptimizer
 
 if TYPE_CHECKING:
     pass
@@ -51,17 +53,22 @@ def _centroid(array_list: list) -> np.ndarray:
     return np.array(result)
 
 
-class DownhillSimplexOptimizer(HillClimbingOptimizer):
+class DownhillSimplexOptimizer(CoreOptimizer):
     """Nelder-Mead downhill simplex optimizer.
 
     Dimension Support:
         - Continuous: YES (native simplex operations)
-        - Categorical: LIMITED (simplex operations don't naturally apply)
-        - Discrete: YES (with rounding)
+        - Categorical: YES (with index-based operations)
+        - Discrete: YES (with index-based operations)
 
     The Nelder-Mead simplex method maintains a simplex of n+1 points in
     n-dimensional space and iteratively transforms it through reflection,
     expansion, contraction, and shrinkage operations to find the optimum.
+
+    This implementation uses the "State vor iterate()" pattern:
+    The simplex state machine computes the full next position BEFORE
+    the template methods are called. The _iterate_*_batch() methods
+    simply extract the appropriate dimension components.
 
     Algorithm:
     1. Initialize simplex with n+1 vertices
@@ -112,9 +119,6 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
         random_state: int | None = None,
         rand_rest_p: float = 0,
         nth_process: int | None = None,
-        epsilon: float = 0.03,
-        distribution: str = "normal",
-        n_neighbours: int = 3,
         alpha: float = 1.0,
         gamma: float = 2.0,
         beta: float = 0.5,
@@ -127,9 +131,6 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
-            epsilon=epsilon,
-            distribution=distribution,
-            n_neighbours=n_neighbours,
         )
 
         self.alpha = alpha  # Reflection coefficient
@@ -138,7 +139,7 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
         self.sigma = sigma  # Shrink coefficient
 
         # Number of simplex vertices = dimensions + 1
-        self.n_simp_positions = len(self.conv.search_space) + 1
+        self.n_simp_positions = len(self.search_space) + 1
 
         # Simplex state
         self.simplex_pos = []
@@ -162,12 +163,19 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
         self.h_score = None
         self.compress_idx = 0
 
-    def conv2pos_typed(self, pos):
-        """Convert position to valid position with proper types.
+        # Pre-computed next position for "State vor iterate()" pattern
+        self._next_position = None
+        self._next_position_computed = False
 
-        Handles continuous, categorical, and discrete dimensions appropriately.
+        # RNG for random fallback
+        self._rng = np.random.default_rng(self.random_seed)
+
+    def _clip_to_bounds(self, pos: np.ndarray) -> np.ndarray:
+        """Clip position to valid bounds with proper types.
+
+        Handles continuous, categorical, and discrete dimensions.
         """
-        pos_new = []
+        pos_clipped = pos.copy()
         dim_names = list(self.search_space.keys())
 
         for i, name in enumerate(dim_names):
@@ -176,17 +184,15 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
 
             if isinstance(dim_def, tuple):
                 # Continuous: clip to bounds
-                pos_new.append(np.clip(val, dim_def[0], dim_def[1]))
+                pos_clipped[i] = np.clip(val, dim_def[0], dim_def[1])
             elif isinstance(dim_def, list):
                 # Categorical: clip to valid indices
-                pos_new.append(int(np.clip(round(val), 0, len(dim_def) - 1)))
+                pos_clipped[i] = int(np.clip(round(val), 0, len(dim_def) - 1))
             elif isinstance(dim_def, np.ndarray):
                 # Discrete: clip to valid indices
-                pos_new.append(int(np.clip(round(val), 0, len(dim_def) - 1)))
-            else:
-                pos_new.append(val)
+                pos_clipped[i] = int(np.clip(round(val), 0, len(dim_def) - 1))
 
-        return np.array(pos_new)
+        return pos_clipped
 
     def finish_initialization(self) -> None:
         """Initialize the simplex from evaluated positions."""
@@ -198,14 +204,15 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
         self.simplex_step = 1
         self.search_state = "iter"
 
-    def iterate(self) -> np.ndarray:
-        """Generate next simplex position via reflection/expansion/contraction.
+    def _compute_next_simplex_position(self) -> None:
+        """Compute the full next position based on simplex state machine.
 
-        Returns
-        -------
-        np.ndarray
-            Next position for evaluation.
+        This is called ONCE before the first _iterate_*_batch() method.
+        The computed position is stored in self._next_position.
         """
+        if self._next_position_computed:
+            return
+
         # Check if simplex is stale (all vertices same)
         simplex_stale = all(
             _arrays_equal(self.simplex_pos[0], arr) for arr in self.simplex_pos
@@ -214,8 +221,14 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
         if simplex_stale:
             # Reset simplex from all evaluated positions
             idx_sorted = _sort_list_idx(self.scores_valid)
-            self.simplex_pos = [self.positions_valid[idx].copy() for idx in idx_sorted[: self.n_simp_positions]]
-            self.simplex_scores = [self.scores_valid[idx] for idx in idx_sorted[: self.n_simp_positions]]
+            self.simplex_pos = [
+                self.positions_valid[idx].copy()
+                for idx in idx_sorted[: self.n_simp_positions]
+            ]
+            self.simplex_scores = [
+                self.scores_valid[idx]
+                for idx in idx_sorted[: self.n_simp_positions]
+            ]
             self.simplex_step = 1
 
         if self.simplex_step == 1:
@@ -232,50 +245,75 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
             r_pos = self.center_array + self.alpha * (
                 self.center_array - self.simplex_pos[-1]
             )
-            self.r_pos = self.conv2pos_typed(r_pos)
-            pos_new = self.r_pos
+            self.r_pos = self._clip_to_bounds(r_pos)
+            self._next_position = self.r_pos.copy()
 
         elif self.simplex_step == 2:
             # Step 2: Expansion
             e_pos = self.center_array + self.gamma * (
                 self.center_array - self.simplex_pos[-1]
             )
-            self.e_pos = self.conv2pos_typed(e_pos)
-            self.simplex_step = 1
-
-            pos_new = self.e_pos
+            self.e_pos = self._clip_to_bounds(e_pos)
+            self._next_position = self.e_pos.copy()
 
         elif self.simplex_step == 3:
             # Step 3: Contraction
             c_pos = self.h_pos + self.beta * (self.center_array - self.h_pos)
-            c_pos = self.conv2pos_typed(c_pos)
-
-            pos_new = c_pos
+            c_pos = self._clip_to_bounds(c_pos)
+            self._next_position = c_pos.copy()
 
         elif self.simplex_step == 4:
             # Step 4: Shrink
             pos = self.simplex_pos[self.compress_idx]
-            pos = np.array(pos) + self.sigma * (np.array(self.simplex_pos[0]) - np.array(pos))
-
-            pos_new = self.conv2pos_typed(pos)
+            pos = np.array(pos) + self.sigma * (
+                np.array(self.simplex_pos[0]) - np.array(pos)
+            )
+            self._next_position = self._clip_to_bounds(pos)
 
         else:
-            # Fallback
-            pos_new = self._move_random()
+            # Fallback: random position
+            self._next_position = self._generate_random_position()
 
-        # Handle constraints
-        if self.conv.not_in_constraint(pos_new):
-            self.pos_new = pos_new
-            self.pos_new_list.append(pos_new)
-            return pos_new
+        self._next_position_computed = True
 
-        # If constraint violated, fall back to hill climb move
-        pos_new = self._move_climb(
-            pos_new, epsilon=self.epsilon, distribution=self.distribution
-        )
-        self.pos_new = pos_new
-        self.pos_new_list.append(pos_new)
-        return pos_new
+    def _generate_random_position(self) -> np.ndarray:
+        """Generate a random position within bounds."""
+        n_dims = len(self.search_space)
+        pos = np.empty(n_dims)
+        dim_names = list(self.search_space.keys())
+
+        for i, name in enumerate(dim_names):
+            dim_def = self.search_space[name]
+
+            if isinstance(dim_def, tuple):
+                # Continuous
+                pos[i] = self._rng.uniform(dim_def[0], dim_def[1])
+            elif isinstance(dim_def, list):
+                # Categorical
+                pos[i] = self._rng.integers(0, len(dim_def))
+            elif isinstance(dim_def, np.ndarray):
+                # Discrete
+                pos[i] = self._rng.integers(0, len(dim_def))
+
+        return pos
+
+    def _iterate_continuous_batch(self) -> np.ndarray:
+        """Extract continuous components from pre-computed simplex position.
+
+        The simplex position is computed ONCE when this method is first called.
+        """
+        self._compute_next_simplex_position()
+        return self._next_position[self._continuous_mask]
+
+    def _iterate_categorical_batch(self) -> np.ndarray:
+        """Extract categorical components from pre-computed simplex position."""
+        self._compute_next_simplex_position()
+        return self._next_position[self._categorical_mask]
+
+    def _iterate_discrete_batch(self) -> np.ndarray:
+        """Extract discrete components from pre-computed simplex position."""
+        self._compute_next_simplex_position()
+        return self._next_position[self._discrete_mask]
 
     def _evaluate(self, score_new: float) -> None:
         """Evaluate score and update simplex state machine.
@@ -285,7 +323,10 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
         score_new : float
             Score for the most recently evaluated position.
         """
-        prev_pos = self.pos_new
+        # Reset the pre-computed flag for next iteration
+        self._next_position_computed = False
+
+        prev_pos = self._pos_new
 
         if self.simplex_step == 1:
             # Evaluate reflection
@@ -354,15 +395,5 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
                 self.simplex_step = 1
 
         # Update best position tracking
-        self._update_best(self.pos_new, score_new)
-        self._update_current(self.pos_new, score_new)
-
-    def _move_climb(self, pos, epsilon, distribution):
-        """Hill climbing fallback move."""
-        return self.init.move_climb_typed(
-            pos, epsilon=epsilon, distribution=distribution
-        )
-
-    def _move_random(self):
-        """Generate random position."""
-        return self.init.move_random_typed()
+        self._update_best(self._pos_new, score_new)
+        self._update_current(self._pos_new, score_new)

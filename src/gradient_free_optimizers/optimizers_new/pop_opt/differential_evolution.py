@@ -259,8 +259,7 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
             # Fall back to random position
             pos = self.p_current.init.move_random_typed()
             self.p_current.pos_current = pos
-            self.p_current.pos_new = pos
-            self.p_current.pos_new_list.append(pos)
+            self.p_current.pos_new = pos  # Property setter auto-appends
 
         # Check constraints
         if not self.conv.not_in_constraint(pos):
@@ -270,13 +269,12 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
                 if self.conv.not_in_constraint(pos):
                     break
             self.p_current.pos_current = pos
-            self.p_current.pos_new = pos
+            self.p_current.pos_new = pos  # Property setter auto-appends
             if self.p_current.pos_new_list:
                 self.p_current.pos_new_list[-1] = pos
 
-        # Track position on main optimizer
+        # Track position on main optimizer (property setter auto-appends)
         self.pos_new = pos
-        self.pos_new_list.append(pos)
 
         return pos
 
@@ -316,10 +314,8 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
         # Guard against None target
         if target_vector is None:
             pos_new = self.p_current.init.move_random_typed()
-            self.p_current.pos_new = pos_new
-            self.p_current.pos_new_list.append(pos_new)
-            self.pos_new = pos_new
-            self.pos_new_list.append(pos_new)
+            self.p_current.pos_new = pos_new  # Property setter auto-appends
+            self.pos_new = pos_new  # Property setter auto-appends
             return pos_new
 
         # Generate mutant vector
@@ -339,13 +335,11 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
         pos_new = self._constraint_loop(pos_new)
         pos_new = self.conv2pos_typed(pos_new)
 
-        # Track on individual
+        # Track on individual (property setter auto-appends)
         self.p_current.pos_new = pos_new
-        self.p_current.pos_new_list.append(pos_new)
 
-        # Track on main optimizer
+        # Track on main optimizer (property setter auto-appends)
         self.pos_new = pos_new
-        self.pos_new_list.append(pos_new)
 
         return pos_new
 

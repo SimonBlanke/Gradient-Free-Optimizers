@@ -95,10 +95,6 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer):
         self.n_transitions = 0
         self.n_considered_transitions = 0
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # ACCEPTANCE PROBABILITY CALCULATION
-    # ═══════════════════════════════════════════════════════════════════════════
-
     @property
     def _normalized_energy_state(self) -> float:
         """Calculate normalized energy difference between new and current scores.
@@ -141,10 +137,6 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer):
             exp_val = math.inf
         return self.p_accept * 2 / (1 + exp_val)
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # EVALUATE: Stochastic acceptance of worse solutions
-    # ═══════════════════════════════════════════════════════════════════════════
-
     def _evaluate(self, score_new):
         """Evaluate with stochastic acceptance of worse solutions.
 
@@ -157,8 +149,8 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer):
         Args:
             score_new: Score of the most recently evaluated position
         """
-        # Store score_new for property access
-        self.score_new = score_new
+        # Note: score_new is already stored via evaluate() -> _track_score()
+        # Access via self.score_new for property methods like _normalized_energy_state
 
         # If score is better or equal, use standard hill climbing logic
         if score_new > self.score_current:

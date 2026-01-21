@@ -7,7 +7,18 @@ Core optimizer that implements the iteration orchestration logic.
 
 This class extends BaseOptimizer with the actual orchestration of
 dimension-type-aware iteration using masks and batch operations.
+
+State Management:
+    Uses property-based state tracking (like SearchTracker). Setting
+    pos_new, pos_current, pos_best, score_new, score_current, score_best
+    automatically appends to the corresponding history lists.
+
+Template Method Pattern:
+    Subclasses implement _iterate_*_batch() methods WITHOUT parameters.
+    They access state via self.pos_current, self._continuous_bounds, etc.
 """
+
+import math
 
 import numpy as np
 
@@ -15,6 +26,16 @@ from ..base_optimizer import BaseOptimizer
 from .converter import Converter
 from .init_positions import Initializer
 from .utils import set_random_seed
+
+
+def _isinf(x):
+    """Check if value is infinite."""
+    return math.isinf(x) if isinstance(x, (int, float)) else np.isinf(x)
+
+
+def _isnan(x):
+    """Check if value is NaN."""
+    return math.isnan(x) if isinstance(x, (int, float)) else np.isnan(x)
 
 
 class CoreOptimizer(BaseOptimizer):
@@ -75,7 +96,7 @@ class CoreOptimizer(BaseOptimizer):
         self.nth_trial = 0
         self.nth_init = 0
 
-        # History lists (used by Search/progress bar)
+        # History lists (populated by property setters automatically)
         self.pos_new_list = []
         self.score_new_list = []
         self.pos_current_list = []
@@ -83,12 +104,13 @@ class CoreOptimizer(BaseOptimizer):
         self.pos_best_list = []
         self.score_best_list = []
 
-        # Position tracking
-        self.pos_current = None
-        self.pos_new = None
-        self.pos_best = None
-        self.score_current = None
-        self.score_best = None
+        # Private backing fields for property-based state management
+        self._pos_new = None
+        self._pos_current = None
+        self._pos_best = None
+        self._score_new = -math.inf
+        self._score_current = -math.inf
+        self._score_best = -math.inf
 
         # Search state
         self.search_state = "init"
@@ -96,10 +118,6 @@ class CoreOptimizer(BaseOptimizer):
 
         # Auto-initialize dimension masks
         self._setup_dimension_masks()
-
-    # ═══════════════════════════════════════════════════════════════════════════
-    # SETUP METHODS
-    # ═══════════════════════════════════════════════════════════════════════════
 
     def _setup_dimension_masks(self):
         """Initialize dimension masks and bounds arrays.
@@ -171,15 +189,13 @@ class CoreOptimizer(BaseOptimizer):
             np.array(discrete_bounds_list) if discrete_bounds_list else None
         )
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # INITIALIZATION PHASE (Search-compatible interface)
-    # ═══════════════════════════════════════════════════════════════════════════
-
     def init_pos(self):
         """Get next initialization position.
 
         Returns the next position from the initialization list and tracks it
         as the new position. Called by Search during the initialization phase.
+
+        Note: Property setter automatically appends to pos_new_list.
 
         Returns
         -------
@@ -187,8 +203,7 @@ class CoreOptimizer(BaseOptimizer):
             The next initialization position.
         """
         init_pos = self.init.init_positions_l[self.nth_init]
-        self.pos_new = init_pos
-        self.pos_new_list.append(init_pos)
+        self.pos_new = init_pos  # Property setter auto-appends
         self.nth_init += 1
         return init_pos
 
@@ -198,31 +213,24 @@ class CoreOptimizer(BaseOptimizer):
         Updates best and current positions/scores based on the initialization
         evaluation. Called by Search after evaluating an init position.
 
+        Note: Property setters automatically append to history lists and
+        track valid scores.
+
         Args:
             score_new: Score of the most recently evaluated init position
         """
-        # Track the score
-        self.score_new_list.append(score_new)
-
-        # Track valid scores (non-inf, non-nan)
-        if not (np.isinf(score_new) or np.isnan(score_new)):
-            self.positions_valid.append(self.pos_new.copy())
-            self.scores_valid.append(score_new)
+        # Track the score (property setter auto-appends and tracks valid)
+        self.score_new = score_new
 
         # Initialize best if first evaluation or better score
-        if self.pos_best is None or score_new > self.score_best:
-            self.pos_best = self.pos_new.copy()
+        if self._pos_best is None or score_new > self._score_best:
+            self.pos_best = self._pos_new.copy()
             self.score_best = score_new
-            self.pos_best_list.append(self.pos_best)
-            self.score_best_list.append(self.score_best)
-            self.best_since_iter = self.nth_trial
 
         # Initialize current if first evaluation
-        if self.pos_current is None:
-            self.pos_current = self.pos_new.copy()
+        if self._pos_current is None:
+            self.pos_current = self._pos_new.copy()
             self.score_current = score_new
-            self.pos_current_list.append(self.pos_current)
-            self.score_current_list.append(self.score_current)
 
         self.nth_trial += 1
 
@@ -234,10 +242,6 @@ class CoreOptimizer(BaseOptimizer):
         """
         self.search_state = "iter"
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # ITERATION ORCHESTRATION
-    # ═══════════════════════════════════════════════════════════════════════════
-
     def iterate(self):
         """Generate a new position using dimension-type-aware batch iteration.
 
@@ -246,6 +250,8 @@ class CoreOptimizer(BaseOptimizer):
         2. Calling batch methods for each dimension type that has elements
         3. Clipping the result to valid bounds
         4. Checking constraints (regenerate if violated)
+
+        Note: Property setter automatically appends to pos_new_list.
 
         Returns
         -------
@@ -261,14 +267,16 @@ class CoreOptimizer(BaseOptimizer):
                 break
         # If max retries exceeded, use the last generated position anyway
 
-        # Track as new position (for evaluate())
+        # Track as new position (property setter auto-appends)
         self.pos_new = clipped_pos
-        self.pos_new_list.append(clipped_pos)
 
         return clipped_pos
 
     def _generate_position(self):
         """Generate a single candidate position (internal helper).
+
+        Calls the template methods (_iterate_*_batch) WITHOUT parameters.
+        Each method accesses state via self.pos_current, self._*_bounds, etc.
 
         Returns
         -------
@@ -279,33 +287,17 @@ class CoreOptimizer(BaseOptimizer):
 
         # Process continuous dimensions
         if self._continuous_mask is not None and self._continuous_mask.any():
-            current = self.pos_current[self._continuous_mask] if self.pos_current is not None else np.zeros(self._continuous_mask.sum())
-            new_pos[self._continuous_mask] = self._iterate_continuous_batch(
-                current=current,
-                bounds=self._continuous_bounds,
-            )
+            new_pos[self._continuous_mask] = self._iterate_continuous_batch()
 
         # Process categorical dimensions
         if self._categorical_mask is not None and self._categorical_mask.any():
-            current = self.pos_current[self._categorical_mask] if self.pos_current is not None else np.zeros(self._categorical_mask.sum())
-            new_pos[self._categorical_mask] = self._iterate_categorical_batch(
-                current=current,
-                n_categories=self._categorical_sizes,
-            )
+            new_pos[self._categorical_mask] = self._iterate_categorical_batch()
 
         # Process discrete-numerical dimensions
         if self._discrete_mask is not None and self._discrete_mask.any():
-            current = self.pos_current[self._discrete_mask] if self.pos_current is not None else np.zeros(self._discrete_mask.sum())
-            new_pos[self._discrete_mask] = self._iterate_discrete_batch(
-                current=current,
-                bounds=self._discrete_bounds,
-            )
+            new_pos[self._discrete_mask] = self._iterate_discrete_batch()
 
         return self._clip_position(new_pos)
-
-    # ═══════════════════════════════════════════════════════════════════════════
-    # CLIPPING AND VALIDATION
-    # ═══════════════════════════════════════════════════════════════════════════
 
     def _clip_position(self, position: np.ndarray) -> np.ndarray:
         """Clip position to valid bounds with dimension-type-awareness.
@@ -350,10 +342,6 @@ class CoreOptimizer(BaseOptimizer):
 
         return clipped
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # EVALUATE: Template Method Pattern
-    # ═══════════════════════════════════════════════════════════════════════════
-
     def evaluate(self, score_new):
         """Orchestrate evaluation: track score, then delegate to algorithm-specific logic.
 
@@ -370,18 +358,15 @@ class CoreOptimizer(BaseOptimizer):
         self._track_score(score_new)
 
         # Handle initialization phase (first evaluation or pos_best is None)
+        # Property setters auto-append to lists, so no manual append needed
         if self.pos_best is None:
             self.pos_best = self.pos_new.copy()
             self.score_best = score_new
-            self.pos_best_list.append(self.pos_best)
-            self.score_best_list.append(self.score_best)
             self.best_since_iter = self.nth_trial
 
         if self.pos_current is None:
             self.pos_current = self.pos_new.copy()
             self.score_current = score_new
-            self.pos_current_list.append(self.pos_current)
-            self.score_current_list.append(self.score_current)
 
         # Delegate to algorithm-specific evaluation
         self._evaluate(score_new)
@@ -389,17 +374,14 @@ class CoreOptimizer(BaseOptimizer):
     def _track_score(self, score_new):
         """Track score and position in history (common to all optimizers).
 
+        Note: Property setter automatically appends to history and tracks
+        valid (non-inf, non-nan) scores.
+
         Args:
             score_new: Score of the most recently evaluated position
         """
-        # Track to history lists
-        self.score_new_list.append(score_new)
-
-        # Track valid scores (non-inf, non-nan)
-        if not (np.isinf(score_new) or np.isnan(score_new)):
-            self.scores_valid.append(score_new)
-            self.positions_valid.append(self.pos_new.copy())
-
+        # Property setter handles all tracking automatically
+        self.score_new = score_new
         self.nth_trial += 1
 
     def _evaluate(self, score_new):
@@ -419,29 +401,99 @@ class CoreOptimizer(BaseOptimizer):
             f"{self.__class__.__name__} must implement _evaluate()"
         )
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # STATE UPDATE HELPERS
-    # ═══════════════════════════════════════════════════════════════════════════
-
     def _update_current(self, position, score):
-        """Update the current position and score."""
+        """Update the current position and score.
+
+        Note: Property setters automatically append to history lists.
+        """
         self.pos_current = position.copy()
         self.score_current = score
-        self.pos_current_list.append(self.pos_current)
-        self.score_current_list.append(self.score_current)
 
     def _update_best(self, position, score):
-        """Update the best position if this score is better."""
-        if self.score_best is None or score > self.score_best:
+        """Update the best position if this score is better.
+
+        Note: Property setters automatically append to history lists.
+        """
+        if self._score_best == -math.inf or score > self._score_best:
             self.pos_best = position.copy()
             self.score_best = score
-            self.pos_best_list.append(self.pos_best)
-            self.score_best_list.append(self.score_best)
-            self.best_since_iter = self.nth_trial
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # PROPERTIES
-    # ═══════════════════════════════════════════════════════════════════════════
+    @property
+    def pos_new(self):
+        """Get the newest position."""
+        return self._pos_new
+
+    @pos_new.setter
+    def pos_new(self, pos):
+        """Set new position and auto-append to history."""
+        self.pos_new_list.append(pos)
+        self._pos_new = pos
+
+    @property
+    def score_new(self):
+        """Get the newest score."""
+        return self._score_new
+
+    @score_new.setter
+    def score_new(self, score):
+        """Set new score and auto-append to history.
+
+        Also tracks valid (non-inf, non-nan) scores.
+        """
+        self.score_new_list.append(score)
+        self._score_new = score
+        # Auto-track valid scores
+        if not (_isinf(score) or _isnan(score)):
+            self.positions_valid.append(self._pos_new)
+            self.scores_valid.append(score)
+
+    @property
+    def pos_current(self):
+        """Get the current position."""
+        return self._pos_current
+
+    @pos_current.setter
+    def pos_current(self, pos):
+        """Set current position and auto-append to history."""
+        self.pos_current_list.append(pos)
+        self._pos_current = pos
+
+    @property
+    def score_current(self):
+        """Get the current score."""
+        return self._score_current
+
+    @score_current.setter
+    def score_current(self, score):
+        """Set current score and auto-append to history."""
+        self.score_current_list.append(score)
+        self._score_current = score
+
+    @property
+    def pos_best(self):
+        """Get the best position."""
+        return self._pos_best
+
+    @pos_best.setter
+    def pos_best(self, pos):
+        """Set best position and auto-append to history."""
+        self.pos_best_list.append(pos)
+        self._pos_best = pos
+
+    @property
+    def score_best(self):
+        """Get the best score."""
+        return self._score_best
+
+    @score_best.setter
+    def score_best(self, score):
+        """Set best score and auto-append to history.
+
+        Also updates best_since_iter.
+        """
+        self.score_best_list.append(score)
+        self._score_best = score
+        self.best_since_iter = self.nth_trial
 
     @property
     def best_para(self):

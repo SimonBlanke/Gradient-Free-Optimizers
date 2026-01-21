@@ -148,10 +148,6 @@ class SMBO(CoreOptimizer):
             self.X_sample = []
             self.Y_sample = []
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # DECORATORS FOR TRACKING SAMPLES
-    # ═══════════════════════════════════════════════════════════════════════════
-
     @staticmethod
     def track_X_sample(func: Callable) -> Callable:
         """Decorator that appends returned position to X_sample."""
@@ -175,10 +171,6 @@ class SMBO(CoreOptimizer):
                 self.Y_sample.append(score)
 
         return wrapper
-
-    # ═══════════════════════════════════════════════════════════════════════════
-    # CANDIDATE POSITION GENERATION
-    # ═══════════════════════════════════════════════════════════════════════════
 
     def _all_possible_pos(self) -> np.ndarray:
         """Generate all possible positions in the search space.
@@ -224,10 +216,6 @@ class SMBO(CoreOptimizer):
         mask = np.all(self.all_pos_comb == position, axis=1)
         self.all_pos_comb = self.all_pos_comb[np.invert(mask)]
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # SEARCH INTERFACE
-    # ═══════════════════════════════════════════════════════════════════════════
-
     def init_pos(self) -> np.ndarray:
         """Get next initialization position and track in X_sample."""
         pos = super().init_pos()
@@ -243,8 +231,8 @@ class SMBO(CoreOptimizer):
         """Generate next position using surrogate model and acquisition function."""
         pos = self._propose_location()
 
+        # Property setter auto-appends to pos_new_list
         self.pos_new = pos
-        self.pos_new_list.append(pos)
         self.X_sample.append(pos)
 
         return pos
@@ -270,6 +258,18 @@ class SMBO(CoreOptimizer):
 
         return pos_best
 
+    def _iterate_continuous_batch(self) -> np.ndarray:
+        """Not used by SMBO - uses surrogate model instead."""
+        raise NotImplementedError("SMBO uses iterate() with surrogate model")
+
+    def _iterate_categorical_batch(self) -> np.ndarray:
+        """Not used by SMBO - uses surrogate model instead."""
+        raise NotImplementedError("SMBO uses iterate() with surrogate model")
+
+    def _iterate_discrete_batch(self) -> np.ndarray:
+        """Not used by SMBO - uses surrogate model instead."""
+        raise NotImplementedError("SMBO uses iterate() with surrogate model")
+
     def _training(self) -> None:
         """Train the surrogate model on X_sample and Y_sample.
 
@@ -288,27 +288,19 @@ class SMBO(CoreOptimizer):
         """Generate a random valid position."""
         return self.init.move_random_typed()
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # EVALUATION
-    # ═══════════════════════════════════════════════════════════════════════════
-
     def evaluate(self, score_new: float) -> None:
         """Evaluate the current position and update surrogate training data."""
         self._track_score(score_new)
 
-        # Handle initialization phase
+        # Handle initialization phase (property setters auto-append to lists)
         if self.pos_best is None:
             self.pos_best = self.pos_new.copy()
             self.score_best = score_new
-            self.pos_best_list.append(self.pos_best)
-            self.score_best_list.append(self.score_best)
             self.best_since_iter = self.nth_trial
 
         if self.pos_current is None:
             self.pos_current = self.pos_new.copy()
             self.score_current = score_new
-            self.pos_current_list.append(self.pos_current)
-            self.score_current_list.append(self.score_current)
 
         # Track Y_sample (skip invalid scores)
         if not (math.isnan(score_new) or math.isinf(score_new)):

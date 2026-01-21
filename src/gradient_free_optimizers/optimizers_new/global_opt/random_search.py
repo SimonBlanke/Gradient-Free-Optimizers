@@ -74,76 +74,56 @@ class RandomSearchOptimizer(CoreOptimizer):
         # (self.random_seed is set by CoreOptimizer and accounts for nth_process)
         self._rng = np.random.default_rng(self.random_seed)
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # TEMPLATE METHODS: Random sampling for each dimension type
-    # ═══════════════════════════════════════════════════════════════════════════
-
-    def _iterate_continuous_batch(
-        self,
-        current: np.ndarray,
-        bounds: np.ndarray,
-    ) -> np.ndarray:
+    def _iterate_continuous_batch(self) -> np.ndarray:
         """Uniform random sampling in continuous ranges.
 
-        Ignores the current position entirely - each sample is independent.
+        Accesses via: self._continuous_bounds
 
-        Args:
-            current: Current values (ignored for random search)
-            bounds: Min/max bounds, shape (n_continuous, 2)
+        Random search ignores current position - each sample is independent.
 
         Returns
         -------
+        np.ndarray
             Random values uniformly distributed in [min, max]
         """
+        bounds = self._continuous_bounds
         mins = bounds[:, 0]
         maxs = bounds[:, 1]
         return self._rng.uniform(mins, maxs)
 
-    def _iterate_categorical_batch(
-        self,
-        current: np.ndarray,
-        n_categories: np.ndarray,
-    ) -> np.ndarray:
+    def _iterate_categorical_batch(self) -> np.ndarray:
         """Uniform random category selection.
 
-        Ignores the current position entirely - each sample is independent.
+        Accesses via: self._categorical_sizes
 
-        Args:
-            current: Current category indices (ignored for random search)
-            n_categories: Number of categories per dimension
+        Random search ignores current position - each sample is independent.
 
         Returns
         -------
+        np.ndarray
             Random category indices
         """
-        n = len(current)
+        n_categories = self._categorical_sizes
+        n = len(n_categories)
         return np.floor(self._rng.random(n) * n_categories).astype(np.int64)
 
-    def _iterate_discrete_batch(
-        self,
-        current: np.ndarray,
-        bounds: np.ndarray,
-    ) -> np.ndarray:
+    def _iterate_discrete_batch(self) -> np.ndarray:
         """Uniform random index selection.
 
-        Ignores the current position entirely - each sample is independent.
+        Accesses via: self._discrete_bounds
 
-        Args:
-            current: Current positions (ignored for random search)
-            bounds: Min/max bounds, shape (n_discrete, 2)
+        Random search ignores current position - each sample is independent.
 
         Returns
         -------
+        np.ndarray
             Random indices within bounds
         """
+        bounds = self._discrete_bounds
         mins = bounds[:, 0].astype(np.int64)
         maxs = bounds[:, 1].astype(np.int64)
         # randint is exclusive on high, so add 1
         return self._rng.integers(mins, maxs + 1)
-
-    # ═══════════════════════════════════════════════════════════════════════════
-    # EVALUATE: Simple best-tracking (no acceptance criteria needed)
-    # ═══════════════════════════════════════════════════════════════════════════
 
     def _evaluate(self, score_new):
         """Update best position if this score is better.

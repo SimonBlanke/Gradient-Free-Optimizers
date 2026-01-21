@@ -96,10 +96,6 @@ class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer):
         self.start_temp = start_temp
         self.temp = start_temp
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # ACCEPTANCE PROBABILITY: Metropolis criterion
-    # ═══════════════════════════════════════════════════════════════════════════
-
     def _p_accept_default(self) -> float:
         """Calculate the Metropolis acceptance probability.
 
@@ -119,10 +115,6 @@ class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer):
             return math.exp(self._exponent)
         except OverflowError:
             return math.inf
-
-    # ═══════════════════════════════════════════════════════════════════════════
-    # EVALUATE: Metropolis acceptance with temperature decay
-    # ═══════════════════════════════════════════════════════════════════════════
 
     def _evaluate(self, score_new):
         """Evaluate with Metropolis acceptance criterion and temperature decay.

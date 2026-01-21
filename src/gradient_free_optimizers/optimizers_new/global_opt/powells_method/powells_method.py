@@ -246,8 +246,7 @@ class PowellsMethod(HillClimbingOptimizer):
         # Random restart check
         if random.random() < self.rand_rest_p:
             pos_new = self.init.move_random_typed()
-            self.pos_new = pos_new
-            self.pos_new_list.append(pos_new)
+            self.pos_new = pos_new  # Property setter auto-appends
             return pos_new
 
         # If converged, fall back to hill climbing exploration
@@ -305,8 +304,7 @@ class PowellsMethod(HillClimbingOptimizer):
             pos_new = super().iterate()
             return pos_new
 
-        self.pos_new = pos_new
-        self.pos_new_list.append(pos_new)
+        self.pos_new = pos_new  # Property setter auto-appends
         return pos_new
 
     def _evaluate(self, score_new: float) -> None:

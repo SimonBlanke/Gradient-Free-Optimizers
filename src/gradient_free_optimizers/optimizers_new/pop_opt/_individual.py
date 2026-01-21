@@ -70,15 +70,13 @@ class Individual(HillClimbingOptimizer):
         # Random restart check
         if random.random() < self.rand_rest_p:
             pos_new = self.init.move_random_typed()
-            self.pos_new = pos_new
-            self.pos_new_list.append(pos_new)
+            self.pos_new = pos_new  # Property setter auto-appends
             return pos_new
 
         # Guard against None positions during early iterations
         if self.pos_current is None:
             pos_new = self.init.move_random_typed()
-            self.pos_new = pos_new
-            self.pos_new_list.append(pos_new)
+            self.pos_new = pos_new  # Property setter auto-appends
             return pos_new
 
         # Mutate sigma (log-normal distribution)
@@ -96,9 +94,8 @@ class Individual(HillClimbingOptimizer):
         # Restore original epsilon
         self.epsilon = original_epsilon
 
-        # Track position
+        # Track position (property setter auto-appends)
         self.pos_new = pos_new
-        self.pos_new_list.append(pos_new)
 
         return pos_new
 
@@ -126,42 +123,51 @@ class Individual(HillClimbingOptimizer):
     def _iterate_typed(self, pos_current):
         """Perform typed iteration using dimension masks.
 
-        This is copied from CoreOptimizer.iterate() but takes a position argument.
+        Temporarily sets self._pos_current so the parameterless template methods
+        can access the current position via state.
         Uses the dimension masks set up by _setup_dimension_masks() in CoreOptimizer.
         """
         n_dims = len(pos_current)
         new_pos = np.empty(n_dims, dtype=object)
 
-        # Handle continuous dimensions
-        if self._continuous_bounds is not None:
-            cont_mask = self._continuous_mask
-            cont_bounds = self._continuous_bounds
-            cont_current = pos_current[cont_mask].astype(float)
-            cont_new = self._iterate_continuous_batch(cont_current, cont_bounds)
-            # Clip to bounds
-            cont_new = np.clip(cont_new, cont_bounds[:, 0], cont_bounds[:, 1])
-            new_pos[cont_mask] = cont_new
+        # Temporarily set _pos_current so template methods can access it
+        old_pos_current = getattr(self, '_pos_current', None)
+        self._pos_current = pos_current
 
-        # Handle categorical dimensions
-        if self._categorical_sizes is not None:
-            cat_mask = self._categorical_mask
-            n_cats = self._categorical_sizes
-            cat_current = pos_current[cat_mask].astype(int)
-            cat_new = self._iterate_categorical_batch(cat_current, n_cats)
-            # Clip to valid range
-            cat_new = np.clip(cat_new, 0, n_cats - 1).astype(int)
-            new_pos[cat_mask] = cat_new
+        try:
+            # Handle continuous dimensions
+            if self._continuous_bounds is not None:
+                cont_mask = self._continuous_mask
+                cont_bounds = self._continuous_bounds
+                # Call parameterless method - it accesses self._pos_current
+                cont_new = self._iterate_continuous_batch()
+                # Clip to bounds
+                cont_new = np.clip(cont_new, cont_bounds[:, 0], cont_bounds[:, 1])
+                new_pos[cont_mask] = cont_new
 
-        # Handle discrete dimensions
-        if self._discrete_bounds is not None:
-            disc_mask = self._discrete_mask
-            disc_bounds = self._discrete_bounds
-            disc_current = pos_current[disc_mask].astype(float)
-            disc_new = self._iterate_discrete_batch(disc_current, disc_bounds)
-            # Round and clip to bounds
-            disc_new = np.round(disc_new)
-            disc_new = np.clip(disc_new, disc_bounds[:, 0], disc_bounds[:, 1]).astype(int)
-            new_pos[disc_mask] = disc_new
+            # Handle categorical dimensions
+            if self._categorical_sizes is not None:
+                cat_mask = self._categorical_mask
+                n_cats = self._categorical_sizes
+                # Call parameterless method
+                cat_new = self._iterate_categorical_batch()
+                # Clip to valid range
+                cat_new = np.clip(cat_new, 0, n_cats - 1).astype(int)
+                new_pos[cat_mask] = cat_new
+
+            # Handle discrete dimensions
+            if self._discrete_bounds is not None:
+                disc_mask = self._discrete_mask
+                disc_bounds = self._discrete_bounds
+                # Call parameterless method
+                disc_new = self._iterate_discrete_batch()
+                # Round and clip to bounds
+                disc_new = np.round(disc_new)
+                disc_new = np.clip(disc_new, disc_bounds[:, 0], disc_bounds[:, 1]).astype(int)
+                new_pos[disc_mask] = disc_new
+        finally:
+            # Restore original _pos_current
+            self._pos_current = old_pos_current
 
         return new_pos.astype(float)
 

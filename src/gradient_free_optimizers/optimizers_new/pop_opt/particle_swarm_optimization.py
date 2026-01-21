@@ -147,8 +147,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
             # Fall back to random position when particle has no more init positions
             pos = self.p_current.init.move_random_typed()
             self.p_current.pos_current = pos
-            self.p_current.pos_new = pos
-            self.p_current.pos_new_list.append(pos)
+            self.p_current.pos_new = pos  # Property setter auto-appends
 
         # Check constraints - if violated, find valid position and replace
         if not self.conv.not_in_constraint(pos):
@@ -163,9 +162,8 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
             if self.p_current.pos_new_list:
                 self.p_current.pos_new_list[-1] = pos
 
-        # Track position on main optimizer
+        # Track position on main optimizer (property setter auto-appends)
         self.pos_new = pos
-        self.pos_new_list.append(pos)
 
         return pos
 
@@ -211,8 +209,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
 
         # Check constraints - if valid, we're done
         if self.conv.not_in_constraint(pos_new):
-            self.pos_new = pos_new
-            self.pos_new_list.append(pos_new)
+            self.pos_new = pos_new  # Property setter auto-appends
             return pos_new
 
         # Constraint violated - restore position count and try fallback
@@ -223,8 +220,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
 
         # Check constraint on fallback
         if self.conv.not_in_constraint(pos_new):
-            self.pos_new = pos_new
-            self.pos_new_list.append(pos_new)
+            self.pos_new = pos_new  # Property setter auto-appends
             return pos_new
 
         # Still violated - try random positions as last resort
@@ -237,11 +233,9 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
             if self.conv.not_in_constraint(pos_new):
                 break
 
-        # Track final position (even if still violated - let Search handle it)
+        # Track final position (property setters auto-append)
         self.p_current.pos_new = pos_new
-        self.p_current.pos_new_list.append(pos_new)
         self.pos_new = pos_new
-        self.pos_new_list.append(pos_new)
         return pos_new
 
     def _evaluate(self, score_new: float) -> None:

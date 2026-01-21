@@ -199,6 +199,18 @@ class DiagonalGridSearch(CoreOptimizer):
             if self.conv.not_in_constraint(pos):
                 return pos
 
+    def _iterate_continuous_batch(self) -> np.ndarray:
+        """Not used - uses systematic diagonal grid traversal."""
+        raise NotImplementedError("DiagonalGridSearch uses systematic traversal")
+
+    def _iterate_categorical_batch(self) -> np.ndarray:
+        """Not used - uses systematic diagonal grid traversal."""
+        raise NotImplementedError("DiagonalGridSearch uses systematic traversal")
+
+    def _iterate_discrete_batch(self) -> np.ndarray:
+        """Not used - uses systematic diagonal grid traversal."""
+        raise NotImplementedError("DiagonalGridSearch uses systematic traversal")
+
     def _evaluate(self, score_new):
         """Simple greedy evaluation - just track best position."""
         self._update_best(self.pos_new, score_new)

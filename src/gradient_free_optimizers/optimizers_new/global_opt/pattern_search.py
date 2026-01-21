@@ -238,8 +238,7 @@ class PatternSearch(CoreOptimizer):
         # Random restart check
         if random.random() < self.rand_rest_p:
             pos_new = self.init.move_random_typed()
-            self.pos_new = pos_new
-            self.pos_new_list.append(pos_new)
+            self.pos_new = pos_new  # Property setter auto-appends
             return pos_new
 
         # Get next position from pattern
@@ -249,8 +248,7 @@ class PatternSearch(CoreOptimizer):
                 self.generate_pattern(self.pos_current)
             else:
                 pos_new = self.init.move_random_typed()
-                self.pos_new = pos_new
-                self.pos_new_list.append(pos_new)
+                self.pos_new = pos_new  # Property setter auto-appends
                 return pos_new
 
         pos_new = self.pattern_pos_l.pop(0)
@@ -270,9 +268,20 @@ class PatternSearch(CoreOptimizer):
             if not self.conv.not_in_constraint(pos_new):
                 pos_new = self.init.move_random_typed()
 
-        self.pos_new = pos_new
-        self.pos_new_list.append(pos_new)
+        self.pos_new = pos_new  # Property setter auto-appends
         return pos_new
+
+    def _iterate_continuous_batch(self) -> np.ndarray:
+        """Not used - PatternSearch uses pattern-based exploration."""
+        raise NotImplementedError("PatternSearch uses pattern-based exploration")
+
+    def _iterate_categorical_batch(self) -> np.ndarray:
+        """Not used - PatternSearch uses pattern-based exploration."""
+        raise NotImplementedError("PatternSearch uses pattern-based exploration")
+
+    def _iterate_discrete_batch(self) -> np.ndarray:
+        """Not used - PatternSearch uses pattern-based exploration."""
+        raise NotImplementedError("PatternSearch uses pattern-based exploration")
 
     def _evaluate(self, score_new: float) -> None:
         """Evaluate score and regenerate pattern when needed.

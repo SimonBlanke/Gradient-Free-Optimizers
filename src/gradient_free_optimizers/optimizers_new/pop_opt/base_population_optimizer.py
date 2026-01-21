@@ -194,10 +194,6 @@ class BasePopulationOptimizer(CoreOptimizer):
 
         self.pop_sorted = [self.optimizers[i] for i in idx_sorted_ind]
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # TEMPLATE METHODS - Subclasses typically override these
-    # ═══════════════════════════════════════════════════════════════════════════
-
     def iterate(self):
         """Generate new positions for the population.
 
@@ -219,9 +215,17 @@ class BasePopulationOptimizer(CoreOptimizer):
         """
         raise NotImplementedError("_evaluate() not yet implemented")
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # SEARCH INTEGRATION - Required by Search class
-    # ═══════════════════════════════════════════════════════════════════════════
+    def _iterate_continuous_batch(self) -> "np.ndarray":
+        """Not used - population optimizers have specialized iterate()."""
+        raise NotImplementedError("Population optimizers use specialized iterate()")
+
+    def _iterate_categorical_batch(self) -> "np.ndarray":
+        """Not used - population optimizers have specialized iterate()."""
+        raise NotImplementedError("Population optimizers use specialized iterate()")
+
+    def _iterate_discrete_batch(self) -> "np.ndarray":
+        """Not used - population optimizers have specialized iterate()."""
+        raise NotImplementedError("Population optimizers use specialized iterate()")
 
     def finish_initialization(self):
         """Transition from initialization to iteration phase."""

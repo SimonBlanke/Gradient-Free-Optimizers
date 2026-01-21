@@ -107,10 +107,6 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
         # Required by Search for tracking all optimizers
         self.optimizers = self.systems
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # TEMPERATURE SWAPPING (Replica Exchange)
-    # ═══════════════════════════════════════════════════════════════════════════
-
     def _swap_pos(self):
         """Attempt temperature swaps between all pairs using Metropolis criterion.
 
@@ -174,10 +170,6 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
                 return math.exp(exponent) * 100
             except OverflowError:
                 return math.inf
-
-    # ═══════════════════════════════════════════════════════════════════════════
-    # SEARCH INTERFACE: init_pos, iterate, evaluate
-    # ═══════════════════════════════════════════════════════════════════════════
 
     def init_pos(self):
         """Get next initialization position from round-robin system.

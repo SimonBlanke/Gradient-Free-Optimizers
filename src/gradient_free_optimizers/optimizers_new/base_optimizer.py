@@ -76,20 +76,12 @@ class BaseOptimizer(ABC):
         self.rand_rest_p = rand_rest_p
         self.nth_process = nth_process
 
-        # To be set by subclasses or during setup
-        self.pos_current = None
-        self.pos_best = None
-        self.score_current = None
-        self.score_best = None
+        # Note: Position/score state is managed by CoreOptimizer with property setters.
+        # We don't set them here to avoid triggering setters before lists are created.
 
         # List of optimizers (for single optimizer, just [self])
         # Population-based optimizers may override this with their population
         self.optimizers = [self]
-
-    # ═══════════════════════════════════════════════════════════════════════════
-    # TEMPLATE METHOD: ORCHESTRATION
-    # Note: search() is provided by the Search class mixin in optimizer_search/
-    # ═══════════════════════════════════════════════════════════════════════════
 
     def iterate(self):
         """Generate a new position using dimension-type-aware iteration.
@@ -118,106 +110,50 @@ class BaseOptimizer(ABC):
         """
         raise NotImplementedError("Subclasses must implement evaluate()")
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # TEMPLATE METHODS: DIMENSION-TYPE-SPECIFIC ITERATION
-    # These methods define the "extension points" of the Template Method Pattern.
-    # Subclasses implement these to support specific dimension types.
-    # ═══════════════════════════════════════════════════════════════════════════
+    @abstractmethod
+    def _iterate_continuous_batch(self) -> np.ndarray:
+        """Generate new values for all continuous dimensions (vectorized).
 
-    def _iterate_continuous_batch(
-        self,
-        current: np.ndarray,
-        bounds: np.ndarray,
-    ) -> np.ndarray:
-        """Iterate ALL continuous dimensions at once (vectorized).
-
-        This method must be implemented by subclasses that support
-        continuous dimensions.
-
-        Args:
-            current: Current values of all continuous dimensions.
-                Shape: (n_continuous,)
-            bounds: Min/max bounds for each continuous dimension.
-                Shape: (n_continuous, 2) where [:, 0] is min and [:, 1] is max
+        Access instance state:
+            - self.pos_current[self._continuous_mask]: Current values
+            - self._continuous_bounds: Shape (n_continuous, 2) with [min, max]
 
         Returns
         -------
-            New values for all continuous dimensions.
-            Shape: (n_continuous,)
-
-        Raises
-        ------
-            NotImplementedError: If continuous dimensions are not supported
+        np.ndarray
+            New values for all continuous dimensions, shape (n_continuous,)
         """
-        raise NotImplementedError(
-            f"{self.__class__.__name__} does not implement continuous dimension "
-            f"support. Implement _iterate_continuous_batch() to enable this feature."
-        )
+        ...
 
-    def _iterate_categorical_batch(
-        self,
-        current: np.ndarray,
-        n_categories: np.ndarray,
-    ) -> np.ndarray:
-        """Iterate ALL categorical dimensions at once (vectorized).
+    @abstractmethod
+    def _iterate_categorical_batch(self) -> np.ndarray:
+        """Generate new category indices for all categorical dimensions (vectorized).
 
-        This method must be implemented by subclasses that support
-        categorical dimensions.
-
-        Args:
-            current: Current category indices for all categorical dimensions.
-                Shape: (n_categorical,)
-            n_categories: Number of categories for each categorical dimension.
-                Shape: (n_categorical,)
+        Access instance state:
+            - self.pos_current[self._categorical_mask]: Current category indices
+            - self._categorical_sizes: Number of categories per dimension
 
         Returns
         -------
-            New category indices for all categorical dimensions.
-            Shape: (n_categorical,)
-
-        Raises
-        ------
-            NotImplementedError: If categorical dimensions are not supported
+        np.ndarray
+            New category indices, shape (n_categorical,)
         """
-        raise NotImplementedError(
-            f"{self.__class__.__name__} does not implement categorical dimension "
-            f"support. Implement _iterate_categorical_batch() to enable this feature."
-        )
+        ...
 
-    def _iterate_discrete_batch(
-        self,
-        current: np.ndarray,
-        bounds: np.ndarray,
-    ) -> np.ndarray:
-        """Iterate ALL discrete-numerical dimensions at once (vectorized).
+    @abstractmethod
+    def _iterate_discrete_batch(self) -> np.ndarray:
+        """Generate new positions for all discrete dimensions (vectorized).
 
-        This method must be implemented by subclasses that support
-        discrete-numerical dimensions.
-
-        Args:
-            current: Current positions for all discrete dimensions.
-                Shape: (n_discrete,)
-            bounds: Min/max bounds (as indices) for each discrete dimension.
-                Shape: (n_discrete, 2) where [:, 0] is min and [:, 1] is max
+        Access instance state:
+            - self.pos_current[self._discrete_mask]: Current positions
+            - self._discrete_bounds: Shape (n_discrete, 2) with [0, max_idx]
 
         Returns
         -------
-            New positions for all discrete dimensions.
-            Shape: (n_discrete,)
-
-        Raises
-        ------
-            NotImplementedError: If discrete dimensions are not supported
+        np.ndarray
+            New positions, shape (n_discrete,)
         """
-        raise NotImplementedError(
-            f"{self.__class__.__name__} does not implement discrete-numerical "
-            f"dimension support. Implement _iterate_discrete_batch() to enable "
-            f"this feature."
-        )
-
-    # ═══════════════════════════════════════════════════════════════════════════
-    # UTILITY METHODS
-    # ═══════════════════════════════════════════════════════════════════════════
+        ...
 
     def _clip_position(self, position: np.ndarray) -> np.ndarray:
         """Clip position to valid bounds.
@@ -238,14 +174,10 @@ class BaseOptimizer(ABC):
         """Return the best parameters found."""
         raise NotImplementedError("Subclasses must implement best_para property")
 
-    @property
-    def best_score(self):
-        """Return the best score found."""
-        return self.score_best
-
-    @best_score.setter
-    def best_score(self, value):
-        """Set the best score."""
-        self.score_best = value
+    # Note: best_score is NOT a property here.
+    # Search class sets self.best_score as a regular attribute.
+    # score_best (via property in CoreOptimizer) tracks internally with list appends.
+    # These are intentionally separate - best_score is for Search's external interface,
+    # score_best is for optimizer's internal tracking.
 
     # Note: search_data is provided by the Search class mixin in optimizer_search/

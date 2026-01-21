@@ -179,8 +179,7 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
 
         # Assign to worst individual
         self.p_current = p_worst
-        p_worst.pos_new = pos_new
-        p_worst.pos_new_list.append(pos_new)
+        p_worst.pos_new = pos_new  # Property setter auto-appends
 
         # Handle constraints
         if not self.conv.not_in_constraint(pos_new):
@@ -209,8 +208,7 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
             # Fall back to random position
             pos = self.p_current.init.move_random_typed()
             self.p_current.pos_current = pos
-            self.p_current.pos_new = pos
-            self.p_current.pos_new_list.append(pos)
+            self.p_current.pos_new = pos  # Property setter auto-appends
 
         # Check constraints
         if not self.conv.not_in_constraint(pos):
@@ -220,13 +218,12 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
                 if self.conv.not_in_constraint(pos):
                     break
             self.p_current.pos_current = pos
-            self.p_current.pos_new = pos
+            self.p_current.pos_new = pos  # Property setter auto-appends
             if self.p_current.pos_new_list:
                 self.p_current.pos_new_list[-1] = pos
 
-        # Track position on main optimizer
+        # Track position on main optimizer (property setter auto-appends)
         self.pos_new = pos
-        self.pos_new_list.append(pos)
 
         return pos
 
@@ -262,8 +259,7 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
         if self.n_ind == 1:
             self.p_current = self.individuals[0]
             pos_new = self.p_current.iterate()
-            self.pos_new = pos_new
-            self.pos_new_list.append(pos_new)
+            self.pos_new = pos_new  # Property setter auto-appends
             return pos_new
 
         # Sort and select random individual
@@ -293,15 +289,13 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
                     if self.conv.not_in_constraint(pos_new):
                         break
 
-                self.p_current.pos_new = pos_new
-                self.p_current.pos_new_list.append(pos_new)
+                self.p_current.pos_new = pos_new  # Property setter auto-appends
         else:
             # Recombination
             pos_new = self._cross()
 
-        # Track position on main optimizer
+        # Track position on main optimizer (property setter auto-appends)
         self.pos_new = pos_new
-        self.pos_new_list.append(pos_new)
 
         return pos_new
 

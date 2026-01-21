@@ -92,16 +92,14 @@ class RandomAnnealingOptimizer(HillClimbingOptimizer):
         self.start_temp = start_temp
         self.temp = start_temp
 
-    # ═══════════════════════════════════════════════════════════════════════════
-    # TEMPLATE METHODS: Override to use temperature-scaled epsilon
-    # ═══════════════════════════════════════════════════════════════════════════
+    def _iterate_continuous_batch(self) -> np.ndarray:
+        """Generate new continuous values with temperature-scaled step size.
 
-    def _iterate_continuous_batch(
-        self,
-        current: np.ndarray,
-        bounds: np.ndarray,
-    ) -> np.ndarray:
-        """Generate new continuous values with temperature-scaled step size."""
+        Accesses via: self._pos_current, self._continuous_bounds
+        """
+        current = self._pos_current[self._continuous_mask]
+        bounds = self._continuous_bounds
+
         ranges = bounds[:, 1] - bounds[:, 0]
 
         # Scale sigma by range, epsilon, AND temperature
@@ -113,12 +111,14 @@ class RandomAnnealingOptimizer(HillClimbingOptimizer):
 
         return current + noise
 
-    def _iterate_categorical_batch(
-        self,
-        current: np.ndarray,
-        n_categories: np.ndarray,
-    ) -> np.ndarray:
-        """Generate new categorical values with temperature-scaled switch probability."""
+    def _iterate_categorical_batch(self) -> np.ndarray:
+        """Generate new categorical values with temperature-scaled switch probability.
+
+        Accesses via: self._pos_current, self._categorical_sizes
+        """
+        current = self._pos_current[self._categorical_mask]
+        n_categories = self._categorical_sizes
+
         n = len(current)
 
         # Switch probability scales with temperature
@@ -130,12 +130,14 @@ class RandomAnnealingOptimizer(HillClimbingOptimizer):
 
         return np.where(switch_mask, random_cats, current.astype(np.int64))
 
-    def _iterate_discrete_batch(
-        self,
-        current: np.ndarray,
-        bounds: np.ndarray,
-    ) -> np.ndarray:
-        """Generate new discrete values with temperature-scaled step size."""
+    def _iterate_discrete_batch(self) -> np.ndarray:
+        """Generate new discrete values with temperature-scaled step size.
+
+        Accesses via: self._pos_current, self._discrete_bounds
+        """
+        current = self._pos_current[self._discrete_mask]
+        bounds = self._discrete_bounds
+
         max_positions = bounds[:, 1]
 
         # Scale sigma by temperature
@@ -147,10 +149,6 @@ class RandomAnnealingOptimizer(HillClimbingOptimizer):
         noise = noise_fn(self._rng, sigmas, len(current))
 
         return current + noise
-
-    # ═══════════════════════════════════════════════════════════════════════════
-    # EVALUATE: Greedy + temperature decay
-    # ═══════════════════════════════════════════════════════════════════════════
 
     def _evaluate(self, score_new):
         """Greedy evaluation with temperature decay.

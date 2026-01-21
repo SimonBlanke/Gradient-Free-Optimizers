@@ -31,10 +31,6 @@ from ...optimizer_search import (
     StochasticHillClimbingOptimizer,
 )
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# OPTIMIZER LIST - Add new optimizers here as they are implemented
-# ═══════════════════════════════════════════════════════════════════════════════
-
 OPTIMIZERS = [
     HillClimbingOptimizer,
     RandomSearchOptimizer,
@@ -43,11 +39,6 @@ OPTIMIZERS = [
     RepulsingHillClimbingOptimizer,
     RandomRestartHillClimbingOptimizer,
 ]
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# FIXTURES: Search Spaces
-# ═══════════════════════════════════════════════════════════════════════════════
 
 
 @pytest.fixture
@@ -92,11 +83,6 @@ def mixed_space():
     }
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# HELPER: Simple objective function
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
 def make_objective(search_space):
     """Create a simple objective function that works with any search space."""
     def objective(para):
@@ -119,11 +105,6 @@ def make_objective(search_space):
                 score -= abs(actual_idx - mid_idx)
         return score
     return objective
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# TESTS: Continuous Dimensions
-# ═══════════════════════════════════════════════════════════════════════════════
 
 
 @pytest.mark.parametrize("OptimizerClass", OPTIMIZERS)
@@ -163,11 +144,6 @@ def test_continuous_types_are_float(OptimizerClass, continuous_only_space):
         assert isinstance(best[name], (float, np.floating)), (
             f"{name}: expected float, got {type(best[name])}"
         )
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# TESTS: Categorical Dimensions
-# ═══════════════════════════════════════════════════════════════════════════════
 
 
 @pytest.mark.parametrize("OptimizerClass", OPTIMIZERS)
@@ -213,11 +189,6 @@ def test_categorical_preserves_types(OptimizerClass, categorical_only_space):
     )
 
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# TESTS: Discrete Numerical Dimensions
-# ═══════════════════════════════════════════════════════════════════════════════
-
-
 @pytest.mark.parametrize("OptimizerClass", OPTIMIZERS)
 def test_discrete_only_runs(OptimizerClass, discrete_only_space):
     """Test that optimizer runs with only discrete numerical dimensions."""
@@ -257,11 +228,6 @@ def test_discrete_values_exact_match(OptimizerClass, discrete_only_space):
         assert any(matches), (
             f"{name}: {best[name]} is not an exact match in {list(values)}"
         )
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# TESTS: Mixed Dimensions (Continuous + Categorical + Discrete)
-# ═══════════════════════════════════════════════════════════════════════════════
 
 
 @pytest.mark.parametrize("OptimizerClass", OPTIMIZERS)
@@ -315,11 +281,6 @@ def test_mixed_dimensions_values_in_range(OptimizerClass, mixed_space):
 
     # Discrete membership
     assert best["n_layers"] in [1, 2, 4, 8]
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# TESTS: Edge Cases
-# ═══════════════════════════════════════════════════════════════════════════════
 
 
 @pytest.mark.parametrize("OptimizerClass", OPTIMIZERS)
@@ -386,11 +347,6 @@ def test_large_categorical_space(OptimizerClass):
 
     assert opt.best_para is not None
     assert opt.best_para["letter"] in list("abcdefghijklmnopqrstuvwxyz")
-
-
-# ═══════════════════════════════════════════════════════════════════════════════
-# TESTS: Reproducibility with random_state
-# ═══════════════════════════════════════════════════════════════════════════════
 
 
 @pytest.mark.parametrize("OptimizerClass", OPTIMIZERS)
