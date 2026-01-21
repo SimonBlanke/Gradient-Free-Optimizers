@@ -63,10 +63,6 @@ class DimensionIteratorMixin:
     access to self.conv (Converter) and self.move_climb_typed() etc.
     """
 
-    # ═══════════════════════════════════════════════════════════════════════
-    # MAIN ORCHESTRATION METHOD
-    # ═══════════════════════════════════════════════════════════════════════
-
     def iterate_position_typed(
         self,
         current_pos: ArrayLike,
@@ -99,10 +95,6 @@ class DimensionIteratorMixin:
         else:
             return self._iterate_position_sequential(current_pos, **kwargs)
 
-    # ═══════════════════════════════════════════════════════════════════════
-    # SEQUENTIAL ITERATION (DEFAULT)
-    # ═══════════════════════════════════════════════════════════════════════
-
     def _iterate_position_sequential(
         self,
         current_pos: ArrayLike,
@@ -120,10 +112,6 @@ class DimensionIteratorMixin:
 
         # Delegate to CoreOptimizer's type-aware method
         return self.move_climb_typed(current_pos, epsilon, distribution)
-
-    # ═══════════════════════════════════════════════════════════════════════
-    # VECTORIZATION SUPPORT
-    # ═══════════════════════════════════════════════════════════════════════
 
     def _can_vectorize(self) -> bool:
         """Check if vectorized iteration is available and beneficial.
@@ -208,11 +196,6 @@ class DimensionIteratorMixin:
                 new_pos[dim_idx] = new_categorical[idx]
 
         return self.conv2pos_typed(array(new_pos))
-
-    # ═══════════════════════════════════════════════════════════════════════
-    # ABSTRACT METHODS FOR VECTORIZED IMPLEMENTATIONS
-    # Override these in subclasses for custom/vectorized behavior
-    # ═══════════════════════════════════════════════════════════════════════
 
     def _iterate_discrete_numerical_all(
         self,
