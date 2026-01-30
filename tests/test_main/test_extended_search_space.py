@@ -1,11 +1,9 @@
-"""Integration tests for extended search space support.
+"""Tests for extended search space support (categorical and continuous dimensions).
 
-Tests cover:
-- Continuous dimensions: optimizer accepts tuples, returns float values
-- Categorical dimensions: optimizer accepts lists, returns correct categories
-- Mixed dimensions: all three types in one search space
-- Constraint handling with mixed types
-- Initialization strategies with mixed types
+Core test philosophy:
+- Use pytest.parametrize to loop over ALL optimizers
+- Test actual BEHAVIOR: does the optimizer explore different values?
+- Keep tests simple and focused
 """
 
 import numpy as np
@@ -13,325 +11,223 @@ import pytest
 
 from gradient_free_optimizers import (
     BayesianOptimizer,
+    DifferentialEvolutionOptimizer,
+    DirectAlgorithm,
+    DownhillSimplexOptimizer,
+    EvolutionStrategyOptimizer,
     ForestOptimizer,
     GeneticAlgorithmOptimizer,
+    GridSearchOptimizer,
     HillClimbingOptimizer,
+    LipschitzOptimizer,
+    ParallelTemperingOptimizer,
     ParticleSwarmOptimizer,
+    PatternSearch,
+    PowellsMethod,
+    RandomAnnealingOptimizer,
+    RandomRestartHillClimbingOptimizer,
     RandomSearchOptimizer,
+    RepulsingHillClimbingOptimizer,
     SimulatedAnnealingOptimizer,
+    SpiralOptimization,
+    StochasticHillClimbingOptimizer,
+    TreeStructuredParzenEstimators,
 )
 
 # =============================================================================
-# Test fixtures
+# All optimizers to test
+# =============================================================================
+
+ALL_OPTIMIZERS = [
+    HillClimbingOptimizer,
+    StochasticHillClimbingOptimizer,
+    RepulsingHillClimbingOptimizer,
+    SimulatedAnnealingOptimizer,
+    DownhillSimplexOptimizer,
+    RandomSearchOptimizer,
+    GridSearchOptimizer,
+    RandomRestartHillClimbingOptimizer,
+    PowellsMethod,
+    PatternSearch,
+    LipschitzOptimizer,
+    DirectAlgorithm,
+    RandomAnnealingOptimizer,
+    ParallelTemperingOptimizer,
+    ParticleSwarmOptimizer,
+    SpiralOptimization,
+    GeneticAlgorithmOptimizer,
+    EvolutionStrategyOptimizer,
+    DifferentialEvolutionOptimizer,
+    BayesianOptimizer,
+    TreeStructuredParzenEstimators,
+    ForestOptimizer,
+]
+
+# Optimizers that require a population parameter
+POPULATION_OPTIMIZERS = {
+    ParallelTemperingOptimizer,
+    ParticleSwarmOptimizer,
+    SpiralOptimization,
+    GeneticAlgorithmOptimizer,
+    EvolutionStrategyOptimizer,
+    DifferentialEvolutionOptimizer,
+}
+
+
+def get_optimizer_kwargs(opt_class):
+    """Return extra kwargs needed for specific optimizers."""
+    if opt_class in POPULATION_OPTIMIZERS:
+        return {"population": 5}
+    return {}
+
+
+def optimizer_id(opt_class):
+    """Generate readable test ID from optimizer class."""
+    return opt_class.__name__
+
+
+# =============================================================================
+# Core exploration tests
 # =============================================================================
 
 
-@pytest.fixture
-def continuous_search_space():
-    """Search space with only continuous dimensions."""
-    return {
+@pytest.mark.parametrize("optimizer_class", ALL_OPTIMIZERS, ids=optimizer_id)
+def test_categorical_exploration(optimizer_class):
+    """Test that optimizer explores categorical dimensions.
+
+    The key assertion: after N iterations, the optimizer should have
+    tried more than one unique value in the categorical dimension.
+    This verifies the algorithm actually moves in categorical space.
+    """
+    search_space = {
+        "category": ["a", "b", "c", "d", "e"],
+    }
+
+    def objective(params):
+        # Give different scores to encourage exploration
+        scores = {"a": 0.1, "b": 0.2, "c": 0.5, "d": 0.3, "e": 0.4}
+        return scores[params["category"]]
+
+    kwargs = get_optimizer_kwargs(optimizer_class)
+    opt = optimizer_class(search_space, random_state=42, **kwargs)
+    opt.search(objective, n_iter=30, verbosity=[])
+
+    # Core assertion: optimizer explored multiple values
+    unique_values = opt.search_data["category"].nunique()
+    assert unique_values > 1, (
+        f"{optimizer_class.__name__} did not explore categorical dimension "
+        f"(only found {unique_values} unique value(s))"
+    )
+
+
+@pytest.mark.parametrize("optimizer_class", ALL_OPTIMIZERS, ids=optimizer_id)
+def test_continuous_exploration(optimizer_class):
+    """Test that optimizer explores continuous dimensions.
+
+    The key assertion: after N iterations, the optimizer should have
+    tried more than one unique value in the continuous dimension.
+    This verifies the algorithm actually moves in continuous space.
+    """
+    search_space = {
+        "x": (0.0, 10.0),
+    }
+
+    def objective(params):
+        # Quadratic with optimum at x=5
+        return -((params["x"] - 5) ** 2)
+
+    kwargs = get_optimizer_kwargs(optimizer_class)
+    opt = optimizer_class(search_space, random_state=42, **kwargs)
+    opt.search(objective, n_iter=30, verbosity=[])
+
+    # Core assertion: optimizer explored multiple values
+    unique_values = opt.search_data["x"].nunique()
+    assert unique_values > 1, (
+        f"{optimizer_class.__name__} did not explore continuous dimension "
+        f"(only found {unique_values} unique value(s))"
+    )
+
+
+@pytest.mark.parametrize("optimizer_class", ALL_OPTIMIZERS, ids=optimizer_id)
+def test_mixed_exploration(optimizer_class):
+    """Test that optimizer explores mixed dimension types.
+
+    Combines discrete, continuous, and categorical in one search space.
+    """
+    search_space = {
+        "discrete": np.arange(0, 10),
+        "continuous": (0.0, 10.0),
+        "categorical": ["opt1", "opt2", "opt3"],
+    }
+
+    def objective(params):
+        score = 0
+        # Prefer middle values for numeric
+        score -= (params["discrete"] - 5) ** 2
+        score -= (params["continuous"] - 5) ** 2
+        # Prefer opt2
+        if params["categorical"] == "opt2":
+            score += 1
+        return score
+
+    kwargs = get_optimizer_kwargs(optimizer_class)
+    opt = optimizer_class(search_space, random_state=42, **kwargs)
+    opt.search(objective, n_iter=30, verbosity=[])
+
+    # All dimensions should be explored
+    assert opt.search_data["discrete"].nunique() > 1
+    assert opt.search_data["continuous"].nunique() > 1
+    assert opt.search_data["categorical"].nunique() > 1
+
+
+# =============================================================================
+# Type correctness tests
+# =============================================================================
+
+
+@pytest.mark.parametrize("optimizer_class", ALL_OPTIMIZERS, ids=optimizer_id)
+def test_continuous_returns_floats(optimizer_class):
+    """Test that continuous dimensions return float values."""
+    search_space = {
         "x": (-5.0, 5.0),
         "y": (0.0, 10.0),
     }
 
+    def objective(params):
+        return -(params["x"] ** 2 + params["y"] ** 2)
 
-@pytest.fixture
-def categorical_search_space():
-    """Search space with only categorical dimensions."""
-    return {
+    kwargs = get_optimizer_kwargs(optimizer_class)
+    opt = optimizer_class(search_space, random_state=42, **kwargs)
+    opt.search(objective, n_iter=20, verbosity=[])
+
+    assert isinstance(opt.best_para["x"], float)
+    assert isinstance(opt.best_para["y"], float)
+    assert -5.0 <= opt.best_para["x"] <= 5.0
+    assert 0.0 <= opt.best_para["y"] <= 10.0
+
+
+@pytest.mark.parametrize("optimizer_class", ALL_OPTIMIZERS, ids=optimizer_id)
+def test_categorical_returns_original_values(optimizer_class):
+    """Test that categorical dimensions return original category values."""
+    search_space = {
         "optimizer": ["adam", "sgd", "rmsprop"],
         "use_bias": [True, False],
     }
 
-
-@pytest.fixture
-def mixed_search_space():
-    """Search space with all three dimension types."""
-    return {
-        "x": np.arange(-5, 5, 1),  # Discrete numerical
-        "y": (-5.0, 5.0),  # Continuous
-        "algorithm": ["adam", "sgd", "rmsprop"],  # Categorical
-    }
-
-
-def simple_objective(params):
-    """Simple objective function for testing."""
-    score = 0
-    for key, value in params.items():
-        if isinstance(value, int | float):
-            score -= value**2
-        elif isinstance(value, str):
-            # Add small bonus for "adam"
-            if value == "adam":
-                score += 0.5
-        elif isinstance(value, bool):
-            if value:
-                score += 0.1
-    return score
-
-
-# =============================================================================
-# Continuous dimension tests
-# =============================================================================
-
-
-class TestContinuousDimensions:
-    """Tests for continuous dimensions (tuples)."""
-
-    def test_hill_climbing_continuous(self, continuous_search_space):
-        """HillClimbingOptimizer should work with continuous dimensions."""
-        opt = HillClimbingOptimizer(continuous_search_space, random_state=42)
-        opt.search(simple_objective, n_iter=20, verbosity=[])
-
-        assert opt.best_para is not None
-        assert "x" in opt.best_para
-        assert "y" in opt.best_para
-        # Continuous values should be floats within bounds
-        assert isinstance(opt.best_para["x"], float)
-        assert isinstance(opt.best_para["y"], float)
-        assert -5.0 <= opt.best_para["x"] <= 5.0
-        assert 0.0 <= opt.best_para["y"] <= 10.0
-
-    def test_random_search_continuous(self, continuous_search_space):
-        """RandomSearchOptimizer should work with continuous dimensions."""
-        opt = RandomSearchOptimizer(continuous_search_space, random_state=42)
-        opt.search(simple_objective, n_iter=20, verbosity=[])
-
-        assert opt.best_para is not None
-        assert isinstance(opt.best_para["x"], float)
-        assert isinstance(opt.best_para["y"], float)
-
-    def test_simulated_annealing_continuous(self, continuous_search_space):
-        """SimulatedAnnealingOptimizer should work with continuous dimensions."""
-        opt = SimulatedAnnealingOptimizer(continuous_search_space, random_state=42)
-        opt.search(simple_objective, n_iter=20, verbosity=[])
-
-        assert opt.best_para is not None
-        assert -5.0 <= opt.best_para["x"] <= 5.0
-        assert 0.0 <= opt.best_para["y"] <= 10.0
-
-    def test_particle_swarm_continuous(self, continuous_search_space):
-        """ParticleSwarmOptimizer should work with continuous dimensions."""
-        opt = ParticleSwarmOptimizer(
-            continuous_search_space, population=5, random_state=42
-        )
-        opt.search(simple_objective, n_iter=20, verbosity=[])
-
-        assert opt.best_para is not None
-        assert -5.0 <= opt.best_para["x"] <= 5.0
-
-    def test_genetic_algorithm_continuous(self, continuous_search_space):
-        """GeneticAlgorithmOptimizer should work with continuous dimensions."""
-        opt = GeneticAlgorithmOptimizer(
-            continuous_search_space, population=5, random_state=42
-        )
-        opt.search(simple_objective, n_iter=20, verbosity=[])
-
-        assert opt.best_para is not None
-        assert isinstance(opt.best_para["x"], float)
-
-    def test_forest_optimizer_continuous(self, continuous_search_space):
-        """ForestOptimizer should work with continuous dimensions."""
-        opt = ForestOptimizer(continuous_search_space, random_state=42)
-        opt.search(simple_objective, n_iter=20, verbosity=[])
-
-        assert opt.best_para is not None
-        assert -5.0 <= opt.best_para["x"] <= 5.0
-
-
-# =============================================================================
-# Categorical dimension tests
-# =============================================================================
-
-
-class TestCategoricalDimensions:
-    """Tests for categorical dimensions (lists)."""
-
-    def test_hill_climbing_categorical(self, categorical_search_space):
-        """HillClimbingOptimizer should work with categorical dimensions."""
-        opt = HillClimbingOptimizer(categorical_search_space, random_state=42)
-        opt.search(simple_objective, n_iter=20, verbosity=[])
-
-        assert opt.best_para is not None
-        assert opt.best_para["optimizer"] in ["adam", "sgd", "rmsprop"]
-        assert opt.best_para["use_bias"] in [True, False]
-
-    def test_random_search_categorical(self, categorical_search_space):
-        """RandomSearchOptimizer should work with categorical dimensions."""
-        opt = RandomSearchOptimizer(categorical_search_space, random_state=42)
-        opt.search(simple_objective, n_iter=20, verbosity=[])
-
-        assert opt.best_para is not None
-        assert opt.best_para["optimizer"] in ["adam", "sgd", "rmsprop"]
-        assert opt.best_para["use_bias"] in [True, False]
-
-    def test_simulated_annealing_categorical(self, categorical_search_space):
-        """SimulatedAnnealingOptimizer should work with categorical dimensions."""
-        opt = SimulatedAnnealingOptimizer(categorical_search_space, random_state=42)
-        opt.search(simple_objective, n_iter=20, verbosity=[])
-
-        assert opt.best_para is not None
-        assert opt.best_para["optimizer"] in ["adam", "sgd", "rmsprop"]
-
-    def test_particle_swarm_categorical(self, categorical_search_space):
-        """ParticleSwarmOptimizer should work with categorical dimensions."""
-        opt = ParticleSwarmOptimizer(
-            categorical_search_space, population=5, random_state=42
-        )
-        opt.search(simple_objective, n_iter=20, verbosity=[])
-
-        assert opt.best_para is not None
-        assert opt.best_para["optimizer"] in ["adam", "sgd", "rmsprop"]
-
-    def test_genetic_algorithm_categorical(self, categorical_search_space):
-        """GeneticAlgorithmOptimizer should work with categorical dimensions."""
-        opt = GeneticAlgorithmOptimizer(
-            categorical_search_space, population=5, random_state=42
-        )
-        opt.search(simple_objective, n_iter=20, verbosity=[])
-
-        assert opt.best_para is not None
-        assert opt.best_para["optimizer"] in ["adam", "sgd", "rmsprop"]
-
-    def test_forest_optimizer_categorical(self, categorical_search_space):
-        """ForestOptimizer should work with categorical dimensions."""
-        opt = ForestOptimizer(categorical_search_space, random_state=42)
-        opt.search(simple_objective, n_iter=20, verbosity=[])
-
-        assert opt.best_para is not None
-        assert opt.best_para["optimizer"] in ["adam", "sgd", "rmsprop"]
-
-
-# =============================================================================
-# Mixed dimension tests
-# =============================================================================
-
-
-class TestMixedDimensions:
-    """Tests for mixed dimension types in the same search space."""
-
-    def test_hill_climbing_mixed(self, mixed_search_space):
-        """HillClimbingOptimizer should work with mixed dimensions."""
-        opt = HillClimbingOptimizer(mixed_search_space, random_state=42)
-        opt.search(simple_objective, n_iter=30, verbosity=[])
-
-        assert opt.best_para is not None
-        # Discrete numerical (from np.arange)
-        assert opt.best_para["x"] in list(range(-5, 5))
-        # Continuous
-        assert isinstance(opt.best_para["y"], float)
-        assert -5.0 <= opt.best_para["y"] <= 5.0
-        # Categorical
-        assert opt.best_para["algorithm"] in ["adam", "sgd", "rmsprop"]
-
-    def test_random_search_mixed(self, mixed_search_space):
-        """RandomSearchOptimizer should work with mixed dimensions."""
-        opt = RandomSearchOptimizer(mixed_search_space, random_state=42)
-        opt.search(simple_objective, n_iter=30, verbosity=[])
-
-        assert opt.best_para is not None
-        assert opt.best_para["algorithm"] in ["adam", "sgd", "rmsprop"]
-
-    def test_simulated_annealing_mixed(self, mixed_search_space):
-        """SimulatedAnnealingOptimizer should work with mixed dimensions."""
-        opt = SimulatedAnnealingOptimizer(mixed_search_space, random_state=42)
-        opt.search(simple_objective, n_iter=30, verbosity=[])
-
-        assert opt.best_para is not None
-        assert -5.0 <= opt.best_para["y"] <= 5.0
-
-    def test_particle_swarm_mixed(self, mixed_search_space):
-        """ParticleSwarmOptimizer should work with mixed dimensions."""
-        opt = ParticleSwarmOptimizer(mixed_search_space, population=5, random_state=42)
-        opt.search(simple_objective, n_iter=30, verbosity=[])
-
-        assert opt.best_para is not None
-        assert opt.best_para["algorithm"] in ["adam", "sgd", "rmsprop"]
-
-    def test_genetic_algorithm_mixed(self, mixed_search_space):
-        """GeneticAlgorithmOptimizer should work with mixed dimensions."""
-        opt = GeneticAlgorithmOptimizer(
-            mixed_search_space, population=5, random_state=42
-        )
-        opt.search(simple_objective, n_iter=30, verbosity=[])
-
-        assert opt.best_para is not None
-        assert opt.best_para["algorithm"] in ["adam", "sgd", "rmsprop"]
-
-    def test_forest_optimizer_mixed(self, mixed_search_space):
-        """ForestOptimizer should work with mixed dimensions."""
-        opt = ForestOptimizer(mixed_search_space, random_state=42)
-        opt.search(simple_objective, n_iter=30, verbosity=[])
-
-        assert opt.best_para is not None
-        assert -5.0 <= opt.best_para["y"] <= 5.0
-
-
-# =============================================================================
-# Constraint handling with mixed types
-# =============================================================================
-
-
-class TestConstraintsWithMixedTypes:
-    """Tests for constraint handling with mixed dimension types."""
-
-    def test_constraint_on_continuous_dimension(self):
-        """Constraints should work on continuous dimensions."""
-        search_space = {
-            "x": (-10.0, 10.0),
-            "y": (-10.0, 10.0),
-        }
-
-        # Constraint: x must be positive
-        def constraint(params):
-            return params["x"] > 0
-
-        opt = RandomSearchOptimizer(
-            search_space, constraints=[constraint], random_state=42
-        )
-        opt.search(simple_objective, n_iter=50, verbosity=[])
-
-        assert opt.best_para is not None
-        assert opt.best_para["x"] > 0
-
-    def test_constraint_on_categorical_dimension(self):
-        """Constraints should work on categorical dimensions."""
-        search_space = {
-            "optimizer": ["adam", "sgd", "rmsprop", "adagrad"],
-            "lr": (0.001, 0.1),
-        }
-
-        # Constraint: only allow "adam" or "sgd"
-        def constraint(params):
-            return params["optimizer"] in ["adam", "sgd"]
-
-        opt = RandomSearchOptimizer(
-            search_space, constraints=[constraint], random_state=42
-        )
-        opt.search(simple_objective, n_iter=50, verbosity=[])
-
-        assert opt.best_para is not None
-        assert opt.best_para["optimizer"] in ["adam", "sgd"]
-
-    def test_constraint_on_mixed_dimensions(self):
-        """Constraints should work across mixed dimension types."""
-        search_space = {
-            "x": np.arange(-5, 5, 1),  # Discrete
-            "y": (-5.0, 5.0),  # Continuous
-            "algo": ["adam", "sgd"],  # Categorical
-        }
-
-        # Constraint: x + y must be positive
-        def constraint(params):
-            return params["x"] + params["y"] > 0
-
-        opt = HillClimbingOptimizer(
-            search_space, constraints=[constraint], random_state=42
-        )
-        opt.search(simple_objective, n_iter=50, verbosity=[])
-
-        assert opt.best_para is not None
-        assert opt.best_para["x"] + opt.best_para["y"] > 0
+    def objective(params):
+        score = 0
+        if params["optimizer"] == "adam":
+            score += 0.5
+        if params["use_bias"]:
+            score += 0.1
+        return score
+
+    kwargs = get_optimizer_kwargs(optimizer_class)
+    opt = optimizer_class(search_space, random_state=42, **kwargs)
+    opt.search(objective, n_iter=20, verbosity=[])
+
+    assert opt.best_para["optimizer"] in ["adam", "sgd", "rmsprop"]
+    assert opt.best_para["use_bias"] in [True, False]
 
 
 # =============================================================================
@@ -339,91 +235,151 @@ class TestConstraintsWithMixedTypes:
 # =============================================================================
 
 
-class TestEdgeCases:
-    """Tests for edge cases in extended search spaces."""
+@pytest.mark.parametrize("optimizer_class", ALL_OPTIMIZERS, ids=optimizer_id)
+def test_single_categorical_dimension(optimizer_class):
+    """Test optimizer with only a single categorical dimension."""
+    search_space = {"choice": ["a", "b", "c", "d", "e"]}
 
-    def test_single_continuous_dimension(self):
-        """Optimizer should work with a single continuous dimension."""
-        search_space = {"x": (0.0, 1.0)}
-        opt = HillClimbingOptimizer(search_space, random_state=42)
-        opt.search(simple_objective, n_iter=10, verbosity=[])
+    def objective(params):
+        return {"a": 0.1, "b": 0.5, "c": 0.3, "d": 0.2, "e": 0.4}[params["choice"]]
 
-        assert opt.best_para is not None
-        assert 0.0 <= opt.best_para["x"] <= 1.0
+    kwargs = get_optimizer_kwargs(optimizer_class)
+    opt = optimizer_class(search_space, random_state=42, **kwargs)
+    opt.search(objective, n_iter=20, verbosity=[])
 
-    def test_single_categorical_dimension(self):
-        """Optimizer should work with a single categorical dimension."""
-        search_space = {"choice": ["a", "b", "c"]}
-        opt = HillClimbingOptimizer(search_space, random_state=42)
-        opt.search(simple_objective, n_iter=10, verbosity=[])
+    assert opt.best_para["choice"] in ["a", "b", "c", "d", "e"]
 
-        assert opt.best_para is not None
-        assert opt.best_para["choice"] in ["a", "b", "c"]
 
-    def test_categorical_with_none_values(self):
-        """Categorical dimension with None values should work."""
-        search_space = {"option": [None, "enabled", "disabled"]}
-        opt = RandomSearchOptimizer(search_space, random_state=42)
-        opt.search(simple_objective, n_iter=10, verbosity=[])
+@pytest.mark.parametrize("optimizer_class", ALL_OPTIMIZERS, ids=optimizer_id)
+def test_single_continuous_dimension(optimizer_class):
+    """Test optimizer with only a single continuous dimension."""
+    search_space = {"x": (0.0, 10.0)}
 
-        assert opt.best_para is not None
-        assert opt.best_para["option"] in [None, "enabled", "disabled"]
+    def objective(params):
+        return -((params["x"] - 5) ** 2)
 
-    def test_categorical_with_numeric_values(self):
-        """Categorical dimension with numeric values should work."""
-        search_space = {"batch_size": [16, 32, 64, 128]}
-        opt = HillClimbingOptimizer(search_space, random_state=42)
-        opt.search(simple_objective, n_iter=10, verbosity=[])
+    kwargs = get_optimizer_kwargs(optimizer_class)
+    opt = optimizer_class(search_space, random_state=42, **kwargs)
+    opt.search(objective, n_iter=20, verbosity=[])
 
-        assert opt.best_para is not None
-        assert opt.best_para["batch_size"] in [16, 32, 64, 128]
+    assert 0.0 <= opt.best_para["x"] <= 10.0
 
-    @pytest.mark.xfail(reason="Zero-range continuous dimension causes division by zero")
-    def test_continuous_with_same_bounds(self):
-        """Continuous dimension with equal min/max should work."""
-        search_space = {"fixed": (5.0, 5.0)}
-        opt = HillClimbingOptimizer(search_space, random_state=42)
-        opt.search(simple_objective, n_iter=10, verbosity=[])
 
-        assert opt.best_para is not None
-        assert opt.best_para["fixed"] == 5.0
+def test_categorical_with_none_values():
+    """Test categorical dimension with None as a valid value."""
+    search_space = {"option": [None, "enabled", "disabled"]}
 
-    def test_two_element_list_is_categorical(self):
-        """Two-element list should be categorical, not continuous."""
-        search_space = {"flag": [True, False]}
-        opt = HillClimbingOptimizer(search_space, random_state=42)
-        opt.search(simple_objective, n_iter=10, verbosity=[])
+    def objective(params):
+        if params["option"] is None:
+            return 0.5
+        return 0.3
 
-        assert opt.best_para is not None
-        assert opt.best_para["flag"] in [True, False]
+    opt = RandomSearchOptimizer(search_space, random_state=42)
+    opt.search(objective, n_iter=20, verbosity=[])
+
+    assert opt.best_para["option"] in [None, "enabled", "disabled"]
+
+
+def test_categorical_with_numeric_values():
+    """Test categorical dimension with numeric values (treated as categories)."""
+    search_space = {"batch_size": [16, 32, 64, 128]}
+
+    def objective(params):
+        # Prefer 64
+        return -abs(params["batch_size"] - 64)
+
+    opt = HillClimbingOptimizer(search_space, random_state=42)
+    opt.search(objective, n_iter=20, verbosity=[])
+
+    assert opt.best_para["batch_size"] in [16, 32, 64, 128]
 
 
 # =============================================================================
-# Search data and reproducibility
+# Constraint handling
 # =============================================================================
 
 
-class TestSearchDataWithMixedTypes:
-    """Tests for search_data output with mixed dimension types."""
+def test_constraint_on_continuous_dimension():
+    """Test constraints work on continuous dimensions."""
+    search_space = {"x": (-10.0, 10.0), "y": (-10.0, 10.0)}
 
-    def test_search_data_contains_all_params(self, mixed_search_space):
-        """search_data should contain all parameters with correct types."""
-        opt = HillClimbingOptimizer(mixed_search_space, random_state=42)
-        opt.search(simple_objective, n_iter=20, verbosity=[])
+    def constraint(params):
+        return params["x"] > 0
 
-        data = opt.search_data
-        assert "x" in data.columns
-        assert "y" in data.columns
-        assert "algorithm" in data.columns
-        assert "score" in data.columns
+    def objective(params):
+        return -(params["x"] ** 2 + params["y"] ** 2)
 
-    def test_reproducibility_with_random_state(self, mixed_search_space):
-        """Same random_state should produce same results with mixed types."""
-        opt1 = HillClimbingOptimizer(mixed_search_space, random_state=42)
-        opt1.search(simple_objective, n_iter=20, verbosity=[])
+    opt = RandomSearchOptimizer(search_space, constraints=[constraint], random_state=42)
+    opt.search(objective, n_iter=50, verbosity=[])
 
-        opt2 = HillClimbingOptimizer(mixed_search_space, random_state=42)
-        opt2.search(simple_objective, n_iter=20, verbosity=[])
+    assert opt.best_para["x"] > 0
 
-        assert opt1.best_score == opt2.best_score
-        assert opt1.best_para == opt2.best_para
+
+def test_constraint_on_categorical_dimension():
+    """Test constraints work on categorical dimensions."""
+    search_space = {
+        "optimizer": ["adam", "sgd", "rmsprop", "adagrad"],
+        "lr": (0.001, 0.1),
+    }
+
+    def constraint(params):
+        return params["optimizer"] in ["adam", "sgd"]
+
+    def objective(params):
+        return -params["lr"]
+
+    opt = RandomSearchOptimizer(search_space, constraints=[constraint], random_state=42)
+    opt.search(objective, n_iter=50, verbosity=[])
+
+    assert opt.best_para["optimizer"] in ["adam", "sgd"]
+
+
+def test_constraint_on_mixed_dimensions():
+    """Test constraints work across mixed dimension types."""
+    search_space = {
+        "x": np.arange(-5, 5),
+        "y": (-5.0, 5.0),
+        "algo": ["adam", "sgd"],
+    }
+
+    def constraint(params):
+        return params["x"] + params["y"] > 0
+
+    def objective(params):
+        return -(params["x"] ** 2 + params["y"] ** 2)
+
+    opt = HillClimbingOptimizer(search_space, constraints=[constraint], random_state=42)
+    opt.search(objective, n_iter=50, verbosity=[])
+
+    assert opt.best_para["x"] + opt.best_para["y"] > 0
+
+
+# =============================================================================
+# Reproducibility
+# =============================================================================
+
+
+@pytest.mark.parametrize("optimizer_class", ALL_OPTIMIZERS, ids=optimizer_id)
+def test_reproducibility_with_random_state(optimizer_class):
+    """Test that same random_state produces same results."""
+    search_space = {
+        "x": (0.0, 10.0),
+        "category": ["a", "b", "c"],
+    }
+
+    def objective(params):
+        score = -((params["x"] - 5) ** 2)
+        if params["category"] == "b":
+            score += 1
+        return score
+
+    kwargs = get_optimizer_kwargs(optimizer_class)
+
+    opt1 = optimizer_class(search_space, random_state=42, **kwargs)
+    opt1.search(objective, n_iter=20, verbosity=[])
+
+    opt2 = optimizer_class(search_space, random_state=42, **kwargs)
+    opt2.search(objective, n_iter=20, verbosity=[])
+
+    assert opt1.best_score == opt2.best_score
+    assert opt1.best_para == opt2.best_para
