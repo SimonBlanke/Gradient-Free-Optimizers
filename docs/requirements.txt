@@ -21,4 +21,4 @@ matplotlib
 
 # For plot generation
 plotly>=5.0
-kaleido==0.2.1
+kaleido==1.2.0
