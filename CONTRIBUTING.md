@@ -1,127 +1,81 @@
-# How to contribute
+# Contributing to Gradient-Free-Optimizers
 
-There are many ways to contribute to this project. The following list should give you some ideas how to contribute. The only requirement for a contribution is that you are familiar with this project and understand the problems it is trying to solve.
+Thank you for your interest in contributing to Gradient-Free-Optimizers. This project values self-directed contributors who bring their own ideas and experiences to the table.
 
 
-<br>
+## Before You Contribute
 
-## Discussions
+The best contributions come from people who actively use the library. Before contributing, we recommend:
 
-You can contribute to this project by taking part in a discussion.
+- **Use Gradient-Free-Optimizers in your own projects** - Hands-on experience helps you identify real problems and useful improvements
+- **Explore the codebase** - Understand the architecture and design decisions
+- **Read existing issues and discussions** - Get familiar with ongoing conversations and past decisions
 
 
-<br>
+## Ways to Contribute
 
-#### - Upvoting an issue
+### Feedback and Discussions
 
-The easiest way to contribute is to upvote an issue (with a thumbs up emojy) that is important to you. This way I can see which bugfix, feature or question is important to my users.
+- **Upvote issues** that are important to you
+- **Share your use cases** - How are you using Gradient-Free-Optimizers? What works well?
+- **Participate in discussions** - Your domain expertise can help shape the project
 
 
-<br>
+### Opening Issues
 
-#### - Take part in discussions
+#### Bug Reports
 
-If you have experience in a topic, that touches the issue you might be able to participate in the discussion.
+If you encounter a bug while using Gradient-Free-Optimizers:
 
+1. Search existing issues to avoid duplicates
+2. Use the bug report template
+3. Include a minimal reproducible example
+4. Describe what you expected vs. what happened
 
-<br>
+#### Feature Requests
 
-#### - Reproduce a bug
+Feature requests are most valuable when they come from real usage experience:
 
-An issue about a bug can benefit from users reproducing the bug and therefore confirm, that the bug exists.
+1. Describe the problem you're trying to solve
+2. Explain your current workaround (if any)
+3. Suggest a solution if you have one in mind
 
+#### Questions
 
-<br>
+Before asking a question:
 
-## Create a pull request
+1. Check the documentation
+2. Search existing issues and discussions
+3. If still unclear, open an issue with specific details
 
-A more difficult way to contribute is to open a pull request.
 
+### Pull Requests
 
-<br>
+#### Before Starting
 
-#### - Corrections in Readme
+- **Discuss first** - Open an issue to discuss your idea before writing code
+- **One change per PR** - Keep pull requests focused on a single improvement
 
-If you want to start easy you can create a pull request, that corrects a mistake in the readme. Those mistakes could be from wrong spelling or a wrong default value in the API reference.
+#### When Submitting
 
+- **Understand the code you're changing** - Be prepared to explain your changes and their implications
+- **Test thoroughly** - Verify your changes work as intended
+- **Explain the "why"** - Help reviewers understand the reasoning behind your changes
 
-<br>
+#### PR Format
 
-#### - Add an example
+- Use tags in the title: `[Fix]`, `[Feature]`, `[Refactor]`, `[Docs]`
+- Link to the related issue
+- Describe what changed and why
 
-A great way to conribute is to add an example from you field of work, that incorporates this package.
 
+## Code Style
 
-<br>
+- Follow the existing code style in the repository
+- Run the test suite before submitting
+- Keep commits focused and well-described
 
-#### - Solve an existing issue
 
-Solving an issue with a pull request is one of the most difficult ways to contribute. If you need help with the solution you can ask it in the corresponding issue or contact me at my official email (from my profile page).
+## Code of Conduct
 
-
-<br>
-
-## Open an issue
-
-You can contribute to this project by opening an issue. This could be a question, a bug report, a feature request or other types. In any case you should do a search beforehand to confirm, that a similar issue has not already been opened.
-
-
-<br>
-
-#### - Questions
-
-This can be a question about how an algorithm works or if something in the documentation is not clear.
-
-
-<br>
-
-#### - Bug reports
-
-If you encounter an error with this software you should open an issue. Please look into the error message to verify if the origin of the error is in this software. If you decide to open an issue about a bug report you should select the issue template and follow the instructions.
-
-
-<br>
-
-#### - Feature Requests
-
-This could be a feature that could be very useful for your work, an interesting algorithm or a way to open up the software to more usecases.
-
-
-<br>
-
----
-
-<br>
-<br>
-<br>
-
-# Contribution Guidelines
-
-When contributing to this repository, please first discuss the change you wish to make via issue, email, or any other method with the owners of this repository before making a change.
-
-Please note we have a code of conduct, please follow it in all your interactions with the project.
-
-
-<br>
-
-## Issues
-
-Before opening an issue, please use the search to find out if your problem or question has already been adressed before.
-When opening issues, please use the issue templates and try to describe your problem in detail.
-
-If you open an issue that describes a bug, please add a small example code snippet. This helps to reproduce the bug, which speeds up the process of fixing the bug.
-
-
-<br>
-
-## Pull Requests
-
-- In the PR title use tags [Fix], [Feature], [Refactor], [Release], [Hotfix]
-- Link PR to issue of it solves one.
-- Explain how you solved the issue
-- Check the Format und Coding Style
-
-
-<br>
-
----
+Please be respectful in all interactions. We're all here to build something useful together.
