@@ -134,6 +134,7 @@ extend-select = [
   "C4", # https://pypi.org/project/flake8-comprehensions
 ]
 ignore=[
+  "S311", # Standard pseudo-random generators are not suitable for cryptographic purposes
   "E203", # Whitespace-before-punctuation.
   "E402", # Module-import-not-at-top-of-file.
   "E731", # Do not assign a lambda expression, use a def.
