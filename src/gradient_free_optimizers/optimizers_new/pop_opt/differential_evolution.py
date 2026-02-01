@@ -6,6 +6,11 @@
 Differential Evolution (DE) Optimizer.
 
 Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
+
+Template Method Pattern Compliance:
+    - Does NOT override iterate() - uses CoreOptimizer's orchestration
+    - Implements _iterate_*_batch() for dimension-type-aware DE operations
+    - Overrides init_pos()/evaluate_init() for population management (acceptable)
 """
 
 from __future__ import annotations
@@ -40,6 +45,12 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
 
     For categorical dimensions, arithmetic operations on category indices
     are meaningless, so we use probabilistic selection from the three parents.
+
+    Template Method Pattern:
+        This optimizer follows the Template Method Pattern by implementing
+        _iterate_*_batch() methods instead of overriding iterate().
+        The DE operation (mutation + crossover) is computed once per iteration,
+        then portions are extracted for each dimension type.
 
     Parameters
     ----------
@@ -101,6 +112,10 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
 
         # Initialize RNG for reproducibility
         self._rng = np.random.default_rng(self.random_seed)
+
+        # Iteration state for template method coordination
+        self._iteration_setup_done = False
+        self._de_new_pos = None
 
     def mutation(self) -> np.ndarray:
         """Generate mutant vector using type-aware differential mutation.
@@ -296,30 +311,29 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
         self._update_best(self.pos_new, score_new)
         self._update_current(self.pos_new, score_new)
 
-    def iterate(self) -> np.ndarray:
-        """Generate trial vector via mutation and crossover.
+    # =========================================================================
+    # Template Method Implementation - NO iterate() override!
+    # =========================================================================
 
-        DE iteration:
-        1. Select target vector (round-robin through population)
-        2. Generate mutant vector using differential mutation
-        3. Create trial vector via crossover between target and mutant
-        4. Selection happens in evaluate() (greedy)
+    def _setup_iteration(self) -> None:
+        """Set up current iteration by selecting individual and computing position.
 
-        Returns
-        -------
-        np.ndarray
-            Trial vector for evaluation.
+        Called lazily by the first _iterate_*_batch() method.
+        Performs DE mutation and crossover, computes the full position once,
+        which is then extracted by the individual batch methods.
         """
+        if self._iteration_setup_done:
+            return
+
         # Select target individual (round-robin)
         self.p_current = self.individuals[self.nth_trial % len(self.individuals)]
         target_vector = self.p_current.pos_current
 
         # Guard against None target
         if target_vector is None:
-            pos_new = self.p_current.init.move_random_typed()
-            self.p_current.pos_new = pos_new  # Property setter auto-appends
-            self.pos_new = pos_new  # Property setter auto-appends
-            return pos_new
+            self._de_new_pos = self.p_current.init.move_random_typed()
+            self._iteration_setup_done = True
+            return
 
         # Generate mutant vector
         mutant_vector = self.mutation()
@@ -338,25 +352,63 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
         pos_new = self._constraint_loop(pos_new)
         pos_new = self.conv2pos_typed(pos_new)
 
-        # Track on individual (property setter auto-appends)
-        self.p_current.pos_new = pos_new
+        self._de_new_pos = pos_new
+        self._iteration_setup_done = True
 
-        # Track on main optimizer (property setter auto-appends)
-        self.pos_new = pos_new
+    def _iterate_continuous_batch(self) -> np.ndarray:
+        """Generate continuous values using DE mutation/crossover.
 
-        return pos_new
+        Returns the continuous portion of the DE-computed position.
+
+        Returns
+        -------
+        np.ndarray
+            New continuous values from DE operation.
+        """
+        self._setup_iteration()
+        return self._de_new_pos[self._continuous_mask]
+
+    def _iterate_categorical_batch(self) -> np.ndarray:
+        """Generate categorical indices using DE mutation/crossover.
+
+        Returns the categorical portion of the DE-computed position.
+
+        Returns
+        -------
+        np.ndarray
+            New category indices from DE operation.
+        """
+        self._setup_iteration()
+        return self._de_new_pos[self._categorical_mask]
+
+    def _iterate_discrete_batch(self) -> np.ndarray:
+        """Generate discrete indices using DE mutation/crossover.
+
+        Returns the discrete portion of the DE-computed position.
+
+        Returns
+        -------
+        np.ndarray
+            New discrete indices from DE operation.
+        """
+        self._setup_iteration()
+        return self._de_new_pos[self._discrete_mask]
 
     def _evaluate(self, score_new: float) -> None:
         """Evaluate trial vector and perform selection.
 
         DE uses greedy selection: the trial vector replaces the target
-        only if it has a better (or equal) score.
+        only if it has a better (or equal) score. Also resets
+        iteration state for the next iteration.
 
         Parameters
         ----------
         score_new : float
             Score of the trial vector.
         """
+        # Track position on individual (needed for personal best tracking)
+        self.p_current.pos_new = self.pos_new
+
         # DE greedy selection is handled by individual's evaluate
         # which updates pos_current only if score improved
         self.p_current.evaluate(score_new)
@@ -364,3 +416,7 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
         # Update global tracking
         self._update_best(self.pos_new, score_new)
         self._update_current(self.pos_new, score_new)
+
+        # Reset iteration setup for next iteration
+        self._iteration_setup_done = False
+        self._de_new_pos = None
