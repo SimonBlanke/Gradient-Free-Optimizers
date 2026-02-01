@@ -11,12 +11,13 @@ Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
 from __future__ import annotations
 
 import random
-from typing import TYPE_CHECKING, Any, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
-from .base_population_optimizer import BasePopulationOptimizer
 from ._individual import Individual
+from .base_population_optimizer import BasePopulationOptimizer
 
 if TYPE_CHECKING:
     pass
@@ -132,7 +133,9 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
 
         # Fast path for legacy mode (all discrete-numerical)
         if self.conv.is_legacy_mode:
-            mutant = np.array(x_1) + self.mutation_rate * (np.array(x_2) - np.array(x_3))
+            mutant = np.array(x_1) + self.mutation_rate * (
+                np.array(x_2) - np.array(x_3)
+            )
             return mutant
 
         # Type-aware mutation for mixed dimension types

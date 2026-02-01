@@ -11,16 +11,17 @@ Combines multiple surrogate models for robust predictions.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Literal
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 
 from ..smb_opt import SMBO
+from ..smb_opt._normalize import normalize
 from ..smb_opt.acquisition_function import ExpectedImprovement
 from ..smb_opt.surrogate_models import EnsembleRegressor
-from ..smb_opt._normalize import normalize
 
 if TYPE_CHECKING:
     import pandas as pd

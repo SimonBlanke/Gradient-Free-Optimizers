@@ -25,7 +25,6 @@ optimizer classes live (combining optimizers_new/ with Search functionality).
 
 import numpy as np
 import pytest
-from unittest.mock import patch, MagicMock
 
 # Import from optimizer_search/ - these are the complete optimizers with search()
 from ...optimizer_search import (
@@ -80,10 +79,10 @@ def make_mixed_space(n_continuous: int, n_categorical: int, n_discrete: int) -> 
 
 
 def simple_objective(para):
-    """Simple objective that sums all numeric values."""
+    """Sum all numeric values in the parameter dictionary."""
     total = 0.0
     for key, value in para.items():
-        if isinstance(value, (int, float, np.number)):
+        if isinstance(value, int | float | np.number):
             total += value
         elif isinstance(value, str):
             total += len(value)  # Use string length as proxy
@@ -136,7 +135,11 @@ def test_mask_mixed_space(OptimizerClass):
     assert opt._categorical_mask.sum() == 3
     assert opt._discrete_mask.sum() == 4
     # Total should match
-    total = opt._continuous_mask.sum() + opt._categorical_mask.sum() + opt._discrete_mask.sum()
+    total = (
+        opt._continuous_mask.sum()
+        + opt._categorical_mask.sum()
+        + opt._discrete_mask.sum()
+    )
     assert total == len(space)
 
 

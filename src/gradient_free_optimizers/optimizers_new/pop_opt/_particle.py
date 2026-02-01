@@ -138,7 +138,11 @@ class Particle(HillClimbingOptimizer):
             return pos_new
 
         # Guard against None positions during early iterations
-        if self.pos_current is None or self.pos_best is None or self.global_pos_best is None:
+        if (
+            self.pos_current is None
+            or self.pos_best is None
+            or self.global_pos_best is None
+        ):
             # Fall back to random move during early iterations
             pos_new = self.init.move_random_typed()
             self.pos_new = pos_new  # Property setter auto-appends

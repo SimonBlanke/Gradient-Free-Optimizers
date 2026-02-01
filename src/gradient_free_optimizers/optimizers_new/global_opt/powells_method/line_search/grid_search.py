@@ -2,9 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Grid-based line search strategy for Powell's method.
-"""
+"""Grid-based line search strategy for Powell's method."""
 
 import numpy as np
 

@@ -2,6 +2,8 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+"""Converter module for transforming positions between search spaces."""
+
 from __future__ import annotations
 
 from collections.abc import Callable
@@ -306,7 +308,7 @@ class Converter(MemoryOperationsMixin):
         return True
 
     def returnNoneIfArgNone(func_: Callable) -> Callable:
-        """Decorator that returns None if any argument is None."""
+        """Return None if any argument is None."""
 
         def wrapper(self, *args: Any) -> Any:
             for arg in [*args]:

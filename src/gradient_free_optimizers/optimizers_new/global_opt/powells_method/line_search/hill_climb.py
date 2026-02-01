@@ -2,9 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Hill climbing line search strategy for Powell's method.
-"""
+"""Hill climbing line search strategy for Powell's method."""
 
 import numpy as np
 

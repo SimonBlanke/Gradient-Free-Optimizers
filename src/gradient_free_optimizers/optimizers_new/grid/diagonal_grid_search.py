@@ -84,7 +84,7 @@ class DiagonalGridSearch(CoreOptimizer):
         self.high_dim_pointer = 0  # Current position in 1D space
         self.direction_calc = None  # Prime generator (computed on first iterate)
 
-        # Use converter's dimension info (handles overflow via Python's arbitrary precision)
+        # Use converter's dimension info (handles overflow via arbitrary precision)
         self._dim_sizes = self.conv.dim_sizes
         self._search_space_size = self.conv.search_space_size
 
@@ -124,7 +124,7 @@ class DiagonalGridSearch(CoreOptimizer):
         # Bijection: Z/search_space_size*Z -> (Z/dim_1*Z)x...x(Z/dim_n*Z)
         for dim in range(len(dim_sizes) - 1):
             # Use Python's native multiplication to avoid overflow
-            remaining_prod = reduce(lambda x, y: x * y, dim_sizes[dim + 1:], 1)
+            remaining_prod = reduce(lambda x, y: x * y, dim_sizes[dim + 1 :], 1)
             new_pos.append(pointer // remaining_prod % dim_sizes[dim])
             pointer = pointer % remaining_prod
         new_pos.append(pointer)
@@ -193,9 +193,7 @@ class DiagonalGridSearch(CoreOptimizer):
     def _move_random(self):
         """Generate a random valid position."""
         while True:
-            pos = np.array([
-                self._rng.integers(0, size) for size in self._dim_sizes
-            ])
+            pos = np.array([self._rng.integers(0, size) for size in self._dim_sizes])
             if self.conv.not_in_constraint(pos):
                 return pos
 
@@ -212,7 +210,7 @@ class DiagonalGridSearch(CoreOptimizer):
         raise NotImplementedError("DiagonalGridSearch uses systematic traversal")
 
     def _evaluate(self, score_new):
-        """Simple greedy evaluation - just track best position."""
+        """Track best position using greedy evaluation."""
         self._update_best(self.pos_new, score_new)
 
         # Update current to new position (grid search always moves)

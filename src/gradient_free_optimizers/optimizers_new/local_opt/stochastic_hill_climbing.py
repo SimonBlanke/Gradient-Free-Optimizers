@@ -11,8 +11,6 @@ Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
 
 import math
 
-import numpy as np
-
 from .hill_climbing_optimizer import HillClimbingOptimizer
 
 

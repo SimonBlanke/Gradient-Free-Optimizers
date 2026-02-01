@@ -2,11 +2,10 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Simulated Annealing Optimizer.
+"""Simulated Annealing Optimizer.
 
-Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
-(inherits iteration methods from HillClimbingOptimizer via StochasticHillClimbingOptimizer)
+Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL.
+Inherits iteration methods from HillClimbingOptimizer via StochasticHillClimbing.
 """
 
 import math

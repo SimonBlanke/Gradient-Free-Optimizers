@@ -131,7 +131,7 @@ class Individual(HillClimbingOptimizer):
         new_pos = np.empty(n_dims, dtype=object)
 
         # Temporarily set _pos_current so template methods can access it
-        old_pos_current = getattr(self, '_pos_current', None)
+        old_pos_current = getattr(self, "_pos_current", None)
         self._pos_current = pos_current
 
         try:
@@ -163,7 +163,9 @@ class Individual(HillClimbingOptimizer):
                 disc_new = self._iterate_discrete_batch()
                 # Round and clip to bounds
                 disc_new = np.round(disc_new)
-                disc_new = np.clip(disc_new, disc_bounds[:, 0], disc_bounds[:, 1]).astype(int)
+                disc_new = np.clip(
+                    disc_new, disc_bounds[:, 0], disc_bounds[:, 1]
+                ).astype(int)
                 new_pos[disc_mask] = disc_new
         finally:
             # Restore original _pos_current

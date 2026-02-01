@@ -2,6 +2,8 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+"""Sampling strategies for sequential model-based optimizers."""
+
 import random
 
 from gradient_free_optimizers._array_backend import (
@@ -22,6 +24,8 @@ MAX_SUPPORTED_DIMENSIONS = 31
 
 
 class InitialSampler:
+    """Sample positions from search space for sequential model-based optimizers."""
+
     def __init__(self, conv, max_sample_size, dim_max_sample_size=1000000):
         self.conv = conv
         self.max_sample_size = max_sample_size

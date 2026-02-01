@@ -10,12 +10,13 @@ Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
-from .base_population_optimizer import BasePopulationOptimizer
 from ._particle import Particle
+from .base_population_optimizer import BasePopulationOptimizer
 
 if TYPE_CHECKING:
     pass

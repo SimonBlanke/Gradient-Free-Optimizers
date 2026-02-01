@@ -14,7 +14,8 @@ This optimizer uses the "State vor iterate()" pattern:
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
@@ -226,8 +227,7 @@ class DownhillSimplexOptimizer(CoreOptimizer):
                 for idx in idx_sorted[: self.n_simp_positions]
             ]
             self.simplex_scores = [
-                self.scores_valid[idx]
-                for idx in idx_sorted[: self.n_simp_positions]
+                self.scores_valid[idx] for idx in idx_sorted[: self.n_simp_positions]
             ]
             self.simplex_step = 1
 

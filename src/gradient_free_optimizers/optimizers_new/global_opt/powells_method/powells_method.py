@@ -12,13 +12,14 @@ Note: Categorical dimensions have limited support.
 from __future__ import annotations
 
 import random
-from typing import TYPE_CHECKING, Any, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
 from ...local_opt import HillClimbingOptimizer
 from .direction import Direction
-from .line_search import GridLineSearch, GoldenSectionLineSearch, HillClimbLineSearch
+from .line_search import GoldenSectionLineSearch, GridLineSearch, HillClimbLineSearch
 
 if TYPE_CHECKING:
     pass
@@ -208,7 +209,9 @@ class PowellsMethod(HillClimbingOptimizer):
 
     def _start_new_cycle(self):
         """Start a new cycle through all directions."""
-        self.cycle_start_pos = self.pos_current.copy() if self.pos_current is not None else None
+        self.cycle_start_pos = (
+            self.pos_current.copy() if self.pos_current is not None else None
+        )
         self.current_direction_idx = 0
         self.direction_improvements = []
 
@@ -324,6 +327,6 @@ class PowellsMethod(HillClimbingOptimizer):
         if self.line_searcher is not None and self.pos_new is not None:
             self.line_searcher.update(self.pos_new, score_new)
 
-        # Only update global best tracking, NOT current position
-        # Current position is updated in _finish_direction_search when line search completes
+        # Only update global best tracking, NOT current position.
+        # Current position updated in _finish_direction_search when line search done.
         self._update_best(self.pos_new, score_new)

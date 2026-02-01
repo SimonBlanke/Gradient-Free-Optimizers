@@ -15,9 +15,8 @@ import random
 
 import numpy as np
 
-from .base_population_optimizer import BasePopulationOptimizer
 from ..local_opt import SimulatedAnnealingOptimizer
-
+from .base_population_optimizer import BasePopulationOptimizer
 
 # Temperature initialization parameters for parallel tempering
 # temp = TEMP_BASE ** uniform(0, TEMP_MAX_EXPONENT) gives range [1.0, ~9.3]
@@ -128,7 +127,9 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
                 _systems_temp.remove(_p1_)
 
             # Filter to systems that have been evaluated
-            _systems_evaluated = [s for s in _systems_temp if s.score_current is not None]
+            _systems_evaluated = [
+                s for s in _systems_temp if s.score_current is not None
+            ]
             if not _systems_evaluated:
                 continue
 
@@ -152,7 +153,8 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
             _p1_: First system
             _p2_: Second system
 
-        Returns:
+        Returns
+        -------
             Acceptance probability scaled to 0-100 range
         """
         denom = _p1_.score_current + _p2_.score_current

@@ -2,9 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Abstract base class for line search strategies in Powell's method.
-"""
+"""Abstract base class for line search strategies in Powell's method."""
 
 from abc import ABC, abstractmethod
 
@@ -134,7 +132,7 @@ class LineSearch(ABC):
             if isinstance(dim_def, tuple):
                 # Continuous
                 min_val, max_val = dim_def
-            elif isinstance(dim_def, (list, np.ndarray)):
+            elif isinstance(dim_def, list | np.ndarray):
                 # Categorical or discrete: index bounds
                 min_val, max_val = 0, len(dim_def) - 1
             else:

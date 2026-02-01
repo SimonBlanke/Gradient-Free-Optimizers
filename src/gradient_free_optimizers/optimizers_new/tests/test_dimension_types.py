@@ -85,6 +85,7 @@ def mixed_space():
 
 def make_objective(search_space):
     """Create a simple objective function that works with any search space."""
+
     def objective(para):
         # Sum up all numeric values (for continuous/discrete)
         # For categorical, use index position as proxy
@@ -104,6 +105,7 @@ def make_objective(search_space):
                 actual_idx = np.where(dim_def == value)[0][0]
                 score -= abs(actual_idx - mid_idx)
         return score
+
     return objective
 
 
@@ -127,9 +129,9 @@ def test_continuous_values_in_range(OptimizerClass, continuous_only_space):
 
     best = opt.best_para
     for name, (min_val, max_val) in continuous_only_space.items():
-        assert min_val <= best[name] <= max_val, (
-            f"{name}: {best[name]} not in [{min_val}, {max_val}]"
-        )
+        assert (
+            min_val <= best[name] <= max_val
+        ), f"{name}: {best[name]} not in [{min_val}, {max_val}]"
 
 
 @pytest.mark.parametrize("OptimizerClass", OPTIMIZERS)
@@ -141,9 +143,9 @@ def test_continuous_types_are_float(OptimizerClass, continuous_only_space):
 
     best = opt.best_para
     for name in continuous_only_space:
-        assert isinstance(best[name], (float, np.floating)), (
-            f"{name}: expected float, got {type(best[name])}"
-        )
+        assert isinstance(
+            best[name], float | np.floating
+        ), f"{name}: expected float, got {type(best[name])}"
 
 
 @pytest.mark.parametrize("OptimizerClass", OPTIMIZERS)
@@ -166,9 +168,7 @@ def test_categorical_values_are_valid(OptimizerClass, categorical_only_space):
 
     best = opt.best_para
     for name, options in categorical_only_space.items():
-        assert best[name] in options, (
-            f"{name}: {best[name]} not in {options}"
-        )
+        assert best[name] in options, f"{name}: {best[name]} not in {options}"
 
 
 @pytest.mark.parametrize("OptimizerClass", OPTIMIZERS)
@@ -180,13 +180,13 @@ def test_categorical_preserves_types(OptimizerClass, categorical_only_space):
 
     best = opt.best_para
     # "use_dropout" should be a bool, not a string
-    assert isinstance(best["use_dropout"], (bool, np.bool_)), (
-        f"use_dropout: expected bool, got {type(best['use_dropout'])}"
-    )
+    assert isinstance(
+        best["use_dropout"], bool | np.bool_
+    ), f"use_dropout: expected bool, got {type(best['use_dropout'])}"
     # "activation" should be a string
-    assert isinstance(best["activation"], str), (
-        f"activation: expected str, got {type(best['activation'])}"
-    )
+    assert isinstance(
+        best["activation"], str
+    ), f"activation: expected str, got {type(best['activation'])}"
 
 
 @pytest.mark.parametrize("OptimizerClass", OPTIMIZERS)
@@ -209,9 +209,7 @@ def test_discrete_values_are_valid(OptimizerClass, discrete_only_space):
 
     best = opt.best_para
     for name, values in discrete_only_space.items():
-        assert best[name] in values, (
-            f"{name}: {best[name]} not in {list(values)}"
-        )
+        assert best[name] in values, f"{name}: {best[name]} not in {list(values)}"
 
 
 @pytest.mark.parametrize("OptimizerClass", OPTIMIZERS)
@@ -225,9 +223,9 @@ def test_discrete_values_exact_match(OptimizerClass, discrete_only_space):
     for name, values in discrete_only_space.items():
         # Check exact match (not just approximate)
         matches = [best[name] == v for v in values]
-        assert any(matches), (
-            f"{name}: {best[name]} is not an exact match in {list(values)}"
-        )
+        assert any(
+            matches
+        ), f"{name}: {best[name]} is not an exact match in {list(values)}"
 
 
 @pytest.mark.parametrize("OptimizerClass", OPTIMIZERS)
@@ -251,8 +249,8 @@ def test_mixed_dimensions_correct_types(OptimizerClass, mixed_space):
     best = opt.best_para
 
     # Continuous: should be float
-    assert isinstance(best["lr"], (float, np.floating))
-    assert isinstance(best["momentum"], (float, np.floating))
+    assert isinstance(best["lr"], float | np.floating)
+    assert isinstance(best["momentum"], float | np.floating)
 
     # Categorical: should match original type
     assert best["activation"] in ["relu", "tanh", "sigmoid"]
@@ -288,7 +286,7 @@ def test_single_continuous_dimension(OptimizerClass):
     """Test with a single continuous dimension."""
     space = {"x": (-5.0, 5.0)}
     opt = OptimizerClass(space, random_state=42)
-    opt.search(lambda p: -p["x"]**2, n_iter=20)
+    opt.search(lambda p: -(p["x"] ** 2), n_iter=20)
 
     assert opt.best_para is not None
     assert -5.0 <= opt.best_para["x"] <= 5.0

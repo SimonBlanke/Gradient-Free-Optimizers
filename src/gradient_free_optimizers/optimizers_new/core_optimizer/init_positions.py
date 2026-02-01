@@ -2,6 +2,8 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+"""Initialization strategies for optimizer starting positions."""
+
 import random
 from itertools import product
 
@@ -21,6 +23,8 @@ def _arrays_equal(a, b):
 
 
 class Initializer:
+    """Generate initial positions for optimization algorithms."""
+
     def __init__(self, conv, initialize):
         self.conv = conv
         self.initialize = initialize
@@ -40,6 +44,7 @@ class Initializer:
         self.set_pos()
 
     def move_random(self):
+        """Generate a random position in the search space."""
         return move_random(self.conv.search_space_positions)
 
     def move_random_typed(self):
@@ -61,12 +66,14 @@ class Initializer:
         return array(pos)
 
     def add_n_random_init_pos(self, n):
+        """Add n random initialization positions to the list."""
         for _ in range(n):
             self.init_positions_l.append(self.move_random_typed())
 
         self.n_inits = len(self.init_positions_l)
 
     def get_n_inits(initialize):
+        """Count total number of initialization positions from config."""
         n_inits = 0
         for key_ in initialize.keys():
             init_value = initialize[key_]
@@ -77,6 +84,7 @@ class Initializer:
         return n_inits
 
     def set_pos(self):
+        """Set initialization positions based on configuration."""
         init_positions_ll = []
 
         if "random" in self.initialize:

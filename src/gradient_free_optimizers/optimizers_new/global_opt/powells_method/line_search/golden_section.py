@@ -2,9 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Golden section search strategy for Powell's method.
-"""
+"""Golden section search strategy for Powell's method."""
 
 import math
 

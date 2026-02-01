@@ -10,13 +10,14 @@ Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable, Literal
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 
+from .acquisition_function import ExpectedImprovement
 from .smbo import SMBO
 from .surrogate_models import GPR
-from .acquisition_function import ExpectedImprovement
 
 if TYPE_CHECKING:
     import pandas as pd

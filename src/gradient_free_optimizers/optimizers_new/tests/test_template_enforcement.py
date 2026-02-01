@@ -11,13 +11,13 @@ These tests verify that:
 3. Subclasses don't bypass the template by overriding iterate()
 """
 
+from unittest.mock import patch
+
 import numpy as np
 import pytest
-from unittest.mock import patch
 
 from ..core_optimizer import CoreOptimizer
 from ..local_opt import HillClimbingOptimizer
-
 
 # =============================================================================
 # PHASE 1: ABC ENFORCEMENT TESTS
@@ -112,7 +112,9 @@ class TestTemplateMethodCalls:
         optimizer.pos_current = np.array([0.05, 1, 2])
 
         with patch.object(
-            optimizer, "_iterate_continuous_batch", wraps=optimizer._iterate_continuous_batch
+            optimizer,
+            "_iterate_continuous_batch",
+            wraps=optimizer._iterate_continuous_batch,
         ) as mock:
             optimizer.iterate()
             assert mock.call_count >= 1, "_iterate_continuous_batch was not called"
@@ -122,7 +124,9 @@ class TestTemplateMethodCalls:
         optimizer.pos_current = np.array([0.05, 1, 2])
 
         with patch.object(
-            optimizer, "_iterate_categorical_batch", wraps=optimizer._iterate_categorical_batch
+            optimizer,
+            "_iterate_categorical_batch",
+            wraps=optimizer._iterate_categorical_batch,
         ) as mock:
             optimizer.iterate()
             assert mock.call_count >= 1, "_iterate_categorical_batch was not called"
@@ -132,7 +136,9 @@ class TestTemplateMethodCalls:
         optimizer.pos_current = np.array([0.05, 1, 2])
 
         with patch.object(
-            optimizer, "_iterate_discrete_batch", wraps=optimizer._iterate_discrete_batch
+            optimizer,
+            "_iterate_discrete_batch",
+            wraps=optimizer._iterate_discrete_batch,
         ) as mock:
             optimizer.iterate()
             assert mock.call_count >= 1, "_iterate_discrete_batch was not called"
@@ -141,13 +147,23 @@ class TestTemplateMethodCalls:
         """Verify all three batch methods are called for a mixed search space."""
         optimizer.pos_current = np.array([0.05, 1, 2])
 
-        with patch.object(
-            optimizer, "_iterate_continuous_batch", wraps=optimizer._iterate_continuous_batch
-        ) as mock_cont, patch.object(
-            optimizer, "_iterate_categorical_batch", wraps=optimizer._iterate_categorical_batch
-        ) as mock_cat, patch.object(
-            optimizer, "_iterate_discrete_batch", wraps=optimizer._iterate_discrete_batch
-        ) as mock_disc:
+        with (
+            patch.object(
+                optimizer,
+                "_iterate_continuous_batch",
+                wraps=optimizer._iterate_continuous_batch,
+            ) as mock_cont,
+            patch.object(
+                optimizer,
+                "_iterate_categorical_batch",
+                wraps=optimizer._iterate_categorical_batch,
+            ) as mock_cat,
+            patch.object(
+                optimizer,
+                "_iterate_discrete_batch",
+                wraps=optimizer._iterate_discrete_batch,
+            ) as mock_disc,
+        ):
             optimizer.iterate()
 
             assert mock_cont.call_count >= 1, "continuous batch not called"
@@ -162,13 +178,17 @@ class TestTemplateMethodCalls:
         )
         opt.pos_current = np.array([5.0, 5.0])
 
-        with patch.object(
-            opt, "_iterate_continuous_batch", wraps=opt._iterate_continuous_batch
-        ) as mock_cont, patch.object(
-            opt, "_iterate_categorical_batch", wraps=opt._iterate_categorical_batch
-        ) as mock_cat, patch.object(
-            opt, "_iterate_discrete_batch", wraps=opt._iterate_discrete_batch
-        ) as mock_disc:
+        with (
+            patch.object(
+                opt, "_iterate_continuous_batch", wraps=opt._iterate_continuous_batch
+            ) as mock_cont,
+            patch.object(
+                opt, "_iterate_categorical_batch", wraps=opt._iterate_categorical_batch
+            ) as mock_cat,
+            patch.object(
+                opt, "_iterate_discrete_batch", wraps=opt._iterate_discrete_batch
+            ) as mock_disc,
+        ):
             opt.iterate()
 
             assert mock_cont.call_count >= 1, "continuous batch not called"
@@ -192,28 +212,30 @@ OPTIMIZERS_WITH_CUSTOM_GENERATE_POSITION = []
 
 # Import additional optimizers for comprehensive testing
 try:
-    from ..local_opt import (
-        SimulatedAnnealingOptimizer,
-        StochasticHillClimbingOptimizer,
-        RepulsingHillClimbingOptimizer,
-        DownhillSimplexOptimizer,
-    )
-    from ..global_opt import (
-        RandomSearchOptimizer,
-        RandomRestartHillClimbingOptimizer,
-    )
     from ..exp_opt import RandomAnnealingOptimizer
-
-    TEMPLATE_USING_OPTIMIZERS.extend([
+    from ..global_opt import (
+        RandomRestartHillClimbingOptimizer,
+        RandomSearchOptimizer,
+    )
+    from ..local_opt import (
+        DownhillSimplexOptimizer,
+        RepulsingHillClimbingOptimizer,
         SimulatedAnnealingOptimizer,
         StochasticHillClimbingOptimizer,
-        RepulsingHillClimbingOptimizer,
-        RandomSearchOptimizer,
-        RandomRestartHillClimbingOptimizer,
-        RandomAnnealingOptimizer,
-        DownhillSimplexOptimizer,
-    ])
-    # RandomRestartHillClimbing legitimately overrides _generate_position for restart logic
+    )
+
+    TEMPLATE_USING_OPTIMIZERS.extend(
+        [
+            SimulatedAnnealingOptimizer,
+            StochasticHillClimbingOptimizer,
+            RepulsingHillClimbingOptimizer,
+            RandomSearchOptimizer,
+            RandomRestartHillClimbingOptimizer,
+            RandomAnnealingOptimizer,
+            DownhillSimplexOptimizer,
+        ]
+    )
+    # RandomRestartHillClimbing overrides _generate_position for restart logic
     OPTIMIZERS_WITH_CUSTOM_GENERATE_POSITION.append(RandomRestartHillClimbingOptimizer)
 except ImportError:
     pass
@@ -233,7 +255,7 @@ class TestIterateNotOverridden:
         if "iterate" in OptimizerClass.__dict__:
             pytest.fail(
                 f"{OptimizerClass.__name__} overrides iterate() in its own class. "
-                f"Template-using optimizers should inherit iterate() from CoreOptimizer."
+                f"Template optimizers should inherit iterate() from CoreOptimizer."
             )
 
     @pytest.mark.parametrize("OptimizerClass", TEMPLATE_USING_OPTIMIZERS)
@@ -244,7 +266,9 @@ class TestIterateNotOverridden:
         need custom position generation for their restart logic.
         """
         if OptimizerClass in OPTIMIZERS_WITH_CUSTOM_GENERATE_POSITION:
-            pytest.skip(f"{OptimizerClass.__name__} has legitimate custom _generate_position")
+            pytest.skip(
+                f"{OptimizerClass.__name__} has legitimate custom _generate_position"
+            )
 
         if "_generate_position" in OptimizerClass.__dict__:
             pytest.fail(

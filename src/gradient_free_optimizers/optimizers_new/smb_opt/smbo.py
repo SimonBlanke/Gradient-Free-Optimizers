@@ -12,7 +12,8 @@ from __future__ import annotations
 
 import logging
 import math
-from typing import TYPE_CHECKING, Any, Callable, Literal
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 
@@ -150,16 +151,19 @@ class SMBO(CoreOptimizer):
 
     @staticmethod
     def track_X_sample(func: Callable) -> Callable:
-        """Decorator that appends returned position to X_sample."""
+        """Append returned position to X_sample."""
+
         def wrapper(self, *args, **kwargs):
             pos = func(self, *args, **kwargs)
             self.X_sample.append(pos)
             return pos
+
         return wrapper
 
     @staticmethod
     def track_y_sample(func: Callable) -> Callable:
-        """Decorator that appends score to Y_sample, skipping invalid scores."""
+        """Append score to Y_sample, skipping invalid scores."""
+
         def wrapper(self, score: float) -> None:
             func(self, score)
 

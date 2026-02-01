@@ -79,7 +79,7 @@ class OrthogonalGridSearch(CoreOptimizer):
 
         self.step_size = step_size
 
-        # Use converter's dimension info (handles overflow via Python's arbitrary precision)
+        # Use converter's dimension info (handles overflow via arbitrary precision)
         self._dim_sizes = self.conv.dim_sizes
         self._search_space_size = self.conv.search_space_size
 
@@ -141,7 +141,7 @@ class OrthogonalGridSearch(CoreOptimizer):
         raise NotImplementedError("OrthogonalGridSearch uses systematic traversal")
 
     def _evaluate(self, score_new):
-        """Simple greedy evaluation - just track best position."""
+        """Track best position using greedy evaluation."""
         self._update_best(self.pos_new, score_new)
 
         # Update current to new position (grid search always moves)

@@ -13,7 +13,8 @@ from __future__ import annotations
 
 import math
 import random
-from typing import TYPE_CHECKING, Any, Callable, Literal
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 

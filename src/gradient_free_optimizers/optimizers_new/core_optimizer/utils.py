@@ -2,6 +2,8 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+"""Utility functions for optimizer core operations."""
+
 import random
 
 from gradient_free_optimizers._array_backend import array

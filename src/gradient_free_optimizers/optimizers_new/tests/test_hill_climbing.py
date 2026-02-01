@@ -2,9 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Tests for the new HillClimbingOptimizer implementation.
-"""
+"""Tests for the new HillClimbingOptimizer implementation."""
 
 import numpy as np
 import pytest
@@ -216,7 +214,7 @@ class TestHillClimbingDistributions:
 
     @pytest.fixture
     def continuous_space(self):
-        """Simple continuous-only search space."""
+        """Return a simple continuous-only search space."""
         return {
             "x": (0.0, 10.0),
             "y": (0.0, 10.0),

@@ -11,6 +11,8 @@ and may have different iteration patterns than single-solution optimizers.
 
 import math
 
+import numpy as np
+
 from ..core_optimizer import CoreOptimizer
 
 
@@ -27,7 +29,8 @@ def split(positions_l, population):
         positions_l: List of initial positions
         population: Number of population members
 
-    Returns:
+    Returns
+    -------
         List of position lists, one per population member
     """
     div_int = math.ceil(len(positions_l) / population)
@@ -129,7 +132,8 @@ class BasePopulationOptimizer(CoreOptimizer):
         Args:
             Optimizer: The optimizer class to instantiate for each member
 
-        Returns:
+        Returns
+        -------
             List of optimizer instances
         """
         if isinstance(self.population, int):
@@ -187,8 +191,7 @@ class BasePopulationOptimizer(CoreOptimizer):
         # Handle None scores by treating them as -infinity
         indexed = list(enumerate(scores_list))
         indexed.sort(
-            key=lambda x: x[1] if x[1] is not None else float("-inf"),
-            reverse=True
+            key=lambda x: x[1] if x[1] is not None else float("-inf"), reverse=True
         )
         idx_sorted_ind = [i for i, _ in indexed]
 

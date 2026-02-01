@@ -30,12 +30,12 @@ from .utils import set_random_seed
 
 def _isinf(x):
     """Check if value is infinite."""
-    return math.isinf(x) if isinstance(x, (int, float)) else np.isinf(x)
+    return math.isinf(x) if isinstance(x, int | float) else np.isinf(x)
 
 
 def _isnan(x):
     """Check if value is NaN."""
-    return math.isnan(x) if isinstance(x, (int, float)) else np.isnan(x)
+    return math.isnan(x) if isinstance(x, int | float) else np.isnan(x)
 
 
 class CoreOptimizer(BaseOptimizer):
@@ -343,7 +343,7 @@ class CoreOptimizer(BaseOptimizer):
         return clipped
 
     def evaluate(self, score_new):
-        """Orchestrate evaluation: track score, then delegate to algorithm-specific logic.
+        """Orchestrate evaluation: track score, delegate to algorithm-specific logic.
 
         This method implements the Template Method Pattern for evaluation:
         1. Common tracking (scores, positions, trial count)

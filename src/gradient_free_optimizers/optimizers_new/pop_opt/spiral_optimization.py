@@ -10,12 +10,13 @@ Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
-from .base_population_optimizer import BasePopulationOptimizer
 from ._spiral import Spiral
+from .base_population_optimizer import BasePopulationOptimizer
 
 if TYPE_CHECKING:
     pass
@@ -241,7 +242,10 @@ class SpiralOptimization(BasePopulationOptimizer):
         # Update center if better position found
         if self.search_state == "iter":
             if self.pop_sorted[0].score_current is not None:
-                if self.center_score is None or self.pop_sorted[0].score_current > self.center_score:
+                if (
+                    self.center_score is None
+                    or self.pop_sorted[0].score_current > self.center_score
+                ):
                     self.center_pos = self.pop_sorted[0].pos_current
                     self.center_score = self.pop_sorted[0].score_current
 
