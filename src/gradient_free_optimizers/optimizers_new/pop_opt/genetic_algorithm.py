@@ -6,6 +6,11 @@
 Genetic Algorithm (GA) Optimizer.
 
 Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
+
+Template Method Pattern Compliance:
+    - Does NOT override iterate() - uses CoreOptimizer's orchestration
+    - Implements _iterate_*_batch() for dimension-type-aware GA operations
+    - Overrides init_pos()/evaluate_init() for population management (acceptable)
 """
 
 from __future__ import annotations
@@ -45,6 +50,12 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
     1. Selection: Select fittest parents from population
     2. Crossover: Combine parent positions to create offspring
     3. Mutation: Apply small changes via hill climbing
+
+    Template Method Pattern:
+        This optimizer follows the Template Method Pattern by implementing
+        _iterate_*_batch() methods instead of overriding iterate().
+        The GA operation (mutation or crossover) is computed once per iteration,
+        then portions are extracted for each dimension type.
 
     Parameters
     ----------
@@ -119,6 +130,10 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
 
         # Initialize RNG for reproducibility
         self._rng = np.random.default_rng(self.random_seed)
+
+        # Iteration state for template method coordination
+        self._iteration_setup_done = False
+        self._ga_new_pos = None
 
     def discrete_recombination(self, parent_pos_l, crossover_rates=None):
         """Combine parent positions using discrete recombination.
@@ -229,6 +244,10 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
             position = self.p_current.move_climb_typed(position, epsilon_mod=0.3)
         return position
 
+    # =========================================================================
+    # Population Initialization (acceptable overrides for population optimizers)
+    # =========================================================================
+
     def init_pos(self) -> np.ndarray:
         """Initialize current individual and return its starting position.
 
@@ -270,6 +289,9 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
         """Evaluate during initialization phase.
 
         Tracks score on both main optimizer and current individual.
+
+        Note: This override is acceptable because population-based optimizers
+        need to track scores across multiple sub-optimizers.
         """
         # Track on main optimizer (this increments nth_trial)
         self._track_score(score_new)
@@ -281,25 +303,28 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
         self._update_best(self.pos_new, score_new)
         self._update_current(self.pos_new, score_new)
 
-    def iterate(self) -> np.ndarray:
-        """Generate next position via mutation or crossover.
+    # =========================================================================
+    # Template Method Implementation - NO iterate() override!
+    # =========================================================================
 
-        With probability proportional to mutation_rate, apply mutation.
-        Otherwise, use crossover to generate offspring.
+    def _setup_iteration(self) -> None:
+        """Set up current iteration by selecting individual and computing position.
 
-        Returns
-        -------
-        np.ndarray
-            New position for evaluation.
+        Called lazily by the first _iterate_*_batch() method.
+        Decides between mutation and crossover, computes the full position once,
+        which is then extracted by the individual batch methods.
         """
+        if self._iteration_setup_done:
+            return
+
         n_ind = len(self.individuals)
 
         # Single individual: just mutate
         if n_ind == 1:
             self.p_current = self.individuals[0]
-            pos_new = self.p_current.iterate()
-            self.pos_new = pos_new  # Property setter auto-appends
-            return pos_new
+            self._ga_new_pos = self._compute_mutation_position()
+            self._iteration_setup_done = True
+            return
 
         # Select a random individual (weighted toward fitter ones)
         self.sort_pop_best_score()
@@ -311,54 +336,129 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
         rand = self._rng.uniform(0, total_rate)
 
         if rand <= self.mutation_rate:
-            # Mutation: use individual's iterate (hill climbing)
-            pos_count_before = len(self.p_current.pos_new_list)
-            pos_new = self.p_current.iterate()
-
-            # Check constraints
-            if not self.conv.not_in_constraint(pos_new):
-                # Restore and try random
-                while len(self.p_current.pos_new_list) > pos_count_before:
-                    self.p_current.pos_new_list.pop()
-
-                max_tries = 100
-                for _ in range(max_tries):
-                    pos_new = self.p_current.init.move_random_typed()
-                    if self.conv.not_in_constraint(pos_new):
-                        break
-
-                self.p_current.pos_new = pos_new  # Property setter auto-appends
+            # Mutation: use individual's hill climbing
+            self._ga_new_pos = self._compute_mutation_position()
         else:
             # Crossover: get offspring from queue (generate if empty)
-            if not self.offspring_l:
-                self._crossover()
+            self._ga_new_pos = self._compute_crossover_position()
 
-            if self.offspring_l:
-                pos_new = self.offspring_l.pop(0)
-                self.p_current.pos_new = pos_new  # Property setter auto-appends
-            else:
-                # Fallback to mutation if crossover failed
-                pos_new = self.p_current.iterate()
+        self._iteration_setup_done = True
 
-        # Track position on main optimizer (property setter auto-appends)
-        self.pos_new = pos_new
+    def _compute_mutation_position(self) -> np.ndarray:
+        """Compute new position via mutation using the individual's hill climbing.
+
+        Uses the Individual's typed iteration which applies Gaussian noise
+        to all dimension types appropriately.
+
+        Returns
+        -------
+        np.ndarray
+            New position after mutation.
+        """
+        # Random restart check
+        if random.random() < self.rand_rest_p:
+            return self.p_current.init.move_random_typed()
+
+        # Guard against None positions during early iterations
+        if self.p_current.pos_current is None:
+            return self.p_current.init.move_random_typed()
+
+        # Use individual's typed iteration (calls _iterate_*_batch methods)
+        # The Individual inherits from HillClimbingOptimizer which has these implemented
+        pos_new = self.p_current._iterate_typed(self.p_current.pos_current)
+
+        # Check constraints - if violated, try to find a valid position
+        if not self.conv.not_in_constraint(pos_new):
+            max_tries = 100
+            for _ in range(max_tries):
+                pos_new = self.p_current.init.move_random_typed()
+                if self.conv.not_in_constraint(pos_new):
+                    break
 
         return pos_new
+
+    def _compute_crossover_position(self) -> np.ndarray:
+        """Compute new position via crossover from offspring queue.
+
+        Uses discrete recombination to combine parent positions.
+        Falls back to mutation if crossover fails.
+
+        Returns
+        -------
+        np.ndarray
+            New position from crossover or fallback mutation.
+        """
+        # Fill offspring queue if empty
+        if not self.offspring_l:
+            self._crossover()
+
+        if self.offspring_l:
+            return self.offspring_l.pop(0)
+        else:
+            # Fallback to mutation if crossover failed
+            return self._compute_mutation_position()
+
+    def _iterate_continuous_batch(self) -> np.ndarray:
+        """Generate continuous values using GA mutation/crossover.
+
+        Returns the continuous portion of the GA-computed position.
+
+        Returns
+        -------
+        np.ndarray
+            New continuous values from GA operation.
+        """
+        self._setup_iteration()
+        return self._ga_new_pos[self._continuous_mask]
+
+    def _iterate_categorical_batch(self) -> np.ndarray:
+        """Generate categorical indices using GA mutation/crossover.
+
+        Returns the categorical portion of the GA-computed position.
+
+        Returns
+        -------
+        np.ndarray
+            New category indices from GA operation.
+        """
+        self._setup_iteration()
+        return self._ga_new_pos[self._categorical_mask]
+
+    def _iterate_discrete_batch(self) -> np.ndarray:
+        """Generate discrete indices using GA mutation/crossover.
+
+        Returns the discrete portion of the GA-computed position.
+
+        Returns
+        -------
+        np.ndarray
+            New discrete indices from GA operation.
+        """
+        self._setup_iteration()
+        return self._ga_new_pos[self._discrete_mask]
 
     def _evaluate(self, score_new: float) -> None:
         """Evaluate current individual.
 
         Delegates to the individual's evaluate method which handles
-        personal best tracking and sigma adaptation.
+        personal best tracking and sigma adaptation. Also resets
+        iteration state for the next iteration.
 
         Parameters
         ----------
         score_new : float
             Score of the most recently evaluated position.
         """
+        # Track position on individual (needed for personal best tracking)
+        self.p_current.pos_new = self.pos_new
+
         # Delegate to current individual
         self.p_current.evaluate(score_new)
 
         # Update global tracking
         self._update_best(self.pos_new, score_new)
         self._update_current(self.pos_new, score_new)
+
+        # Reset iteration setup for next iteration
+        self._iteration_setup_done = False
+        self._ga_new_pos = None
