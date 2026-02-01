@@ -6,16 +6,22 @@
 Spiral Optimization Algorithm.
 
 Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
+
+Template Method Pattern Compliance:
+    - Does NOT override iterate() - uses CoreOptimizer's orchestration
+    - Implements _iterate_*_batch() for dimension-type-aware spiral movement
+    - Overrides init_pos()/evaluate_init() for population management (acceptable)
 """
 
 from __future__ import annotations
 
+import random
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
-from ._spiral import Spiral
+from ._spiral import Spiral, rotation
 from .base_population_optimizer import BasePopulationOptimizer
 
 if TYPE_CHECKING:
@@ -27,7 +33,7 @@ class SpiralOptimization(BasePopulationOptimizer):
 
     Dimension Support:
         - Continuous: YES (spiral movement)
-        - Categorical: YES (with appropriate handling)
+        - Categorical: YES (decay factor as switch probability)
         - Discrete: YES (spiral movement, rounded)
 
     Particles move in a spiral pattern toward the current best position.
@@ -41,6 +47,12 @@ class SpiralOptimization(BasePopulationOptimizer):
         - center is the global best position
         - decay contracts over time (decay_rate^iteration)
         - rotation creates the spiral trajectory
+
+    Template Method Pattern:
+        This optimizer follows the Template Method Pattern by implementing
+        _iterate_*_batch() methods instead of overriding iterate().
+        The spiral position is computed once per iteration, then portions
+        are extracted for each dimension type.
 
     Parameters
     ----------
@@ -98,13 +110,17 @@ class SpiralOptimization(BasePopulationOptimizer):
         self.optimizers = self.particles
 
         # Set decay_rate on all particles upfront
-        # (needed for particles that might be used in iterate() without init_pos())
         for p in self.particles:
             p.decay_rate = self.decay_rate
 
         # Center position (best found so far)
         self.center_pos = None
         self.center_score = None
+
+        # Iteration state for template method coordination
+        self._iteration_setup_done = False
+        self._spiral_new_pos = None
+        self._decay_factor = 3.0  # Initial scaling factor
 
     def init_pos(self) -> np.ndarray:
         """Initialize current particle and return its starting position.
@@ -174,73 +190,175 @@ class SpiralOptimization(BasePopulationOptimizer):
 
         self.search_state = "iter"
 
-    def iterate(self) -> np.ndarray:
-        """Move current particle in spiral pattern toward center.
+    # =========================================================================
+    # Template Method Implementation - NO iterate() override!
+    # =========================================================================
 
-        Selects the next particle in round-robin order and computes
-        the new position using spiral movement equations.
+    def _setup_iteration(self) -> None:
+        """Set up current iteration by selecting particle and computing spiral position.
+
+        Called lazily by the first _iterate_*_batch() method.
+        Computes the full spiral position once, which is then extracted
+        by the individual batch methods.
+        """
+        if self._iteration_setup_done:
+            return
+
+        # Select current particle (round-robin)
+        self.p_current = self.particles[self.nth_trial % len(self.particles)]
+
+        # Update global best reference for this particle
+        self.sort_pop_best_score()
+        self.p_current.global_pos_best = self.pop_sorted[0].pos_current
+
+        # Compute full spiral position
+        self._spiral_new_pos = self._compute_spiral_position()
+
+        self._iteration_setup_done = True
+
+    def _compute_spiral_position(self) -> np.ndarray:
+        """Compute new position using spiral movement equation.
+
+        The spiral equation is:
+            new_pos = center + decay * rotation(current - center)
 
         Returns
         -------
         np.ndarray
-            New position for the current particle.
+            New position after spiral movement.
         """
-        # Select current particle (round-robin)
-        self.p_current = self.particles[self.nth_trial % len(self.particles)]
+        # Random restart check
+        if random.random() < self.rand_rest_p:
+            return self.p_current.init.move_random_typed()
 
-        # Update global best reference
-        self.sort_pop_best_score()
-        self.p_current.global_pos_best = self.pop_sorted[0].pos_current
+        # Guard against None positions during early iterations
+        if self.center_pos is None or self.p_current.pos_current is None:
+            return self.p_current.init.move_random_typed()
 
-        # Remember position count before move (to fix tracking if needed)
-        pos_count_before = len(self.p_current.pos_new_list)
+        # Update decay factor
+        self._decay_factor *= self.decay_rate
 
-        # Compute new position using spiral movement
-        pos_new = self.p_current.move_spiral(self.center_pos)
+        # Compute step rate based on search space size
+        scales = self._compute_dimension_scales()
+        step_rate = self._decay_factor * scales / 1000
 
-        # Check constraints - if valid, we're done
-        if self.conv.not_in_constraint(pos_new):
-            self.pos_new = pos_new  # Property setter auto-appends
-            return pos_new
+        # Compute rotated offset from center
+        center = np.array(self.center_pos)
+        current = np.array(self.p_current.pos_current)
+        rot = rotation(len(center), current - center)
 
-        # Constraint violated - restore position count and try fallback
-        while len(self.p_current.pos_new_list) > pos_count_before:
-            self.p_current.pos_new_list.pop()
+        # Combine rotation with decay
+        offset = step_rate * rot
+        new_pos = center + offset
 
-        pos_new = self.p_current.iterate()
+        return new_pos
 
-        # Check constraint on fallback
-        if self.conv.not_in_constraint(pos_new):
-            self.pos_new = pos_new  # Property setter auto-appends
-            return pos_new
+    def _compute_dimension_scales(self) -> np.ndarray:
+        """Compute scale factors for each dimension.
 
-        # Still violated - try random positions as last resort
-        max_tries = 100
-        while len(self.p_current.pos_new_list) > pos_count_before:
-            self.p_current.pos_new_list.pop()
+        Returns
+        -------
+        np.ndarray
+            Scale factor for each dimension based on its type and bounds.
+        """
+        n_dims = len(self.search_space)
+        scales = np.zeros(n_dims)
+        dim_names = list(self.search_space.keys())
 
-        for _ in range(max_tries):
-            pos_new = self.p_current.init.move_random_typed()
-            if self.conv.not_in_constraint(pos_new):
-                break
+        for i, name in enumerate(dim_names):
+            dim_def = self.search_space[name]
 
-        # Track final position (property setters auto-append)
-        self.p_current.pos_new = pos_new
-        self.pos_new = pos_new
-        return pos_new
+            if isinstance(dim_def, tuple) and len(dim_def) == 2:
+                # Continuous: use range
+                scales[i] = dim_def[1] - dim_def[0]
+            elif isinstance(dim_def, list):
+                # Categorical: use number of categories
+                scales[i] = len(dim_def) - 1
+            elif isinstance(dim_def, np.ndarray):
+                # Discrete: use max index
+                scales[i] = len(dim_def) - 1
+
+        return scales
+
+    def _iterate_continuous_batch(self) -> np.ndarray:
+        """Generate continuous values using spiral movement.
+
+        Returns the continuous portion of the spiral-computed position.
+
+        Returns
+        -------
+        np.ndarray
+            New continuous values from spiral movement.
+        """
+        self._setup_iteration()
+        return self._spiral_new_pos[self._continuous_mask]
+
+    def _iterate_categorical_batch(self) -> np.ndarray:
+        """Generate categorical indices using spiral decay as switch probability.
+
+        For categorical dimensions, the decay factor magnitude determines the
+        probability of switching to a different category. Lower decay (more
+        exploitation) means lower switch probability.
+
+        Returns
+        -------
+        np.ndarray
+            New category indices.
+        """
+        self._setup_iteration()
+
+        # Get current categorical indices
+        current = self.p_current.pos_current[self._categorical_mask]
+
+        new_cats = []
+        for i, cur_idx in enumerate(current):
+            # Get max valid index for this categorical dimension
+            max_idx = self._categorical_sizes[i] - 1
+
+            # Decay factor determines switch probability
+            # Higher decay_factor (early iterations) = more exploration
+            # Lower decay_factor (later iterations) = more exploitation
+            switch_prob = min(1.0, self._decay_factor / 10.0)
+
+            if random.random() < switch_prob:
+                # Switch to a random category
+                new_cats.append(random.randint(0, max_idx))
+            else:
+                # Keep current category
+                new_cats.append(int(cur_idx))
+
+        return np.array(new_cats)
+
+    def _iterate_discrete_batch(self) -> np.ndarray:
+        """Generate discrete indices using spiral movement.
+
+        Returns the discrete portion of the spiral-computed position.
+
+        Returns
+        -------
+        np.ndarray
+            New discrete indices from spiral movement.
+        """
+        self._setup_iteration()
+        return self._spiral_new_pos[self._discrete_mask]
 
     def _evaluate(self, score_new: float) -> None:
         """Evaluate current particle and update center if improved.
 
         Updates the spiral center to the best position found so far.
+        Also resets iteration state for the next iteration.
 
         Parameters
         ----------
         score_new : float
             Score of the most recently evaluated position.
         """
+        # Track position on particle
+        self.p_current.pos_new = self.pos_new
+
         # Update center if better position found
         if self.search_state == "iter":
+            self.sort_pop_best_score()
             if self.pop_sorted[0].score_current is not None:
                 if (
                     self.center_score is None
@@ -255,3 +373,7 @@ class SpiralOptimization(BasePopulationOptimizer):
         # Update global tracking
         self._update_best(self.pos_new, score_new)
         self._update_current(self.pos_new, score_new)
+
+        # Reset iteration setup for next iteration
+        self._iteration_setup_done = False
+        self._spiral_new_pos = None
