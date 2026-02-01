@@ -7,6 +7,11 @@ Orthogonal Grid Search.
 
 Supports: DISCRETE_NUMERICAL, CATEGORICAL
 Uses sequential nested loop traversal (dimension by dimension).
+
+Template Method Pattern Compliance:
+    - Does NOT override iterate() - keeps public interface intact
+    - Overrides _generate_position() for grid-specific position generation
+    - Constraint handling via iterate()'s retry loop naturally advances grid
 """
 
 import numpy as np
@@ -79,70 +84,95 @@ class OrthogonalGridSearch(CoreOptimizer):
 
         self.step_size = step_size
 
+        # Grid state
+        self._grid_counter = 0  # Tracks position in linearized space
+
         # Use converter's dimension info (handles overflow via arbitrary precision)
         self._dim_sizes = self.conv.dim_sizes
         self._search_space_size = self.conv.search_space_size
 
-    def _grid_move(self):
-        """Convert iteration number to a position in the multi-dimensional search space.
+    def _compute_grid_position(self):
+        """Convert current grid counter to a position in the multi-dimensional space.
 
         Uses modular arithmetic to compute the position - essentially a
         mixed-radix number representation where each dimension has its own base.
+
+        Returns
+        -------
+        np.ndarray
+            Position array with indices for each dimension.
         """
         # Convert to Python list to avoid numpy overflow
         dim_sizes = [int(s) for s in self._dim_sizes]
 
         # Account for step_size and handle wraparound for multiple passes
-        mod_tmp = self.nth_trial * self.step_size + int(
-            self.nth_trial * self.step_size / self._search_space_size
-        )
-        div_tmp = self.nth_trial * self.step_size + int(
-            self.nth_trial * self.step_size / self._search_space_size
-        )
+        effective_counter = self._grid_counter * self.step_size
+        wraparound_offset = effective_counter // self._search_space_size
+        linear_index = effective_counter + wraparound_offset
+
+        # Convert linear index to N-D coordinates using mixed-radix decomposition
         new_pos = []
+        remainder = linear_index
 
         for dim_size in dim_sizes:
-            mod = mod_tmp % dim_size
-            div = int(div_tmp / dim_size)
-
-            new_pos.append(mod)
-
-            mod_tmp = div
-            div_tmp = div
+            new_pos.append(remainder % dim_size)
+            remainder = remainder // dim_size
 
         return np.array(new_pos)
 
-    def iterate(self):
-        """Generate next orthogonal grid position.
+    def _generate_position(self):
+        """Generate next grid position using orthogonal traversal.
+
+        This method overrides CoreOptimizer._generate_position() to provide
+        grid-specific position generation. It:
+        1. Computes the grid position for current counter
+        2. Advances the counter (supporting constraint retry)
+        3. Clips to valid bounds
 
         Returns
         -------
         np.ndarray
-            The next grid position to evaluate.
+            Clipped position array ready for evaluation.
         """
-        pos_new = self._grid_move()
-        pos_new = self._clip_position(pos_new)
+        # Compute position for current counter
+        pos = self._compute_grid_position()
 
-        self.pos_new = pos_new
-        self.pos_new_list.append(pos_new)
+        # Advance counter for next call (supports constraint retry)
+        self._grid_counter += 1
 
-        return pos_new
+        # Clip to valid bounds (handles edge cases)
+        return self._clip_position(pos)
+
+    # =========================================================================
+    # Template Method Stubs (not used - _generate_position bypasses them)
+    # =========================================================================
+    # These methods are required by the interface but are not called because
+    # _generate_position() is overridden. Grid search generates the full
+    # position at once, not by dimension type.
 
     def _iterate_continuous_batch(self) -> np.ndarray:
-        """Not used - uses systematic orthogonal grid traversal."""
-        raise NotImplementedError("OrthogonalGridSearch uses systematic traversal")
+        """Not used - grid search generates full position via _generate_position."""
+        raise NotImplementedError(
+            "OrthogonalGridSearch uses _generate_position() for grid traversal"
+        )
 
     def _iterate_categorical_batch(self) -> np.ndarray:
-        """Not used - uses systematic orthogonal grid traversal."""
-        raise NotImplementedError("OrthogonalGridSearch uses systematic traversal")
+        """Not used - grid search generates full position via _generate_position."""
+        raise NotImplementedError(
+            "OrthogonalGridSearch uses _generate_position() for grid traversal"
+        )
 
     def _iterate_discrete_batch(self) -> np.ndarray:
-        """Not used - uses systematic orthogonal grid traversal."""
-        raise NotImplementedError("OrthogonalGridSearch uses systematic traversal")
+        """Not used - grid search generates full position via _generate_position."""
+        raise NotImplementedError(
+            "OrthogonalGridSearch uses _generate_position() for grid traversal"
+        )
 
     def _evaluate(self, score_new):
-        """Track best position using greedy evaluation."""
-        self._update_best(self.pos_new, score_new)
+        """Track best position using greedy evaluation.
 
-        # Update current to new position (grid search always moves)
+        Grid search always moves to the next position (deterministic traversal),
+        so acceptance is always True. We just track the best found so far.
+        """
+        self._update_best(self.pos_new, score_new)
         self._update_current(self.pos_new, score_new)

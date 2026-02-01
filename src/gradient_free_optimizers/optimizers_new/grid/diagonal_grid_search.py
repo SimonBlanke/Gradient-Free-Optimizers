@@ -7,6 +7,11 @@ Diagonal Grid Search.
 
 Supports: DISCRETE_NUMERICAL, CATEGORICAL
 Uses number theory (prime generators) to traverse the search space diagonally.
+
+Template Method Pattern Compliance:
+    - Does NOT override iterate() - keeps public interface intact
+    - Overrides _generate_position() for grid-specific position generation
+    - Constraint handling via iterate()'s retry loop naturally advances grid
 """
 
 from functools import reduce
@@ -79,10 +84,9 @@ class DiagonalGridSearch(CoreOptimizer):
 
         self.step_size = step_size
 
-        # Initialize grid state
-        self.initial_position = np.zeros(len(search_space), dtype=int)
-        self.high_dim_pointer = 0  # Current position in 1D space
-        self.direction_calc = None  # Prime generator (computed on first iterate)
+        # Grid state
+        self._grid_counter = 0  # Tracks position in 1D linearized space
+        self._direction = None  # Prime generator (computed lazily)
 
         # Use converter's dimension info (handles overflow via arbitrary precision)
         self._dim_sizes = self.conv.dim_sizes
@@ -109,19 +113,36 @@ class DiagonalGridSearch(CoreOptimizer):
 
         return dim_root
 
-    def _grid_move(self):
-        """Convert 1D pointer to a position in the multi-dimensional search space.
+    def _compute_grid_position(self):
+        """Convert current grid counter to a position in the multi-dimensional space.
 
         Uses a bijection from Z/(search_space_size * Z) to the product space.
+        The grid counter is updated BEFORE calling this method to support
+        constraint retry (each retry gets the next position).
+
+        Returns
+        -------
+        np.ndarray
+            Position array with indices for each dimension.
         """
-        new_pos = []
         # Convert to Python list to avoid numpy overflow
         dim_sizes = [int(s) for s in self._dim_sizes]
-        pointer = self.high_dim_pointer
 
-        # The coordinate of our new position for each dimension is
-        # the quotient of the pointer by the product of remaining dimensions.
+        # Compute 1D pointer from grid counter
+        # Multiple passes support via step_size
+        current_pass = self._grid_counter % self.step_size
+        base_pointer = self._grid_counter // self.step_size
+
+        # Apply prime-based diagonal step
+        high_dim_pointer = (
+            current_pass + base_pointer * self._direction
+        ) % self._search_space_size
+
+        # Convert 1D pointer to N-D coordinates
         # Bijection: Z/search_space_size*Z -> (Z/dim_1*Z)x...x(Z/dim_n*Z)
+        new_pos = []
+        pointer = high_dim_pointer
+
         for dim in range(len(dim_sizes) - 1):
             # Use Python's native multiplication to avoid overflow
             remaining_prod = reduce(lambda x, y: x * y, dim_sizes[dim + 1 :], 1)
@@ -131,87 +152,64 @@ class DiagonalGridSearch(CoreOptimizer):
 
         return np.array(new_pos)
 
-    def iterate(self):
-        """Generate next diagonal grid position.
+    def _generate_position(self):
+        """Generate next grid position using diagonal traversal.
 
-        Uses the prime-based diagonal traversal to generate the next position
-        to evaluate.
+        This method overrides CoreOptimizer._generate_position() to provide
+        grid-specific position generation. It:
+        1. Lazily initializes the prime direction on first call
+        2. Computes the grid position for current counter
+        3. Advances the counter (supporting constraint retry)
+        4. Clips to valid bounds
 
         Returns
         -------
         np.ndarray
-            The next grid position to evaluate.
+            Clipped position array ready for evaluation.
         """
-        while True:
-            # If this is the first iteration:
-            # Generate the direction and return initial_position
-            if self.direction_calc is None:
-                self.direction_calc = self._get_direction()
+        # Lazy initialization of direction
+        if self._direction is None:
+            self._direction = self._get_direction()
 
-                pos_new = self.initial_position.copy()
-                if self.conv.not_in_constraint(pos_new):
-                    self.pos_new = pos_new
-                    self.pos_new_list.append(pos_new)
-                    return pos_new
-                else:
-                    # If initial position violates constraints, use random
-                    pos_new = self._move_random()
-                    self.pos_new = pos_new
-                    self.pos_new_list.append(pos_new)
-                    return pos_new
+        # Compute position for current counter
+        pos = self._compute_grid_position()
 
-            # If this is not the first iteration:
-            # Update high_dim_pointer by taking a step of size step_size * direction.
+        # Advance counter for next call (supports constraint retry)
+        self._grid_counter += 1
 
-            # Multiple passes are needed in order to observe the entire search space
-            # depending on the step_size parameter.
-            current_pass = self.high_dim_pointer % self.step_size
-            current_pass_finished = (
-                (self.nth_trial + 1) * self.step_size // self._search_space_size
-                > self.nth_trial * self.step_size // self._search_space_size
-            )
+        # Clip to valid bounds (handles edge cases)
+        return self._clip_position(pos)
 
-            # Begin the next pass if current is finished.
-            if current_pass_finished:
-                self.high_dim_pointer = current_pass + 1
-            else:
-                # Otherwise update pointer in Z/(search_space_size*Z)
-                # using the prime step direction and step_size.
-                self.high_dim_pointer = (
-                    self.high_dim_pointer + self.step_size * self.direction_calc
-                ) % self._search_space_size
-
-            # Compute corresponding position in our search space.
-            pos_new = self._grid_move()
-            pos_new = self._clip_position(pos_new)
-
-            if self.conv.not_in_constraint(pos_new):
-                self.pos_new = pos_new
-                self.pos_new_list.append(pos_new)
-                return pos_new
-
-    def _move_random(self):
-        """Generate a random valid position."""
-        while True:
-            pos = np.array([self._rng.integers(0, size) for size in self._dim_sizes])
-            if self.conv.not_in_constraint(pos):
-                return pos
+    # =========================================================================
+    # Template Method Stubs (not used - _generate_position bypasses them)
+    # =========================================================================
+    # These methods are required by the interface but are not called because
+    # _generate_position() is overridden. Grid search generates the full
+    # position at once, not by dimension type.
 
     def _iterate_continuous_batch(self) -> np.ndarray:
-        """Not used - uses systematic diagonal grid traversal."""
-        raise NotImplementedError("DiagonalGridSearch uses systematic traversal")
+        """Not used - grid search generates full position via _generate_position."""
+        raise NotImplementedError(
+            "DiagonalGridSearch uses _generate_position() for grid traversal"
+        )
 
     def _iterate_categorical_batch(self) -> np.ndarray:
-        """Not used - uses systematic diagonal grid traversal."""
-        raise NotImplementedError("DiagonalGridSearch uses systematic traversal")
+        """Not used - grid search generates full position via _generate_position."""
+        raise NotImplementedError(
+            "DiagonalGridSearch uses _generate_position() for grid traversal"
+        )
 
     def _iterate_discrete_batch(self) -> np.ndarray:
-        """Not used - uses systematic diagonal grid traversal."""
-        raise NotImplementedError("DiagonalGridSearch uses systematic traversal")
+        """Not used - grid search generates full position via _generate_position."""
+        raise NotImplementedError(
+            "DiagonalGridSearch uses _generate_position() for grid traversal"
+        )
 
     def _evaluate(self, score_new):
-        """Track best position using greedy evaluation."""
-        self._update_best(self.pos_new, score_new)
+        """Track best position using greedy evaluation.
 
-        # Update current to new position (grid search always moves)
+        Grid search always moves to the next position (deterministic traversal),
+        so acceptance is always True. We just track the best found so far.
+        """
+        self._update_best(self.pos_new, score_new)
         self._update_current(self.pos_new, score_new)
