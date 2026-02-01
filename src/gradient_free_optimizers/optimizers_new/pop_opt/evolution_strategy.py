@@ -6,6 +6,11 @@
 Evolution Strategy (ES) Optimizer.
 
 Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
+
+Template Method Pattern Compliance:
+    - Does NOT override iterate() - uses CoreOptimizer's orchestration
+    - Implements _iterate_*_batch() for dimension-type-aware position generation
+    - Overrides init_pos()/evaluate_init() for population management (acceptable)
 """
 
 from __future__ import annotations
@@ -38,6 +43,12 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
     The key difference from Genetic Algorithm is the emphasis on
     self-adaptive mutation step sizes (sigma) that evolve with the
     population.
+
+    Template Method Pattern:
+        This optimizer follows the Template Method Pattern by implementing
+        _iterate_*_batch() methods instead of overriding iterate().
+        The sub-optimizer's iterate() is called once per iteration, then
+        portions are extracted for each dimension type.
 
     Parameters
     ----------
@@ -110,6 +121,10 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
         self.rnd_int = 0
         self.n_ind = len(self.individuals)
 
+        # Iteration state for template method coordination
+        self._iteration_setup_done = False
+        self._current_new_pos = None
+
     def discrete_recombination(self, parent_pos_l, crossover_rates=None):
         """Combine parent positions using discrete recombination.
 
@@ -162,7 +177,7 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
             available = [i for i in range(self.n_ind) if i != self.rnd_int]
 
         if not available:
-            # Fallback to mutation
+            # Fallback to mutation via individual's iterate
             return self.p_current.iterate()
 
         rnd_int2 = random.choice(available)
@@ -193,6 +208,9 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
 
     def init_pos(self) -> np.ndarray:
         """Initialize current individual and return its starting position.
+
+        Note: This override is acceptable because population-based optimizers
+        need to manage initialization across multiple sub-optimizers.
 
         Returns
         -------
@@ -231,6 +249,9 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
     def evaluate_init(self, score_new: float) -> None:
         """Evaluate during initialization phase.
 
+        Note: This override is acceptable because population-based optimizers
+        need to track scores across multiple sub-optimizers.
+
         Tracks score on both main optimizer and current individual.
         """
         # Track on main optimizer (this increments nth_trial)
@@ -243,25 +264,28 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
         self._update_best(self.pos_new, score_new)
         self._update_current(self.pos_new, score_new)
 
-    def iterate(self) -> np.ndarray:
-        """Generate next position via mutation or recombination.
+    # =========================================================================
+    # Template Method Implementation - NO iterate() override!
+    # =========================================================================
 
-        With probability proportional to mutation_rate, apply mutation.
-        Otherwise, use recombination to combine two parents.
+    def _setup_iteration(self):
+        """Set up current iteration by selecting individual and generating position.
 
-        Returns
-        -------
-        np.ndarray
-            New position for evaluation.
+        Called lazily by the first _iterate_*_batch() method.
+        Decides between mutation and recombination, then generates the
+        new position via the selected operation.
         """
+        if self._iteration_setup_done:
+            return
+
         self.n_ind = len(self.individuals)
 
         # Single individual: just mutate
         if self.n_ind == 1:
             self.p_current = self.individuals[0]
-            pos_new = self.p_current.iterate()
-            self.pos_new = pos_new  # Property setter auto-appends
-            return pos_new
+            self._current_new_pos = self.p_current.iterate()
+            self._iteration_setup_done = True
+            return
 
         # Sort and select random individual
         self.sort_pop_best_score()
@@ -295,16 +319,55 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
             # Recombination
             pos_new = self._cross()
 
-        # Track position on main optimizer (property setter auto-appends)
-        self.pos_new = pos_new
+        self._current_new_pos = pos_new
+        self._iteration_setup_done = True
 
-        return pos_new
+    def _iterate_continuous_batch(self) -> np.ndarray:
+        """Generate continuous values by delegating to current sub-optimizer.
+
+        Returns the continuous portion of the sub-optimizer's position.
+
+        Returns
+        -------
+        np.ndarray
+            New continuous values from mutation or recombination.
+        """
+        self._setup_iteration()
+        return self._current_new_pos[self._continuous_mask]
+
+    def _iterate_categorical_batch(self) -> np.ndarray:
+        """Generate categorical indices by delegating to current sub-optimizer.
+
+        Returns the categorical portion of the sub-optimizer's position.
+
+        Returns
+        -------
+        np.ndarray
+            New category indices from mutation or recombination.
+        """
+        self._setup_iteration()
+        return self._current_new_pos[self._categorical_mask]
+
+    def _iterate_discrete_batch(self) -> np.ndarray:
+        """Generate discrete indices by delegating to current sub-optimizer.
+
+        Returns the discrete portion of the sub-optimizer's position.
+
+        Returns
+        -------
+        np.ndarray
+            New discrete indices from mutation or recombination.
+        """
+        self._setup_iteration()
+        return self._current_new_pos[self._discrete_mask]
 
     def _evaluate(self, score_new: float) -> None:
         """Evaluate current individual.
 
         Delegates to the individual's evaluate method which handles
         personal best tracking and sigma adaptation.
+
+        Also resets iteration state for the next iteration.
 
         Parameters
         ----------
@@ -317,3 +380,7 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
         # Update global tracking
         self._update_best(self.pos_new, score_new)
         self._update_current(self.pos_new, score_new)
+
+        # Reset iteration setup for next iteration
+        self._iteration_setup_done = False
+        self._current_new_pos = None
