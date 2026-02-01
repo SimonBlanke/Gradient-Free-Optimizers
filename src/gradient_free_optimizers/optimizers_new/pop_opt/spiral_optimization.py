@@ -122,61 +122,41 @@ class SpiralOptimization(BasePopulationOptimizer):
         self._spiral_new_pos = None
         self._decay_factor = 3.0  # Initial scaling factor
 
-    def init_pos(self) -> np.ndarray:
-        """Initialize current particle and return its starting position.
+    def _init_pos(self, position) -> None:
+        """Initialize current particle with the given position.
 
-        Sets up particle decay rate and returns initial position.
+        Sets up particle decay rate and assigns the position.
 
-        Returns
-        -------
-        np.ndarray
-            Initial position for the current particle.
+        Args:
+            position: The initialization position from CoreOptimizer.init_pos()
         """
-        nth_pop = self.nth_trial % len(self.particles)
+        # Select particle via round-robin (use nth_init-1 since it was incremented)
+        nth_pop = (self.nth_init - 1) % len(self.particles)
         self.p_current = self.particles[nth_pop]
         self.p_current.decay_rate = self.decay_rate
 
-        # Get initial position from particle (this tracks on particle)
-        if self.p_current.nth_init < len(self.p_current.init.init_positions_l):
-            pos = self.p_current.init_pos()
-        else:
-            # Fall back to random position when particle has no more init positions
-            pos = self.p_current.init.move_random_typed()
-            self.p_current.pos_current = pos
-            self.p_current.pos_new = pos  # Property setter auto-appends
+        # Track position on current particle
+        self.p_current.pos_new = position.copy()
+        self.p_current.pos_current = position.copy()
 
-        # Check constraints - if violated, find valid position and replace
-        if not self.conv.not_in_constraint(pos):
-            max_tries = 100
-            for _ in range(max_tries):
-                pos = self.p_current.init.move_random_typed()
-                if self.conv.not_in_constraint(pos):
-                    break
-            # Replace the invalid position in particle's tracking with valid one
-            self.p_current.pos_current = pos
-            self.p_current.pos_new = pos
-            if self.p_current.pos_new_list:
-                self.p_current.pos_new_list[-1] = pos
-
-        # Track position on main optimizer (property setter auto-appends)
-        self.pos_new = pos
-
-        return pos
-
-    def evaluate_init(self, score_new: float) -> None:
+    def _evaluate_init(self, score_new: float) -> None:
         """Evaluate during initialization phase.
 
-        Tracks score on both main optimizer and current particle.
+        Delegates evaluation to the current particle for particle-level tracking.
+
+        Args:
+            score_new: Score of the most recently evaluated init position
         """
-        # Track on main optimizer (this increments nth_trial)
-        self._track_score(score_new)
-
         # Track on current particle
-        self.p_current.evaluate_init(score_new)
+        self.p_current.score_new = score_new
 
-        # Update tracking
-        self._update_best(self.pos_new, score_new)
-        self._update_current(self.pos_new, score_new)
+        # Update particle's best if this is better
+        if self.p_current.pos_best is None or score_new > self.p_current.score_best:
+            self.p_current.pos_best = self.p_current.pos_new.copy()
+            self.p_current.score_best = score_new
+
+        # Update particle's current
+        self.p_current.score_current = score_new
 
     def _finish_initialization(self) -> None:
         """Set up initial center position from best particle.

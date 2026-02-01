@@ -245,63 +245,41 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
         return position
 
     # =========================================================================
-    # Population Initialization (acceptable overrides for population optimizers)
+    # Population Initialization Hooks
     # =========================================================================
 
-    def init_pos(self) -> np.ndarray:
-        """Initialize current individual and return its starting position.
+    def _init_pos(self, position) -> None:
+        """Initialize current individual with the given position.
 
-        Returns
-        -------
-        np.ndarray
-            Initial position for the current individual.
+        Args:
+            position: The initialization position from CoreOptimizer.init_pos()
         """
-        nth_pop = self.nth_trial % len(self.individuals)
+        # Select individual via round-robin (use nth_init-1 since it was incremented)
+        nth_pop = (self.nth_init - 1) % len(self.individuals)
         self.p_current = self.individuals[nth_pop]
 
-        # Get initial position from individual
-        if self.p_current.nth_init < len(self.p_current.init.init_positions_l):
-            pos = self.p_current.init_pos()
-        else:
-            # Fall back to random position
-            pos = self.p_current.init.move_random_typed()
-            self.p_current.pos_current = pos
-            self.p_current.pos_new = pos  # Property setter auto-appends
+        # Track position on current individual
+        self.p_current.pos_new = position.copy()
+        self.p_current.pos_current = position.copy()
 
-        # Check constraints
-        if not self.conv.not_in_constraint(pos):
-            max_tries = 100
-            for _ in range(max_tries):
-                pos = self.p_current.init.move_random_typed()
-                if self.conv.not_in_constraint(pos):
-                    break
-            self.p_current.pos_current = pos
-            self.p_current.pos_new = pos
-            if self.p_current.pos_new_list:
-                self.p_current.pos_new_list[-1] = pos
-
-        # Track position on main optimizer (property setter auto-appends)
-        self.pos_new = pos
-
-        return pos
-
-    def evaluate_init(self, score_new: float) -> None:
+    def _evaluate_init(self, score_new: float) -> None:
         """Evaluate during initialization phase.
 
-        Tracks score on both main optimizer and current individual.
+        Delegates evaluation to the current individual for individual-level tracking.
 
-        Note: This override is acceptable because population-based optimizers
-        need to track scores across multiple sub-optimizers.
+        Args:
+            score_new: Score of the most recently evaluated init position
         """
-        # Track on main optimizer (this increments nth_trial)
-        self._track_score(score_new)
-
         # Track on current individual
-        self.p_current.evaluate_init(score_new)
+        self.p_current.score_new = score_new
 
-        # Update tracking
-        self._update_best(self.pos_new, score_new)
-        self._update_current(self.pos_new, score_new)
+        # Update individual's best if this is better
+        if self.p_current.pos_best is None or score_new > self.p_current.score_best:
+            self.p_current.pos_best = self.p_current.pos_new.copy()
+            self.p_current.score_best = score_new
+
+        # Update individual's current
+        self.p_current.score_current = score_new
 
     # =========================================================================
     # Template Method Implementation - NO iterate() override!

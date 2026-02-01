@@ -131,21 +131,18 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         self._iteration_setup_done = False
         self._pso_new_pos = None
 
-    def init_pos(self) -> np.ndarray:
-        """Initialize current particle and return its starting position.
+    def _init_pos(self, position) -> None:
+        """Initialize current particle with the given position.
 
         Sets up particle parameters (inertia, weights) and initializes
-        velocity to zero for smooth startup.
+        velocity to zero for smooth startup. Assigns the position to
+        the current particle.
 
-        Note: This override is acceptable because population-based optimizers
-        need to manage initialization across multiple sub-optimizers.
-
-        Returns
-        -------
-        np.ndarray
-            Initial position for the current particle.
+        Args:
+            position: The initialization position from CoreOptimizer.init_pos()
         """
-        nth_pop = self.nth_trial % len(self.particles)
+        # Select particle via round-robin (use nth_init-1 since it was incremented)
+        nth_pop = (self.nth_init - 1) % len(self.particles)
         self.p_current = self.particles[nth_pop]
 
         # Set particle parameters
@@ -159,50 +156,28 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         n_dims = self.conv.n_dimensions
         self.p_current.velo = np.zeros(n_dims)
 
-        # Get initial position from particle (this tracks on particle)
-        if self.p_current.nth_init < len(self.p_current.init.init_positions_l):
-            pos = self.p_current.init_pos()
-        else:
-            # Fall back to random position when particle has no more init positions
-            pos = self.p_current.init.move_random_typed()
-            self.p_current.pos_current = pos
-            self.p_current.pos_new = pos  # Property setter auto-appends
+        # Track position on current particle
+        self.p_current.pos_new = position.copy()
+        self.p_current.pos_current = position.copy()
 
-        # Check constraints - if violated, find valid position and replace
-        if not self.conv.not_in_constraint(pos):
-            max_tries = 100
-            for _ in range(max_tries):
-                pos = self.p_current.init.move_random_typed()
-                if self.conv.not_in_constraint(pos):
-                    break
-            # Replace the invalid position in particle's tracking with valid one
-            self.p_current.pos_current = pos
-            self.p_current.pos_new = pos
-            if self.p_current.pos_new_list:
-                self.p_current.pos_new_list[-1] = pos
-
-        # Track position on main optimizer (property setter auto-appends)
-        self.pos_new = pos
-
-        return pos
-
-    def evaluate_init(self, score_new: float) -> None:
+    def _evaluate_init(self, score_new: float) -> None:
         """Evaluate during initialization phase.
 
-        Tracks score on both main optimizer and current particle.
+        Delegates evaluation to the current particle for particle-level tracking.
 
-        Note: This override is acceptable because population-based optimizers
-        need to track scores across multiple sub-optimizers.
+        Args:
+            score_new: Score of the most recently evaluated init position
         """
-        # Track on main optimizer (this increments nth_trial)
-        self._track_score(score_new)
+        # Track on current particle (this updates particle's best/current)
+        self.p_current.score_new = score_new
 
-        # Track on current particle
-        self.p_current.evaluate_init(score_new)
+        # Update particle's best if this is better
+        if self.p_current.pos_best is None or score_new > self.p_current.score_best:
+            self.p_current.pos_best = self.p_current.pos_new.copy()
+            self.p_current.score_best = score_new
 
-        # Update tracking
-        self._update_best(self.pos_new, score_new)
-        self._update_current(self.pos_new, score_new)
+        # Update particle's current
+        self.p_current.score_current = score_new
 
     # =========================================================================
     # Template Method Implementation - NO iterate() override!

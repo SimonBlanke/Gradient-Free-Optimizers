@@ -195,6 +195,9 @@ class CoreOptimizer(BaseOptimizer):
         Returns the next position from the initialization list and tracks it
         as the new position. Called by Search during the initialization phase.
 
+        Do not override this method. Override _init_pos() instead to add
+        algorithm-specific initialization logic.
+
         Note: Property setter automatically appends to pos_new_list.
 
         Returns
@@ -205,13 +208,39 @@ class CoreOptimizer(BaseOptimizer):
         init_pos = self.init.init_positions_l[self.nth_init]
         self.pos_new = init_pos  # Property setter auto-appends
         self.nth_init += 1
+
+        # Call algorithm-specific hook
+        self._init_pos(init_pos)
+
         return init_pos
+
+    def _init_pos(self, position):
+        """Algorithm-specific initialization position logic.
+
+        Override this method to perform algorithm-specific setup when
+        a new initialization position is generated. This is called by
+        init_pos() after the position is tracked.
+
+        For population-based optimizers, this can be used to:
+        - Select which sub-optimizer receives this position
+        - Initialize sub-optimizer state
+        - Track positions across multiple individuals
+
+        Args:
+            position: The initialization position that was just generated
+
+        Default implementation does nothing.
+        """
+        pass
 
     def evaluate_init(self, score_new):
         """Handle initialization phase evaluation.
 
         Updates best and current positions/scores based on the initialization
         evaluation. Called by Search after evaluating an init position.
+
+        Do not override this method. Override _evaluate_init() instead to add
+        algorithm-specific evaluation logic during initialization.
 
         Note: Property setters automatically append to history lists and
         track valid scores.
@@ -233,6 +262,28 @@ class CoreOptimizer(BaseOptimizer):
             self.score_current = score_new
 
         self.nth_trial += 1
+
+        # Call algorithm-specific hook
+        self._evaluate_init(score_new)
+
+    def _evaluate_init(self, score_new):
+        """Algorithm-specific initialization evaluation logic.
+
+        Override this method to perform algorithm-specific processing when
+        an initialization position is evaluated. This is called by
+        evaluate_init() after standard tracking is done.
+
+        For population-based optimizers, this can be used to:
+        - Delegate evaluation to current sub-optimizer
+        - Update population-wide best tracking
+        - Perform algorithm-specific bookkeeping
+
+        Args:
+            score_new: Score of the most recently evaluated init position
+
+        Default implementation does nothing.
+        """
+        pass
 
     def finish_initialization(self):
         """Transition from initialization to iteration phase.

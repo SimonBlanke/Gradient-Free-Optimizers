@@ -188,59 +188,41 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
             except OverflowError:
                 return math.inf
 
-    def init_pos(self):
-        """Get next initialization position from round-robin system.
+    def _init_pos(self, position):
+        """Assign initialization position to current system.
 
-        Round-robins through the population, letting each system provide
-        its next initialization position in turn.
+        Round-robins through the population, assigning each position
+        to the next system in turn.
 
-        Note: This override is acceptable because population-based optimizers
-        need to manage initialization across multiple sub-optimizers.
-
-        Returns
-        -------
-        np.ndarray
-            The next initialization position.
+        Args:
+            position: The initialization position from CoreOptimizer.init_pos()
         """
-        # Select current system using round-robin
-        nth_pop = self.nth_trial % len(self.systems)
+        nth_pop = (self.nth_init - 1) % len(self.systems)
         self.p_current = self.systems[nth_pop]
 
-        # Get init position from current system
-        pos = self.p_current.init_pos()
+        # Track position on current system
+        self.p_current.pos_new = position.copy()
+        self.p_current.pos_current = position.copy()
 
-        # Track in parent optimizer (property setter auto-appends)
-        self.pos_new = pos
+    def _evaluate_init(self, score_new):
+        """Handle initialization phase evaluation for current system.
 
-        return pos
-
-    def evaluate_init(self, score_new):
-        """Handle initialization phase evaluation.
-
-        Delegates to the current system's evaluate_init and tracks
-        best position across all systems.
-
-        Note: This override is acceptable because population-based optimizers
-        need to track scores across multiple sub-optimizers.
+        Delegates to the current system for system-level tracking and
+        updates best position across all systems.
 
         Args:
             score_new: Score of the most recently evaluated init position
         """
-        # Track the score on main optimizer (this increments nth_trial)
-        self._track_score(score_new)
+        # Track on current system
+        self.p_current.score_new = score_new
 
-        # Delegate to current system
-        self.p_current.evaluate_init(score_new)
+        # Update system's best if this is better
+        if self.p_current.pos_best is None or score_new > self.p_current.score_best:
+            self.p_current.pos_best = self.p_current.pos_new.copy()
+            self.p_current.score_best = score_new
 
-        # Update parent's best from all systems
-        for system in self.systems:
-            if system.score_best is not None and system.pos_best is not None:
-                self._update_best(system.pos_best, system.score_best)
-
-        # Initialize current if first evaluation
-        if self.pos_current is None and self.p_current.pos_current is not None:
-            self.pos_current = self.p_current.pos_current.copy()
-            self.score_current = self.p_current.score_current
+        # Update system's current
+        self.p_current.score_current = score_new
 
     # =========================================================================
     # Template Method Implementation - NO iterate() override!
