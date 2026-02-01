@@ -197,15 +197,11 @@ class BasePopulationOptimizer(CoreOptimizer):
 
         self.pop_sorted = [self.optimizers[i] for i in idx_sorted_ind]
 
-    def iterate(self):
-        """Generate new positions for the population.
-
-        Population-based optimizers should override this to implement
-        their specific iteration logic (e.g., temperature swapping in PT).
-
-        The default implementation raises NotImplementedError.
-        """
-        raise NotImplementedError("iterate() not yet implemented")
+    # =========================================================================
+    # Template Method Pattern: Population optimizers inherit iterate() from
+    # CoreOptimizer and implement the _iterate_*_batch() methods.
+    # DO NOT override iterate() - that would bypass dimension-type-aware routing.
+    # =========================================================================
 
     def _evaluate(self, score_new):
         """Evaluate the current individual.
@@ -216,19 +212,39 @@ class BasePopulationOptimizer(CoreOptimizer):
         Args:
             score_new: Score of the most recently evaluated position
         """
-        raise NotImplementedError("_evaluate() not yet implemented")
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must implement _evaluate()"
+        )
 
     def _iterate_continuous_batch(self) -> "np.ndarray":
-        """Not used - population optimizers have specialized iterate()."""
-        raise NotImplementedError("Population optimizers use specialized iterate()")
+        """Generate continuous values for the current iteration.
+
+        Population optimizers must implement this to provide
+        algorithm-specific continuous dimension handling.
+        """
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must implement _iterate_continuous_batch()"
+        )
 
     def _iterate_categorical_batch(self) -> "np.ndarray":
-        """Not used - population optimizers have specialized iterate()."""
-        raise NotImplementedError("Population optimizers use specialized iterate()")
+        """Generate categorical indices for the current iteration.
+
+        Population optimizers must implement this to provide
+        algorithm-specific categorical dimension handling.
+        """
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must implement _iterate_categorical_batch()"
+        )
 
     def _iterate_discrete_batch(self) -> "np.ndarray":
-        """Not used - population optimizers have specialized iterate()."""
-        raise NotImplementedError("Population optimizers use specialized iterate()")
+        """Generate discrete indices for the current iteration.
+
+        Population optimizers must implement this to provide
+        algorithm-specific discrete dimension handling.
+        """
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must implement _iterate_discrete_batch()"
+        )
 
     def finish_initialization(self):
         """Transition from initialization to iteration phase."""

@@ -6,10 +6,16 @@
 Particle Swarm Optimization (PSO).
 
 Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
+
+Template Method Pattern Compliance:
+    - Does NOT override iterate() - uses CoreOptimizer's orchestration
+    - Implements _iterate_*_batch() for dimension-type-aware PSO movement
+    - Overrides init_pos()/evaluate_init() for population management (acceptable)
 """
 
 from __future__ import annotations
 
+import random
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
@@ -38,6 +44,12 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         v = inertia * v
           + cognitive_weight * r1 * (personal_best - position)
           + social_weight * r2 * (global_best - position)
+
+    Template Method Pattern:
+        This optimizer follows the Template Method Pattern by implementing
+        _iterate_*_batch() methods instead of overriding iterate().
+        The PSO velocity is computed once per iteration, then portions
+        are extracted for each dimension type.
 
     Parameters
     ----------
@@ -106,7 +118,6 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         self.optimizers = self.particles
 
         # Set particle parameters upfront on all particles
-        # (needed for particles that might be used in iterate() without init_pos())
         n_dims = len(self.conv.search_space)
         for p in self.particles:
             p.inertia = self.inertia
@@ -116,11 +127,18 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
             p.rand_rest_p = self.rand_rest_p
             p.velo = np.zeros(n_dims)
 
+        # Iteration state for template method coordination
+        self._iteration_setup_done = False
+        self._pso_new_pos = None
+
     def init_pos(self) -> np.ndarray:
         """Initialize current particle and return its starting position.
 
         Sets up particle parameters (inertia, weights) and initializes
         velocity to zero for smooth startup.
+
+        Note: This override is acceptable because population-based optimizers
+        need to manage initialization across multiple sub-optimizers.
 
         Returns
         -------
@@ -172,6 +190,9 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         """Evaluate during initialization phase.
 
         Tracks score on both main optimizer and current particle.
+
+        Note: This override is acceptable because population-based optimizers
+        need to track scores across multiple sub-optimizers.
         """
         # Track on main optimizer (this increments nth_trial)
         self._track_score(score_new)
@@ -183,18 +204,20 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         self._update_best(self.pos_new, score_new)
         self._update_current(self.pos_new, score_new)
 
-    def iterate(self) -> np.ndarray:
-        """Move current particle based on velocity update equations.
+    # =========================================================================
+    # Template Method Implementation - NO iterate() override!
+    # =========================================================================
 
-        Selects the next particle in round-robin order, updates the
-        global best reference, and computes the new position using
-        PSO velocity equations.
+    def _setup_iteration(self) -> None:
+        """Set up current iteration by selecting particle and computing velocity.
 
-        Returns
-        -------
-        np.ndarray
-            New position for the current particle.
+        Called lazily by the first _iterate_*_batch() method.
+        Computes the full PSO position once, which is then extracted
+        by the individual batch methods.
         """
+        if self._iteration_setup_done:
+            return
+
         # Select current particle (round-robin)
         self.p_current = self.particles[self.nth_trial % len(self.particles)]
 
@@ -202,57 +225,140 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         self.sort_pop_best_score()
         self.p_current.global_pos_best = self.pop_sorted[0].pos_best
 
-        # Remember position count before move (to fix tracking if needed)
-        pos_count_before = len(self.p_current.pos_new_list)
+        # Compute full PSO position using velocity update
+        self._pso_new_pos = self._compute_pso_position()
 
-        # Compute new position using PSO velocity update
-        pos_new = self.p_current.move_linear()
+        self._iteration_setup_done = True
 
-        # Check constraints - if valid, we're done
-        if self.conv.not_in_constraint(pos_new):
-            self.pos_new = pos_new  # Property setter auto-appends
-            return pos_new
+    def _compute_pso_position(self) -> np.ndarray:
+        """Compute new position using PSO velocity update equation.
 
-        # Constraint violated - restore position count and try fallback
-        while len(self.p_current.pos_new_list) > pos_count_before:
-            self.p_current.pos_new_list.pop()
+        The velocity update equation is:
+            v = inertia * v
+              + cognitive_weight * r1 * (personal_best - position)
+              + social_weight * r2 * (global_best - position)
 
-        pos_new = self.p_current.move_climb_typed(pos_new)
+        Returns
+        -------
+        np.ndarray
+            New position after velocity update.
+        """
+        # Random restart check
+        if random.random() < self.rand_rest_p:
+            return self.p_current.init.move_random_typed()
 
-        # Check constraint on fallback
-        if self.conv.not_in_constraint(pos_new):
-            self.pos_new = pos_new  # Property setter auto-appends
-            return pos_new
+        # Guard against None positions during early iterations
+        if (
+            self.p_current.pos_current is None
+            or self.p_current.pos_best is None
+            or self.p_current.global_pos_best is None
+        ):
+            return self.p_current.init.move_random_typed()
 
-        # Still violated - try random positions as last resort
-        max_tries = 100
-        while len(self.p_current.pos_new_list) > pos_count_before:
-            self.p_current.pos_new_list.pop()
+        r1, r2 = random.random(), random.random()
 
-        for _ in range(max_tries):
-            pos_new = self.p_current.init.move_random_typed()
-            if self.conv.not_in_constraint(pos_new):
-                break
+        pos_current = np.array(self.p_current.pos_current)
+        pos_best = np.array(self.p_current.pos_best)
+        global_pos_best = np.array(self.p_current.global_pos_best)
 
-        # Track final position (property setters auto-append)
-        self.p_current.pos_new = pos_new
-        self.pos_new = pos_new
-        return pos_new
+        # Inertia term: maintain current direction
+        A = self.inertia * np.array(self.p_current.velo)
+
+        # Cognitive term: attract toward personal best
+        B = self.cognitive_weight * r1 * (pos_best - pos_current)
+
+        # Social term: attract toward global best
+        C = self.social_weight * r2 * (global_pos_best - pos_current)
+
+        # Update velocity
+        self.p_current.velo = A + B + C
+
+        # Compute new position (will be clipped by CoreOptimizer)
+        return pos_current + self.p_current.velo
+
+    def _iterate_continuous_batch(self) -> np.ndarray:
+        """Generate continuous values using PSO velocity update.
+
+        Returns the continuous portion of the PSO-computed position.
+
+        Returns
+        -------
+        np.ndarray
+            New continuous values from PSO movement.
+        """
+        self._setup_iteration()
+        return self._pso_new_pos[self._continuous_mask]
+
+    def _iterate_categorical_batch(self) -> np.ndarray:
+        """Generate categorical indices using PSO velocity as switch probability.
+
+        For categorical dimensions, the velocity magnitude determines the
+        probability of switching to a different category.
+
+        Returns
+        -------
+        np.ndarray
+            New category indices.
+        """
+        self._setup_iteration()
+
+        # Get current categorical indices
+        current = self.p_current.pos_current[self._categorical_mask]
+        velocity = self.p_current.velo[self._categorical_mask]
+
+        new_cats = []
+        for i, (cur_idx, velo) in enumerate(zip(current, velocity)):
+            # Get max valid index for this categorical dimension
+            max_idx = self._categorical_sizes[i] - 1
+
+            # Velocity magnitude determines switch probability
+            # Normalize by category count to get reasonable probabilities
+            switch_prob = min(1.0, abs(velo) / (max_idx + 1))
+
+            if random.random() < switch_prob:
+                # Switch to a random category
+                new_cats.append(random.randint(0, max_idx))
+            else:
+                # Keep current category
+                new_cats.append(int(cur_idx))
+
+        return np.array(new_cats)
+
+    def _iterate_discrete_batch(self) -> np.ndarray:
+        """Generate discrete indices using PSO velocity update.
+
+        Returns the discrete portion of the PSO-computed position.
+
+        Returns
+        -------
+        np.ndarray
+            New discrete indices from PSO movement.
+        """
+        self._setup_iteration()
+        return self._pso_new_pos[self._discrete_mask]
 
     def _evaluate(self, score_new: float) -> None:
         """Evaluate current particle and update its personal/global best.
 
         Delegates to the particle's evaluate method which handles
-        personal best tracking.
+        personal best tracking. Also resets iteration state for
+        the next iteration.
 
         Parameters
         ----------
         score_new : float
             Score of the most recently evaluated position.
         """
+        # Track position on particle (needed for personal best tracking)
+        self.p_current.pos_new = self.pos_new
+
         # Delegate to current particle's evaluate
         self.p_current.evaluate(score_new)
 
         # Update global tracking
         self._update_best(self.pos_new, score_new)
         self._update_current(self.pos_new, score_new)
+
+        # Reset iteration setup for next iteration
+        self._iteration_setup_done = False
+        self._pso_new_pos = None
