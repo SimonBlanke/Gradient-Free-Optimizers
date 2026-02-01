@@ -359,7 +359,19 @@ class SMBO(CoreOptimizer):
         raise NotImplementedError("Subclass must implement _expected_improvement()")
 
     def _move_random(self) -> np.ndarray:
-        """Generate a random valid position."""
+        """Generate a random valid position.
+
+        When replacement=False, selects from remaining positions in all_pos_comb.
+        Raises ValueError if search space is exhausted.
+        """
+        if not self.replacement:
+            if self.all_pos_comb is None or len(self.all_pos_comb) == 0:
+                raise ValueError(
+                    "Search space exhausted: no positions remaining with "
+                    "replacement=False"
+                )
+            idx = np.random.randint(len(self.all_pos_comb))
+            return self.all_pos_comb[idx]
         return self.init.move_random_typed()
 
     # NOTE: evaluate() is NOT overridden - uses CoreOptimizer.evaluate()
