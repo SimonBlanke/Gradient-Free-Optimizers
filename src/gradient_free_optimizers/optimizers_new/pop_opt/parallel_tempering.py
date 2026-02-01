@@ -7,6 +7,11 @@ Parallel Tempering (Replica Exchange) Optimizer.
 
 Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
 (via SimulatedAnnealingOptimizer sub-instances)
+
+Template Method Pattern Compliance:
+    - Does NOT override iterate() - uses CoreOptimizer's orchestration
+    - Implements _iterate_*_batch() for dimension-type-aware position generation
+    - Overrides init_pos()/evaluate_init() for population management (acceptable)
 """
 
 import copy
@@ -44,6 +49,12 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
 
     The swap acceptance probability uses the Metropolis criterion:
         p = exp((score1 - score2) * (1/temp1 - 1/temp2))
+
+    Template Method Pattern:
+        This optimizer follows the Template Method Pattern by implementing
+        _iterate_*_batch() methods instead of overriding iterate().
+        The sub-optimizer's iterate() is called once per iteration, then
+        portions are extracted for each dimension type.
 
     Parameters
     ----------
@@ -105,6 +116,10 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
 
         # Required by Search for tracking all optimizers
         self.optimizers = self.systems
+
+        # Iteration state for template method coordination
+        self._iteration_setup_done = False
+        self._current_new_pos = None
 
     def _swap_pos(self):
         """Attempt temperature swaps between all pairs using Metropolis criterion.
@@ -179,6 +194,9 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
         Round-robins through the population, letting each system provide
         its next initialization position in turn.
 
+        Note: This override is acceptable because population-based optimizers
+        need to manage initialization across multiple sub-optimizers.
+
         Returns
         -------
         np.ndarray
@@ -191,63 +209,10 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
         # Get init position from current system
         pos = self.p_current.init_pos()
 
-        # Track in parent optimizer
+        # Track in parent optimizer (property setter auto-appends)
         self.pos_new = pos
-        self.pos_new_list.append(pos)
-        self.nth_init += 1
 
         return pos
-
-    def iterate(self):
-        """Advance current system and periodically attempt temperature swaps.
-
-        Round-robins through the population for iteration. Periodically
-        (every n_iter_swap iterations) attempts temperature swaps between
-        all systems.
-
-        Returns
-        -------
-        np.ndarray
-            New candidate position from the current system.
-        """
-        # Select current system using round-robin
-        self.p_current = self.systems[self.nth_trial % len(self.systems)]
-
-        # Get new position from current system's iterate
-        pos = self.p_current.iterate()
-
-        # Track in parent optimizer
-        self.pos_new = pos
-        self.pos_new_list.append(pos)
-
-        return pos
-
-    def evaluate(self, score_new):
-        """Evaluate with temperature swapping.
-
-        First tracks the score, then periodically performs temperature swaps,
-        then delegates evaluation to the current system.
-
-        Args:
-            score_new: Score of the most recently evaluated position
-        """
-        # Track score in parent
-        self._track_score(score_new)
-
-        # Periodically attempt temperature swaps
-        notZero = self.n_iter_swap != 0
-        modZero = self.nth_trial % self.n_iter_swap == 0
-
-        if notZero and modZero:
-            self._swap_pos()
-
-        # Delegate to current system
-        self.p_current.evaluate(score_new)
-
-        # Update parent's best tracking from all systems
-        for system in self.systems:
-            if system.score_best is not None:
-                self._update_best(system.pos_best, system.score_best)
 
     def evaluate_init(self, score_new):
         """Handle initialization phase evaluation.
@@ -255,35 +220,126 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
         Delegates to the current system's evaluate_init and tracks
         best position across all systems.
 
+        Note: This override is acceptable because population-based optimizers
+        need to track scores across multiple sub-optimizers.
+
         Args:
             score_new: Score of the most recently evaluated init position
         """
-        # Track the score
-        self.score_new_list.append(score_new)
-
-        # Track valid scores
-        if not (np.isinf(score_new) or np.isnan(score_new)):
-            self.positions_valid.append(self.pos_new.copy())
-            self.scores_valid.append(score_new)
+        # Track the score on main optimizer (this increments nth_trial)
+        self._track_score(score_new)
 
         # Delegate to current system
         self.p_current.evaluate_init(score_new)
 
         # Update parent's best from all systems
         for system in self.systems:
-            if system.score_best is not None:
-                if self.score_best is None or system.score_best > self.score_best:
-                    self.pos_best = system.pos_best.copy()
-                    self.score_best = system.score_best
+            if system.score_best is not None and system.pos_best is not None:
+                self._update_best(system.pos_best, system.score_best)
 
         # Initialize current if first evaluation
         if self.pos_current is None and self.p_current.pos_current is not None:
             self.pos_current = self.p_current.pos_current.copy()
             self.score_current = self.p_current.score_current
 
-        self.nth_trial += 1
+    # =========================================================================
+    # Template Method Implementation - NO iterate() override!
+    # =========================================================================
 
-    # Not needed - parent class version works
+    def _setup_iteration(self):
+        """Set up current iteration by selecting system and getting its position.
+
+        Called lazily by the first _iterate_*_batch() method.
+        Delegates to the current sub-optimizer's iterate() and stores
+        the result for extraction by the batch methods.
+        """
+        if self._iteration_setup_done:
+            return
+
+        # Select current system using round-robin
+        self.p_current = self.systems[self.nth_trial % len(self.systems)]
+
+        # Delegate iteration to the sub-optimizer
+        # The sub-optimizer (SimulatedAnnealing) implements the template methods
+        self._current_new_pos = self.p_current.iterate()
+
+        self._iteration_setup_done = True
+
+    def _iterate_continuous_batch(self) -> np.ndarray:
+        """Generate continuous values by delegating to current sub-optimizer.
+
+        Returns the continuous portion of the sub-optimizer's position.
+
+        Returns
+        -------
+        np.ndarray
+            New continuous values from the current sub-optimizer.
+        """
+        self._setup_iteration()
+        return self._current_new_pos[self._continuous_mask]
+
+    def _iterate_categorical_batch(self) -> np.ndarray:
+        """Generate categorical indices by delegating to current sub-optimizer.
+
+        Returns the categorical portion of the sub-optimizer's position.
+
+        Returns
+        -------
+        np.ndarray
+            New category indices from the current sub-optimizer.
+        """
+        self._setup_iteration()
+        return self._current_new_pos[self._categorical_mask]
+
+    def _iterate_discrete_batch(self) -> np.ndarray:
+        """Generate discrete indices by delegating to current sub-optimizer.
+
+        Returns the discrete portion of the sub-optimizer's position.
+
+        Returns
+        -------
+        np.ndarray
+            New discrete indices from the current sub-optimizer.
+        """
+        self._setup_iteration()
+        return self._current_new_pos[self._discrete_mask]
+
     def _evaluate(self, score_new):
-        """Not used - evaluate() handles everything directly."""
-        pass
+        """Evaluate with temperature swapping and delegation to sub-optimizer.
+
+        Periodically performs temperature swaps between systems, then
+        delegates evaluation to the current sub-optimizer.
+
+        Also resets iteration state for the next iteration.
+
+        Args:
+            score_new: Score of the most recently evaluated position
+        """
+        # Periodically attempt temperature swaps
+        notZero = self.n_iter_swap != 0
+        modZero = self.nth_trial % self.n_iter_swap == 0
+
+        if notZero and modZero:
+            self._swap_pos()
+
+        # Note: We do NOT set p_current.pos_new here because the sub-optimizer
+        # already tracked the position when we called p_current.iterate() in
+        # _setup_iteration(). Setting it again would double-count positions.
+
+        # Delegate to current system's evaluate
+        self.p_current.evaluate(score_new)
+
+        # Update parent's best tracking from all systems
+        for system in self.systems:
+            if system.score_best is not None and system.pos_best is not None:
+                self._update_best(system.pos_best, system.score_best)
+
+        # Update current tracking from the active sub-optimizer
+        if self.p_current.pos_current is not None:
+            self._update_current(
+                self.p_current.pos_current, self.p_current.score_current
+            )
+
+        # Reset iteration setup for next iteration
+        self._iteration_setup_done = False
+        self._current_new_pos = None
