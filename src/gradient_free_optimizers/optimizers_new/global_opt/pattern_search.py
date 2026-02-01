@@ -5,14 +5,18 @@
 """
 Pattern Search (Hooke-Jeeves) Optimizer.
 
-Supports: CONTINUOUS, DISCRETE_NUMERICAL
-Note: Categorical dimensions use random switching.
+Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
+
+This optimizer uses the "State vor iterate()" pattern:
+- Computes the full next position BEFORE _iterate_*_batch() methods are called
+- The _iterate_*_batch() methods just extract the appropriate dimension components
 """
 
 from __future__ import annotations
 
 import random
-from typing import TYPE_CHECKING, Any, Callable
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
@@ -36,7 +40,7 @@ class PatternSearch(CoreOptimizer):
 
     Dimension Support:
         - Continuous: YES (coordinate-wise search)
-        - Categorical: LIMITED (random switching when in pattern)
+        - Categorical: YES (random category switching in pattern)
         - Discrete: YES (coordinate-wise search with integer steps)
 
     Explores the search space by evaluating positions along coordinate axes
@@ -45,6 +49,11 @@ class PatternSearch(CoreOptimizer):
 
     The algorithm generates a symmetric pattern of 2*n_dims positions
     (positive and negative steps along each axis) and samples from them.
+
+    This implementation uses the "State vor iterate()" pattern:
+    The pattern state machine computes the full next position BEFORE
+    the template methods are called. The _iterate_*_batch() methods
+    simply extract the appropriate dimension components.
 
     Parameters
     ----------
@@ -109,6 +118,10 @@ class PatternSearch(CoreOptimizer):
         # Initialize RNG for reproducibility
         self._rng = np.random.default_rng(self.random_seed)
 
+        # Pre-computed next position for "State vor iterate()" pattern
+        self._next_position: np.ndarray | None = None
+        self._next_position_computed: bool = False
+
     def _get_dim_sizes(self):
         """Get dimension sizes for pattern generation."""
         sizes = []
@@ -127,12 +140,12 @@ class PatternSearch(CoreOptimizer):
                 sizes.append(1)
         return np.array(sizes)
 
-    def conv2pos_typed(self, pos):
-        """Convert position to valid position with proper types.
+    def _clip_to_bounds(self, pos: np.ndarray) -> np.ndarray:
+        """Clip position to valid bounds with proper types.
 
-        Clips values to bounds and ensures correct data types.
+        Handles continuous, categorical, and discrete dimensions.
         """
-        pos_new = []
+        pos_clipped = pos.copy()
         dim_names = list(self.search_space.keys())
 
         for i, name in enumerate(dim_names):
@@ -141,22 +154,20 @@ class PatternSearch(CoreOptimizer):
 
             if isinstance(dim_def, tuple):
                 # Continuous: clip to bounds
-                pos_new.append(np.clip(val, dim_def[0], dim_def[1]))
+                pos_clipped[i] = np.clip(val, dim_def[0], dim_def[1])
             elif isinstance(dim_def, list):
                 # Categorical: clip to valid indices
-                pos_new.append(int(np.clip(round(val), 0, len(dim_def) - 1)))
+                pos_clipped[i] = int(np.clip(round(val), 0, len(dim_def) - 1))
             elif isinstance(dim_def, np.ndarray):
                 # Discrete: clip to valid indices
-                pos_new.append(int(np.clip(round(val), 0, len(dim_def) - 1)))
-            else:
-                pos_new.append(val)
+                pos_clipped[i] = int(np.clip(round(val), 0, len(dim_def) - 1))
 
-        return np.array(pos_new)
+        return pos_clipped
 
     def generate_pattern(self, current_position: np.ndarray) -> None:
         """Generate pattern positions around the current position.
 
-        Creates positions at ±pattern_size * dim_size along each axis,
+        Creates positions at +/- pattern_size * dim_size along each axis,
         then randomly samples n_positions_ from them.
 
         Parameters
@@ -174,8 +185,7 @@ class PatternSearch(CoreOptimizer):
         if n_pos_min > 0 and self.pos_best is not None:
             recent_positions = self.positions_valid[-n_pos_min:]
             best_in_recent_pos = any(
-                _arrays_equal(np.array(self.pos_best), pos)
-                for pos in recent_positions
+                _arrays_equal(np.array(self.pos_best), pos) for pos in recent_positions
             )
             if best_in_recent_pos:
                 self.pattern_size_tmp *= self.reduction
@@ -206,8 +216,8 @@ class PatternSearch(CoreOptimizer):
                 pos_pattern_p[idx] += step
                 pos_pattern_n[idx] -= step
 
-            pos_pattern_p = self.conv2pos_typed(pos_pattern_p)
-            pos_pattern_n = self.conv2pos_typed(pos_pattern_n)
+            pos_pattern_p = self._clip_to_bounds(pos_pattern_p)
+            pos_pattern_n = self._clip_to_bounds(pos_pattern_n)
 
             pattern_pos_l.append(pos_pattern_p)
             pattern_pos_l.append(pos_pattern_n)
@@ -218,6 +228,27 @@ class PatternSearch(CoreOptimizer):
         else:
             self.pattern_pos_l = pattern_pos_l
 
+    def _generate_random_position(self) -> np.ndarray:
+        """Generate a random position within bounds."""
+        n_dims = len(self.search_space)
+        pos = np.empty(n_dims)
+        dim_names = list(self.search_space.keys())
+
+        for i, name in enumerate(dim_names):
+            dim_def = self.search_space[name]
+
+            if isinstance(dim_def, tuple):
+                # Continuous
+                pos[i] = self._rng.uniform(dim_def[0], dim_def[1])
+            elif isinstance(dim_def, list):
+                # Categorical
+                pos[i] = self._rng.integers(0, len(dim_def))
+            elif isinstance(dim_def, np.ndarray):
+                # Discrete
+                pos[i] = self._rng.integers(0, len(dim_def))
+
+        return pos
+
     def finish_initialization(self) -> None:
         """Transition from init to iteration phase.
 
@@ -227,19 +258,22 @@ class PatternSearch(CoreOptimizer):
             self.generate_pattern(self.pos_current)
         self.search_state = "iter"
 
-    def iterate(self) -> np.ndarray:
-        """Generate next position from the current pattern.
+    def _compute_next_pattern_position(self) -> None:
+        """Compute the full next position based on pattern state.
 
-        Returns
-        -------
-        np.ndarray
-            Next position to evaluate.
+        This is called ONCE before the first _iterate_*_batch() method.
+        The computed position is stored in self._next_position.
+
+        Uses the "State vor iterate()" pattern.
         """
+        if self._next_position_computed:
+            return
+
         # Random restart check
         if random.random() < self.rand_rest_p:
-            pos_new = self.init.move_random_typed()
-            self.pos_new = pos_new  # Property setter auto-appends
-            return pos_new
+            self._next_position = self._generate_random_position()
+            self._next_position_computed = True
+            return
 
         # Get next position from pattern
         if not self.pattern_pos_l:
@@ -247,41 +281,53 @@ class PatternSearch(CoreOptimizer):
             if self.pos_current is not None:
                 self.generate_pattern(self.pos_current)
             else:
-                pos_new = self.init.move_random_typed()
-                self.pos_new = pos_new  # Property setter auto-appends
-                return pos_new
+                self._next_position = self._generate_random_position()
+                self._next_position_computed = True
+                return
+
+        # Pattern still empty after regeneration? Fall back to random
+        if not self.pattern_pos_l:
+            self._next_position = self._generate_random_position()
+            self._next_position_computed = True
+            return
 
         pos_new = self.pattern_pos_l.pop(0)
 
         # Handle constraints
         if not self.conv.not_in_constraint(pos_new):
-            # Try hill climbing to find valid position
+            # Try perturbation to find valid position
             max_tries = 10
             for _ in range(max_tries):
                 # Perturb position slightly
                 noise = self._rng.normal(0, 0.1, len(pos_new))
-                pos_new = self.conv2pos_typed(np.array(pos_new) + noise)
+                pos_new = self._clip_to_bounds(np.array(pos_new) + noise)
                 if self.conv.not_in_constraint(pos_new):
                     break
 
             # Fallback to random if still invalid
             if not self.conv.not_in_constraint(pos_new):
-                pos_new = self.init.move_random_typed()
+                pos_new = self._generate_random_position()
 
-        self.pos_new = pos_new  # Property setter auto-appends
-        return pos_new
+        self._next_position = pos_new
+        self._next_position_computed = True
 
     def _iterate_continuous_batch(self) -> np.ndarray:
-        """Not used - PatternSearch uses pattern-based exploration."""
-        raise NotImplementedError("PatternSearch uses pattern-based exploration")
+        """Extract continuous components from pre-computed pattern position.
+
+        The pattern position is computed ONCE when this method is first called.
+        """
+        self._compute_next_pattern_position()
+        return self._next_position[self._continuous_mask]
 
     def _iterate_categorical_batch(self) -> np.ndarray:
-        """Not used - PatternSearch uses pattern-based exploration."""
-        raise NotImplementedError("PatternSearch uses pattern-based exploration")
+        """Extract categorical components from pre-computed pattern position."""
+        self._compute_next_pattern_position()
+        return self._next_position[self._categorical_mask]
 
     def _iterate_discrete_batch(self) -> np.ndarray:
-        """Not used - PatternSearch uses pattern-based exploration."""
-        raise NotImplementedError("PatternSearch uses pattern-based exploration")
+        """Extract discrete components from pre-computed pattern position."""
+        self._compute_next_pattern_position()
+        return self._next_position[self._discrete_mask]
 
     def _evaluate(self, score_new: float) -> None:
         """Evaluate score and regenerate pattern when needed.
@@ -294,6 +340,9 @@ class PatternSearch(CoreOptimizer):
         score_new : float
             Score of the most recently evaluated position.
         """
+        # Reset the pre-computed flag for next iteration
+        self._next_position_computed = False
+
         # Check if we need to regenerate pattern
         modZero = self.nth_trial % int(self.n_positions_ * 2) == 0
 
