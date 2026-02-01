@@ -227,7 +227,7 @@ class DirectAlgorithm(CoreOptimizer):
         self.subspace_l: list[SubSpace] = []
         self.current_subspace: SubSpace | None = None
 
-    def finish_initialization(self) -> None:
+    def _finish_initialization(self) -> None:
         """Initialize with the entire search space as one subspace."""
         subspace = SubSpace(
             self.conv.pos_space,
@@ -235,7 +235,6 @@ class DirectAlgorithm(CoreOptimizer):
             dim_infos=self.conv.dim_infos,
         )
         self.subspace_l.append(subspace)
-        self.search_state = "iter"
 
     def _select_unevaluated_subspace(self) -> SubSpace | None:
         """Find a subspace that hasn't been evaluated yet."""
@@ -312,85 +311,69 @@ class DirectAlgorithm(CoreOptimizer):
         """Generate a random valid position using the initializer."""
         return self.init.move_random_typed()
 
-    def iterate(self) -> np.ndarray:
-        """Generate the next position to evaluate.
+    def _generate_position(self) -> np.ndarray:
+        """Generate next position via subspace division.
 
         DIRECT works by:
         1. Finding an unevaluated subspace and returning its center
-        2. If all subspaces are evaluated, split the best one and try again
-        3. If a position violates constraints, fall back to random sampling
+        2. If all subspaces are evaluated, split the best one
+        3. If no valid subspace found, fall back to random
 
-        Note: This method overrides CoreOptimizer.iterate() because DIRECT's
-        subspace-division approach is fundamentally different from the
-        neighborhood-based iteration pattern of most optimizers.
+        Note: Constraint checking is handled by CoreOptimizer.iterate()
+        which calls this method in a retry loop.
 
         Returns
         -------
         np.ndarray
-            Next position for evaluation.
+            Next candidate position (may violate constraints).
         """
-        max_attempts = 100  # Prevent infinite loops in edge cases
+        # Try to find an unevaluated subspace
+        self.current_subspace = self._select_unevaluated_subspace()
 
-        for _ in range(max_attempts):
-            # Try to find an unevaluated subspace
-            self.current_subspace = self._select_unevaluated_subspace()
+        if self.current_subspace is not None:
+            return self.current_subspace.center_pos
 
-            if self.current_subspace is not None:
-                # Found an unevaluated subspace - try its center
-                pos = self.current_subspace.center_pos
-                if self.conv.not_in_constraint(pos):
-                    self.pos_new = pos
-                    return pos
-                # Center violates constraint - continue to try another approach
-            else:
-                # All subspaces evaluated - split the best one
-                best_subspace = self._select_best_subspace()
-                n_created = self._split_subspace(best_subspace)
+        # All subspaces evaluated - split the best one
+        best_subspace = self._select_best_subspace()
+        n_created = self._split_subspace(best_subspace)
 
-                if n_created > 0:
-                    # Try the newest subspace's center
-                    self.current_subspace = self.subspace_l[-1]
-                    pos = self.current_subspace.center_pos
-                    if self.conv.not_in_constraint(pos):
-                        self.pos_new = pos
-                        return pos
-                # Either split failed or new center violates constraint - continue loop
+        if n_created > 0:
+            self.current_subspace = self.subspace_l[-1]
+            return self.current_subspace.center_pos
 
-        # All attempts failed - fall back to random position
-        pos = self._move_random()
-        self.pos_new = pos
-        self.current_subspace = None  # No subspace associated with random position
-        return pos
+        # Fallback to random position
+        self.current_subspace = None
+        return self._move_random()
 
     def _iterate_continuous_batch(self) -> np.ndarray:
-        """Not used - DIRECT overrides iterate() with subspace division.
+        """Not used - DIRECT overrides _generate_position() with subspace division.
 
-        DIRECT does not use the standard template method pattern because
+        DIRECT does not use the standard batch iteration pattern because
         its algorithm (systematic subspace division) is fundamentally different
         from neighborhood-based search.
 
         Raises
         ------
         NotImplementedError
-            Always raised - use iterate() instead.
+            Always raised - see _generate_position() instead.
         """
         raise NotImplementedError(
-            "DIRECT uses subspace division, not template iteration. "
-            "See iterate() for the algorithm implementation."
+            "DIRECT uses subspace division, not batch iteration. "
+            "See _generate_position() for the algorithm implementation."
         )
 
     def _iterate_categorical_batch(self) -> np.ndarray:
-        """Not used - DIRECT overrides iterate() with subspace division."""
+        """Not used - DIRECT overrides _generate_position()."""
         raise NotImplementedError(
-            "DIRECT uses subspace division, not template iteration. "
-            "See iterate() for the algorithm implementation."
+            "DIRECT uses subspace division, not batch iteration. "
+            "See _generate_position() for the algorithm implementation."
         )
 
     def _iterate_discrete_batch(self) -> np.ndarray:
-        """Not used - DIRECT overrides iterate() with subspace division."""
+        """Not used - DIRECT overrides _generate_position()."""
         raise NotImplementedError(
-            "DIRECT uses subspace division, not template iteration. "
-            "See iterate() for the algorithm implementation."
+            "DIRECT uses subspace division, not batch iteration. "
+            "See _generate_position() for the algorithm implementation."
         )
 
     def _evaluate(self, score_new: float) -> None:
