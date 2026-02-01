@@ -192,46 +192,39 @@ class LipschitzOptimizer(SMBO):
             replacement=replacement,
         )
 
-    def finish_initialization(self) -> None:
-        """Generate all possible positions for Lipschitz bound computation."""
-        self.all_pos_comb = self._all_possible_pos()
-        self.search_state = "iter"
+    # =========================================================================
+    # SMBO Template Methods
+    # =========================================================================
+    # Note: finish_initialization() and iterate() are inherited from SMBO.
+    # LipschitzOptimizer only implements the algorithm-specific methods.
 
-    def iterate(self) -> np.ndarray:
-        """Generate the next position using Lipschitz bounds.
+    def _training(self) -> None:
+        """Prepare candidate positions for Lipschitz bound computation.
+
+        Unlike traditional SMBO algorithms that train a surrogate model,
+        Lipschitz optimization computes bounds analytically from the
+        estimated Lipschitz constant. This method only prepares the
+        candidate positions for evaluation.
+        """
+        self.pos_comb = self._sampling(self.all_pos_comb)
+
+    def _expected_improvement(self) -> np.ndarray:
+        """Compute Lipschitz upper bounds for candidate positions.
+
+        The upper bound at each candidate position is computed using:
+            upper_bound = min(y_i + L * dist(x, x_i)) for all observed (x_i, y_i)
+
+        where L is the estimated Lipschitz constant.
 
         Returns
         -------
         np.ndarray
-            Next position for evaluation.
+            1D array of upper bounds, one per candidate position.
+            Higher values indicate more potential for improvement.
         """
-        # Subsample candidate positions for large spaces
-        self.pos_comb = self._sampling(self.all_pos_comb)
-
-        # Compute Lipschitz bounds for candidates
         lip_func = LipschitzFunction(self.pos_comb)
         upper_bound_l = lip_func.calculate(
             self.X_sample, self.Y_sample, self.score_best
         )
-
-        # Select position with highest upper bound
-        index_best = list(upper_bound_l.argsort(axis=0)[::-1].flatten())
-        all_pos_comb_sorted = self.pos_comb[index_best]
-        pos_best = all_pos_comb_sorted[0]
-
-        # Property setter auto-appends to pos_new_list
-        self.pos_new = pos_best
-        self.X_sample.append(pos_best)
-
-        return pos_best
-
-    def _evaluate(self, score_new: float) -> None:
-        """Update best and current positions.
-
-        Parameters
-        ----------
-        score_new : float
-            Score for the evaluated position.
-        """
-        self._update_best(self.pos_new, score_new)
-        self._update_current(self.pos_new, score_new)
+        # Flatten from (n, 1) to (n,) for SMBO template compatibility
+        return upper_bound_l.flatten()
