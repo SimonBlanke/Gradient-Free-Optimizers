@@ -195,15 +195,19 @@ class DownhillSimplexOptimizer(CoreOptimizer):
 
         return pos_clipped
 
-    def finish_initialization(self) -> None:
-        """Initialize the simplex from evaluated positions."""
+    def _finish_initialization(self) -> None:
+        """Initialize the simplex from evaluated positions.
+
+        This hook is called by CoreOptimizer.finish_initialization() after
+        all init positions have been evaluated. We use the evaluated positions
+        to form the initial simplex vertices.
+        """
         # Sort initial positions by score (best first)
         idx_sorted = _sort_list_idx(self.scores_valid)
         self.simplex_pos = [self.positions_valid[idx].copy() for idx in idx_sorted]
         self.simplex_scores = [self.scores_valid[idx] for idx in idx_sorted]
 
         self.simplex_step = 1
-        self.search_state = "iter"
 
     def _compute_next_simplex_position(self) -> None:
         """Compute the full next position based on simplex state machine.
