@@ -276,10 +276,16 @@ class SMBO(CoreOptimizer):
 
     # NOTE: init_pos() is NOT overridden - X_sample tracking happens via pos_new setter
 
-    def finish_initialization(self) -> None:
-        """Transition to iteration phase and generate candidate positions."""
+    def _finish_initialization(self) -> None:
+        """Generate candidate positions for surrogate model.
+
+        Called by CoreOptimizer.finish_initialization() after all init
+        positions have been evaluated. Generates the candidate position
+        grid for the surrogate model to evaluate.
+
+        Note: DO NOT set search_state here - CoreOptimizer handles that.
+        """
         self.all_pos_comb = self._all_possible_pos()
-        super().finish_initialization()
 
     # NOTE: iterate() is NOT overridden - uses CoreOptimizer.iterate() which calls
     # the _iterate_*_batch() methods below

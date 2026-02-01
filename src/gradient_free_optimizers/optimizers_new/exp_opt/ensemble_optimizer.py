@@ -126,10 +126,16 @@ class EnsembleOptimizer(SMBO):
         self.regr = EnsembleRegressor(estimators)
         self.xi = xi
 
-    def finish_initialization(self) -> None:
-        """Generate all possible positions for acquisition function."""
+    def _finish_initialization(self) -> None:
+        """Generate candidate positions for ensemble model.
+
+        Called by CoreOptimizer.finish_initialization() after all init
+        positions have been evaluated. Generates the candidate position
+        grid for the acquisition function.
+
+        Note: DO NOT set search_state here - CoreOptimizer handles that.
+        """
         self.all_pos_comb = self._all_possible_pos()
-        self.search_state = "iter"
 
     def _training(self) -> None:
         """Train the ensemble of surrogate models."""

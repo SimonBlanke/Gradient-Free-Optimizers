@@ -246,6 +246,13 @@ class BasePopulationOptimizer(CoreOptimizer):
             f"{self.__class__.__name__} must implement _iterate_discrete_batch()"
         )
 
-    def finish_initialization(self):
-        """Transition from initialization to iteration phase."""
-        self.search_state = "iter"
+    def _finish_initialization(self):
+        """Perform population-specific setup after init phase.
+
+        Override in subclasses to perform algorithm-specific initialization
+        after all init positions have been evaluated.
+
+        Note: DO NOT set search_state here - CoreOptimizer.finish_initialization()
+        handles that automatically after calling this hook.
+        """
+        pass

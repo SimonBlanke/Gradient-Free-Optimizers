@@ -249,14 +249,17 @@ class PatternSearch(CoreOptimizer):
 
         return pos
 
-    def finish_initialization(self) -> None:
-        """Transition from init to iteration phase.
+    def _finish_initialization(self) -> None:
+        """Generate initial pattern around current position.
 
-        Generates the first pattern around the current position.
+        Called by CoreOptimizer.finish_initialization() after all init
+        positions have been evaluated. Sets up the first pattern for
+        the iteration phase.
+
+        Note: DO NOT set search_state here - CoreOptimizer handles that.
         """
         if self.pos_current is not None:
             self.generate_pattern(self.pos_current)
-        self.search_state = "iter"
 
     def _compute_next_pattern_position(self) -> None:
         """Compute the full next position based on pattern state.

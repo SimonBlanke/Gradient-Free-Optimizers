@@ -239,8 +239,29 @@ class CoreOptimizer(BaseOptimizer):
 
         Called by Search after all init positions have been evaluated.
         Sets the search state to "iter" for the iteration phase.
+
+        DO NOT OVERRIDE THIS METHOD. Override _finish_initialization() instead
+        to add algorithm-specific initialization logic.
         """
+        # Call algorithm-specific hook for initialization finalization
+        self._finish_initialization()
         self.search_state = "iter"
+
+    def _finish_initialization(self):
+        """Perform algorithm-specific setup after init phase.
+
+        Override this method to perform any algorithm-specific setup that
+        needs to happen after all init positions have been evaluated but
+        before the iteration phase begins.
+
+        Examples
+        --------
+        - DownhillSimplex: Initialize simplex vertices from evaluated positions
+        - PopulationOptimizers: Sort population by fitness
+
+        Default implementation does nothing.
+        """
+        pass
 
     def iterate(self):
         """Generate a new position using dimension-type-aware batch iteration.

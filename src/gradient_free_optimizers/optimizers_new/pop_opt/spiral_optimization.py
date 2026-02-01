@@ -178,17 +178,18 @@ class SpiralOptimization(BasePopulationOptimizer):
         self._update_best(self.pos_new, score_new)
         self._update_current(self.pos_new, score_new)
 
-    def finish_initialization(self) -> None:
-        """Transition from initialization to iteration phase.
+    def _finish_initialization(self) -> None:
+        """Set up initial center position from best particle.
 
-        Sets up the initial center position based on the best
-        particle found during initialization.
+        Called by CoreOptimizer.finish_initialization() after all init
+        positions have been evaluated. Initializes the spiral center
+        to the best position found during initialization.
+
+        Note: DO NOT set search_state here - CoreOptimizer handles that.
         """
         self.sort_pop_best_score()
         self.center_pos = self.pop_sorted[0].pos_current
         self.center_score = self.pop_sorted[0].score_current
-
-        self.search_state = "iter"
 
     # =========================================================================
     # Template Method Implementation - NO iterate() override!

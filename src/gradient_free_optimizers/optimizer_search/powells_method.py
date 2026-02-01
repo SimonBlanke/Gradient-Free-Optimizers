@@ -61,9 +61,6 @@ class PowellsMethod(_PowellsMethod, Search):
     distribution : str
         The type of distribution to sample from for hill climbing line search.
         Options are "normal", "laplace", "gumbel", or "logistic".
-    n_neighbours : int
-        The number of neighbours to sample and evaluate during hill climbing
-        line search.
     iters_p_dim : int
         Number of evaluations per direction during line search. Higher values
         provide more accurate line searches but increase function evaluations.
@@ -110,7 +107,6 @@ class PowellsMethod(_PowellsMethod, Search):
         nth_process: int = None,
         epsilon: float = 0.03,
         distribution: str = "normal",
-        n_neighbours: int = 3,
         iters_p_dim: int = 10,
         line_search: Literal["grid", "golden", "hill_climb"] = "grid",
         convergence_threshold: float = 1e-8,
@@ -129,7 +125,6 @@ class PowellsMethod(_PowellsMethod, Search):
             nth_process=nth_process,
             epsilon=epsilon,
             distribution=distribution,
-            n_neighbours=n_neighbours,
             iters_p_dim=iters_p_dim,
             line_search=line_search,
             convergence_threshold=convergence_threshold,

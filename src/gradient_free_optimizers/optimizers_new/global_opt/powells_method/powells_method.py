@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
-from ...local_opt import HillClimbingOptimizer
+from ...core_optimizer import CoreOptimizer
 from .direction import Direction
 from .line_search import GoldenSectionLineSearch, GridLineSearch, HillClimbLineSearch
 
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     pass
 
 
-class PowellsMethod(HillClimbingOptimizer):
+class PowellsMethod(CoreOptimizer):
     """
     Powell's conjugate direction method for gradient-free optimization.
 
@@ -62,11 +62,9 @@ class PowellsMethod(HillClimbingOptimizer):
     nth_process : int, optional
         Process index for parallel optimization.
     epsilon : float, default=0.03
-        Step size for hill climbing line search.
+        Step size for hill_climb line search method.
     distribution : str, default="normal"
-        Distribution for hill climbing perturbations.
-    n_neighbours : int, default=3
-        Number of neighbors for hill climbing.
+        Distribution for hill_climb line search perturbations.
     iters_p_dim : int, default=10
         Number of evaluations per direction during line search.
     line_search : str, default="grid"
@@ -92,7 +90,6 @@ class PowellsMethod(HillClimbingOptimizer):
         nth_process: int | None = None,
         epsilon: float = 0.03,
         distribution: str = "normal",
-        n_neighbours: int = 3,
         iters_p_dim: int = 10,
         line_search: str = "grid",
         convergence_threshold: float = 1e-8,
@@ -104,10 +101,11 @@ class PowellsMethod(HillClimbingOptimizer):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
-            epsilon=epsilon,
-            distribution=distribution,
-            n_neighbours=n_neighbours,
         )
+
+        # Parameters for line search (used by HillClimbLineSearch)
+        self.epsilon = epsilon
+        self.distribution = distribution
 
         self.iters_p_dim = iters_p_dim
         self.line_search_method = line_search
@@ -151,7 +149,7 @@ class PowellsMethod(HillClimbingOptimizer):
 
         return np.array(pos_new)
 
-    def finish_initialization(self):
+    def _finish_initialization(self):
         """Set up the direction matrix and state after initialization phase."""
         n_dims = len(self.search_space)
 
@@ -169,8 +167,6 @@ class PowellsMethod(HillClimbingOptimizer):
         self.direction_start_score = None
         self.direction_improvements = []
         self.converged = False
-
-        self.search_state = "iter"
 
     def _create_line_searcher(self):
         """Create the appropriate line search strategy."""
@@ -238,24 +234,27 @@ class PowellsMethod(HillClimbingOptimizer):
             except ValueError:
                 pass  # Displacement too small, keep old direction
 
-    def iterate(self) -> np.ndarray:
-        """Generate the next position to evaluate.
+    def _generate_position(self) -> np.ndarray:
+        """Generate next position via Powell's line search.
+
+        Powell's method performs line searches along conjugate directions.
+        When converged or no valid position available, falls back to
+        random position generation.
+
+        Note: Constraint checking is handled by CoreOptimizer.iterate().
 
         Returns
         -------
         np.ndarray
-            Next position for evaluation.
+            Next candidate position (may violate constraints).
         """
         # Random restart check
         if random.random() < self.rand_rest_p:
-            pos_new = self.init.move_random_typed()
-            self.pos_new = pos_new  # Property setter auto-appends
-            return pos_new
+            return self.init.move_random_typed()
 
-        # If converged, fall back to hill climbing exploration
+        # If converged, fall back to random exploration
         if self.converged:
-            pos_new = super().iterate()
-            return pos_new
+            return self.init.move_random_typed()
 
         n_dims = len(self.search_space)
 
@@ -266,8 +265,7 @@ class PowellsMethod(HillClimbingOptimizer):
                 self._complete_cycle()
                 # Check if we just converged
                 if self.converged:
-                    pos_new = super().iterate()
-                    return pos_new
+                    return self.init.move_random_typed()
                 self._start_new_cycle()
                 self._start_direction_search()
                 break
@@ -295,20 +293,43 @@ class PowellsMethod(HillClimbingOptimizer):
                 break
 
         # Get next position from line searcher
-        pos_new = self.line_searcher.get_next_position()
+        pos = self.line_searcher.get_next_position()
 
         # Fallback if no position available
-        if pos_new is None:
-            pos_new = super().iterate()
-            return pos_new
+        if pos is None:
+            return self.init.move_random_typed()
 
-        # Handle constraints
-        if not self.conv.not_in_constraint(pos_new):
-            pos_new = super().iterate()
-            return pos_new
+        return pos
 
-        self.pos_new = pos_new  # Property setter auto-appends
-        return pos_new
+    def _iterate_continuous_batch(self) -> np.ndarray:
+        """Not used - Powell's method overrides _generate_position().
+
+        Powell's method uses line searches along conjugate directions,
+        not the standard batch iteration pattern.
+
+        Raises
+        ------
+        NotImplementedError
+            Always raised - see _generate_position() instead.
+        """
+        raise NotImplementedError(
+            "Powell's method uses line search, not batch iteration. "
+            "See _generate_position() for the algorithm implementation."
+        )
+
+    def _iterate_categorical_batch(self) -> np.ndarray:
+        """Not used - Powell's method overrides _generate_position()."""
+        raise NotImplementedError(
+            "Powell's method uses line search, not batch iteration. "
+            "See _generate_position() for the algorithm implementation."
+        )
+
+    def _iterate_discrete_batch(self) -> np.ndarray:
+        """Not used - Powell's method overrides _generate_position()."""
+        raise NotImplementedError(
+            "Powell's method uses line search, not batch iteration. "
+            "See _generate_position() for the algorithm implementation."
+        )
 
     def _evaluate(self, score_new: float) -> None:
         """
