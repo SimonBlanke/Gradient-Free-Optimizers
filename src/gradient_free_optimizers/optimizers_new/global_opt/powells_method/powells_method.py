@@ -90,6 +90,7 @@ class PowellsMethod(CoreOptimizer):
         nth_process: int | None = None,
         epsilon: float = 0.03,
         distribution: str = "normal",
+        n_neighbours: int = 3,  # no-op, kept for backwards compatibility
         iters_p_dim: int = 10,
         line_search: str = "grid",
         convergence_threshold: float = 1e-8,

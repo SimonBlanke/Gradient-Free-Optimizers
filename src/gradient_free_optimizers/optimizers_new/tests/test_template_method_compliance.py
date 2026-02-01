@@ -84,20 +84,21 @@ ALL_OPTIMIZERS = [
 # These are the public methods defined in CoreOptimizer that orchestrate
 # the optimization process. They have a FIXED flow and must not be changed.
 #
-# Note: finish_initialization() is a LIFECYCLE HOOK that algorithms CAN override
-# to set up their algorithm-specific state (simplex vertices, pattern positions, etc.)
-# This is different from the orchestration methods which must NOT be overridden.
+# Per DESIGN_EXTENDED_SEARCH_SPACE.md section 4.2.4, ALL public methods including
+# finish_initialization() must NOT be overridden. Algorithms needing setup logic
+# should override the _finish_initialization() HOOK instead.
 PUBLIC_METHODS_MUST_NOT_OVERRIDE = [
     "iterate",
     "evaluate",
     "init_pos",
     "evaluate_init",
+    "finish_initialization",
 ]
 
-# Lifecycle hooks that CAN be overridden to set up algorithm state
-# These are called once during initialization/finalization, not during iteration
-LIFECYCLE_HOOKS_MAY_OVERRIDE = [
-    "finish_initialization",
+# Private hook methods that CAN be overridden to set up algorithm state
+# These are called by the public methods at appropriate times
+PRIVATE_HOOKS_MAY_OVERRIDE = [
+    "_finish_initialization",  # Called by finish_initialization() for algorithm setup
 ]
 
 

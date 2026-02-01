@@ -213,6 +213,11 @@ class DirectAlgorithm(CoreOptimizer):
         rand_rest_p: float = 0,
         nth_process: int | None = None,
         warm_start: pd.DataFrame | None = None,
+        # Legacy SMBO parameters - no-op, kept for backwards compatibility
+        warm_start_smbo: pd.DataFrame | None = None,
+        max_sample_size: int = 10000000,
+        sampling: dict[str, int] | None = None,
+        replacement: bool = True,
     ) -> None:
         super().__init__(
             search_space=search_space,

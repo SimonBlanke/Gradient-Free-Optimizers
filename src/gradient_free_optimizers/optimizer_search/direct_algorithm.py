@@ -94,6 +94,11 @@ class DirectAlgorithm(_DirectAlgorithm, Search):
         rand_rest_p: float = 0,
         nth_process: int = None,
         warm_start: pd.DataFrame = None,
+        # Legacy SMBO parameters - no-op, kept for backwards compatibility
+        warm_start_smbo: pd.DataFrame = None,
+        max_sample_size: int = 10000000,
+        sampling: dict[str, int] = None,
+        replacement: bool = True,
     ):
         if initialize is None:
             initialize = get_default_initialize()
@@ -108,4 +113,8 @@ class DirectAlgorithm(_DirectAlgorithm, Search):
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
             warm_start=warm_start,
+            warm_start_smbo=warm_start_smbo,
+            max_sample_size=max_sample_size,
+            sampling=sampling,
+            replacement=replacement,
         )

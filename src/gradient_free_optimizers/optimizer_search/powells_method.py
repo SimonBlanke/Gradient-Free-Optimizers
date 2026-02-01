@@ -107,6 +107,7 @@ class PowellsMethod(_PowellsMethod, Search):
         nth_process: int = None,
         epsilon: float = 0.03,
         distribution: str = "normal",
+        n_neighbours: int = 3,  # no-op, kept for backwards compatibility
         iters_p_dim: int = 10,
         line_search: Literal["grid", "golden", "hill_climb"] = "grid",
         convergence_threshold: float = 1e-8,
@@ -125,6 +126,7 @@ class PowellsMethod(_PowellsMethod, Search):
             nth_process=nth_process,
             epsilon=epsilon,
             distribution=distribution,
+            n_neighbours=n_neighbours,
             iters_p_dim=iters_p_dim,
             line_search=line_search,
             convergence_threshold=convergence_threshold,
