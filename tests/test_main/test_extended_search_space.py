@@ -74,6 +74,9 @@ POPULATION_OPTIMIZERS = {
 }
 
 
+n_iter = 100
+
+
 def get_optimizer_kwargs(opt_class):
     """Return extra kwargs needed for specific optimizers."""
     if opt_class in POPULATION_OPTIMIZERS:
@@ -98,6 +101,9 @@ def test_categorical_exploration(optimizer_class):
     The key assertion: after N iterations, the optimizer should have
     tried more than one unique value in the categorical dimension.
     This verifies the algorithm actually moves in categorical space.
+
+    Note: We exclude initialization data (edge, grid, random positions)
+    from the assertion since initialization inherently produces varied values.
     """
     search_space = {
         "category": ["a", "b", "c", "d", "e"],
@@ -110,13 +116,16 @@ def test_categorical_exploration(optimizer_class):
 
     kwargs = get_optimizer_kwargs(optimizer_class)
     opt = optimizer_class(search_space, random_state=42, **kwargs)
-    opt.search(objective, n_iter=30, verbosity=[])
+    opt.search(objective, n_iter=n_iter, verbosity=[])
 
-    # Core assertion: optimizer explored multiple values
-    unique_values = opt.search_data["category"].nunique()
+    # Exclude initialization data - only check actual iteration exploration
+    iter_data = opt.search_data.iloc[opt.n_init_search :]
+
+    # Core assertion: optimizer explored multiple values during iteration
+    unique_values = iter_data["category"].nunique()
     assert unique_values > 1, (
         f"{optimizer_class.__name__} did not explore categorical dimension "
-        f"(only found {unique_values} unique value(s))"
+        f"(only found {unique_values} unique value(s) in iteration phase)"
     )
 
 
@@ -127,6 +136,9 @@ def test_continuous_exploration(optimizer_class):
     The key assertion: after N iterations, the optimizer should have
     tried more than one unique value in the continuous dimension.
     This verifies the algorithm actually moves in continuous space.
+
+    Note: We exclude initialization data (edge, grid, random positions)
+    from the assertion since initialization inherently produces varied values.
     """
     search_space = {
         "x": (0.0, 10.0),
@@ -138,13 +150,16 @@ def test_continuous_exploration(optimizer_class):
 
     kwargs = get_optimizer_kwargs(optimizer_class)
     opt = optimizer_class(search_space, random_state=42, **kwargs)
-    opt.search(objective, n_iter=30, verbosity=[])
+    opt.search(objective, n_iter=n_iter, verbosity=[])
 
-    # Core assertion: optimizer explored multiple values
-    unique_values = opt.search_data["x"].nunique()
+    # Exclude initialization data - only check actual iteration exploration
+    iter_data = opt.search_data.iloc[opt.n_init_search :]
+
+    # Core assertion: optimizer explored multiple values during iteration
+    unique_values = iter_data["x"].nunique()
     assert unique_values > 1, (
         f"{optimizer_class.__name__} did not explore continuous dimension "
-        f"(only found {unique_values} unique value(s))"
+        f"(only found {unique_values} unique value(s) in iteration phase)"
     )
 
 
@@ -153,6 +168,9 @@ def test_mixed_exploration(optimizer_class):
     """Test that optimizer explores mixed dimension types.
 
     Combines discrete, continuous, and categorical in one search space.
+
+    Note: We exclude initialization data (edge, grid, random positions)
+    from the assertion since initialization inherently produces varied values.
     """
     search_space = {
         "discrete": np.arange(0, 10),
@@ -172,12 +190,15 @@ def test_mixed_exploration(optimizer_class):
 
     kwargs = get_optimizer_kwargs(optimizer_class)
     opt = optimizer_class(search_space, random_state=42, **kwargs)
-    opt.search(objective, n_iter=30, verbosity=[])
+    opt.search(objective, n_iter=n_iter, verbosity=[])
 
-    # All dimensions should be explored
-    assert opt.search_data["discrete"].nunique() > 1
-    assert opt.search_data["continuous"].nunique() > 1
-    assert opt.search_data["categorical"].nunique() > 1
+    # Exclude initialization data - only check actual iteration exploration
+    iter_data = opt.search_data.iloc[opt.n_init_search :]
+
+    # All dimensions should be explored during iteration phase
+    assert iter_data["discrete"].nunique() > 1
+    assert iter_data["continuous"].nunique() > 1
+    assert iter_data["categorical"].nunique() > 1
 
 
 # =============================================================================
@@ -198,7 +219,7 @@ def test_continuous_returns_floats(optimizer_class):
 
     kwargs = get_optimizer_kwargs(optimizer_class)
     opt = optimizer_class(search_space, random_state=42, **kwargs)
-    opt.search(objective, n_iter=20, verbosity=[])
+    opt.search(objective, n_iter=n_iter, verbosity=[])
 
     assert isinstance(opt.best_para["x"], float)
     assert isinstance(opt.best_para["y"], float)
@@ -224,7 +245,7 @@ def test_categorical_returns_original_values(optimizer_class):
 
     kwargs = get_optimizer_kwargs(optimizer_class)
     opt = optimizer_class(search_space, random_state=42, **kwargs)
-    opt.search(objective, n_iter=20, verbosity=[])
+    opt.search(objective, n_iter=n_iter, verbosity=[])
 
     assert opt.best_para["optimizer"] in ["adam", "sgd", "rmsprop"]
     assert opt.best_para["use_bias"] in [True, False]
@@ -245,7 +266,7 @@ def test_single_categorical_dimension(optimizer_class):
 
     kwargs = get_optimizer_kwargs(optimizer_class)
     opt = optimizer_class(search_space, random_state=42, **kwargs)
-    opt.search(objective, n_iter=20, verbosity=[])
+    opt.search(objective, n_iter=n_iter, verbosity=[])
 
     assert opt.best_para["choice"] in ["a", "b", "c", "d", "e"]
 
@@ -260,7 +281,7 @@ def test_single_continuous_dimension(optimizer_class):
 
     kwargs = get_optimizer_kwargs(optimizer_class)
     opt = optimizer_class(search_space, random_state=42, **kwargs)
-    opt.search(objective, n_iter=20, verbosity=[])
+    opt.search(objective, n_iter=n_iter, verbosity=[])
 
     assert 0.0 <= opt.best_para["x"] <= 10.0
 
@@ -275,7 +296,7 @@ def test_categorical_with_none_values():
         return 0.3
 
     opt = RandomSearchOptimizer(search_space, random_state=42)
-    opt.search(objective, n_iter=20, verbosity=[])
+    opt.search(objective, n_iter=n_iter, verbosity=[])
 
     assert opt.best_para["option"] in [None, "enabled", "disabled"]
 
@@ -289,7 +310,7 @@ def test_categorical_with_numeric_values():
         return -abs(params["batch_size"] - 64)
 
     opt = HillClimbingOptimizer(search_space, random_state=42)
-    opt.search(objective, n_iter=20, verbosity=[])
+    opt.search(objective, n_iter=n_iter, verbosity=[])
 
     assert opt.best_para["batch_size"] in [16, 32, 64, 128]
 
@@ -310,7 +331,7 @@ def test_constraint_on_continuous_dimension():
         return -(params["x"] ** 2 + params["y"] ** 2)
 
     opt = RandomSearchOptimizer(search_space, constraints=[constraint], random_state=42)
-    opt.search(objective, n_iter=50, verbosity=[])
+    opt.search(objective, n_iter=n_iter, verbosity=[])
 
     assert opt.best_para["x"] > 0
 
@@ -329,7 +350,7 @@ def test_constraint_on_categorical_dimension():
         return -params["lr"]
 
     opt = RandomSearchOptimizer(search_space, constraints=[constraint], random_state=42)
-    opt.search(objective, n_iter=50, verbosity=[])
+    opt.search(objective, n_iter=n_iter, verbosity=[])
 
     assert opt.best_para["optimizer"] in ["adam", "sgd"]
 
@@ -349,7 +370,7 @@ def test_constraint_on_mixed_dimensions():
         return -(params["x"] ** 2 + params["y"] ** 2)
 
     opt = HillClimbingOptimizer(search_space, constraints=[constraint], random_state=42)
-    opt.search(objective, n_iter=50, verbosity=[])
+    opt.search(objective, n_iter=n_iter, verbosity=[])
 
     assert opt.best_para["x"] + opt.best_para["y"] > 0
 
@@ -376,10 +397,10 @@ def test_reproducibility_with_random_state(optimizer_class):
     kwargs = get_optimizer_kwargs(optimizer_class)
 
     opt1 = optimizer_class(search_space, random_state=42, **kwargs)
-    opt1.search(objective, n_iter=20, verbosity=[])
+    opt1.search(objective, n_iter=n_iter, verbosity=[])
 
     opt2 = optimizer_class(search_space, random_state=42, **kwargs)
-    opt2.search(objective, n_iter=20, verbosity=[])
+    opt2.search(objective, n_iter=n_iter, verbosity=[])
 
     assert opt1.best_score == opt2.best_score
     assert opt1.best_para == opt2.best_para
