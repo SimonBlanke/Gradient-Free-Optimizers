@@ -5,8 +5,12 @@
 """
 DIRECT (DIviding RECTangles) Algorithm.
 
-Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
+Supports: CONTINUOUS (auto-discretized), CATEGORICAL, DISCRETE_NUMERICAL
 Uses Gower-like distance for mixed dimension types.
+
+Continuous dimensions are automatically discretized using the `resolution`
+parameter. This enables systematic rectangle subdivision while maintaining
+the algorithm's Lipschitz-based selection properties.
 
 Note: DIRECT is NOT a surrogate-model-based optimizer. It uses systematic
 subspace division with Lipschitz bounds, not model training. Therefore it
@@ -25,6 +29,36 @@ from gradient_free_optimizers._dimension_types import DimensionType
 from gradient_free_optimizers._math_backend import cdist
 
 from ..core_optimizer import CoreOptimizer
+
+
+def _discretize_search_space(search_space, resolution):
+    """Convert continuous dimensions to discrete grids for DIRECT.
+
+    Parameters
+    ----------
+    search_space : dict
+        Original search space with potential continuous dimensions (tuples).
+    resolution : int
+        Number of grid points for continuous dimensions.
+
+    Returns
+    -------
+    dict
+        Search space with continuous dimensions converted to numpy arrays.
+    """
+    discretized = {}
+    for name, space in search_space.items():
+        if isinstance(space, tuple) and len(space) == 2:
+            # Continuous dimension: convert to linspace
+            low, high = space
+            if isinstance(low, int | float) and isinstance(high, int | float):
+                discretized[name] = np.linspace(low, high, resolution)
+            else:
+                discretized[name] = space
+        else:
+            discretized[name] = space
+    return discretized
+
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -182,6 +216,7 @@ class DirectAlgorithm(CoreOptimizer):
     ----------
     search_space : dict
         Dictionary mapping parameter names to search dimension definitions.
+        Continuous dimensions (tuples) are automatically discretized.
     initialize : dict, optional
         Strategy for generating initial positions.
     constraints : list, optional
@@ -195,6 +230,9 @@ class DirectAlgorithm(CoreOptimizer):
     warm_start : pd.DataFrame, optional
         Previous optimization results to warm-start the algorithm.
         Evaluated positions will have their subspaces marked as scored.
+    resolution : int, default=100
+        Number of grid points for continuous dimensions. Higher values
+        give finer subdivision granularity but increase computation.
     """
 
     name = "Direct Algorithm"
@@ -213,14 +251,19 @@ class DirectAlgorithm(CoreOptimizer):
         rand_rest_p: float = 0,
         nth_process: int | None = None,
         warm_start: pd.DataFrame | None = None,
+        resolution: int = 100,
         # Legacy SMBO parameters - no-op, kept for backwards compatibility
         warm_start_smbo: pd.DataFrame | None = None,
         max_sample_size: int = 10000000,
         sampling: dict[str, int] | None = None,
         replacement: bool = True,
     ) -> None:
+        # Auto-discretize continuous dimensions before parent init
+        self.resolution = resolution
+        discretized_space = _discretize_search_space(search_space, resolution)
+
         super().__init__(
-            search_space=search_space,
+            search_space=discretized_space,
             initialize=initialize,
             constraints=constraints,
             random_state=random_state,

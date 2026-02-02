@@ -63,6 +63,10 @@ class DirectAlgorithm(_DirectAlgorithm, Search):
         The probability of a random iteration during the the search process.
     warm_start : pd.DataFrame, optional
         Previous optimization results to warm-start the algorithm.
+    resolution : int
+        Number of grid points for continuous dimensions. Default is 100.
+        Continuous dimensions (specified as tuples like (0.0, 10.0)) are
+        automatically discretized into this many evenly-spaced points.
 
     Examples
     --------
@@ -94,6 +98,7 @@ class DirectAlgorithm(_DirectAlgorithm, Search):
         rand_rest_p: float = 0,
         nth_process: int = None,
         warm_start: pd.DataFrame = None,
+        resolution: int = 100,
         # Legacy SMBO parameters - no-op, kept for backwards compatibility
         warm_start_smbo: pd.DataFrame = None,
         max_sample_size: int = 10000000,
@@ -113,6 +118,7 @@ class DirectAlgorithm(_DirectAlgorithm, Search):
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
             warm_start=warm_start,
+            resolution=resolution,
             warm_start_smbo=warm_start_smbo,
             max_sample_size=max_sample_size,
             sampling=sampling,
