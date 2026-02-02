@@ -5,8 +5,10 @@
 """
 Grid Search Optimizer.
 
-Supports: DISCRETE_NUMERICAL, CATEGORICAL
-Note: Continuous dimensions must be discretized for grid search.
+Supports: DISCRETE_NUMERICAL, CATEGORICAL, CONTINUOUS (auto-discretized)
+
+Continuous dimensions are automatically discretized using the `resolution`
+parameter, which specifies how many grid points to create.
 
 Template Method Pattern Compliance:
     - Does NOT override iterate() - keeps public interface intact
@@ -22,11 +24,40 @@ import numpy as np
 from ..core_optimizer import CoreOptimizer
 
 
+def _discretize_search_space(search_space, resolution):
+    """Convert continuous dimensions to discrete grids.
+
+    Parameters
+    ----------
+    search_space : dict
+        Original search space with potential continuous dimensions (tuples).
+    resolution : int
+        Number of grid points for continuous dimensions.
+
+    Returns
+    -------
+    dict
+        Search space with continuous dimensions converted to numpy arrays.
+    """
+    discretized = {}
+    for name, space in search_space.items():
+        if isinstance(space, tuple) and len(space) == 2:
+            # Continuous dimension: convert to linspace
+            low, high = space
+            if isinstance(low, int | float) and isinstance(high, int | float):
+                discretized[name] = np.linspace(low, high, resolution)
+            else:
+                discretized[name] = space
+        else:
+            discretized[name] = space
+    return discretized
+
+
 class GridSearchOptimizer(CoreOptimizer):
     """Systematic grid search over the entire search space.
 
     Dimension Support:
-        - Continuous: LIMITED (must be discretized first)
+        - Continuous: YES (auto-discretized using `resolution` parameter)
         - Categorical: YES (enumerate all categories)
         - Discrete: YES (enumerate all values)
 
@@ -37,6 +68,7 @@ class GridSearchOptimizer(CoreOptimizer):
     ----------
     search_space : dict
         Dictionary mapping parameter names to arrays of possible values.
+        Continuous dimensions (tuples) are automatically discretized.
     initialize : dict, default=None
         Strategy for generating initial positions.
     constraints : list, optional
@@ -51,6 +83,9 @@ class GridSearchOptimizer(CoreOptimizer):
         Step size for grid traversal (1 = visit every point).
     direction : str, default="diagonal"
         Grid traversal direction: "diagonal" or "orthogonal".
+    resolution : int, default=100
+        Number of grid points for continuous dimensions. Higher values
+        give finer resolution but require more iterations to cover.
     """
 
     name = "Grid Search"
@@ -70,9 +105,14 @@ class GridSearchOptimizer(CoreOptimizer):
         nth_process=None,
         step_size=1,
         direction="diagonal",
+        resolution=100,
     ):
+        # Auto-discretize continuous dimensions before parent init
+        self.resolution = resolution
+        discretized_space = _discretize_search_space(search_space, resolution)
+
         super().__init__(
-            search_space=search_space,
+            search_space=discretized_space,
             initialize=initialize,
             constraints=constraints,
             random_state=random_state,
