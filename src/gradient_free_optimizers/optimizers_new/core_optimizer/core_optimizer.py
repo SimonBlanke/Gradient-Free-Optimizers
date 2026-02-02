@@ -294,6 +294,13 @@ class CoreOptimizer(BaseOptimizer):
         DO NOT OVERRIDE THIS METHOD. Override _finish_initialization() instead
         to add algorithm-specific initialization logic.
         """
+        # Update current position to best found during initialization.
+        # This ensures the iteration phase starts from the best known position,
+        # not from the first initialization position.
+        if self._pos_best is not None:
+            self.pos_current = self._pos_best.copy()
+            self.score_current = self._score_best
+
         # Call algorithm-specific hook for initialization finalization
         self._finish_initialization()
         self.search_state = "iter"
