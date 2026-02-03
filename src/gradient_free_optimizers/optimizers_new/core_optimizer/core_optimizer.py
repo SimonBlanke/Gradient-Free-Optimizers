@@ -291,15 +291,20 @@ class CoreOptimizer(BaseOptimizer):
         Called by Search after all init positions have been evaluated.
         Sets the search state to "iter" for the iteration phase.
 
-        DO NOT OVERRIDE THIS METHOD. Override _finish_initialization() instead
+        Override _finish_initialization() instead
         to add algorithm-specific initialization logic.
         """
         # Update current position to best found during initialization.
         # This ensures the iteration phase starts from the best known position,
         # not from the first initialization position.
+        #
+        # NOTE: We set the backing fields directly (_pos_current, _score_current)
+        # rather than using the property setters. Property setters auto-append
+        # to tracking lists, but this transition is not a new evaluation, so we
+        # must not add entries. This preserves: n_current_positions <= n_new_positions
         if self._pos_best is not None:
-            self.pos_current = self._pos_best.copy()
-            self.score_current = self._score_best
+            self._pos_current = self._pos_best.copy()
+            self._score_current = self._score_best
 
         # Call algorithm-specific hook for initialization finalization
         self._finish_initialization()
