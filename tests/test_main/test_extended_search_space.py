@@ -4,10 +4,23 @@ Core test philosophy:
 - Use pytest.parametrize to loop over ALL optimizers
 - Test actual BEHAVIOR: does the optimizer explore different values?
 - Keep tests simple and focused
+
+Test tiers:
+- Fast tests (no marker): Run on every PR/push
+- Slow tests (@pytest.mark.slow): Run nightly or on-demand
+
+To run only fast tests: pytest -m "not slow"
+To run slow tests:      pytest -m slow
+To run everything:      pytest
 """
 
 import numpy as np
 import pytest
+
+# =============================================================================
+# Slow test marker for expensive exploration tests
+# =============================================================================
+slow = pytest.mark.slow
 
 from gradient_free_optimizers import (
     BayesianOptimizer,
@@ -73,11 +86,28 @@ POPULATION_OPTIMIZERS = {
     DifferentialEvolutionOptimizer,
 }
 
+# SMBO optimizers are computationally expensive (train models each iteration)
+SMBO_OPTIMIZERS = {
+    BayesianOptimizer,
+    TreeStructuredParzenEstimators,
+    ForestOptimizer,
+    LipschitzOptimizer,
+}
+
 # Note: GridSearchOptimizer and DirectAlgorithm now auto-discretize continuous
 # dimensions, so they no longer need special handling in tests.
 
 
+# Default iterations for tests
 n_iter = 30
+n_iter_smbo = 15  # Fewer iterations for expensive SMBO optimizers
+
+
+def get_n_iter(opt_class):
+    """Return appropriate n_iter based on optimizer computational cost."""
+    if opt_class in SMBO_OPTIMIZERS:
+        return n_iter_smbo
+    return n_iter
 
 
 def get_exploration_init():
@@ -107,6 +137,7 @@ def optimizer_id(opt_class):
 # =============================================================================
 
 
+@slow
 @pytest.mark.parametrize("optimizer_class", ALL_OPTIMIZERS, ids=optimizer_id)
 def test_categorical_exploration(optimizer_class):
     """Test that optimizer explores categorical dimensions.
@@ -135,7 +166,7 @@ def test_categorical_exploration(optimizer_class):
     opt = optimizer_class(
         search_space, initialize=initialize, random_state=42, **kwargs
     )
-    opt.search(objective, n_iter=n_iter, verbosity=[])
+    opt.search(objective, n_iter=get_n_iter(optimizer_class), verbosity=[])
 
     # Exclude initialization data - only check actual iteration exploration
     iter_data = opt.search_data.iloc[opt.n_init_search :]
@@ -151,6 +182,7 @@ def test_categorical_exploration(optimizer_class):
     )
 
 
+@slow
 @pytest.mark.parametrize("optimizer_class", ALL_OPTIMIZERS, ids=optimizer_id)
 def test_continuous_exploration(optimizer_class):
     """Test that optimizer explores continuous dimensions.
@@ -177,7 +209,7 @@ def test_continuous_exploration(optimizer_class):
     opt = optimizer_class(
         search_space, initialize=initialize, random_state=42, **kwargs
     )
-    opt.search(objective, n_iter=n_iter, verbosity=[])
+    opt.search(objective, n_iter=get_n_iter(optimizer_class), verbosity=[])
 
     # Exclude initialization data - only check actual iteration exploration
     iter_data = opt.search_data.iloc[opt.n_init_search :]
@@ -194,6 +226,7 @@ def test_continuous_exploration(optimizer_class):
     )
 
 
+@slow
 @pytest.mark.parametrize("optimizer_class", ALL_OPTIMIZERS, ids=optimizer_id)
 def test_mixed_exploration(optimizer_class):
     """Test that optimizer explores mixed dimension types.
@@ -226,7 +259,7 @@ def test_mixed_exploration(optimizer_class):
     opt = optimizer_class(
         search_space, initialize=initialize, random_state=42, **kwargs
     )
-    opt.search(objective, n_iter=n_iter, verbosity=[])
+    opt.search(objective, n_iter=get_n_iter(optimizer_class), verbosity=[])
 
     # Exclude initialization data - only check actual iteration exploration
     iter_data = opt.search_data.iloc[opt.n_init_search :]
@@ -269,7 +302,7 @@ def test_continuous_returns_floats(optimizer_class):
 
     kwargs = get_optimizer_kwargs(optimizer_class)
     opt = optimizer_class(search_space, random_state=42, **kwargs)
-    opt.search(objective, n_iter=n_iter, verbosity=[])
+    opt.search(objective, n_iter=get_n_iter(optimizer_class), verbosity=[])
 
     assert isinstance(opt.best_para["x"], float)
     assert isinstance(opt.best_para["y"], float)
@@ -295,7 +328,7 @@ def test_categorical_returns_original_values(optimizer_class):
 
     kwargs = get_optimizer_kwargs(optimizer_class)
     opt = optimizer_class(search_space, random_state=42, **kwargs)
-    opt.search(objective, n_iter=n_iter, verbosity=[])
+    opt.search(objective, n_iter=get_n_iter(optimizer_class), verbosity=[])
 
     assert opt.best_para["optimizer"] in ["adam", "sgd", "rmsprop"]
     assert opt.best_para["use_bias"] in [True, False]
@@ -316,7 +349,7 @@ def test_single_categorical_dimension(optimizer_class):
 
     kwargs = get_optimizer_kwargs(optimizer_class)
     opt = optimizer_class(search_space, random_state=42, **kwargs)
-    opt.search(objective, n_iter=n_iter, verbosity=[])
+    opt.search(objective, n_iter=get_n_iter(optimizer_class), verbosity=[])
 
     assert opt.best_para["choice"] in ["a", "b", "c", "d", "e"]
 
@@ -331,7 +364,7 @@ def test_single_continuous_dimension(optimizer_class):
 
     kwargs = get_optimizer_kwargs(optimizer_class)
     opt = optimizer_class(search_space, random_state=42, **kwargs)
-    opt.search(objective, n_iter=n_iter, verbosity=[])
+    opt.search(objective, n_iter=get_n_iter(optimizer_class), verbosity=[])
 
     assert 0.0 <= opt.best_para["x"] <= 10.0
 
@@ -447,10 +480,10 @@ def test_reproducibility_with_random_state(optimizer_class):
     kwargs = get_optimizer_kwargs(optimizer_class)
 
     opt1 = optimizer_class(search_space, random_state=42, **kwargs)
-    opt1.search(objective, n_iter=n_iter, verbosity=[])
+    opt1.search(objective, n_iter=get_n_iter(optimizer_class), verbosity=[])
 
     opt2 = optimizer_class(search_space, random_state=42, **kwargs)
-    opt2.search(objective, n_iter=n_iter, verbosity=[])
+    opt2.search(objective, n_iter=get_n_iter(optimizer_class), verbosity=[])
 
     assert opt1.best_score == opt2.best_score
     assert opt1.best_para == opt2.best_para
