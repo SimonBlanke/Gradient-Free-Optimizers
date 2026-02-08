@@ -159,29 +159,35 @@ html[data-theme="dark"] .back-to-top-sidebar a:hover {
 
 /* -- Right Sidebar - TOC -------------------------------------------------- */
 
-.sidebar-secondary-item {
-    border-left: 1px solid var(--pst-color-border);
-    padding-left: 1rem;
-}
-
-.page-toc.onthispage {
-    color: var(--pst-color-text-base);
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-}
-
 .bd-toc-nav.page-toc {
     margin-top: 1.25rem;
 }
 
-/* -- Landing page: hide right sidebar TOC (keep grid space for layout) ---- */
-
-body:has(.hero-section) .bd-sidebar-secondary {
-    visibility: hidden;
+/* Remove per-entry indicator line from right sidebar */
+.bd-sidebar-secondary .toc-entry,
+.bd-sidebar-secondary nav.page-toc {
+    border-left: none;
 }
 
-body:has(.hero-section) .bd-sidebar-secondary .back-to-top-sidebar {
-    visibility: visible;
+/* Right sidebar slide-in animation on page load */
+@keyframes slideInFromLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.bd-sidebar-secondary {
+    min-width: 200px;
+    animation: slideInFromLeft 0.3s ease forwards;
+}
+
+.pst-page-navigation-heading {
+    margin-bottom: 0.5rem;
 }
 
 /* -- Hero Section ---------------------------------------------------------- */
