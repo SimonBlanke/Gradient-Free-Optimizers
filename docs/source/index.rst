@@ -235,16 +235,18 @@ Key Features
             )
 
 
+Quick Install
+-------------
+
+.. code-block:: bash
+
+    pip install gradient-free-optimizers
+
+
 Quick Start
 -----------
 
 .. tab-set::
-
-    .. tab-item:: Install
-
-        .. code-block:: bash
-
-            pip install gradient-free-optimizers
 
     .. tab-item:: Basic Example
 
@@ -297,32 +299,6 @@ Quick Start
 
             print(f"Best accuracy: {opt.best_score:.3f}")
             print(f"Best params: {opt.best_para}")
-
-    .. tab-item:: Ask-Tell Interface
-
-        .. code-block:: python
-
-            import numpy as np
-            from gradient_free_optimizers import ParticleSwarmOptimizer
-
-            def objective(para):
-                return -(para["x"] ** 2 + para["y"] ** 2)
-
-            search_space = {
-                "x": np.linspace(-10, 10, 100),
-                "y": np.linspace(-10, 10, 100),
-            }
-
-            opt = ParticleSwarmOptimizer(search_space, population=10)
-            opt.setup_search(objective, n_iter=100)
-
-            for i in range(100):
-                params = opt.ask()
-                score = objective(params)
-                opt.tell(params, score)
-
-                if i % 20 == 0:
-                    print(f"Iter {i}: best score = {opt.best_score:.4f}")
 
 
 The GFO Ecosystem

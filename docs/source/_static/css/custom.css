@@ -1,6 +1,6 @@
 /* ==========================================================================
    Gradient-Free-Optimizers Custom Theme
-   A scientific, modern theme with deep blues and teals
+   A scientific, modern theme with deep and light blues
    ========================================================================== */
 
 /* -- CSS Variables --------------------------------------------------------- */
@@ -10,13 +10,13 @@
     --gfo-primary: #1a365d;
     --gfo-primary-light: #2c5282;
     --gfo-secondary: #2b6cb0;
-    --gfo-accent: #38b2ac;
-    --gfo-accent-light: #4fd1c5;
+    --gfo-accent: #4299e1;
+    --gfo-accent-light: #63b3ed;
 
     /* Gradient colors */
     --gfo-gradient-start: #1a365d;
     --gfo-gradient-mid: #2b6cb0;
-    --gfo-gradient-end: #38b2ac;
+    --gfo-gradient-end: #63b3ed;
 
     /* Category colors */
     --gfo-local: #e53e3e;      /* Red for local search */
@@ -43,12 +43,12 @@ html[data-theme="dark"] {
     --gfo-primary: #90cdf4;
     --gfo-primary-light: #63b3ed;
     --gfo-secondary: #4299e1;
-    --gfo-accent: #4fd1c5;
-    --gfo-accent-light: #81e6d9;
+    --gfo-accent: #63b3ed;
+    --gfo-accent-light: #90cdf4;
 
     --gfo-gradient-start: #2d3748;
     --gfo-gradient-mid: #2b6cb0;
-    --gfo-gradient-end: #319795;
+    --gfo-gradient-end: #3182ce;
 
     --gfo-text: #e2e8f0;
     --gfo-text-muted: #a0aec0;
@@ -195,6 +195,12 @@ html[data-theme="dark"] .back-to-top-sidebar a:hover {
 
 .pst-page-navigation-heading {
     margin-bottom: 0.5rem;
+}
+
+/* -- Section Spacing ------------------------------------------------------- */
+
+.bd-article-container h2 {
+    margin-top: 3rem;
 }
 
 /* -- Hero Section ---------------------------------------------------------- */
