@@ -1,10 +1,16 @@
 .. raw:: html
 
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;400;600&display=swap" rel="stylesheet">
+
     <div class="hero-section">
-        <h1 class="hero-title">Gradient-Free-Optimizers</h1>
+        <h1 class="hero-title" style="font-family: 'Outfit', sans-serif; font-weight: 200;">
+            Gradient Free Optimizers
+        </h1>
         <p class="hero-tagline">
-            A collection of gradient-free optimization algorithms for efficient search
-            in complex, non-differentiable parameter spaces.
+            Lightweight optimization across mixed search spaces
         </p>
     </div>
 
