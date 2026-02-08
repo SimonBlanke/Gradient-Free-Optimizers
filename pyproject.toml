@@ -66,6 +66,7 @@ classifiers=[
 
 dependencies = [
   "numpy >=1.18.1, <3.0.0",
+  "scipy <2.0.0",
   "pandas <3.0.0",
 ]
 
@@ -189,3 +190,8 @@ convention = "numpy"
 "src/gradient_free_optimizers/optimizers_legacy/**/*.py" = ["D100", "D101", "D102", "D103", "D205", "D401", "S311"]
 # Search module - relaxed docstring rules
 "src/gradient_free_optimizers/search.py" = ["D100", "D101", "D102", "D103"]
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: marks tests as slow (deselect with \"-m not slow\")",
+]
