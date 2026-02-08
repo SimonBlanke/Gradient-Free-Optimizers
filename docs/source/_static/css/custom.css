@@ -99,11 +99,18 @@ html[data-theme="dark"] {
     flex-shrink: 0 !important;
 }
 
-.navbar-brand img,
 .navbar-brand .logo__image {
-    height: 32px !important;
+    height: 36px !important;
     width: auto !important;
-    max-height: 32px !important;
+    max-height: 36px !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.navbar-brand p,
+.navbar-brand .logo__title {
+    display: none !important;
 }
 
 .bd-navbar .navbar-nav {

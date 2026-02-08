@@ -123,8 +123,8 @@ html_theme = "pydata_sphinx_theme"
 
 html_theme_options = {
     "logo": {
-        "image_light": "_static/images/gradient_logo_ink.png",
-        "image_dark": "_static/images/gradient_logo_ink.png",
+        "image_light": "_static/images/navbar_logo.svg",
+        "image_dark": "_static/images/navbar_logo_dark.svg",
     },
     "icon_links": [
         {
