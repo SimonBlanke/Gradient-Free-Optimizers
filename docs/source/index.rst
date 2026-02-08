@@ -1,5 +1,3 @@
-:html_theme.sidebar_secondary.remove:
-
 .. raw:: html
 
     <div class="hero-section">
@@ -11,21 +9,41 @@
     </div>
 
     <div class="stats-strip">
+        <a href="api_reference/index.html" class="stat-item">
+            <div class="stat-front">
+                <div class="stat-value">22</div>
+                <div class="stat-label">Algorithms</div>
+            </div>
+            <div class="stat-hover">
+                <div class="stat-hover-text">Hill Climbing · Bayesian · Particle Swarm · Genetic · Simulated Annealing ...</div>
+            </div>
+        </a>
+        <a href="api_reference/index.html" class="stat-item">
+            <div class="stat-front">
+                <div class="stat-value">4</div>
+                <div class="stat-label">Categories</div>
+            </div>
+            <div class="stat-hover">
+                <div class="stat-hover-text">Local · Global · Population · Sequential Model-Based</div>
+            </div>
+        </a>
+        <a href="user_guide/index.html" class="stat-item">
+            <div class="stat-front">
+                <div class="stat-value">2</div>
+                <div class="stat-label">API Styles</div>
+            </div>
+            <div class="stat-hover">
+                <div class="stat-hover-text">Functional & Class-based</div>
+            </div>
+        </a>
         <div class="stat-item">
-            <div class="stat-number">22</div>
-            <div class="stat-label">Algorithms</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number">4</div>
-            <div class="stat-label">Categories</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number">2</div>
-            <div class="stat-label">API Styles</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number">0</div>
-            <div class="stat-label">Gradients Required</div>
+            <div class="stat-front">
+                <div class="stat-value">0</div>
+                <div class="stat-label">Gradients Required</div>
+            </div>
+            <div class="stat-hover">
+                <div class="stat-hover-text">Works on any objective function</div>
+            </div>
         </div>
     </div>
 
@@ -388,6 +406,34 @@ Documentation
         :text-align: center
 
         Frequently asked questions
+
+
+.. raw:: html
+
+   <script>
+   document.addEventListener('DOMContentLoaded', function() {
+      const sidebar = document.querySelector('.bd-toc-nav.page-toc');
+      if (sidebar) {
+         const backToTopDiv = document.createElement('div');
+         backToTopDiv.className = 'back-to-top-sidebar';
+         backToTopDiv.innerHTML = '<a href="#">\u2191 Back to top</a>';
+         sidebar.appendChild(backToTopDiv);
+
+         backToTopDiv.querySelector('a').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+         });
+
+         window.addEventListener('scroll', function() {
+            if (window.scrollY > 400) {
+               backToTopDiv.classList.add('visible');
+            } else {
+               backToTopDiv.classList.remove('visible');
+            }
+         });
+      }
+   });
+   </script>
 
 
 .. toctree::
