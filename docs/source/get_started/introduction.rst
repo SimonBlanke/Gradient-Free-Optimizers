@@ -1,8 +1,6 @@
-:html_theme.sidebar_secondary.remove:
-
-===========
-Get Started
-===========
+============
+Introduction
+============
 
 This guide will help you install Gradient-Free-Optimizers and run your first optimization
 in under 5 minutes.
@@ -237,28 +235,28 @@ Next Steps
     :gutter: 3
 
     .. grid-item-card:: User Guide
-        :link: user_guide/index
+        :link: ../user_guide/index
         :link-type: doc
 
         Deep dive into all features: constraints, memory, stopping conditions,
         initialization strategies, and more.
 
     .. grid-item-card:: All Algorithms
-        :link: user_guide/optimizers/index
+        :link: ../user_guide/optimizers/index
         :link-type: doc
 
         Detailed documentation for all 22 optimization algorithms with
         visualizations and parameter guides.
 
     .. grid-item-card:: Examples
-        :link: examples/index
+        :link: ../examples/index
         :link-type: doc
 
         Complete code examples for various optimization scenarios from
         simple functions to ML hyperparameter tuning.
 
     .. grid-item-card:: API Reference
-        :link: api_reference/index
+        :link: ../api_reference/index
         :link-type: doc
 
         Full API documentation with all parameters and return types.

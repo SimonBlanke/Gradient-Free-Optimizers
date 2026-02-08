@@ -15,7 +15,7 @@
     </div>
 
     <div class="stats-strip">
-        <a href="api_reference/index.html" class="stat-item">
+        <a href="get_started/algorithms.html" class="stat-item">
             <div class="stat-front">
                 <div class="stat-value">22</div>
                 <div class="stat-label">Algorithms</div>
@@ -24,7 +24,7 @@
                 <div class="stat-hover-text">Hill Climbing · Bayesian · Particle Swarm · Genetic · Simulated Annealing ...</div>
             </div>
         </a>
-        <a href="api_reference/index.html" class="stat-item">
+        <a href="get_started/search_spaces.html" class="stat-item">
             <div class="stat-front">
                 <div class="stat-value">mixed</div>
                 <div class="stat-label">Search Spaces</div>
@@ -33,7 +33,7 @@
                 <div class="stat-hover-text">Continuous, discrete, and categorical dimensions automatically detected</div>
             </div>
         </a>
-        <div class="stat-item">
+        <a href="get_started/dependencies.html" class="stat-item">
             <div class="stat-front">
                 <div class="stat-value">minimal</div>
                 <div class="stat-label">Dependencies</div>
@@ -41,8 +41,8 @@
             <div class="stat-hover">
                 <div class="stat-hover-text">Only NumPy and pandas required</div>
             </div>
-        </div>
-        <div class="stat-item">
+        </a>
+        <a href="get_started/pythonic_api.html" class="stat-item">
             <div class="stat-front">
                 <div class="stat-value">pythonic</div>
                 <div class="stat-label">API</div>
@@ -50,7 +50,7 @@
             <div class="stat-hover">
                 <div class="stat-hover-text">Dict search spaces, callable objectives, DataFrame results</div>
             </div>
-        </div>
+        </a>
     </div>
 
     <div class="badge-strip">
@@ -372,7 +372,7 @@ Documentation
     :gutter: 3
 
     .. grid-item-card:: Get Started
-        :link: get_started
+        :link: get_started/index
         :link-type: doc
         :text-align: center
 
@@ -446,7 +446,7 @@ Documentation
     :maxdepth: 2
     :hidden:
 
-    get_started
+    get_started/index
     installation
     user_guide
     examples

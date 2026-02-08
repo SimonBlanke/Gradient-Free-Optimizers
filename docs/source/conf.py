@@ -158,7 +158,7 @@ html_context = {
 html_sidebars = {
     "**": ["sidebar-nav-bs.html"],
     "index": [],
-    "get_started": [],
+    "get_started/index": [],
     "installation": [],
     "search": [],
 }
