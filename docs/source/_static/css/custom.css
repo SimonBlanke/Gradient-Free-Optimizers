@@ -159,8 +159,15 @@ html[data-theme="dark"] .back-to-top-sidebar a:hover {
 
 /* -- Right Sidebar - TOC -------------------------------------------------- */
 
-.bd-sidebar-secondary {
-    border-left: 1px solid var(--gfo-border);
+.sidebar-secondary-item {
+    border-left: 1px solid var(--pst-color-border);
+    padding-left: 1rem;
+}
+
+.page-toc.onthispage {
+    color: var(--pst-color-text-base);
+    font-weight: 600;
+    margin-bottom: 0.5rem;
 }
 
 .bd-toc-nav.page-toc {
