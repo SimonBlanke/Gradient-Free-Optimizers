@@ -10,7 +10,7 @@
             Gradient Free Optimizers
         </h1>
         <p class="hero-tagline">
-            Lightweight optimization across mixed search spaces
+            Lightweight optimization with local, global, population-based and sequential techniques across mixed search spaces
         </p>
     </div>
 
@@ -26,29 +26,29 @@
         </a>
         <a href="api_reference/index.html" class="stat-item">
             <div class="stat-front">
-                <div class="stat-value">4</div>
-                <div class="stat-label">Categories</div>
+                <div class="stat-value">mixed</div>
+                <div class="stat-label">Search Spaces</div>
             </div>
             <div class="stat-hover">
-                <div class="stat-hover-text">Local · Global · Population · Sequential Model-Based</div>
-            </div>
-        </a>
-        <a href="user_guide/index.html" class="stat-item">
-            <div class="stat-front">
-                <div class="stat-value">2</div>
-                <div class="stat-label">API Styles</div>
-            </div>
-            <div class="stat-hover">
-                <div class="stat-hover-text">Functional & Class-based</div>
+                <div class="stat-hover-text">Continuous, discrete, and categorical dimensions automatically detected</div>
             </div>
         </a>
         <div class="stat-item">
             <div class="stat-front">
-                <div class="stat-value">0</div>
-                <div class="stat-label">Gradients Required</div>
+                <div class="stat-value">minimal</div>
+                <div class="stat-label">Dependencies</div>
             </div>
             <div class="stat-hover">
-                <div class="stat-hover-text">Works on any objective function</div>
+                <div class="stat-hover-text">Only NumPy and pandas required</div>
+            </div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-front">
+                <div class="stat-value">pythonic</div>
+                <div class="stat-label">API</div>
+            </div>
+            <div class="stat-hover">
+                <div class="stat-hover-text">Dict search spaces, callable objectives, DataFrame results</div>
             </div>
         </div>
     </div>
