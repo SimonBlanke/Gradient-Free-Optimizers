@@ -24,6 +24,15 @@ def _arrays_equal(a, b):
     return a == b
 
 
+def _arrays_equal(a, b):
+    """Check if two arrays are element-wise equal."""
+    if hasattr(a, "__len__") and hasattr(b, "__len__"):
+        if len(a) != len(b):
+            return False
+        return all(x == y for x, y in zip(a, b))
+    return a == b
+
+
 def max_list_idx(list_):
     max_item = max(list_)
     max_item_idx = [i for i, j in enumerate(list_) if j == max_item]
@@ -121,8 +130,8 @@ class PatternSearch(BaseOptimizer):
             pos_pattern_p[idx] += pattern_size * dim_size
             pos_pattern_n[idx] -= pattern_size * dim_size
 
-            pos_pattern_p = self.conv2pos_typed(pos_pattern_p)
-            pos_pattern_n = self.conv2pos_typed(pos_pattern_n)
+            pos_pattern_p = self.conv2pos(pos_pattern_p)
+            pos_pattern_n = self.conv2pos(pos_pattern_n)
 
             pattern_pos_l.append(pos_pattern_p)
             pattern_pos_l.append(pos_pattern_n)
@@ -132,18 +141,14 @@ class PatternSearch(BaseOptimizer):
     @BaseOptimizer.track_new_pos
     @BaseOptimizer.random_iteration
     def iterate(self) -> ArrayLike:
-        """Generate next position from the current pattern.
-
-        Uses type-aware movement that handles discrete, continuous,
-        and categorical dimensions appropriately.
-        """
+        """Generate next position from the current pattern."""
         while True:
             pos_new = self.pattern_pos_l[0]
             self.pattern_pos_l.pop(0)
 
             if self.conv.not_in_constraint(pos_new):
                 return pos_new
-            return self.move_climb_typed(pos_new)
+            return self.move_climb(pos_new)
 
     def finish_initialization(self) -> None:
         self.generate_pattern(self.pos_current)

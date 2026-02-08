@@ -9,7 +9,6 @@ from collections.abc import Callable
 from typing import Any
 
 from gradient_free_optimizers._array_backend import array
-from gradient_free_optimizers._dimension_types import DimensionType
 from gradient_free_optimizers._init_utils import get_default_initialize
 
 from ..core_optimizer.converter import ArrayLike
@@ -88,42 +87,16 @@ class DifferentialEvolutionOptimizer(EvolutionaryAlgorithmOptimizer):
         self.offspring_l = []
 
     def mutation(self, f: float = 1) -> ArrayLike:
-        """Generate mutant vector using type-aware differential mutation.
-
-        For continuous and discrete-numerical dimensions, uses standard DE
-        mutation: x_1 + F * (x_2 - x_3).
-
-        For categorical dimensions, uses probabilistic parent selection since
-        arithmetic operations on category indices are meaningless.
-        """
         ind_selected = random.sample(self.individuals, 3)
+
         x_1, x_2, x_3 = (ind.pos_best for ind in ind_selected)
-
-        # Fast path for legacy mode (all discrete-numerical)
-        if self.conv.is_legacy_mode:
-            return array(x_1) + self.mutation_rate * (array(x_2) - array(x_3))
-
-        # Type-aware mutation for mixed dimension types
-        mutant = []
-        for idx, dim_type in enumerate(self.conv.dim_types):
-            if dim_type == DimensionType.CATEGORICAL:
-                # Probabilistic selection from parents for categorical dims
-                if random.random() < self.mutation_rate:
-                    # Pick randomly from one of the three parents
-                    mutant.append(random.choice([x_1[idx], x_2[idx], x_3[idx]]))
-                else:
-                    mutant.append(x_1[idx])
-            else:
-                # Standard DE mutation for continuous and discrete-numerical
-                mutant.append(x_1[idx] + self.mutation_rate * (x_2[idx] - x_3[idx]))
-
-        return array(mutant)
+        return array(x_1) + self.mutation_rate * (array(x_2) - array(x_3))
 
     def _constraint_loop(self, position: ArrayLike) -> ArrayLike:
         while True:
             if self.conv.not_in_constraint(position):
                 return position
-            position = self.p_current.move_climb_typed(position, epsilon_mod=0.3)
+            position = self.p_current.move_climb(position, epsilon_mod=0.3)
 
     @EvolutionaryAlgorithmOptimizer.track_new_pos
     def init_pos(self) -> ArrayLike:
@@ -145,10 +118,10 @@ class DifferentialEvolutionOptimizer(EvolutionaryAlgorithmOptimizer):
             [target_vector, mutant_vector],
             crossover_rates,
         )
-        pos_new = self.conv2pos_typed(pos_new)
+        pos_new = self.conv2pos(pos_new)
         pos_new = self._constraint_loop(pos_new)
 
-        self.p_current.pos_new = self.conv2pos_typed(pos_new)
+        self.p_current.pos_new = self.conv2pos(pos_new)
         return self.p_current.pos_new
 
     @EvolutionaryAlgorithmOptimizer.track_new_score

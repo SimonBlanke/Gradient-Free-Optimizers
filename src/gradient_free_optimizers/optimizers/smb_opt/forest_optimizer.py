@@ -148,7 +148,7 @@ class ForestOptimizer(SMBO):
         Y_sample = gfo_array(self.Y_sample)
 
         if len(Y_sample) == 0:
-            return self.move_random_typed()
+            return self.move_random()
 
         Y_sample = normalize(Y_sample).reshape(-1, 1)
         self.regr.fit(X_sample, Y_sample)

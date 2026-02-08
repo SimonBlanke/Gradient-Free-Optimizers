@@ -114,7 +114,7 @@ class EvolutionStrategyOptimizer(EvolutionaryAlgorithmOptimizer):
             if self.conv.not_in_constraint(pos_new):
                 return pos_new
 
-            return self.p_current.move_climb_typed(pos_new)
+            return self.p_current.move_climb(pos_new)
 
     @EvolutionaryAlgorithmOptimizer.track_new_pos
     def init_pos(self):

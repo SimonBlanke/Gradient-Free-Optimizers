@@ -281,7 +281,7 @@ class SMBO(BaseOptimizer):
             logging.warning(
                 "Training sequential model failed. Performing random iteration."
             )
-            return self.move_random_typed()
+            return self.move_random()
 
         exp_imp = self._expected_improvement()
 

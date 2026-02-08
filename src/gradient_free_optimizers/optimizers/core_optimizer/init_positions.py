@@ -6,7 +6,6 @@ import random
 from itertools import product
 
 from gradient_free_optimizers._array_backend import array, power
-from gradient_free_optimizers._dimension_types import DimensionType
 
 from .utils import move_random
 
@@ -42,27 +41,9 @@ class Initializer:
     def move_random(self):
         return move_random(self.conv.search_space_positions)
 
-    def move_random_typed(self):
-        """Generate random position handling all dimension types."""
-        if self.conv.is_legacy_mode:
-            return self.move_random()
-
-        pos = []
-        for idx, dim_type in enumerate(self.conv.dim_types):
-            bounds = self.conv.dim_infos[idx].bounds
-
-            if dim_type == DimensionType.CONTINUOUS:
-                # Uniform random in continuous range
-                pos.append(random.uniform(bounds[0], bounds[1]))
-            else:
-                # Random index for discrete/categorical
-                pos.append(random.randint(int(bounds[0]), int(bounds[1])))
-
-        return array(pos)
-
     def add_n_random_init_pos(self, n):
         for _ in range(n):
-            self.init_positions_l.append(self.move_random_typed())
+            self.init_positions_l.append(self.move_random())
 
         self.n_inits = len(self.init_positions_l)
 
@@ -119,7 +100,7 @@ class Initializer:
 
         for nth_pos in range(n_pos):
             while True:
-                pos = self.move_random_typed()
+                pos = move_random(self.conv.search_space_positions)
                 if self.conv.not_in_constraint(pos):
                     positions.append(pos)
                     break
@@ -141,38 +122,16 @@ class Initializer:
         if n_pos == 0:
             return positions
 
-        n_dim = self.conv.n_dimensions
+        n_dim = len(self.conv.max_positions)
         if n_dim > 30:
             positions = []
         else:
             p_per_dim = int(power(n_pos, 1 / n_dim))
-            if p_per_dim < 1:
-                p_per_dim = 1
 
             dim_points = []
-            for idx, dim_type in enumerate(self.conv.dim_types):
-                bounds = self.conv.dim_infos[idx].bounds
-
-                if dim_type == DimensionType.CONTINUOUS:
-                    # For continuous: evenly spaced points in range
-                    min_val, max_val = bounds
-                    step = (max_val - min_val) / (p_per_dim + 1)
-                    n_points = [min_val + step * n for n in range(1, p_per_dim + 1)]
-                else:
-                    # For discrete/categorical: evenly spaced indices
-                    max_idx = int(bounds[1])
-                    if max_idx == 0:
-                        n_points = [0]
-                    else:
-                        dim_dist = int(max_idx / (p_per_dim + 1))
-                        if dim_dist < 1:
-                            dim_dist = 1
-                        n_points = [n * dim_dist for n in range(1, p_per_dim + 1)]
-                        # Ensure we don't exceed bounds
-                        n_points = [p for p in n_points if p <= max_idx]
-                        if not n_points:
-                            n_points = [0]
-
+            for dim in self.conv.max_positions:
+                dim_dist = int(dim / (p_per_dim + 1))
+                n_points = [n * dim_dist for n in range(1, p_per_dim + 1)]
                 dim_points.append(n_points)
 
             # Use itertools.product instead of meshgrid for n-dimensional grid
@@ -186,31 +145,16 @@ class Initializer:
         return positions_constr
 
     def _get_random_vertex(self):
-        """Get a random vertex (corner) of the search space."""
-        if self.conv.is_legacy_mode:
-            vertex = []
-            for dim_positions in self.conv.search_space_positions:
-                rnd = random.randint(0, 1)
-                if rnd == 0:
-                    dim_pos = dim_positions[0]
-                else:
-                    dim_pos = dim_positions[-1]
-                vertex.append(dim_pos)
-            return array(vertex)
-
-        # Mixed types: use bounds for vertices
         vertex = []
-        for idx, dim_type in enumerate(self.conv.dim_types):
-            bounds = self.conv.dim_infos[idx].bounds
+        for dim_positions in self.conv.search_space_positions:
             rnd = random.randint(0, 1)
 
-            if dim_type == DimensionType.CONTINUOUS:
-                # For continuous, vertex is min or max of range
-                vertex.append(bounds[0] if rnd == 0 else bounds[1])
-            else:
-                # For discrete/categorical, vertex is first or last index
-                vertex.append(int(bounds[0]) if rnd == 0 else int(bounds[1]))
+            if rnd == 0:
+                dim_pos = dim_positions[0]
+            elif rnd == 1:
+                dim_pos = dim_positions[-1]
 
+            vertex.append(dim_pos)
         return array(vertex)
 
     def _init_vertices(self, n_pos):
@@ -225,7 +169,7 @@ class Initializer:
                     positions.append(vertex)
                     break
             else:
-                pos = self.move_random_typed()
+                pos = move_random(self.conv.search_space_positions)
                 positions.append(pos)
 
         positions_constr = []

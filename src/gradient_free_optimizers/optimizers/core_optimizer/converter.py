@@ -16,12 +16,6 @@ from gradient_free_optimizers._array_backend import (
     array,
     take,
 )
-from gradient_free_optimizers._dimension_types import (
-    DimensionInfo,
-    DimensionMasks,
-    DimensionType,
-    classify_search_space_value,
-)
 
 from ._converter_memory import MemoryOperationsMixin
 
@@ -29,77 +23,18 @@ from ._converter_memory import MemoryOperationsMixin
 ArrayLike = TypeVar("ArrayLike")
 
 
-def check_search_space_value(search_space: dict[str, Any]) -> None:
-    """Check that search space values are valid.
-
-    Valid types:
-    - Array-like (numpy.ndarray, GFOArray) for discrete numerical dimensions
-    - Python list for categorical dimensions
-    - Tuple of (min, max) for continuous dimensions
-    """
-    for para_name, dim_values in search_space.items():
-        dim_type = classify_search_space_value(dim_values)
-
-        if dim_type == DimensionType.CONTINUOUS:
-            # Tuple (min, max) - validate it has exactly 2 numeric elements
-            if not isinstance(dim_values, tuple) or len(dim_values) != 2:
-                raise TypeError(
-                    f"Continuous dimension '{para_name}' must be a tuple of "
-                    f"(min, max), but got {type(dim_values).__name__}."
-                )
-            min_val, max_val = dim_values
-            if not (
-                isinstance(min_val, (int | float))
-                and isinstance(max_val, (int | float))
-            ):
-                raise TypeError(
-                    f"Continuous dimension '{para_name}' bounds must be numeric, "
-                    f"but got ({type(min_val).__name__}, {type(max_val).__name__})."
-                )
-            if min_val >= max_val:
-                raise ValueError(
-                    f"Continuous dimension '{para_name}' min ({min_val}) must be "
-                    f"less than max ({max_val})."
-                )
-
-        elif dim_type == DimensionType.CATEGORICAL:
-            # Python list - validate it has at least one element
-            if not isinstance(dim_values, list):
-                raise TypeError(
-                    f"Categorical dimension '{para_name}' must be a list, "
-                    f"but got {type(dim_values).__name__}."
-                )
-            if len(dim_values) == 0:
-                raise ValueError(
-                    f"Categorical dimension '{para_name}' must have at least "
-                    f"one value."
-                )
-
-        else:  # DISCRETE_NUMERICAL
-            # Accept numpy arrays or our GFOArray
-            has_shape = hasattr(dim_values, "shape")
-            has_len = hasattr(dim_values, "__len__")
-            if not (has_shape and has_len):
-                raise TypeError(
-                    f"Search space parameter '{para_name}' must be an array-like "
-                    f"(e.g., numpy.ndarray), list, or tuple (min, max), "
-                    f"but got {type(dim_values).__name__}. "
-                    f"Examples: np.linspace(-5, 5, 100), ['a', 'b', 'c'], (0.0, 1.0)"
-                )
-            if len(dim_values) == 0:
-                raise ValueError(
-                    f"Discrete dimension '{para_name}' must have at least one value."
-                )
-
-
-# Backward compatibility alias
 def check_numpy_array(search_space: dict[str, Any]) -> None:
-    """Check that search space values are array-like.
-
-    .. deprecated::
-        Use check_search_space_value instead, which supports all dimension types.
-    """
-    check_search_space_value(search_space)
+    """Check that search space values are array-like."""
+    for para_name, dim_values in search_space.items():
+        # Accept numpy arrays or our GFOArray
+        has_shape = hasattr(dim_values, "shape")
+        has_len = hasattr(dim_values, "__len__")
+        if not (has_shape and has_len):
+            raise TypeError(
+                f"Search space parameter '{para_name}' must be an array-like "
+                f"(e.g., numpy.ndarray or list), but got {type(dim_values).__name__}. "
+                f"Example: {{'x': np.linspace(-5, 5, 100), 'y': np.arange(0, 10)}}"
+            )
 
 
 class Converter(MemoryOperationsMixin):
@@ -153,7 +88,7 @@ class Converter(MemoryOperationsMixin):
         search_space: dict[str, Any],
         constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
     ) -> None:
-        check_search_space_value(search_space)
+        check_numpy_array(search_space)
 
         self.n_dimensions = len(search_space)
         self.search_space = search_space
@@ -165,125 +100,25 @@ class Converter(MemoryOperationsMixin):
 
         self.para_names = list(search_space.keys())
 
-        # Analyze dimension types (new functionality)
-        self._analyze_dimension_types()
-
-        # For backward compatibility: compute dim_sizes for discrete dimensions
-        # For continuous dimensions, we use a placeholder size
-        dim_sizes_list = self._compute_dim_sizes_list()
+        dim_sizes_list = [len(arr) for arr in search_space.values()]
         self.dim_sizes = array(dim_sizes_list)
 
-        # product of list (only meaningful for fully discrete spaces)
+        # product of list
         self.search_space_size = reduce((lambda x, y: x * y), dim_sizes_list)
         self.max_dim = max(dim_sizes_list)
 
-        # search_space_positions: for discrete/categorical, list of valid indices
-        # for continuous, we use an empty list (not applicable)
-        self.search_space_positions = self._compute_search_space_positions()
-
+        self.search_space_positions = [
+            list(range(len(arr))) for arr in search_space.values()
+        ]
         self.pos_space = dict(
             zip(
                 self.para_names,
-                [arange(size) if size > 0 else arange(1) for size in dim_sizes_list],
+                [arange(len(arr)) for arr in search_space.values()],
             )
         )
 
         self.max_positions = self.dim_sizes - 1
-        self.search_space_values = self._compute_search_space_values()
-
-    def _analyze_dimension_types(self) -> None:
-        """Analyze and classify all dimensions by type.
-
-        Populates dim_types, dim_infos, and dim_masks attributes.
-        """
-        self.dim_types: list[DimensionType] = []
-        self.dim_infos: list[DimensionInfo] = []
-
-        for name, value in self.search_space.items():
-            dim_type = classify_search_space_value(value)
-            self.dim_types.append(dim_type)
-
-            if dim_type == DimensionType.CONTINUOUS:
-                min_val, max_val = value
-                info = DimensionInfo(
-                    name=name,
-                    dim_type=dim_type,
-                    bounds=(float(min_val), float(max_val)),
-                    values=None,
-                    size=None,
-                )
-            elif dim_type == DimensionType.CATEGORICAL:
-                info = DimensionInfo(
-                    name=name,
-                    dim_type=dim_type,
-                    bounds=(0, len(value) - 1),
-                    values=list(value),
-                    size=len(value),
-                )
-            else:  # DISCRETE_NUMERICAL
-                values = list(value)
-                info = DimensionInfo(
-                    name=name,
-                    dim_type=dim_type,
-                    bounds=(0, len(values) - 1),
-                    values=values,
-                    size=len(values),
-                )
-
-            self.dim_infos.append(info)
-
-        self.dim_masks = DimensionMasks.from_dim_types(self.dim_types)
-
-    def _compute_dim_sizes_list(self) -> list[int]:
-        """Compute dimension sizes for backward compatibility.
-
-        For continuous dimensions, returns a placeholder value of 1.
-        """
-        sizes = []
-        for info in self.dim_infos:
-            if info.dim_type == DimensionType.CONTINUOUS:
-                # Placeholder for continuous - actual range is in bounds
-                sizes.append(1)
-            else:
-                sizes.append(info.size)
-        return sizes
-
-    def _compute_search_space_positions(self) -> list[list[int]]:
-        """Compute valid position indices for each dimension."""
-        positions = []
-        for info in self.dim_infos:
-            if info.dim_type == DimensionType.CONTINUOUS:
-                # Continuous dimensions don't have discrete positions
-                # Use empty list as placeholder
-                positions.append([])
-            else:
-                positions.append(list(range(info.size)))
-        return positions
-
-    def _compute_search_space_values(self) -> list:
-        """Compute search space values list for backward compatibility.
-
-        For continuous dimensions, returns the (min, max) tuple.
-        For discrete/categorical, returns the values list.
-        """
-        values = []
-        for idx, info in enumerate(self.dim_infos):
-            if info.dim_type == DimensionType.CONTINUOUS:
-                # Store the tuple for continuous
-                values.append(self.search_space[info.name])
-            else:
-                # Store the array/list for discrete/categorical
-                values.append(self.search_space[info.name])
-        return values
-
-    @property
-    def is_legacy_mode(self) -> bool:
-        """Check if search space contains only discrete-numerical dimensions.
-
-        When True, the optimizer can use original code paths for
-        full backward compatibility.
-        """
-        return self.dim_masks.is_homogeneous_discrete
+        self.search_space_values = list(search_space.values())
 
     def not_in_constraint(self, position: list[int] | ArrayLike) -> bool:
         """Check if a position satisfies all constraints.
@@ -325,7 +160,6 @@ class Converter(MemoryOperationsMixin):
         ----------
         position : list or array
             Integer indices into each dimension of the search space.
-            For continuous dimensions, the position is the actual value.
 
         Returns
         -------
@@ -335,12 +169,7 @@ class Converter(MemoryOperationsMixin):
         value = []
 
         for n, space_dim in enumerate(self.search_space_values):
-            if self.dim_types[n] == DimensionType.CONTINUOUS:
-                # For continuous dimensions, position is the actual value
-                value.append(float(position[n]))
-            else:
-                # For discrete/categorical, position is an index
-                value.append(space_dim[int(position[n])])
+            value.append(space_dim[position[n]])
 
         return value
 
@@ -349,8 +178,7 @@ class Converter(MemoryOperationsMixin):
         """Convert values to position indices.
 
         Finds the closest matching position for each value by minimizing
-        the absolute difference to search space entries (for numerical types)
-        or by exact match (for categorical types).
+        the absolute difference to search space entries.
 
         Parameters
         ----------
@@ -360,32 +188,18 @@ class Converter(MemoryOperationsMixin):
         Returns
         -------
         array
-            Position array. For discrete/categorical, integer indices.
-            For continuous, the actual float values.
+            Integer position indices corresponding to the values.
         """
         position = []
         for n, space_dim in enumerate(self.search_space_values):
-            if self.dim_types[n] == DimensionType.CONTINUOUS:
-                # For continuous dimensions, the value is the position
-                position.append(float(value[n]))
-            elif self.dim_types[n] == DimensionType.CATEGORICAL:
-                # For categorical dimensions, find exact match
-                values_list = list(space_dim)
-                try:
-                    pos = values_list.index(value[n])
-                except ValueError:
-                    # If not found, default to first position
-                    pos = 0
-                position.append(pos)
-            else:
-                # For discrete numerical, find closest value by numerical distance
-                diffs = np_abs(array([value[n] - v for v in space_dim]))
-                pos = (
-                    int(diffs.argmin())
-                    if hasattr(diffs, "argmin")
-                    else diffs.tolist().index(min(diffs.tolist()))
-                )
-                position.append(pos)
+            # Find index of closest value
+            diffs = np_abs(array([value[n] - v for v in space_dim]))
+            pos = (
+                int(diffs.argmin())
+                if hasattr(diffs, "argmin")
+                else diffs.tolist().index(min(diffs.tolist()))
+            )
+            position.append(pos)
 
         return array(position)
 
@@ -505,17 +319,10 @@ class Converter(MemoryOperationsMixin):
 
         for n, space_dim in enumerate(self.search_space_values):
             pos_1d = [pos[n] for pos in positions]
-
-            if self.dim_types[n] == DimensionType.CONTINUOUS:
-                # For continuous dimensions, positions are the actual values (floats)
-                value_ = [float(p) for p in pos_1d]
+            if hasattr(space_dim, "__getitem__"):
+                value_ = [space_dim[p] for p in pos_1d]
             else:
-                # For discrete/categorical, positions are indices (ints)
-                if hasattr(space_dim, "__getitem__"):
-                    value_ = [space_dim[int(p)] for p in pos_1d]
-                else:
-                    value_ = take(space_dim, [int(p) for p in pos_1d])
-
+                value_ = take(space_dim, pos_1d)
             values.append(value_)
 
         values = [list(t) for t in zip(*values)]

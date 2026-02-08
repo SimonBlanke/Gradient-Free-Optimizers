@@ -67,12 +67,8 @@ class RandomSearchOptimizer(BaseOptimizer):
 
     @BaseOptimizer.track_new_pos
     def iterate(self) -> ArrayLike:
-        """Generate a random position in the search space.
-
-        Uses type-aware random generation that handles discrete, continuous,
-        and categorical dimensions appropriately.
-        """
-        return self.move_random_typed()
+        """Generate a random position in the search space."""
+        return self.move_random()
 
     @BaseOptimizer.track_new_score
     def evaluate(self, score_new: float) -> None:
