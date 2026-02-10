@@ -945,7 +945,7 @@ h1 {
 }
 
 /* Home page h1s - underline style (matching section headers) */
-article:has(.hero-section) h1 {
+article:has(.hero-section) h1:not(.hero-title) {
     padding-bottom: 0.4rem;
     border-bottom: 1px solid var(--pst-color-border);
 }
