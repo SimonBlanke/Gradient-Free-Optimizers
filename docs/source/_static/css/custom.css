@@ -197,6 +197,16 @@ html[data-theme="dark"] .back-to-top-sidebar a:hover {
     margin-bottom: 0.5rem;
 }
 
+/* -- Section Separators ---------------------------------------------------- */
+
+hr {
+    border: none;
+    height: 1px;
+    background-color: var(--gfo-border);
+    margin: 2.5rem 0;
+    width: 100%;
+}
+
 /* -- Section Spacing ------------------------------------------------------- */
 
 .bd-article-container h2 {
@@ -932,6 +942,12 @@ html[data-theme="dark"] .stat-value {
 h1 {
     font-weight: 600;
     color: var(--gfo-text);
+}
+
+/* Home page h1s - underline style (matching section headers) */
+article:has(.hero-section) h1 {
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--pst-color-border);
 }
 
 h2 {

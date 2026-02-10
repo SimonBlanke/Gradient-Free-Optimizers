@@ -69,8 +69,11 @@
     </div>
 
 
+----
+
+
 Why Gradient-Free?
-------------------
+==================
 
 Not every optimization problem has gradients. Machine learning hyperparameter tuning,
 simulation optimization, feature selection, and black-box optimization all require
@@ -235,6 +238,8 @@ Key Features
             )
 
 
+----
+
 Quick Install
 -------------
 
@@ -242,6 +247,8 @@ Quick Install
 
     pip install gradient-free-optimizers
 
+
+----
 
 Quick Start
 -----------
@@ -301,6 +308,8 @@ Quick Start
             print(f"Best params: {opt.best_para}")
 
 
+----
+
 The GFO Ecosystem
 -----------------
 
@@ -340,6 +349,8 @@ tool for hyperparameter optimization and experiment tracking.
         - Framework integrations
         - Experiment tracking
 
+
+----
 
 Documentation
 -------------
