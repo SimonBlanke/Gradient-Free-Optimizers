@@ -53,20 +53,10 @@
         </a>
     </div>
 
-    <div class="badge-strip">
-        <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions">
-            <img src="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions/workflows/tests.yml/badge.svg" alt="Tests">
-        </a>
-        <a href="https://codecov.io/gh/SimonBlanke/Gradient-Free-Optimizers">
-            <img src="https://codecov.io/gh/SimonBlanke/Gradient-Free-Optimizers/branch/master/graph/badge.svg" alt="Coverage">
-        </a>
-        <a href="https://pypi.org/project/gradient-free-optimizers/">
-            <img src="https://img.shields.io/pypi/v/gradient-free-optimizers.svg" alt="PyPI">
-        </a>
-        <a href="https://pepy.tech/project/gradient-free-optimizers">
-            <img src="https://static.pepy.tech/badge/gradient-free-optimizers" alt="Downloads">
-        </a>
-    </div>
+    <p align="center">
+    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions"><img src="https://img.shields.io/github/actions/workflow/status/SimonBlanke/Gradient-Free-Optimizers/ci.yml?style=for-the-badge&logo=githubactions&logoColor=white&label=tests" alt="Tests"></a>
+    <a href="https://app.codecov.io/gh/SimonBlanke/Gradient-Free-Optimizers"><img src="https://img.shields.io/codecov/c/github/SimonBlanke/Gradient-Free-Optimizers?style=for-the-badge&logo=codecov&logoColor=white" alt="Coverage"></a>
+    </p>
 
 
 ----
