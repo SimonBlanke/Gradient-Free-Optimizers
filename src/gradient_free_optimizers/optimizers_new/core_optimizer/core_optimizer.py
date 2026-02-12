@@ -3,19 +3,9 @@
 # License: MIT License
 
 """
-Core optimizer that implements the iteration orchestration logic.
+Core optimizer with orchestration logic for the Template Method Pattern.
 
-This class extends BaseOptimizer with the actual orchestration of
-dimension-type-aware iteration using masks and batch operations.
-
-State Management:
-    Uses property-based state tracking (like SearchTracker). Setting
-    pos_new, pos_current, pos_best, score_new, score_current, score_best
-    automatically appends to the corresponding history lists.
-
-Template Method Pattern:
-    Subclasses implement _iterate_*_batch() methods WITHOUT parameters.
-    They access state via self.pos_current, self._continuous_bounds, etc.
+See CoreOptimizer class docstring for the full architecture description.
 """
 
 import math
@@ -39,16 +29,107 @@ def _isnan(x):
 
 
 class CoreOptimizer(BaseOptimizer):
-    """Core optimizer with iteration orchestration.
+    """Core optimizer implementing the Template Method Pattern.
 
-    This class implements the orchestration logic for the Template Method Pattern.
-    It handles:
-    - Dimension type detection and mask creation
-    - Routing to appropriate batch iteration methods
-    - Position clipping and validation
-    - Converter and Initializer integration for Search compatibility
+    This class is the orchestration layer between the abstract contract
+    (BaseOptimizer) and concrete algorithm implementations:
 
-    Subclasses should implement the _iterate_*_batch() methods.
+        BaseOptimizer (ABC)
+            └── CoreOptimizer          ← this class
+                  └── ConcreteOptimizer
+
+    CoreOptimizer provides all public methods that drive the optimization
+    lifecycle. Concrete optimizers never override these public methods.
+    Instead, they implement private hook methods that CoreOptimizer calls
+    at defined points in the lifecycle.
+
+    Lifecycle
+    ─────────
+    Phase 1 ─ Initialization:
+        init_pos() → evaluate_init(score) → ... → finish_initialization()
+
+    Phase 2 ─ Iteration (repeating):
+        iterate() → evaluate(score) → iterate() → ...
+
+    Method Contract
+    ───────────────
+    Public methods (do not override):
+
+        init_pos()               Next init position, auto-tracks state
+        evaluate_init(score)     Processes init score, updates best/current
+        finish_initialization()  Transitions init → iteration phase
+        iterate()                Dimension-type-aware position generation
+        evaluate(score)          Score tracking, delegates to _evaluate()
+
+    Required hooks (implement in subclass):
+
+        _iterate_continuous_batch()    New values for continuous dims
+        _iterate_categorical_batch()   New indices for categorical dims
+        _iterate_discrete_batch()      New indices for discrete dims
+        _evaluate(score)               Acceptance and state-update logic
+
+    Optional hooks (default is no-op):
+
+        _init_pos(position)            Per-algorithm init logic
+        _evaluate_init(score)          Per-algorithm init evaluation
+        _finish_initialization()       Setup after init phase completes
+
+    Dimension-Type Routing
+    ──────────────────────
+    The search space supports three dimension types, classified during
+    __init__ by _setup_dimension_masks():
+
+        Type          Definition         Mask               Bounds
+        ────────────  ─────────────────  ─────────────────  ──────────────────
+        continuous    tuple (min, max)   _continuous_mask    _continuous_bounds
+        categorical   list [a, b, ...]   _categorical_mask   _categorical_sizes
+        discrete      np.ndarray         _discrete_mask      _discrete_bounds
+
+    iterate() delegates to _generate_position(), which routes to each
+    batch method using these boolean masks:
+
+        ┌───────────────────────────────────────────────────────┐
+        │ _generate_position()                                  │
+        │                                                       │
+        │  pos[continuous_mask]  ← _iterate_continuous_batch()  │
+        │  pos[categorical_mask] ← _iterate_categorical_batch() │
+        │  pos[discrete_mask]    ← _iterate_discrete_batch()    │
+        │                                                       │
+        │  return _clip_position(pos)                           │
+        └───────────────────────────────────────────────────────┘
+
+    Batch methods receive no parameters. They access state through
+    instance attributes:
+
+        self._pos_current[self._continuous_mask]  ─ current values
+        self._continuous_bounds                    ─ shape (n, 2)
+        self._categorical_sizes                    ─ shape (n,)
+        self._discrete_bounds                      ─ shape (n, 2)
+
+    State Management
+    ────────────────
+    Six properties with auto-appending setters:
+
+        pos_new / score_new          latest proposed position and score
+        pos_current / score_current  currently accepted position and score
+        pos_best / score_best        best found position and score
+
+    Assigning to any property appends to the matching history list
+    (pos_new_list, score_best_list, etc.). Subclasses do not need
+    to manage history tracking.
+
+    Implementation Strategies
+    ─────────────────────────
+    Subclasses typically follow one of two patterns:
+
+    1. Independent batch methods (e.g. HillClimbing):
+       Each _iterate_*_batch() has self-contained perturbation logic.
+       Works when dimensions can be modified independently.
+
+    2. Compute-once-extract-thrice (e.g. DifferentialEvolution):
+       A shared setup computes the full position vector once.
+       Each _iterate_*_batch() returns its slice via the mask.
+       State resets in _evaluate() for the next iteration.
     """
 
     name = "Core Optimizer"
