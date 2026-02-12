@@ -27,7 +27,7 @@ from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 
-from ..core_optimizer import CoreOptimizer
+from ..base_optimizer import BaseOptimizer
 from .sampling import InitialSampler
 
 if TYPE_CHECKING:
@@ -44,7 +44,7 @@ def _isnan(x):
     return math.isnan(x) if isinstance(x, int | float) else np.isnan(x)
 
 
-class SMBO(CoreOptimizer):
+class SMBO(BaseOptimizer):
     """Base class for Sequential Model-Based Optimization.
 
     Dimension Support:

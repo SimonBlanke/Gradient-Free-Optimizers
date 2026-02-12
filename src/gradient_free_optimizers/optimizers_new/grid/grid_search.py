@@ -21,7 +21,7 @@ from math import gcd
 
 import numpy as np
 
-from ..core_optimizer import CoreOptimizer
+from ..base_optimizer import BaseOptimizer
 
 
 def _discretize_search_space(search_space, resolution):
@@ -53,7 +53,7 @@ def _discretize_search_space(search_space, resolution):
     return discretized
 
 
-class GridSearchOptimizer(CoreOptimizer):
+class GridSearchOptimizer(BaseOptimizer):
     """Systematic grid search over the entire search space.
 
     Dimension Support:

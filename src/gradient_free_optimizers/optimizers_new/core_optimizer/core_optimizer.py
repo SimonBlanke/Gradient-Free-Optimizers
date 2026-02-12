@@ -31,12 +31,16 @@ def _isnan(x):
 class CoreOptimizer(ABC):
     """Core optimizer implementing the Template Method Pattern.
 
-    This class is the orchestration layer between the abstract contract
-    (BaseOptimizer) and concrete algorithm implementations:
+    This class is the ABC root and orchestration layer for all optimizers:
 
-        BaseOptimizer (ABC)
-            └── CoreOptimizer          ← this class
-                  └── ConcreteOptimizer
+        CoreOptimizer (ABC)              ← this class
+            ├── BaseOptimizer             ← single-solution optimizers
+            │     ├── HillClimbing
+            │     ├── SMBO
+            │     └── ...
+            └── BasePopulationOptimizer   ← population-based optimizers
+                  ├── DifferentialEvolution
+                  └── ...
 
     CoreOptimizer provides all public methods that drive the optimization
     lifecycle. Concrete optimizers never override these public methods.
@@ -145,14 +149,17 @@ class CoreOptimizer(ABC):
         rand_rest_p=0,
         nth_process=None,
     ):
-        super().__init__(
-            search_space=search_space,
-            initialize=initialize,
-            constraints=constraints,
-            random_state=random_state,
-            rand_rest_p=rand_rest_p,
-            nth_process=nth_process,
-        )
+        # Call super().__init__() without args for cooperative MRO.
+        # When combined with Search via multiple inheritance, super() may
+        # resolve to Search.__init__() which has its own signature.
+        super().__init__()
+
+        self.search_space = search_space
+        self.initialize = initialize
+        self.constraints = constraints
+        self.random_state = random_state
+        self.rand_rest_p = rand_rest_p
+        self.nth_process = nth_process
 
         # Set random seed for reproducibility
         self.random_seed = set_random_seed(nth_process, random_state)

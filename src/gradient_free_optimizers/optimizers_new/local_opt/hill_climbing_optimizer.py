@@ -10,10 +10,10 @@ Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
 
 import numpy as np
 
-from ..core_optimizer import CoreOptimizer
+from ..base_optimizer import BaseOptimizer
 
 
-class HillClimbingOptimizer(CoreOptimizer):
+class HillClimbingOptimizer(BaseOptimizer):
     """Hill Climbing optimizer using Gaussian noise for exploration.
 
     Dimension Support:

@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
-from ..core_optimizer import CoreOptimizer
+from ..base_optimizer import BaseOptimizer
 
 if TYPE_CHECKING:
     pass
@@ -35,7 +35,7 @@ def _arrays_equal(a, b):
     return a == b
 
 
-class PatternSearch(CoreOptimizer):
+class PatternSearch(BaseOptimizer):
     """Pattern Search (Hooke-Jeeves) optimizer.
 
     Dimension Support:

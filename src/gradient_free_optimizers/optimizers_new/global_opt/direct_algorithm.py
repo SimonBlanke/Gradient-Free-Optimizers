@@ -28,7 +28,7 @@ import numpy as np
 from gradient_free_optimizers._dimension_types import DimensionType
 from gradient_free_optimizers._math_backend import cdist
 
-from ..core_optimizer import CoreOptimizer
+from ..base_optimizer import BaseOptimizer
 
 
 def _discretize_search_space(search_space, resolution):
@@ -188,7 +188,7 @@ class SubSpace:
         self.lipschitz_bound = score + K * dist
 
 
-class DirectAlgorithm(CoreOptimizer):
+class DirectAlgorithm(BaseOptimizer):
     """DIRECT algorithm for global optimization.
 
     Dimension Support:

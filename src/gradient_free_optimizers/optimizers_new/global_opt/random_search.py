@@ -10,10 +10,10 @@ Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
 
 import numpy as np
 
-from ..core_optimizer import CoreOptimizer
+from ..base_optimizer import BaseOptimizer
 
 
-class RandomSearchOptimizer(CoreOptimizer):
+class RandomSearchOptimizer(BaseOptimizer):
     """Random Search optimizer - samples randomly from the search space.
 
     Random search is the simplest optimization strategy that samples positions

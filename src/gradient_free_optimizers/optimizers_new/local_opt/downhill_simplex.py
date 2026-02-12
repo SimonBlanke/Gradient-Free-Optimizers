@@ -19,7 +19,7 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
-from ..core_optimizer import CoreOptimizer
+from ..base_optimizer import BaseOptimizer
 
 if TYPE_CHECKING:
     pass
@@ -54,7 +54,7 @@ def _centroid(array_list: list) -> np.ndarray:
     return np.array(result)
 
 
-class DownhillSimplexOptimizer(CoreOptimizer):
+class DownhillSimplexOptimizer(BaseOptimizer):
     """Nelder-Mead downhill simplex optimizer.
 
     Dimension Support:

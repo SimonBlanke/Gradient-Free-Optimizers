@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, Any
 
 import numpy as np
 
-from ...core_optimizer import CoreOptimizer
+from ...base_optimizer import BaseOptimizer
 from .direction import Direction
 from .line_search import GoldenSectionLineSearch, GridLineSearch, HillClimbLineSearch
 
@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     pass
 
 
-class PowellsMethod(CoreOptimizer):
+class PowellsMethod(BaseOptimizer):
     """
     Powell's conjugate direction method for gradient-free optimization.
 

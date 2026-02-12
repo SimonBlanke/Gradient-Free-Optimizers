@@ -19,10 +19,10 @@ from math import gcd
 
 import numpy as np
 
-from ..core_optimizer import CoreOptimizer
+from ..base_optimizer import BaseOptimizer
 
 
-class DiagonalGridSearch(CoreOptimizer):
+class DiagonalGridSearch(BaseOptimizer):
     """Diagonal Grid Search - traverses grid using prime generators.
 
     Dimension Support:

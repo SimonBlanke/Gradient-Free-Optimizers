@@ -16,10 +16,10 @@ Template Method Pattern Compliance:
 
 import numpy as np
 
-from ..core_optimizer import CoreOptimizer
+from ..base_optimizer import BaseOptimizer
 
 
-class OrthogonalGridSearch(CoreOptimizer):
+class OrthogonalGridSearch(BaseOptimizer):
     """Orthogonal Grid Search - traverses dimensions sequentially.
 
     Dimension Support:
