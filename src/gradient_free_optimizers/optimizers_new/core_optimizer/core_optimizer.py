@@ -9,10 +9,10 @@ See CoreOptimizer class docstring for the full architecture description.
 """
 
 import math
+from abc import ABC, abstractmethod
 
 import numpy as np
 
-from ..base_optimizer import BaseOptimizer
 from .converter import Converter
 from .init_positions import Initializer
 from .utils import set_random_seed
@@ -28,7 +28,7 @@ def _isnan(x):
     return math.isnan(x) if isinstance(x, int | float) else np.isnan(x)
 
 
-class CoreOptimizer(BaseOptimizer):
+class CoreOptimizer(ABC):
     """Core optimizer implementing the Template Method Pattern.
 
     This class is the orchestration layer between the abstract contract
@@ -507,6 +507,74 @@ class CoreOptimizer(BaseOptimizer):
 
         return clipped
 
+    # ─────────────────────────────────────────────────────────────────────
+    # Abstract hooks: subclasses must implement these
+    # ─────────────────────────────────────────────────────────────────────
+
+    @abstractmethod
+    def _iterate_continuous_batch(self) -> np.ndarray:
+        """Generate new values for all continuous dimensions.
+
+        Available instance state:
+            self._pos_current[self._continuous_mask]  ─ current values
+            self._continuous_bounds                    ─ shape (n, 2) [min, max]
+
+        Returns
+        -------
+        np.ndarray
+            New values, shape (n_continuous,). Will be clipped to bounds.
+        """
+        ...
+
+    @abstractmethod
+    def _iterate_categorical_batch(self) -> np.ndarray:
+        """Generate new category indices for all categorical dimensions.
+
+        Available instance state:
+            self._pos_current[self._categorical_mask]  ─ current indices
+            self._categorical_sizes                     ─ categories per dim
+
+        Returns
+        -------
+        np.ndarray
+            New indices, shape (n_categorical,). Clipped to [0, n_cat-1].
+        """
+        ...
+
+    @abstractmethod
+    def _iterate_discrete_batch(self) -> np.ndarray:
+        """Generate new positions for all discrete dimensions.
+
+        Available instance state:
+            self._pos_current[self._discrete_mask]  ─ current positions
+            self._discrete_bounds                    ─ shape (n, 2) [0, max_idx]
+
+        Returns
+        -------
+        np.ndarray
+            New positions, shape (n_discrete,). Rounded and clipped.
+        """
+        ...
+
+    @abstractmethod
+    def _evaluate(self, score_new):
+        """Algorithm-specific acceptance and state-update logic.
+
+        Called by evaluate() after common score tracking is done.
+        Implement the acceptance criteria for this optimization algorithm.
+
+        Typical patterns:
+            Greedy:      accept if score_new > score_current
+            Stochastic:  accept with probability f(score_new, score_current)
+            Population:  update individual, perform selection
+
+        Use _update_current() and _update_best() to modify tracked state.
+
+        Args:
+            score_new: Score of the most recently evaluated position
+        """
+        ...
+
     def evaluate(self, score_new):
         """Orchestrate evaluation: track score, delegate to algorithm-specific logic.
 
@@ -548,23 +616,6 @@ class CoreOptimizer(BaseOptimizer):
         # Property setter handles all tracking automatically
         self.score_new = score_new
         self.nth_trial += 1
-
-    def _evaluate(self, score_new):
-        """Algorithm-specific evaluation logic. Override in subclass.
-
-        This method should implement the acceptance criteria and state updates
-        specific to each optimization algorithm:
-        - Hill Climbing: greedy acceptance (accept if better)
-        - Simulated Annealing: probabilistic acceptance based on temperature
-        - PSO: update personal best
-        - DE: replace parent if offspring is better
-
-        Args:
-            score_new: Score of the most recently evaluated position
-        """
-        raise NotImplementedError(
-            f"{self.__class__.__name__} must implement _evaluate()"
-        )
 
     def _update_current(self, position, score):
         """Update the current position and score.
