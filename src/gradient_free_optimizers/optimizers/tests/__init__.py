@@ -1,1 +1,1 @@
-# Tests for optimizers_new
+# Tests for optimizers
