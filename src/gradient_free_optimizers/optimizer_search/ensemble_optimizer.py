@@ -6,7 +6,7 @@
 from typing import Literal
 
 from .._init_utils import get_default_initialize, get_default_sampling
-from ..optimizers_new import EnsembleOptimizer as _EnsembleOptimizer
+from ..optimizers import EnsembleOptimizer as _EnsembleOptimizer
 from ..search import Search
 
 

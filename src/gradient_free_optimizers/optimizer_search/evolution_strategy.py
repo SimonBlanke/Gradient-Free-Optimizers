@@ -6,7 +6,7 @@
 from typing import Literal
 
 from .._init_utils import get_default_initialize
-from ..optimizers_new import (
+from ..optimizers import (
     EvolutionStrategyOptimizer as _EvolutionStrategyOptimizer,
 )
 from ..search import Search

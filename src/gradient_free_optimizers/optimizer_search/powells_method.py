@@ -6,7 +6,7 @@
 from typing import Literal
 
 from .._init_utils import get_default_initialize
-from ..optimizers_new import PowellsMethod as _PowellsMethod
+from ..optimizers import PowellsMethod as _PowellsMethod
 from ..search import Search
 
 

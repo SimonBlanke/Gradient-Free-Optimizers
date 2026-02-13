@@ -8,7 +8,7 @@ from typing import Literal
 import pandas as pd
 
 from .._init_utils import get_default_initialize
-from ..optimizers_new import DirectAlgorithm as _DirectAlgorithm
+from ..optimizers import DirectAlgorithm as _DirectAlgorithm
 from ..search import Search
 
 

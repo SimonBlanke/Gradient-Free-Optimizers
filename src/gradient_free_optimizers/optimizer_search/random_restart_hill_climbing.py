@@ -6,7 +6,7 @@
 from typing import Literal
 
 from .._init_utils import get_default_initialize
-from ..optimizers_new import (
+from ..optimizers import (
     RandomRestartHillClimbingOptimizer as _RandomRestartHillClimbingOptimizer,
 )
 from ..search import Search

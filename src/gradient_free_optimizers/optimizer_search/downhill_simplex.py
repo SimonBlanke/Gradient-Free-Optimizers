@@ -6,7 +6,7 @@
 from typing import Literal
 
 from .._init_utils import get_default_initialize
-from ..optimizers_new import DownhillSimplexOptimizer as _DownhillSimplexOptimizer
+from ..optimizers import DownhillSimplexOptimizer as _DownhillSimplexOptimizer
 from ..search import Search
 
 

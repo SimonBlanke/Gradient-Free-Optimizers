@@ -6,7 +6,7 @@
 from typing import Literal
 
 from .._init_utils import get_default_initialize
-from ..optimizers_new import RandomAnnealingOptimizer as _RandomAnnealingOptimizer
+from ..optimizers import RandomAnnealingOptimizer as _RandomAnnealingOptimizer
 from ..search import Search
 
 
