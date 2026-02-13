@@ -16,11 +16,11 @@ Strategy for fast CI:
 - Use mocking to verify batch method calls without full optimization
 - Mark slow tests (100+ dimensions, many iterations) with @pytest.mark.slow
 
-As new optimizers are implemented in optimizers_new/, add them to the
+As new optimizers are implemented in optimizers/, add them to the
 OPTIMIZERS list below.
 
 NOTE: We import from optimizer_search/ because that's where the complete
-optimizer classes live (combining optimizers_new/ with Search functionality).
+optimizer classes live (combining optimizers/ with Search functionality).
 """
 
 import numpy as np

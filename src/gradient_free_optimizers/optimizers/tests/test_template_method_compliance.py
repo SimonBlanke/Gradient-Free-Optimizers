@@ -25,7 +25,7 @@ from ..grid import (
     GridSearchOptimizer,
 )
 
-# Local imports from within the optimizers_new module
+# Local imports from within the optimizers module
 from ..local_opt import (
     DownhillSimplexOptimizer,
     HillClimbingOptimizer,

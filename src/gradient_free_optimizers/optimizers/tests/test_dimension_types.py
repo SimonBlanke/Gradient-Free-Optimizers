@@ -11,11 +11,11 @@ These tests verify that each optimizer correctly handles:
 - Discrete dimensions (np.ndarray format): np.array([1, 2, 4, 8])
 - Mixed dimensions (all three types combined)
 
-As new optimizers are implemented in optimizers_new/, add them to the
+As new optimizers are implemented in optimizers/, add them to the
 OPTIMIZERS list below. All optimizers should pass these tests.
 
 NOTE: We import from optimizer_search/ because that's where the complete
-optimizer classes live (combining optimizers_new/ with Search functionality).
+optimizer classes live (combining optimizers/ with Search functionality).
 """
 
 import numpy as np
