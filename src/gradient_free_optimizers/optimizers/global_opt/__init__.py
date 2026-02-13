@@ -12,8 +12,8 @@ from .random_search import RandomSearchOptimizer
 __all__ = [
     "RandomSearchOptimizer",
     "RandomRestartHillClimbingOptimizer",
-    "PowellsMethod",
     "PatternSearch",
-    "LipschitzOptimizer",
+    "PowellsMethod",
     "DirectAlgorithm",
+    "LipschitzOptimizer",
 ]

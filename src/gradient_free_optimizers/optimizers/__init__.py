@@ -2,7 +2,26 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-from .exp_opt import RandomAnnealingOptimizer
+"""
+Optimizer module with Template Method Pattern architecture.
+
+This module provides optimizers with explicit dimension-type support
+and vectorized batch operations for high-dimensional optimization.
+
+See ARCHITECTURE.md for detailed documentation.
+"""
+
+# Base classes
+from .base_optimizer import BaseOptimizer
+from .core_optimizer import CoreOptimizer
+
+# Experimental optimizers
+from .exp_opt import (
+    EnsembleOptimizer,
+    RandomAnnealingOptimizer,
+)
+
+# Global optimizers
 from .global_opt import (
     DirectAlgorithm,
     LipschitzOptimizer,
@@ -11,9 +30,15 @@ from .global_opt import (
     RandomRestartHillClimbingOptimizer,
     RandomSearchOptimizer,
 )
+
+# Grid search optimizers
 from .grid import (
+    DiagonalGridSearch,
     GridSearchOptimizer,
+    OrthogonalGridSearch,
 )
+
+# Local optimizers
 from .local_opt import (
     DownhillSimplexOptimizer,
     HillClimbingOptimizer,
@@ -21,7 +46,10 @@ from .local_opt import (
     SimulatedAnnealingOptimizer,
     StochasticHillClimbingOptimizer,
 )
+
+# Population-based optimizers
 from .pop_opt import (
+    BasePopulationOptimizer,
     DifferentialEvolutionOptimizer,
     EvolutionStrategyOptimizer,
     GeneticAlgorithmOptimizer,
@@ -29,33 +57,50 @@ from .pop_opt import (
     ParticleSwarmOptimizer,
     SpiralOptimization,
 )
+
+# Sequential Model-Based optimizers
 from .smb_opt import (
+    SMBO,
     BayesianOptimizer,
     ForestOptimizer,
     TreeStructuredParzenEstimators,
 )
 
 __all__ = [
+    # Base
+    "BaseOptimizer",
+    "CoreOptimizer",
+    # Local
     "HillClimbingOptimizer",
+    "SimulatedAnnealingOptimizer",
     "StochasticHillClimbingOptimizer",
     "RepulsingHillClimbingOptimizer",
-    "SimulatedAnnealingOptimizer",
     "DownhillSimplexOptimizer",
+    # Global
     "RandomSearchOptimizer",
-    "GridSearchOptimizer",
     "RandomRestartHillClimbingOptimizer",
-    "PowellsMethod",
     "PatternSearch",
-    "LipschitzOptimizer",
+    "PowellsMethod",
     "DirectAlgorithm",
-    "RandomAnnealingOptimizer",
-    "ParallelTemperingOptimizer",
+    "LipschitzOptimizer",
+    # Population
+    "BasePopulationOptimizer",
     "ParticleSwarmOptimizer",
-    "SpiralOptimization",
+    "DifferentialEvolutionOptimizer",
     "GeneticAlgorithmOptimizer",
     "EvolutionStrategyOptimizer",
-    "DifferentialEvolutionOptimizer",
+    "SpiralOptimization",
+    "ParallelTemperingOptimizer",
+    # SMBO
+    "SMBO",
     "BayesianOptimizer",
-    "TreeStructuredParzenEstimators",
     "ForestOptimizer",
+    "TreeStructuredParzenEstimators",
+    # Grid
+    "GridSearchOptimizer",
+    "DiagonalGridSearch",
+    "OrthogonalGridSearch",
+    # Experimental
+    "RandomAnnealingOptimizer",
+    "EnsembleOptimizer",
 ]

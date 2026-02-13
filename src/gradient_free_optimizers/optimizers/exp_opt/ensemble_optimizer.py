@@ -2,35 +2,56 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+"""
+Ensemble Optimizer.
+
+Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
+Combines multiple surrogate models for robust predictions.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Literal
+
 import numpy as np
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.gaussian_process import GaussianProcessRegressor
 
-from gradient_free_optimizers._init_utils import (
-    get_default_initialize,
-    get_default_sampling,
-)
-
+from ..smb_opt import SMBO
 from ..smb_opt._normalize import normalize
 from ..smb_opt.acquisition_function import ExpectedImprovement
-from ..smb_opt.smbo import SMBO
 from ..smb_opt.surrogate_models import EnsembleRegressor
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 
 class EnsembleOptimizer(SMBO):
     """Ensemble-based sequential model-based optimization.
 
+    Dimension Support:
+        - Continuous: YES (surrogate model based)
+        - Categorical: YES (with index encoding)
+        - Discrete: YES (surrogate model based)
+
     Combines multiple surrogate models (e.g., Gradient Boosting, Gaussian Process)
     into an ensemble for more robust predictions. This experimental optimizer
-    averages predictions from multiple models to reduce variance.
+    averages predictions from multiple models to reduce variance and improve
+    reliability.
+
+    The algorithm:
+    1. Train ensemble of surrogate models on observed data
+    2. Compute expected improvement using ensemble predictions
+    3. Select position with highest expected improvement
+    4. Repeat until convergence
 
     Parameters
     ----------
     search_space : dict
-        Dictionary mapping parameter names to arrays of possible values.
-    initialize : dict, default=None
+        Dictionary mapping parameter names to search dimension definitions.
+    initialize : dict, optional
         Strategy for generating initial positions.
-        If None, uses {"grid": 4, "random": 2, "vertices": 4}.
     constraints : list, optional
         List of constraint functions.
     random_state : int, optional
@@ -39,27 +60,19 @@ class EnsembleOptimizer(SMBO):
         Probability of random restart.
     nth_process : int, optional
         Process index for parallel optimization.
-    epsilon : float, default=0.03
-        Step size for local search fallback.
-    distribution : str, default="normal"
-        Distribution for step sizes.
-    n_neighbours : int, default=3
-        Number of neighbors for local search.
-    estimators : list
+    estimators : list, optional
         List of scikit-learn estimator instances to ensemble.
+        Default uses GradientBoostingRegressor and GaussianProcessRegressor.
     xi : float, default=0.01
         Exploration-exploitation parameter for Expected Improvement.
     warm_start_smbo : pd.DataFrame, optional
-        Previous results to initialize the models.
+        Previous optimization results to initialize the surrogate model.
     max_sample_size : int, default=10000000
-        Maximum positions to consider.
-    sampling : dict or False, default=None
+        Maximum number of positions to consider for sampling.
+    sampling : dict, False, or None, default=None
         Sampling strategy for large search spaces.
-        If None, uses {"random": 1000000}.
     replacement : bool, default=True
-        Allow re-evaluation of positions.
-    warnings : int, default=100000000
-        Threshold for memory warnings.
+        Whether to allow re-evaluation of the same position.
 
     Notes
     -----
@@ -68,37 +81,27 @@ class EnsembleOptimizer(SMBO):
     """
 
     name = "Ensemble Optimizer"
+    _name_ = "ensemble_optimizer"
+    __name__ = "EnsembleOptimizer"
+
+    optimizer_type = "sequential"
+    computationally_expensive = True
 
     def __init__(
         self,
-        search_space,
-        initialize=None,
-        constraints=None,
-        random_state=None,
-        rand_rest_p=0,
-        nth_process=None,
-        epsilon=0.03,
-        distribution="normal",
-        n_neighbours=3,
-        estimators=None,
-        xi=0.01,
-        warm_start_smbo=None,
-        max_sample_size=10000000,
-        sampling=None,
-        replacement=True,
-        warnings=100000000,
-        **kwargs,
-    ):
-        if initialize is None:
-            initialize = get_default_initialize()
-        if sampling is None:
-            sampling = get_default_sampling()
-        if estimators is None:
-            estimators = [
-                GradientBoostingRegressor(n_estimators=5),
-                GaussianProcessRegressor(),
-            ]
-
+        search_space: dict[str, Any],
+        initialize: dict[str, int] | None = None,
+        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
+        random_state: int | None = None,
+        rand_rest_p: float = 0,
+        nth_process: int | None = None,
+        estimators: list | None = None,
+        xi: float = 0.01,
+        warm_start_smbo: pd.DataFrame | None = None,
+        max_sample_size: int = 10000000,
+        sampling: dict[str, int] | Literal[False] | None = None,
+        replacement: bool = True,
+    ) -> None:
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -106,40 +109,60 @@ class EnsembleOptimizer(SMBO):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
-            epsilon=epsilon,
-            distribution=distribution,
-            n_neighbours=n_neighbours,  #
             warm_start_smbo=warm_start_smbo,
             max_sample_size=max_sample_size,
             sampling=sampling,
             replacement=replacement,
         )
+
+        # Default ensemble of estimators
+        if estimators is None:
+            estimators = [
+                GradientBoostingRegressor(n_estimators=5),
+                GaussianProcessRegressor(),
+            ]
+
         self.estimators = estimators
         self.regr = EnsembleRegressor(estimators)
         self.xi = xi
-        self.warm_start_smbo = warm_start_smbo
-        self.max_sample_size = max_sample_size
-        self.sampling = sampling
-        self.warnings = warnings
 
-        self.init_warm_start_smbo()
+    def _finish_initialization(self) -> None:
+        """Generate candidate positions for ensemble model.
 
-    def finish_initialization(self):
+        Called by CoreOptimizer.finish_initialization() after all init
+        positions have been evaluated. Generates the candidate position
+        grid for the acquisition function.
+
+        Note: DO NOT set search_state here - CoreOptimizer handles that.
+        """
         self.all_pos_comb = self._all_possible_pos()
-        return super().finish_initialization()
 
-    def _expected_improvement(self):
+    def _training(self) -> None:
+        """Train the ensemble of surrogate models."""
+        X_sample = np.array(self.X_sample)
+        Y_sample = np.array(self.Y_sample)
+
+        if len(Y_sample) == 0:
+            return
+
+        # Normalize Y values for better model fitting
+        Y_sample = normalize(Y_sample).reshape(-1, 1)
+        self.regr.fit(X_sample, Y_sample)
+
+    def _expected_improvement(self) -> np.ndarray:
+        """Compute expected improvement for candidate positions."""
         self.pos_comb = self._sampling(self.all_pos_comb)
 
         acqu_func = ExpectedImprovement(self.regr, self.pos_comb, self.xi)
         return acqu_func.calculate(self.X_sample, self.Y_sample)
 
-    def _training(self):
-        X_sample = np.array(self.X_sample)
-        Y_sample = np.array(self.Y_sample)
+    def _evaluate(self, score_new: float) -> None:
+        """Update best and current positions.
 
-        if len(Y_sample) == 0:
-            return self.move_random()
-
-        Y_sample = normalize(Y_sample).reshape(-1, 1)
-        self.regr.fit(X_sample, Y_sample)
+        Parameters
+        ----------
+        score_new : float
+            Score for the evaluated position.
+        """
+        self._update_best(self.pos_new, score_new)
+        self._update_current(self.pos_new, score_new)

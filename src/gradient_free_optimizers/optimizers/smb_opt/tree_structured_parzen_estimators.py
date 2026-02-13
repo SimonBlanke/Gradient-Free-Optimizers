@@ -2,18 +2,19 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+"""
+Tree-structured Parzen Estimators (TPE).
+
+Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
+"""
+
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Literal
 
-from gradient_free_optimizers._array_backend import array, exp, zeros_like
-from gradient_free_optimizers._init_utils import (
-    get_default_initialize,
-    get_default_sampling,
-)
+import numpy as np
 
-from ..core_optimizer.converter import ArrayLike
 from .smbo import SMBO
 
 if TYPE_CHECKING:
@@ -35,18 +36,26 @@ except ImportError:
 class TreeStructuredParzenEstimators(SMBO):
     """Tree-structured Parzen Estimator (TPE) optimization algorithm.
 
+    Dimension Support:
+        - Continuous: YES (KDE-based modeling)
+        - Categorical: YES (with index encoding)
+        - Discrete: YES (treated as continuous for KDE)
+
     TPE models the conditional probability P(x|y) instead of P(y|x) used by
     other SMBO methods. It maintains two kernel density estimators: one for
     the best-performing samples (l(x)) and one for the rest (g(x)). The
     acquisition function is the ratio l(x)/g(x).
 
+    The key insight is that maximizing Expected Improvement (EI) is equivalent
+    to maximizing l(x)/g(x) when we model p(x|y<y*) with l(x) and p(x|y>=y*)
+    with g(x), where y* is the quantile threshold.
+
     Parameters
     ----------
     search_space : dict
-        Dictionary mapping parameter names to arrays of possible values.
-    initialize : dict, default=None
+        Dictionary mapping parameter names to search dimension definitions.
+    initialize : dict, optional
         Strategy for generating initial positions.
-        If None, uses {"grid": 4, "random": 2, "vertices": 4}.
     constraints : list, optional
         List of constraint functions.
     random_state : int, optional
@@ -61,17 +70,11 @@ class TreeStructuredParzenEstimators(SMBO):
         Maximum positions to consider.
     sampling : dict or False, default=None
         Sampling strategy for large search spaces.
-        If None, uses {"random": 1000000}.
     replacement : bool, default=True
         Allow re-evaluation of positions.
     gamma_tpe : float, default=0.2
         Quantile threshold for splitting samples into "good" and "bad".
         Top gamma_tpe fraction are used for l(x), rest for g(x).
-
-    See Also
-    --------
-    BayesianOptimizer : Gaussian Process based SMBO.
-    ForestOptimizer : Tree ensemble based SMBO.
     """
 
     name = "Tree Structured Parzen Estimators"
@@ -91,15 +94,10 @@ class TreeStructuredParzenEstimators(SMBO):
         nth_process: int | None = None,
         warm_start_smbo: pd.DataFrame | None = None,
         max_sample_size: int = 10000000,
-        sampling: dict[str, int] | bool | None = None,
+        sampling: dict[str, int] | Literal[False] | None = None,
         replacement: bool = True,
         gamma_tpe: float = 0.2,
     ) -> None:
-        if initialize is None:
-            initialize = get_default_initialize()
-        if sampling is None:
-            sampling = get_default_sampling()
-
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -124,47 +122,73 @@ class TreeStructuredParzenEstimators(SMBO):
         self.kd_best = KernelDensity(**kde_params)
         self.kd_worst = KernelDensity(**kde_params)
 
-    def finish_initialization(self) -> None:
-        self.all_pos_comb = self._all_possible_pos()
-        return super().finish_initialization()
+    def _get_samples(self) -> tuple[list[np.ndarray], list[np.ndarray]]:
+        """Split samples into best and worst groups based on gamma_tpe.
 
-    def _get_samples(self) -> tuple[list[ArrayLike], list[ArrayLike]]:
-        """Split samples into best and worst groups based on gamma_tpe."""
+        Returns
+        -------
+        best_samples : list
+            Top gamma_tpe fraction of samples by score.
+        worst_samples : list
+            Remaining (1 - gamma_tpe) fraction of samples.
+        """
         n_samples = len(self.X_sample)
         n_best = max(round(n_samples * self.gamma_tpe), 1)
 
-        Y_sample = array(self.Y_sample)
-        index_best = Y_sample.argsort()[-n_best:]
-        n_worst = int(n_samples - n_best)
-        index_worst = Y_sample.argsort()[:n_worst]
+        # Ensure we have at least 1 sample in each group
+        n_worst = max(int(n_samples - n_best), 1)
+        # Adjust n_best if n_samples is too small for both groups
+        if n_best + n_worst > n_samples and n_samples >= 2:
+            n_best = max(n_samples - 1, 1)
+            n_worst = max(n_samples - n_best, 1)
+
+        Y_sample = np.array(self.Y_sample)
+        sorted_indices = Y_sample.argsort()
+        index_best = sorted_indices[-n_best:]
+        index_worst = sorted_indices[:n_worst]
 
         best_samples = [self.X_sample[i] for i in index_best]
         worst_samples = [self.X_sample[i] for i in index_worst]
 
         return best_samples, worst_samples
 
-    def _expected_improvement(self) -> ArrayLike:
-        """Compute acquisition as ratio of good/bad density estimates."""
+    def _expected_improvement(self) -> np.ndarray:
+        """Compute acquisition as ratio of good/bad density estimates.
+
+        The acquisition function for TPE is derived from Expected Improvement
+        but expressed as l(x)/g(x), the ratio of densities for good and bad
+        observations.
+
+        Returns
+        -------
+        np.ndarray
+            Acquisition values for each candidate position.
+        """
         self.pos_comb = self._sampling(self.all_pos_comb)
 
         logprob_best = self.kd_best.score_samples(self.pos_comb)
         logprob_worst = self.kd_worst.score_samples(self.pos_comb)
 
-        prob_best = exp(array(logprob_best))
-        prob_worst = exp(array(logprob_worst))
+        prob_best = np.exp(np.array(logprob_best))
+        prob_worst = np.exp(np.array(logprob_worst))
 
-        # Match np.divide(prob_worst, prob_best, out=zeros, where=prob_worst != 0)
-        # Only divide where prob_worst != 0; output 0 otherwise
-        WorstOverbest = zeros_like(prob_worst)
-        for i in range(len(prob_worst)):
-            if prob_worst[i] != 0:
-                if prob_best[i] != 0:
-                    WorstOverbest[i] = prob_worst[i] / prob_best[i]
-                else:
-                    # prob_best == 0 but prob_worst != 0 -> inf (like numpy)
-                    WorstOverbest[i] = float("inf")
+        # Safe division: only divide where prob_worst != 0
+        worst_over_best = np.zeros_like(prob_worst)
+        nonzero_worst = prob_worst != 0
+        nonzero_best = prob_best != 0
 
-        exp_imp_inv = self.gamma_tpe + WorstOverbest * (1 - self.gamma_tpe)
+        # Where both are nonzero, compute ratio
+        both_nonzero = nonzero_worst & nonzero_best
+        worst_over_best[both_nonzero] = (
+            prob_worst[both_nonzero] / prob_best[both_nonzero]
+        )
+
+        # Where worst != 0 but best == 0, set to inf
+        worst_only = nonzero_worst & ~nonzero_best
+        worst_over_best[worst_only] = float("inf")
+
+        # Compute expected improvement inverse and invert
+        exp_imp_inv = self.gamma_tpe + worst_over_best * (1 - self.gamma_tpe)
         exp_imp = 1 / exp_imp_inv
 
         return exp_imp

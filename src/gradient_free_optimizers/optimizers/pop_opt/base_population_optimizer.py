@@ -2,14 +2,37 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+"""
+Base class for population-based optimizers.
+
+Population-based optimizers maintain multiple candidate solutions
+and may have different iteration patterns than single-solution optimizers.
+"""
+
 import math
 
-from gradient_free_optimizers._init_utils import get_default_initialize
+import numpy as np
 
 from ..core_optimizer import CoreOptimizer
 
 
 def split(positions_l, population):
+    """Distribute initial positions across population members.
+
+    Interleaves positions to give each member a diverse starting set.
+    For example, with 10 positions and 5 members:
+    - Member 0: positions [0, 5]
+    - Member 1: positions [1, 6]
+    - etc.
+
+    Args:
+        positions_l: List of initial positions
+        population: Number of population members
+
+    Returns
+    -------
+        List of position lists, one per population member
+    """
     div_int = math.ceil(len(positions_l) / population)
     dist_init_positions = []
 
@@ -32,13 +55,16 @@ class BasePopulationOptimizer(CoreOptimizer):
     space in parallel. Provides common functionality for creating populations,
     distributing initial positions, and tracking the best individual.
 
+    Population-based optimizers maintain a population of individuals
+    and typically have specialized iteration logic that operates on
+    the entire population or pairs of individuals.
+
     Parameters
     ----------
     search_space : dict
         Dictionary mapping parameter names to arrays of possible values.
     initialize : dict or None, default=None
         Strategy for generating initial positions distributed across population.
-        If None, uses {"grid": 4, "random": 2, "vertices": 4}.
     constraints : list, optional
         List of constraint functions.
     random_state : int, optional
@@ -47,14 +73,25 @@ class BasePopulationOptimizer(CoreOptimizer):
         Probability of random restart.
     nth_process : int, optional
         Process index for parallel optimization.
+    population : int, default=10
+        Number of individuals in the population.
 
     Attributes
     ----------
     optimizers : list
         List of individual optimizer instances in the population.
-    pop_sorted : list
-        Population sorted by score (best first).
+    systems : list
+        Alias for optimizers (used by some subclasses).
+    p_current : object
+        The currently active optimizer in the population.
     """
+
+    name = "Base Population Optimizer"
+    _name_ = "base_population_optimizer"
+    __name__ = "BasePopulationOptimizer"
+
+    optimizer_type = "population"
+    computationally_expensive = False
 
     def __init__(
         self,
@@ -64,10 +101,8 @@ class BasePopulationOptimizer(CoreOptimizer):
         random_state=None,
         rand_rest_p=0,
         nth_process=None,
+        population=10,
     ):
-        if initialize is None:
-            initialize = get_default_initialize()
-
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -76,48 +111,50 @@ class BasePopulationOptimizer(CoreOptimizer):
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
         )
+        self.population = population
+
+        # Population state
+        self.systems = None  # List of sub-optimizers
+        self.optimizers = None  # Alias for systems
+        self.p_current = None  # Currently active optimizer
 
         self.eval_times = []
         self.iter_times = []
 
         self.init_done = False
 
-    def _iterations(self, positioners):
-        nth_iter = 0
-        for p in positioners:
-            nth_iter = nth_iter + len(p.pos_new_list)
-
-        return nth_iter
-
-    def sort_pop_best_score(self):
-        scores_list = []
-        for _p_ in self.optimizers:
-            scores_list.append(_p_.score_current)
-
-        # Sort indices by score descending (pure Python)
-        indexed = list(enumerate(scores_list))
-        indexed.sort(key=lambda x: x[1], reverse=True)
-        idx_sorted_ind = [i for i, _ in indexed]
-
-        self.pop_sorted = [self.optimizers[i] for i in idx_sorted_ind]
-
     def _create_population(self, Optimizer):
+        """Create population of individual optimizers.
+
+        Distributes initial positions across population members and creates
+        one optimizer instance per member using warm_start initialization.
+
+        Args:
+            Optimizer: The optimizer class to instantiate for each member
+
+        Returns
+        -------
+            List of optimizer instances
+        """
         if isinstance(self.population, int):
             pop_size = self.population
         else:
             pop_size = len(self.population)
-        diff_init = pop_size - self.init.n_inits
 
+        # Ensure we have enough initial positions for the population
+        diff_init = pop_size - self.init.n_inits
         if diff_init > 0:
             self.init.add_n_random_init_pos(diff_init)
 
         if isinstance(self.population, int):
+            # Distribute positions across population
             distributed_init_positions = split(
                 self.init.init_positions_l, self.population
             )
 
             population = []
             for init_positions in distributed_init_positions:
+                # Convert positions to parameter dicts for warm_start
                 init_values = self.conv.positions2values(init_positions)
                 init_paras = self.conv.values2paras(init_values)
 
@@ -134,9 +171,88 @@ class BasePopulationOptimizer(CoreOptimizer):
 
         return population
 
-    @CoreOptimizer.track_new_score
-    def evaluate_init(self, score_new):
-        self.p_current.evaluate_init(score_new)
+    def _iterations(self, positioners):
+        """Count total iterations across all optimizers."""
+        nth_iter = 0
+        for p in positioners:
+            nth_iter = nth_iter + len(p.pos_new_list)
+        return nth_iter
 
-    def finish_initialization(self):
-        self.search_state = "iter"
+    def sort_pop_best_score(self):
+        """Sort population by current score (best first).
+
+        Handles None scores by treating them as -infinity (worst).
+        """
+        scores_list = []
+        for _p_ in self.optimizers:
+            scores_list.append(_p_.score_current)
+
+        # Sort indices by score descending (pure Python)
+        # Handle None scores by treating them as -infinity
+        indexed = list(enumerate(scores_list))
+        indexed.sort(
+            key=lambda x: x[1] if x[1] is not None else float("-inf"), reverse=True
+        )
+        idx_sorted_ind = [i for i, _ in indexed]
+
+        self.pop_sorted = [self.optimizers[i] for i in idx_sorted_ind]
+
+    # =========================================================================
+    # Template Method Pattern: Population optimizers inherit iterate() from
+    # CoreOptimizer and implement the _iterate_*_batch() methods.
+    # DO NOT override iterate() - that would bypass dimension-type-aware routing.
+    # =========================================================================
+
+    def _evaluate(self, score_new):
+        """Evaluate the current individual.
+
+        Population-based optimizers typically delegate to the current
+        individual optimizer's evaluate method.
+
+        Args:
+            score_new: Score of the most recently evaluated position
+        """
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must implement _evaluate()"
+        )
+
+    def _iterate_continuous_batch(self) -> "np.ndarray":
+        """Generate continuous values for the current iteration.
+
+        Population optimizers must implement this to provide
+        algorithm-specific continuous dimension handling.
+        """
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must implement _iterate_continuous_batch()"
+        )
+
+    def _iterate_categorical_batch(self) -> "np.ndarray":
+        """Generate categorical indices for the current iteration.
+
+        Population optimizers must implement this to provide
+        algorithm-specific categorical dimension handling.
+        """
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must implement _iterate_categorical_batch()"
+        )
+
+    def _iterate_discrete_batch(self) -> "np.ndarray":
+        """Generate discrete indices for the current iteration.
+
+        Population optimizers must implement this to provide
+        algorithm-specific discrete dimension handling.
+        """
+        raise NotImplementedError(
+            f"{self.__class__.__name__} must implement _iterate_discrete_batch()"
+        )
+
+    def _finish_initialization(self):
+        """Perform population-specific setup after init phase.
+
+        Override in subclasses to perform algorithm-specific initialization
+        after all init positions have been evaluated.
+
+        Note: DO NOT set search_state here - CoreOptimizer.finish_initialization()
+        handles that automatically after calling this hook.
+        """
+        pass

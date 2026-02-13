@@ -2,18 +2,41 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-from gradient_free_optimizers._array_backend import array
-from gradient_free_optimizers._init_utils import get_default_initialize
+"""
+Orthogonal Grid Search.
+
+Supports: DISCRETE_NUMERICAL, CATEGORICAL
+Uses sequential nested loop traversal (dimension by dimension).
+
+Template Method Pattern Compliance:
+    - Does NOT override iterate() - keeps public interface intact
+    - Overrides _generate_position() for grid-specific position generation
+    - Constraint handling via iterate()'s retry loop naturally advances grid
+"""
+
+import numpy as np
 
 from ..base_optimizer import BaseOptimizer
 
 
-class OrthogonalGridSearchOptimizer(BaseOptimizer):
-    """Orthogonal grid search traversing dimensions sequentially.
+class OrthogonalGridSearch(BaseOptimizer):
+    """Orthogonal Grid Search - traverses dimensions sequentially.
+
+    Dimension Support:
+        - Continuous: LIMITED (must be discretized first)
+        - Categorical: YES (enumerate all categories)
+        - Discrete: YES (enumerate all values)
 
     Traverses the search space in a nested loop fashion, exhausting each
     dimension before moving to the next. This provides systematic coverage
     but may take longer to explore distant regions.
+
+    The traversal is equivalent to:
+        for x0 in range(dim_0_size):
+            for x1 in range(dim_1_size):
+                for x2 in range(dim_2_size):
+                    ...
+                    evaluate([x0, x1, x2, ...])
 
     Parameters
     ----------
@@ -21,7 +44,6 @@ class OrthogonalGridSearchOptimizer(BaseOptimizer):
         Dictionary mapping parameter names to arrays of possible values.
     initialize : dict, default=None
         Strategy for generating initial positions.
-        If None, uses {"grid": 4, "random": 2, "vertices": 4}.
     constraints : list, optional
         List of constraint functions.
     random_state : int, optional
@@ -31,8 +53,15 @@ class OrthogonalGridSearchOptimizer(BaseOptimizer):
     nth_process : int, optional
         Process index for parallel optimization.
     step_size : int, default=1
-        Step multiplier for grid traversal.
+        Step multiplier for grid traversal (1 = visit every point).
     """
+
+    name = "Orthogonal Grid Search"
+    _name_ = "orthogonal_grid_search"
+    __name__ = "OrthogonalGridSearch"
+
+    optimizer_type = "global"
+    computationally_expensive = False
 
     def __init__(
         self,
@@ -44,9 +73,6 @@ class OrthogonalGridSearchOptimizer(BaseOptimizer):
         nth_process=None,
         step_size=1,
     ):
-        if initialize is None:
-            initialize = get_default_initialize()
-
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -58,33 +84,95 @@ class OrthogonalGridSearchOptimizer(BaseOptimizer):
 
         self.step_size = step_size
 
-    def grid_move(self):
-        mod_tmp = self.nth_trial * self.step_size + int(
-            self.nth_trial * self.step_size / self.conv.search_space_size
+        # Grid state
+        self._grid_counter = 0  # Tracks position in linearized space
+
+        # Use converter's dimension info (handles overflow via arbitrary precision)
+        self._dim_sizes = self.conv.dim_sizes
+        self._search_space_size = self.conv.search_space_size
+
+    def _compute_grid_position(self):
+        """Convert current grid counter to a position in the multi-dimensional space.
+
+        Uses modular arithmetic to compute the position - essentially a
+        mixed-radix number representation where each dimension has its own base.
+
+        Returns
+        -------
+        np.ndarray
+            Position array with indices for each dimension.
+        """
+        # Convert to Python list to avoid numpy overflow
+        dim_sizes = [int(s) for s in self._dim_sizes]
+
+        # Account for step_size and handle wraparound for multiple passes
+        effective_counter = self._grid_counter * self.step_size
+        wraparound_offset = effective_counter // self._search_space_size
+        linear_index = effective_counter + wraparound_offset
+
+        # Convert linear index to N-D coordinates using mixed-radix decomposition
+        new_pos = []
+        remainder = linear_index
+
+        for dim_size in dim_sizes:
+            new_pos.append(remainder % dim_size)
+            remainder = remainder // dim_size
+
+        return np.array(new_pos)
+
+    def _generate_position(self):
+        """Generate next grid position using orthogonal traversal.
+
+        This method overrides CoreOptimizer._generate_position() to provide
+        grid-specific position generation. It:
+        1. Computes the grid position for current counter
+        2. Advances the counter (supporting constraint retry)
+        3. Clips to valid bounds
+
+        Returns
+        -------
+        np.ndarray
+            Clipped position array ready for evaluation.
+        """
+        # Compute position for current counter
+        pos = self._compute_grid_position()
+
+        # Advance counter for next call (supports constraint retry)
+        self._grid_counter += 1
+
+        # Clip to valid bounds (handles edge cases)
+        return self._clip_position(pos)
+
+    # =========================================================================
+    # Template Method Stubs (not used - _generate_position bypasses them)
+    # =========================================================================
+    # These methods are required by the interface but are not called because
+    # _generate_position() is overridden. Grid search generates the full
+    # position at once, not by dimension type.
+
+    def _iterate_continuous_batch(self) -> np.ndarray:
+        """Not used - grid search generates full position via _generate_position."""
+        raise NotImplementedError(
+            "OrthogonalGridSearch uses _generate_position() for grid traversal"
         )
-        div_tmp = self.nth_trial * self.step_size + int(
-            self.nth_trial * self.step_size / self.conv.search_space_size
+
+    def _iterate_categorical_batch(self) -> np.ndarray:
+        """Not used - grid search generates full position via _generate_position."""
+        raise NotImplementedError(
+            "OrthogonalGridSearch uses _generate_position() for grid traversal"
         )
-        flipped_new_pos = []
 
-        for dim_size in self.conv.dim_sizes:
-            mod = mod_tmp % dim_size
-            div = int(div_tmp / dim_size)
+    def _iterate_discrete_batch(self) -> np.ndarray:
+        """Not used - grid search generates full position via _generate_position."""
+        raise NotImplementedError(
+            "OrthogonalGridSearch uses _generate_position() for grid traversal"
+        )
 
-            flipped_new_pos.append(mod)
+    def _evaluate(self, score_new):
+        """Track best position using greedy evaluation.
 
-            mod_tmp = div
-            div_tmp = div
-
-        return array(flipped_new_pos)
-
-    @BaseOptimizer.track_new_pos
-    def iterate(self):
-        """Generate next orthogonal grid position."""
-        pos_new = self.grid_move()
-        pos_new = self.conv2pos(pos_new)
-        return pos_new
-
-    @BaseOptimizer.track_new_score
-    def evaluate(self, score_new):
-        BaseOptimizer.evaluate(self, score_new)
+        Grid search always moves to the next position (deterministic traversal),
+        so acceptance is always True. We just track the best found so far.
+        """
+        self._update_best(self.pos_new, score_new)
+        self._update_current(self.pos_new, score_new)

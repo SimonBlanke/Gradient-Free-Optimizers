@@ -2,37 +2,45 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-from __future__ import annotations
+"""
+Random Search Optimizer.
 
-from collections.abc import Callable
-from typing import Any
+Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
+"""
 
-from gradient_free_optimizers._init_utils import get_default_initialize
+import numpy as np
 
 from ..base_optimizer import BaseOptimizer
-from ..core_optimizer.converter import ArrayLike
 
 
 class RandomSearchOptimizer(BaseOptimizer):
-    """Random search optimizer that samples positions uniformly at random.
+    """Random Search optimizer - samples randomly from the search space.
 
-    Serves as a baseline optimizer and is useful when the objective function
-    has no exploitable structure. Each iteration samples a completely random
-    position from the search space.
+    Random search is the simplest optimization strategy that samples positions
+    uniformly at random from the search space. Despite its simplicity, it can
+    be surprisingly effective for many problems, especially in high dimensions.
+
+    Dimension Support:
+        - Continuous: YES (uniform random in range)
+        - Categorical: YES (uniform random category)
+        - Discrete: YES (uniform random index)
+
+    The algorithm has no memory of previous evaluations and makes no assumptions
+    about the objective function. Each iteration independently samples a random
+    point, making it trivially parallelizable.
 
     Parameters
     ----------
     search_space : dict
-        Dictionary mapping parameter names to arrays of possible values.
-    initialize : dict, default=None
+        Dictionary mapping parameter names to search dimension definitions.
+    initialize : dict, optional
         Strategy for generating initial positions.
-        If None, uses {"grid": 4, "random": 2, "vertices": 4}.
     constraints : list, optional
         List of constraint functions.
     random_state : int, optional
         Seed for random number generation.
     rand_rest_p : float, default=0
-        Probability of random restart (always 1.0 effective for this optimizer).
+        Probability of random restart (irrelevant for random search).
     nth_process : int, optional
         Process index for parallel optimization.
     """
@@ -46,16 +54,13 @@ class RandomSearchOptimizer(BaseOptimizer):
 
     def __init__(
         self,
-        search_space: dict[str, Any],
-        initialize: dict[str, int] | None = None,
-        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
-        random_state: int | None = None,
-        rand_rest_p: float = 0,
-        nth_process: int | None = None,
-    ) -> None:
-        if initialize is None:
-            initialize = get_default_initialize()
-
+        search_space,
+        initialize=None,
+        constraints=None,
+        random_state=None,
+        rand_rest_p=0,
+        nth_process=None,
+    ):
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -65,11 +70,69 @@ class RandomSearchOptimizer(BaseOptimizer):
             nth_process=nth_process,
         )
 
-    @BaseOptimizer.track_new_pos
-    def iterate(self) -> ArrayLike:
-        """Generate a random position in the search space."""
-        return self.move_random()
+        # Initialize RNG for reproducibility using the actual seed
+        # (self.random_seed is set by CoreOptimizer and accounts for nth_process)
+        self._rng = np.random.default_rng(self.random_seed)
 
-    @BaseOptimizer.track_new_score
-    def evaluate(self, score_new: float) -> None:
-        return super().evaluate(score_new)
+    def _iterate_continuous_batch(self) -> np.ndarray:
+        """Uniform random sampling in continuous ranges.
+
+        Accesses via: self._continuous_bounds
+
+        Random search ignores current position - each sample is independent.
+
+        Returns
+        -------
+        np.ndarray
+            Random values uniformly distributed in [min, max]
+        """
+        bounds = self._continuous_bounds
+        mins = bounds[:, 0]
+        maxs = bounds[:, 1]
+        return self._rng.uniform(mins, maxs)
+
+    def _iterate_categorical_batch(self) -> np.ndarray:
+        """Uniform random category selection.
+
+        Accesses via: self._categorical_sizes
+
+        Random search ignores current position - each sample is independent.
+
+        Returns
+        -------
+        np.ndarray
+            Random category indices
+        """
+        n_categories = self._categorical_sizes
+        n = len(n_categories)
+        return np.floor(self._rng.random(n) * n_categories).astype(np.int64)
+
+    def _iterate_discrete_batch(self) -> np.ndarray:
+        """Uniform random index selection.
+
+        Accesses via: self._discrete_bounds
+
+        Random search ignores current position - each sample is independent.
+
+        Returns
+        -------
+        np.ndarray
+            Random indices within bounds
+        """
+        bounds = self._discrete_bounds
+        mins = bounds[:, 0].astype(np.int64)
+        maxs = bounds[:, 1].astype(np.int64)
+        # randint is exclusive on high, so add 1
+        return self._rng.integers(mins, maxs + 1)
+
+    def _evaluate(self, score_new):
+        """Update best position if this score is better.
+
+        Random search has no concept of "current" position since each
+        iteration is independent. We only track the global best.
+
+        Args:
+            score_new: Score of the most recently evaluated position
+        """
+        # Simply update best if this is better
+        self._update_best(self.pos_new, score_new)

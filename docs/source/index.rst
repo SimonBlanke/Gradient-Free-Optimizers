@@ -1,52 +1,69 @@
-:html_theme.sidebar_secondary.remove:
-
 .. raw:: html
 
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@200;400;600&display=swap" rel="stylesheet">
+
     <div class="hero-section">
-        <h1 class="hero-title">Gradient-Free-Optimizers</h1>
+        <h1 class="hero-title" style="font-family: 'Outfit', sans-serif; font-weight: 200;">
+            Gradient Free Optimizers
+        </h1>
         <p class="hero-tagline">
-            A collection of gradient-free optimization algorithms for efficient search
-            in complex, non-differentiable parameter spaces.
+            Lightweight optimization with local, global, population-based and sequential techniques across mixed search spaces
         </p>
     </div>
 
     <div class="stats-strip">
-        <div class="stat-item">
-            <div class="stat-number">22</div>
-            <div class="stat-label">Algorithms</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number">4</div>
-            <div class="stat-label">Categories</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number">2</div>
-            <div class="stat-label">API Styles</div>
-        </div>
-        <div class="stat-item">
-            <div class="stat-number">0</div>
-            <div class="stat-label">Gradients Required</div>
-        </div>
+        <a href="get_started/algorithms.html" class="stat-item">
+            <div class="stat-front">
+                <div class="stat-value">22</div>
+                <div class="stat-label">Algorithms</div>
+            </div>
+            <div class="stat-hover">
+                <div class="stat-hover-text">Hill Climbing · Bayesian · Particle Swarm · Genetic · Simulated Annealing ...</div>
+            </div>
+        </a>
+        <a href="get_started/search_spaces.html" class="stat-item">
+            <div class="stat-front">
+                <div class="stat-value">mixed</div>
+                <div class="stat-label">Search Spaces</div>
+            </div>
+            <div class="stat-hover">
+                <div class="stat-hover-text">Continuous, discrete, and categorical dimensions automatically detected</div>
+            </div>
+        </a>
+        <a href="get_started/dependencies.html" class="stat-item">
+            <div class="stat-front">
+                <div class="stat-value">minimal</div>
+                <div class="stat-label">Dependencies</div>
+            </div>
+            <div class="stat-hover">
+                <div class="stat-hover-text">Only NumPy and pandas required</div>
+            </div>
+        </a>
+        <a href="get_started/pythonic_api.html" class="stat-item">
+            <div class="stat-front">
+                <div class="stat-value">pythonic</div>
+                <div class="stat-label">API</div>
+            </div>
+            <div class="stat-hover">
+                <div class="stat-hover-text">Dict search spaces, callable objectives, DataFrame results</div>
+            </div>
+        </a>
     </div>
 
-    <div class="badge-strip">
-        <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions">
-            <img src="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions/workflows/tests.yml/badge.svg" alt="Tests">
-        </a>
-        <a href="https://codecov.io/gh/SimonBlanke/Gradient-Free-Optimizers">
-            <img src="https://codecov.io/gh/SimonBlanke/Gradient-Free-Optimizers/branch/master/graph/badge.svg" alt="Coverage">
-        </a>
-        <a href="https://pypi.org/project/gradient-free-optimizers/">
-            <img src="https://img.shields.io/pypi/v/gradient-free-optimizers.svg" alt="PyPI">
-        </a>
-        <a href="https://pepy.tech/project/gradient-free-optimizers">
-            <img src="https://static.pepy.tech/badge/gradient-free-optimizers" alt="Downloads">
-        </a>
-    </div>
+    <p align="center">
+    <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers/actions"><img src="https://img.shields.io/github/actions/workflow/status/SimonBlanke/Gradient-Free-Optimizers/ci.yml?style=for-the-badge&logo=githubactions&logoColor=white&label=tests" alt="Tests"></a>
+    <a href="https://app.codecov.io/gh/SimonBlanke/Gradient-Free-Optimizers"><img src="https://img.shields.io/codecov/c/github/SimonBlanke/Gradient-Free-Optimizers?style=for-the-badge&logo=codecov&logoColor=white" alt="Coverage"></a>
+    </p>
+
+
+----
 
 
 Why Gradient-Free?
-------------------
+==================
 
 Not every optimization problem has gradients. Machine learning hyperparameter tuning,
 simulation optimization, feature selection, and black-box optimization all require
@@ -211,16 +228,22 @@ Key Features
             )
 
 
+----
+
+Quick Install
+-------------
+
+.. code-block:: bash
+
+    pip install gradient-free-optimizers
+
+
+----
+
 Quick Start
 -----------
 
 .. tab-set::
-
-    .. tab-item:: Install
-
-        .. code-block:: bash
-
-            pip install gradient-free-optimizers
 
     .. tab-item:: Basic Example
 
@@ -274,32 +297,8 @@ Quick Start
             print(f"Best accuracy: {opt.best_score:.3f}")
             print(f"Best params: {opt.best_para}")
 
-    .. tab-item:: Ask-Tell Interface
 
-        .. code-block:: python
-
-            import numpy as np
-            from gradient_free_optimizers import ParticleSwarmOptimizer
-
-            def objective(para):
-                return -(para["x"] ** 2 + para["y"] ** 2)
-
-            search_space = {
-                "x": np.linspace(-10, 10, 100),
-                "y": np.linspace(-10, 10, 100),
-            }
-
-            opt = ParticleSwarmOptimizer(search_space, population=10)
-            opt.setup_search(objective, n_iter=100)
-
-            for i in range(100):
-                params = opt.ask()
-                score = objective(params)
-                opt.tell(params, score)
-
-                if i % 20 == 0:
-                    print(f"Iter {i}: best score = {opt.best_score:.4f}")
-
+----
 
 The GFO Ecosystem
 -----------------
@@ -341,6 +340,8 @@ tool for hyperparameter optimization and experiment tracking.
         - Experiment tracking
 
 
+----
+
 Documentation
 -------------
 
@@ -348,7 +349,7 @@ Documentation
     :gutter: 3
 
     .. grid-item-card:: Get Started
-        :link: get_started
+        :link: get_started/index
         :link-type: doc
         :text-align: center
 
@@ -390,11 +391,39 @@ Documentation
         Frequently asked questions
 
 
+.. raw:: html
+
+   <script>
+   document.addEventListener('DOMContentLoaded', function() {
+      const sidebar = document.querySelector('.bd-toc-nav.page-toc');
+      if (sidebar) {
+         const backToTopDiv = document.createElement('div');
+         backToTopDiv.className = 'back-to-top-sidebar';
+         backToTopDiv.innerHTML = '<a href="#">\u2191 Back to top</a>';
+         sidebar.appendChild(backToTopDiv);
+
+         backToTopDiv.querySelector('a').addEventListener('click', function(e) {
+            e.preventDefault();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+         });
+
+         window.addEventListener('scroll', function() {
+            if (window.scrollY > 400) {
+               backToTopDiv.classList.add('visible');
+            } else {
+               backToTopDiv.classList.remove('visible');
+            }
+         });
+      }
+   });
+   </script>
+
+
 .. toctree::
     :maxdepth: 2
     :hidden:
 
-    get_started
+    get_started/index
     installation
     user_guide
     examples

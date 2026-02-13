@@ -2,9 +2,11 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+"""Abstract base class for line search strategies in Powell's method."""
+
 from abc import ABC, abstractmethod
 
-from gradient_free_optimizers._array_backend import mean
+import numpy as np
 
 
 class LineSearch(ABC):
@@ -40,7 +42,7 @@ class LineSearch(ABC):
         Parameters
         ----------
         origin : np.ndarray
-            Starting position in search space (integer indices).
+            Starting position in search space.
         direction : np.ndarray
             Normalized direction vector to search along.
         max_iters : int
@@ -117,42 +119,51 @@ class LineSearch(ABC):
         max_t_positive = float("inf")
         max_t_negative = float("inf")
 
-        max_positions = self.optimizer.conv.max_positions
+        # Get dimension bounds
+        dim_names = list(self.optimizer.search_space.keys())
+        for i, name in enumerate(dim_names):
+            d = direction[i]
+            o = origin[i]
 
-        for i, (d, o, max_pos) in enumerate(zip(direction, origin, max_positions)):
             if abs(d) < 1e-10:
                 continue
 
-            if d > 0:
-                t_to_max = (max_pos - o) / d
-                t_to_zero = -o / d
-                max_t_positive = min(max_t_positive, t_to_max)
-                max_t_negative = min(max_t_negative, -t_to_zero)
+            dim_def = self.optimizer.search_space[name]
+            if isinstance(dim_def, tuple):
+                # Continuous
+                min_val, max_val = dim_def
+            elif isinstance(dim_def, list | np.ndarray):
+                # Categorical or discrete: index bounds
+                min_val, max_val = 0, len(dim_def) - 1
             else:
-                t_to_zero = -o / d
-                t_to_max = (max_pos - o) / d
-                max_t_positive = min(max_t_positive, t_to_zero)
+                continue
+
+            if d > 0:
+                t_to_max = (max_val - o) / d
+                t_to_min = (min_val - o) / d
+                max_t_positive = min(max_t_positive, t_to_max)
+                max_t_negative = min(max_t_negative, -t_to_min)
+            else:
+                t_to_min = (min_val - o) / d
+                t_to_max = (max_val - o) / d
+                max_t_positive = min(max_t_positive, t_to_min)
                 max_t_negative = min(max_t_negative, -t_to_max)
 
         max_t = min(max_t_positive, max_t_negative)
 
         if max_t == float("inf"):
-            # Direction is zero vector (shouldn't happen with normalized directions)
-            # Fall back to average dimension size
-            max_t = float(mean(max_positions))
+            # Fallback
+            max_t = 10.0
         elif max_t < 0:
-            # Numerical issue or at boundary corner
             max_t = 1.0
 
-        # Ensure at least one grid step is possible (but respect actual bounds)
-        # max_t can legitimately be small if we're near a boundary
         max_t = max(max_t, 1.0)
 
         return max_t
 
     def _snap_to_grid(self, position):
         """
-        Snap a floating-point position to valid grid indices.
+        Snap a floating-point position to valid grid/bounds.
 
         Parameters
         ----------
@@ -162,9 +173,9 @@ class LineSearch(ABC):
         Returns
         -------
         np.ndarray
-            Valid integer position within search space bounds.
+            Valid position within search space bounds.
         """
-        return self.optimizer.conv2pos(position)
+        return self.optimizer.conv2pos_typed(position)
 
     def _is_valid(self, position) -> bool:
         """

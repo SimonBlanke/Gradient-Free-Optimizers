@@ -2,7 +2,13 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-from gradient_free_optimizers._array_backend import array, linalg, zeros
+"""
+Direction class for Powell's Method.
+
+Represents a search direction for line searches.
+"""
+
+import numpy as np
 
 
 class Direction:
@@ -11,19 +17,17 @@ class Direction:
 
     This class handles movement along an arbitrary direction vector in the
     search space, supporting line searches for 1D optimization.
+
+    Parameters
+    ----------
+    direction_vector : array-like
+        The direction vector to search along. Will be normalized.
     """
 
     def __init__(self, direction_vector):
-        """
-        Initialize a direction for line search.
-
-        Parameters
-        ----------
-        direction_vector : array-like
-            The direction vector to search along. Will be normalized.
-        """
-        direction_vector = array(direction_vector)
-        norm = linalg.norm(direction_vector)
+        """Initialize a direction for line search."""
+        direction_vector = np.array(direction_vector, dtype=float)
+        norm = np.linalg.norm(direction_vector)
         if norm < 1e-10:
             raise ValueError("Direction vector cannot be zero")
         self.direction = direction_vector / norm
@@ -41,10 +45,10 @@ class Direction:
 
         Returns
         -------
-        array
+        np.ndarray
             New position: origin + t * direction
         """
-        return array(origin) + t * self.direction
+        return np.array(origin) + t * self.direction
 
     @classmethod
     def from_two_points(cls, position_1, position_2):
@@ -63,7 +67,7 @@ class Direction:
         Direction
             Direction pointing from position_1 to position_2
         """
-        direction_vector = array(position_2) - array(position_1)
+        direction_vector = np.array(position_2) - np.array(position_1)
         return cls(direction_vector)
 
     @classmethod
@@ -83,6 +87,6 @@ class Direction:
         Direction
             Unit vector along the specified axis
         """
-        direction_vector = zeros(n_dimensions)
+        direction_vector = np.zeros(n_dimensions)
         direction_vector[dimension] = 1.0
         return cls(direction_vector)

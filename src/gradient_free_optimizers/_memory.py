@@ -17,7 +17,8 @@ class CachedObjectiveAdapter(ObjectiveAdapter):
         super().__init__(conv, objective)
 
         self.memory_dict = {}
-        self.memory_dict_new = {}
+        # Note: memory_dict_new was removed - it duplicated memory_dict
+        # and was never read
 
     def memory(self, warm_start: pd.DataFrame, memory: Any = None):
         if isinstance(memory, DictProxy):
@@ -48,5 +49,4 @@ class CachedObjectiveAdapter(ObjectiveAdapter):
         else:
             result, params = self._call_objective(pos)
             self.memory_dict[pos_t] = result
-            self.memory_dict_new[pos_t] = result
             return result, params

@@ -2,16 +2,27 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+"""
+Downhill Simplex (Nelder-Mead) Optimizer.
+
+Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
+
+This optimizer uses the "State vor iterate()" pattern:
+- Computes the full next position BEFORE _iterate_*_batch() methods are called
+- The _iterate_*_batch() methods just extract the appropriate dimension components
+"""
+
 from __future__ import annotations
 
-import random
 from collections.abc import Callable
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from gradient_free_optimizers._init_utils import get_default_initialize
+import numpy as np
 
-from ..core_optimizer.converter import ArrayLike
-from .hill_climbing_optimizer import HillClimbingOptimizer
+from ..base_optimizer import BaseOptimizer
+
+if TYPE_CHECKING:
+    pass
 
 
 def _arrays_equal(a: Any, b: Any) -> bool:
@@ -23,14 +34,14 @@ def _arrays_equal(a: Any, b: Any) -> bool:
     return a == b
 
 
-def sort_list_idx(list_: list[float]) -> list[int]:
+def _sort_list_idx(list_: list[float]) -> list[int]:
     """Return indices that would sort the list in descending order."""
     indexed = list(enumerate(list_))
     indexed.sort(key=lambda x: x[1], reverse=True)
     return [i for i, _ in indexed]
 
 
-def centroid(array_list: list[ArrayLike]) -> list[float]:
+def _centroid(array_list: list) -> np.ndarray:
     """Calculate centroid of a list of arrays."""
     n_dims = len(array_list[0])
     result = []
@@ -40,23 +51,42 @@ def centroid(array_list: list[ArrayLike]) -> list[float]:
         center_dim_mean = sum(center_dim_pos) / len(center_dim_pos)
         result.append(center_dim_mean)
 
-    return result
+    return np.array(result)
 
 
-class DownhillSimplexOptimizer(HillClimbingOptimizer):
+class DownhillSimplexOptimizer(BaseOptimizer):
     """Nelder-Mead downhill simplex optimizer.
 
-    Maintains a simplex of n+1 points in n-dimensional space and iteratively
-    transforms it through reflection, expansion, contraction, and shrinkage
-    operations to find the optimum.
+    Dimension Support:
+        - Continuous: YES (native simplex operations)
+        - Categorical: YES (with index-based operations)
+        - Discrete: YES (with index-based operations)
+
+    The Nelder-Mead simplex method maintains a simplex of n+1 points in
+    n-dimensional space and iteratively transforms it through reflection,
+    expansion, contraction, and shrinkage operations to find the optimum.
+
+    This implementation uses the "State vor iterate()" pattern:
+    The simplex state machine computes the full next position BEFORE
+    the template methods are called. The _iterate_*_batch() methods
+    simply extract the appropriate dimension components.
+
+    Algorithm:
+    1. Initialize simplex with n+1 vertices
+    2. Sort vertices by function value
+    3. Compute centroid of best n vertices
+    4. Try reflection: if better than best, try expansion
+    5. If reflection is middle-quality, accept it
+    6. If reflection is poor, try contraction
+    7. If contraction fails, shrink entire simplex toward best
+    8. Repeat until convergence
 
     Parameters
     ----------
     search_space : dict
-        Dictionary mapping parameter names to arrays of possible values.
-    initialize : dict, default=None
+        Dictionary mapping parameter names to search dimension definitions.
+    initialize : dict, optional
         Strategy for generating initial simplex vertices.
-        If None, uses {"grid": 4, "random": 2, "vertices": 4}.
     constraints : list, optional
         List of constraint functions.
     random_state : int, optional
@@ -65,9 +95,9 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
         Probability of random restart.
     nth_process : int, optional
         Process index for parallel optimization.
-    alpha : float, default=1
+    alpha : float, default=1.0
         Reflection coefficient.
-    gamma : float, default=2
+    gamma : float, default=2.0
         Expansion coefficient.
     beta : float, default=0.5
         Contraction coefficient.
@@ -90,13 +120,11 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
         random_state: int | None = None,
         rand_rest_p: float = 0,
         nth_process: int | None = None,
-        alpha: float = 1,
-        gamma: float = 2,
+        alpha: float = 1.0,
+        gamma: float = 2.0,
         beta: float = 0.5,
         sigma: float = 0.5,
     ) -> None:
-        if initialize is None:
-            initialize = get_default_initialize()
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -106,150 +134,270 @@ class DownhillSimplexOptimizer(HillClimbingOptimizer):
             nth_process=nth_process,
         )
 
-        self.alpha = alpha
-        self.gamma = gamma
-        self.beta = beta
-        self.sigma = sigma
+        self.alpha = alpha  # Reflection coefficient
+        self.gamma = gamma  # Expansion coefficient
+        self.beta = beta  # Contraction coefficient
+        self.sigma = sigma  # Shrink coefficient
 
-        self.n_simp_positions = len(self.conv.search_space) + 1
-        self.simp_positions = []
+        # Number of simplex vertices = dimensions + 1
+        self.n_simp_positions = len(self.search_space) + 1
 
+        # Simplex state
+        self.simplex_pos = []
+        self.simplex_scores = []
         self.simplex_step = 0
 
+        # Ensure we have enough initial positions for the simplex
         diff_init = self.n_simp_positions - self.init.n_inits
         if diff_init > 0:
             self.init.add_n_random_init_pos(diff_init)
 
-    def finish_initialization(self) -> None:
-        idx_sorted = sort_list_idx(self.scores_valid)
-        self.simplex_pos = [self.positions_valid[idx] for idx in idx_sorted]
+        # Working variables for simplex operations
+        self.center_array = None
+        self.r_pos = None
+        self.r_score = None
+        self.e_pos = None
+        self.e_score = None
+        self.c_pos = None
+        self.c_score = None
+        self.h_pos = None
+        self.h_score = None
+        self.compress_idx = 0
+
+        # Pre-computed next position for "State vor iterate()" pattern
+        self._next_position = None
+        self._next_position_computed = False
+
+        # RNG for random fallback
+        self._rng = np.random.default_rng(self.random_seed)
+
+    def _clip_to_bounds(self, pos: np.ndarray) -> np.ndarray:
+        """Clip position to valid bounds with proper types.
+
+        Handles continuous, categorical, and discrete dimensions.
+        """
+        pos_clipped = pos.copy()
+        dim_names = list(self.search_space.keys())
+
+        for i, name in enumerate(dim_names):
+            dim_def = self.search_space[name]
+            val = pos[i]
+
+            if isinstance(dim_def, tuple):
+                # Continuous: clip to bounds
+                pos_clipped[i] = np.clip(val, dim_def[0], dim_def[1])
+            elif isinstance(dim_def, list):
+                # Categorical: clip to valid indices
+                pos_clipped[i] = int(np.clip(round(val), 0, len(dim_def) - 1))
+            elif isinstance(dim_def, np.ndarray):
+                # Discrete: clip to valid indices
+                pos_clipped[i] = int(np.clip(round(val), 0, len(dim_def) - 1))
+
+        return pos_clipped
+
+    def _finish_initialization(self) -> None:
+        """Initialize the simplex from evaluated positions.
+
+        This hook is called by CoreOptimizer.finish_initialization() after
+        all init positions have been evaluated. We use the evaluated positions
+        to form the initial simplex vertices.
+        """
+        # Sort initial positions by score (best first)
+        idx_sorted = _sort_list_idx(self.scores_valid)
+        self.simplex_pos = [self.positions_valid[idx].copy() for idx in idx_sorted]
         self.simplex_scores = [self.scores_valid[idx] for idx in idx_sorted]
 
         self.simplex_step = 1
 
-        self.i_x_0 = 0
-        self.i_x_N_1 = -2
-        self.i_x_N = -1
+    def _compute_next_simplex_position(self) -> None:
+        """Compute the full next position based on simplex state machine.
 
-        self.search_state = "iter"
+        This is called ONCE before the first _iterate_*_batch() method.
+        The computed position is stored in self._next_position.
+        """
+        if self._next_position_computed:
+            return
 
-    @HillClimbingOptimizer.track_new_pos
-    def iterate(self) -> ArrayLike:
-        """Generate next simplex position via reflection/expansion/contraction."""
+        # Check if simplex is stale (all vertices same)
         simplex_stale = all(
-            _arrays_equal(self.simplex_pos[0], array) for array in self.simplex_pos
+            _arrays_equal(self.simplex_pos[0], arr) for arr in self.simplex_pos
         )
 
         if simplex_stale:
-            idx_sorted = sort_list_idx(self.scores_valid)
-            self.simplex_pos = [self.positions_valid[idx] for idx in idx_sorted]
-            self.simplex_scores = [self.scores_valid[idx] for idx in idx_sorted]
-
+            # Reset simplex from all evaluated positions
+            idx_sorted = _sort_list_idx(self.scores_valid)
+            self.simplex_pos = [
+                self.positions_valid[idx].copy()
+                for idx in idx_sorted[: self.n_simp_positions]
+            ]
+            self.simplex_scores = [
+                self.scores_valid[idx] for idx in idx_sorted[: self.n_simp_positions]
+            ]
             self.simplex_step = 1
 
         if self.simplex_step == 1:
-            idx_sorted = sort_list_idx(self.simplex_scores)
+            # Step 1: Reflection
+            # Sort simplex by score (best first)
+            idx_sorted = _sort_list_idx(self.simplex_scores)
             self.simplex_pos = [self.simplex_pos[idx] for idx in idx_sorted]
             self.simplex_scores = [self.simplex_scores[idx] for idx in idx_sorted]
 
-            self.center_array = centroid(self.simplex_pos[:-1])
+            # Compute centroid of all but worst vertex
+            self.center_array = _centroid(self.simplex_pos[:-1])
 
+            # Reflection point: center + alpha * (center - worst)
             r_pos = self.center_array + self.alpha * (
                 self.center_array - self.simplex_pos[-1]
             )
-            self.r_pos = self.conv2pos(r_pos)
-            pos_new = self.r_pos
+            self.r_pos = self._clip_to_bounds(r_pos)
+            self._next_position = self.r_pos.copy()
 
         elif self.simplex_step == 2:
+            # Step 2: Expansion
             e_pos = self.center_array + self.gamma * (
                 self.center_array - self.simplex_pos[-1]
             )
-            self.e_pos = self.conv2pos(e_pos)
-            self.simplex_step = 1
-
-            pos_new = self.e_pos
+            self.e_pos = self._clip_to_bounds(e_pos)
+            self._next_position = self.e_pos.copy()
 
         elif self.simplex_step == 3:
-            # iter Contraction
+            # Step 3: Contraction
             c_pos = self.h_pos + self.beta * (self.center_array - self.h_pos)
-            c_pos = self.conv2pos(c_pos)
-
-            pos_new = c_pos
+            c_pos = self._clip_to_bounds(c_pos)
+            self._next_position = c_pos.copy()
 
         elif self.simplex_step == 4:
-            # iter Shrink
+            # Step 4: Shrink
             pos = self.simplex_pos[self.compress_idx]
-            pos = pos + self.sigma * (self.simplex_pos[0] - pos)
+            pos = np.array(pos) + self.sigma * (
+                np.array(self.simplex_pos[0]) - np.array(pos)
+            )
+            self._next_position = self._clip_to_bounds(pos)
 
-            pos_new = self.conv2pos(pos)
+        else:
+            # Fallback: random position
+            self._next_position = self._generate_random_position()
 
-        if self.conv.not_in_constraint(pos_new):
-            return pos_new
+        self._next_position_computed = True
 
-        return self.move_climb(
-            pos_new, epsilon=self.epsilon, distribution=self.distribution
-        )
+    def _generate_random_position(self) -> np.ndarray:
+        """Generate a random position within bounds."""
+        n_dims = len(self.search_space)
+        pos = np.empty(n_dims)
+        dim_names = list(self.search_space.keys())
 
-    @HillClimbingOptimizer.track_new_score
-    def evaluate(self, score_new: float) -> None:
-        """Evaluate score and update simplex state machine."""
-        if self.simplex_step != 0:
-            self.prev_pos = self.positions_valid[-1]
+        for i, name in enumerate(dim_names):
+            dim_def = self.search_space[name]
+
+            if isinstance(dim_def, tuple):
+                # Continuous
+                pos[i] = self._rng.uniform(dim_def[0], dim_def[1])
+            elif isinstance(dim_def, list):
+                # Categorical
+                pos[i] = self._rng.integers(0, len(dim_def))
+            elif isinstance(dim_def, np.ndarray):
+                # Discrete
+                pos[i] = self._rng.integers(0, len(dim_def))
+
+        return pos
+
+    def _iterate_continuous_batch(self) -> np.ndarray:
+        """Extract continuous components from pre-computed simplex position.
+
+        The simplex position is computed ONCE when this method is first called.
+        """
+        self._compute_next_simplex_position()
+        return self._next_position[self._continuous_mask]
+
+    def _iterate_categorical_batch(self) -> np.ndarray:
+        """Extract categorical components from pre-computed simplex position."""
+        self._compute_next_simplex_position()
+        return self._next_position[self._categorical_mask]
+
+    def _iterate_discrete_batch(self) -> np.ndarray:
+        """Extract discrete components from pre-computed simplex position."""
+        self._compute_next_simplex_position()
+        return self._next_position[self._discrete_mask]
+
+    def _evaluate(self, score_new: float) -> None:
+        """Evaluate score and update simplex state machine.
+
+        Parameters
+        ----------
+        score_new : float
+            Score for the most recently evaluated position.
+        """
+        # Reset the pre-computed flag for next iteration
+        self._next_position_computed = False
+
+        prev_pos = self._pos_new
 
         if self.simplex_step == 1:
-            # self.r_pos = self.prev_pos
+            # Evaluate reflection
             self.r_score = score_new
 
             if self.r_score > self.simplex_scores[0]:
+                # Reflection is better than best: try expansion
                 self.simplex_step = 2
 
             elif self.r_score > self.simplex_scores[-2]:
-                # if r is better than x N-1
-                self.simplex_pos[-1] = self.r_pos
+                # Reflection is better than second-worst: accept it
+                self.simplex_pos[-1] = self.r_pos.copy()
                 self.simplex_scores[-1] = self.r_score
                 self.simplex_step = 1
 
-            if self.simplex_scores[-1] > self.r_score:
-                self.h_pos = self.simplex_pos[-1]
-                self.h_score = self.simplex_scores[-1]
             else:
-                self.h_pos = self.r_pos
-                self.h_score = self.r_score
+                # Reflection is poor: prepare for contraction
+                if self.simplex_scores[-1] > self.r_score:
+                    self.h_pos = np.array(self.simplex_pos[-1])
+                    self.h_score = self.simplex_scores[-1]
+                else:
+                    self.h_pos = np.array(self.r_pos)
+                    self.h_score = self.r_score
 
-            self.simplex_step = 3
+                self.simplex_step = 3
 
         elif self.simplex_step == 2:
+            # Evaluate expansion
             self.e_score = score_new
 
             if self.e_score > self.r_score:
-                self.simplex_scores[-1] = self.e_pos
-            elif self.r_score > self.e_score:
-                self.simplex_scores[-1] = self.r_pos
+                # Expansion is better: use it
+                self.simplex_pos[-1] = self.e_pos.copy()
+                self.simplex_scores[-1] = self.e_score
             else:
-                self.simplex_scores[-1] = random.choice([self.e_pos, self.r_pos])[0]
+                # Reflection was better: use reflection
+                self.simplex_pos[-1] = self.r_pos.copy()
+                self.simplex_scores[-1] = self.r_score
+
+            self.simplex_step = 1
 
         elif self.simplex_step == 3:
-            # eval Contraction
-            self.c_pos = self.prev_pos
+            # Evaluate contraction
+            self.c_pos = prev_pos
             self.c_score = score_new
 
             if self.c_score > self.simplex_scores[-1]:
+                # Contraction improved: accept it
                 self.simplex_scores[-1] = self.c_score
-                self.simplex_pos[-1] = self.c_pos
-
+                self.simplex_pos[-1] = self.c_pos.copy()
                 self.simplex_step = 1
-
             else:
-                # start Shrink
+                # Contraction failed: start shrink
                 self.simplex_step = 4
-                self.compress_idx = 0
+                self.compress_idx = 1  # Start from second vertex (skip best)
 
         elif self.simplex_step == 4:
-            # eval Shrink
+            # Evaluate shrink
             self.simplex_scores[self.compress_idx] = score_new
-            self.simplex_pos[self.compress_idx] = self.prev_pos
+            self.simplex_pos[self.compress_idx] = prev_pos.copy()
 
             self.compress_idx += 1
 
-            if self.compress_idx == self.n_simp_positions:
+            if self.compress_idx >= self.n_simp_positions:
+                # Shrink complete: back to reflection
                 self.simplex_step = 1
+
+        # Update best position tracking
+        self._update_best(self._pos_new, score_new)
+        self._update_current(self._pos_new, score_new)

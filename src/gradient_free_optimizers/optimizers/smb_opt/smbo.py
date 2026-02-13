@@ -2,6 +2,22 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+"""
+Sequential Model-Based Optimization (SMBO) base class.
+
+Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
+
+Template Method Pattern Compliance:
+    SMBO does NOT override public methods (iterate, evaluate, etc.).
+    Instead, it implements the private template methods:
+    - _iterate_*_batch(): return slices of surrogate-proposed position
+    - _evaluate(): handle Y_sample tracking and position removal
+
+    The surrogate model is trained once per iteration via _ensure_surrogate_trained(),
+    which caches the proposed position. The batch methods return slices of this
+    cached position to work with CoreOptimizer.iterate()'s dimension-type routing.
+"""
+
 from __future__ import annotations
 
 import logging
@@ -11,50 +27,46 @@ from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
 
-from gradient_free_optimizers._init_utils import (
-    get_default_initialize,
-    get_default_sampling,
-)
-
 from ..base_optimizer import BaseOptimizer
-from ..core_optimizer.converter import ArrayLike
 from .sampling import InitialSampler
 
 if TYPE_CHECKING:
     import pandas as pd
 
-np.seterr(divide="ignore", invalid="ignore")
-from gradient_free_optimizers._array_backend import (
-    HAS_NUMPY,
-    array,
-    isinf,
-    isnan,
-    meshgrid,
-)
-from gradient_free_optimizers._array_backend import (
-    random as np_random,
-)
 
-# Import numpy only for warm_start pandas operations
-if HAS_NUMPY:
-    import numpy as np
+def _isinf(x):
+    """Check if value is infinite."""
+    return math.isinf(x) if isinstance(x, int | float) else np.isinf(x)
+
+
+def _isnan(x):
+    """Check if value is NaN."""
+    return math.isnan(x) if isinstance(x, int | float) else np.isnan(x)
 
 
 class SMBO(BaseOptimizer):
-    """Base class for Sequential Model-Based Optimization algorithms.
+    """Base class for Sequential Model-Based Optimization.
 
-    SMBO algorithms use a surrogate model to approximate the objective function
-    and an acquisition function to decide which positions to evaluate next.
-    The surrogate model is trained on evaluated positions and their scores,
-    then used to predict promising candidates.
+    Dimension Support:
+        - Continuous: YES (surrogate model based)
+        - Categorical: YES (with index encoding)
+        - Discrete: YES (surrogate model based)
+
+    SMBO algorithms build a surrogate model of the objective function
+    and use an acquisition function to select the next point to evaluate.
+    The surrogate model is trained on evaluated positions and their scores.
+
+    Template Method Compliance:
+        This class follows the Template Method Pattern by implementing
+        _iterate_*_batch() methods that return slices of a surrogate-proposed
+        position, rather than overriding the public iterate() method.
 
     Parameters
     ----------
     search_space : dict
-        Dictionary mapping parameter names to arrays of possible values.
-    initialize : dict or None, default=None
+        Dictionary mapping parameter names to search dimension definitions.
+    initialize : dict, optional
         Strategy for generating initial positions before model-based search.
-        If None, uses {"grid": 4, "random": 2, "vertices": 4}.
     constraints : list, optional
         List of constraint functions that filter valid positions.
     random_state : int, optional
@@ -69,7 +81,6 @@ class SMBO(BaseOptimizer):
         Maximum number of positions to consider for sampling.
     sampling : dict, False, or None, default=None
         Sampling strategy for large search spaces. Use False to disable.
-        If None, uses {"random": 1000000}.
     replacement : bool, default=True
         Whether to allow re-evaluation of the same position.
 
@@ -79,9 +90,14 @@ class SMBO(BaseOptimizer):
         List of evaluated positions (training data for surrogate).
     Y_sample : list
         List of scores corresponding to X_sample.
-    sampler : InitialSampler
-        Sampler for generating candidate positions.
     """
+
+    name = "SMBO"
+    _name_ = "smbo"
+    __name__ = "SMBO"
+
+    optimizer_type = "sequential"
+    computationally_expensive = True
 
     def __init__(
         self,
@@ -96,11 +112,6 @@ class SMBO(BaseOptimizer):
         sampling: dict[str, int] | Literal[False] | None = None,
         replacement: bool = True,
     ) -> None:
-        if initialize is None:
-            initialize = get_default_initialize()
-        if sampling is None:
-            sampling = get_default_sampling()
-
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -112,12 +123,20 @@ class SMBO(BaseOptimizer):
 
         self.warm_start_smbo = warm_start_smbo
         self.max_sample_size = max_sample_size
-        self.sampling = sampling
+        self.sampling = sampling if sampling is not None else {"random": 1000000}
         self.replacement = replacement
 
+        # Create sampler for candidate position generation
         self.sampler = InitialSampler(self.conv, max_sample_size)
 
+        # Initialize training data
         self.init_warm_start_smbo(warm_start_smbo)
+
+        # Will be populated in finish_initialization
+        self.all_pos_comb = None
+
+        # Cache for surrogate-proposed position (cleared after each iteration)
+        self._cached_proposed_pos = None
 
     def init_warm_start_smbo(self, search_data: pd.DataFrame | None) -> None:
         """Initialize X_sample and Y_sample from previous optimization data.
@@ -130,16 +149,12 @@ class SMBO(BaseOptimizer):
             DataFrame with parameter columns and a 'score' column.
         """
         if search_data is not None:
-            # Note: warm_start uses pandas DataFrame, which requires numpy
-            # This is expected since users providing warm_start data have dependencies
-            import numpy as np
-
-            # filter out nan and inf
+            # Filter out nan and inf
             warm_start_smbo = search_data[
                 ~search_data.isin([np.nan, np.inf, -np.inf]).any(axis=1)
             ]
 
-            # filter out elements that are not in search space
+            # Filter out elements that are not in search space
             int_idx_list = []
             for para_name in self.conv.para_names:
                 search_data_dim = warm_start_smbo[para_name].values
@@ -158,135 +173,229 @@ class SMBO(BaseOptimizer):
 
             self.X_sample = self.conv.values2positions(X_sample_values)
             self.Y_sample = list(Y_sample)
-
         else:
             self.X_sample = []
             self.Y_sample = []
 
-    @staticmethod
-    def track_X_sample(iterate: Callable) -> Callable:
-        """Decorator that appends returned position to X_sample."""
+    # =========================================================================
+    # Property overrides for SMBO-specific X_sample/Y_sample tracking
+    # =========================================================================
 
-        def wrapper(self, *args: Any, **kwargs: Any) -> ArrayLike:
-            pos = iterate(self, *args, **kwargs)
-            self.X_sample.append(pos)
-            return pos
+    @property
+    def pos_new(self):
+        """Get the newest position."""
+        return self._pos_new
 
-        return wrapper
+    @pos_new.setter
+    def pos_new(self, pos):
+        """Set new position with SMBO-specific tracking.
 
-    @staticmethod
-    def track_y_sample(evaluate: Callable) -> Callable:
-        """Decorator that appends score to Y_sample, skipping invalid scores."""
+        - Clears the cached proposed position (for next iteration)
+        - Appends to X_sample (for surrogate training)
+        - Performs standard position tracking
+        """
+        # Clear cache for next iteration
+        self._cached_proposed_pos = None
+        # Track in X_sample for surrogate training
+        self.X_sample.append(pos)
+        # Standard tracking (parent behavior)
+        self.pos_new_list.append(pos)
+        self._pos_new = pos
 
-        def wrapper(self, score: float) -> None:
-            evaluate(self, score)
+    @property
+    def score_new(self):
+        """Get the newest score."""
+        return self._score_new
 
-            if math.isnan(score) if isinstance(score, float) else isnan(score):
-                del self.X_sample[-1]
-            elif math.isinf(score) if isinstance(score, float) else isinf(score):
-                del self.X_sample[-1]
-            else:
-                self.Y_sample.append(score)
+    @score_new.setter
+    def score_new(self, score):
+        """Set new score with SMBO-specific tracking.
 
-        return wrapper
+        - Appends to Y_sample for valid scores
+        - Removes corresponding X_sample entry for invalid scores
+        - Performs standard score tracking
+        """
+        # Standard tracking (parent behavior)
+        self.score_new_list.append(score)
+        self._score_new = score
 
-    def _sampling(self, all_pos_comb: np.ndarray) -> np.ndarray:
-        if self.sampling is False:
-            return all_pos_comb
-        elif "random" in self.sampling:
-            return self.random_sampling(all_pos_comb)
-
-    def random_sampling(self, pos_comb: np.ndarray) -> np.ndarray:
-        n_samples = self.sampling["random"]
-        n_pos_comb = (
-            len(pos_comb) if hasattr(pos_comb, "__len__") else pos_comb.shape[0]
-        )
-
-        if n_pos_comb <= n_samples:
-            return pos_comb
+        # Track valid scores
+        if not (_isinf(score) or _isnan(score)):
+            self.positions_valid.append(self._pos_new)
+            self.scores_valid.append(score)
+            # SMBO-specific: track in Y_sample for surrogate training
+            self.Y_sample.append(score)
         else:
-            _idx_sample = np_random.choice(n_pos_comb, n_samples, replace=False)
-            # Handle both numpy arrays and GFOArray
-            if hasattr(pos_comb, "shape"):
-                pos_comb_sampled = pos_comb[_idx_sample, :]
-            else:
-                pos_comb_sampled = array([pos_comb[i] for i in _idx_sample])
-            return pos_comb_sampled
+            # SMBO-specific: remove X_sample entry for invalid scores
+            if len(self.X_sample) > len(self.Y_sample):
+                del self.X_sample[-1]
 
     def _all_possible_pos(self) -> np.ndarray:
+        """Generate all possible positions in the search space.
+
+        For large spaces, this is subsampled by _sampling().
+        """
         pos_space = self.sampler.get_pos_space()
         n_dim = len(pos_space)
 
         # Create meshgrid and reshape
-        grids = meshgrid(*pos_space)
-        # Transpose and reshape to get all combinations
-        all_pos_comb = array(grids).T.reshape(-1, n_dim)
+        grids = np.meshgrid(*pos_space)
+        all_pos_comb = np.array(grids).T.reshape(-1, n_dim)
 
+        # Filter by constraints
         all_pos_comb_constr = []
         for pos in all_pos_comb:
             if self.conv.not_in_constraint(pos):
                 all_pos_comb_constr.append(pos)
 
-        all_pos_comb_constr = array(all_pos_comb_constr)
-        return all_pos_comb_constr
+        return np.array(all_pos_comb_constr)
 
-    def memory_warning(self, max_sample_size: int) -> None:
-        if (
-            self.conv.search_space_size > self.warnings
-            and max_sample_size > self.warnings
-        ):
-            warning_message0 = "\n Warning:"
-            warning_message1 = (
-                "\n search space size of "
-                + str(self.conv.search_space_size)
-                + " exceeding recommended limit."
-            )
-            warning_message3 = "\n Reduce search space size for better performance."
-            logging.warning(warning_message0 + warning_message1 + warning_message3)
+    def _sampling(self, all_pos_comb: np.ndarray) -> np.ndarray:
+        """Subsample candidate positions for large search spaces."""
+        if self.sampling is False:
+            return all_pos_comb
+        elif "random" in self.sampling:
+            return self._random_sampling(all_pos_comb)
+        return all_pos_comb
 
-    @track_X_sample
-    def init_pos(self) -> ArrayLike:
-        return super().init_pos()
+    def _random_sampling(self, pos_comb: np.ndarray) -> np.ndarray:
+        """Random subsampling of candidate positions."""
+        n_samples = self.sampling["random"]
+        n_pos_comb = len(pos_comb)
 
-    @BaseOptimizer.track_new_pos
-    @track_X_sample
-    def iterate(self) -> ArrayLike:
-        """Generate next position using surrogate model and acquisition function."""
-        return self._propose_location()
+        if n_pos_comb <= n_samples:
+            return pos_comb
+        else:
+            idx_sample = np.random.choice(n_pos_comb, n_samples, replace=False)
+            return pos_comb[idx_sample]
 
-    def _remove_position(self, position: ArrayLike) -> None:
+    def _remove_position(self, position: np.ndarray) -> None:
+        """Remove a position from the candidate set (for replacement=False)."""
         mask = np.all(self.all_pos_comb == position, axis=1)
         self.all_pos_comb = self.all_pos_comb[np.invert(mask)]
 
-    @BaseOptimizer.track_new_score
-    @track_y_sample
-    def evaluate(self, score_new: float) -> None:
-        """Evaluate the current position and update surrogate training data."""
-        self._evaluate_new2current(score_new)
-        self._evaluate_current2best()
+    # NOTE: init_pos() is NOT overridden - X_sample tracking happens via pos_new setter
 
-        if not self.replacement:
-            self._remove_position(self.pos_new)
+    def _finish_initialization(self) -> None:
+        """Generate candidate positions for surrogate model.
 
-    @BaseOptimizer.track_new_score
-    @track_y_sample
-    def evaluate_init(self, score_new: float) -> None:
-        self._evaluate_new2current(score_new)
-        self._evaluate_current2best()
+        Called by CoreOptimizer.finish_initialization() after all init
+        positions have been evaluated. Generates the candidate position
+        grid for the surrogate model to evaluate.
 
-    def _propose_location(self) -> ArrayLike:
+        Note: DO NOT set search_state here - CoreOptimizer handles that.
+        """
+        self.all_pos_comb = self._all_possible_pos()
+
+    # NOTE: iterate() is NOT overridden - uses CoreOptimizer.iterate() which calls
+    # the _iterate_*_batch() methods below
+
+    # =========================================================================
+    # Template Method Implementations for SMBO
+    # =========================================================================
+
+    def _ensure_surrogate_trained(self) -> None:
+        """Train surrogate and cache proposed position if not already done.
+
+        This method is called by each _iterate_*_batch() method. It trains
+        the surrogate model once per iteration and caches the proposed position.
+        Subsequent calls within the same iteration return immediately.
+
+        The cache is cleared by the pos_new setter when the position is finalized.
+        """
+        if self._cached_proposed_pos is not None:
+            return
+
         try:
             self._training()
+            exp_imp = self._expected_improvement()
+            index_best = list(exp_imp.argsort()[::-1])
+            self._cached_proposed_pos = self.pos_comb[index_best[0]]
         except ValueError:
             logging.warning(
                 "Training sequential model failed. Performing random iteration."
             )
-            return self.move_random()
+            self._cached_proposed_pos = self._move_random()
 
-        exp_imp = self._expected_improvement()
+    def _iterate_continuous_batch(self) -> np.ndarray:
+        """Return continuous portion of surrogate-proposed position.
 
-        index_best = list(exp_imp.argsort()[::-1])
-        all_pos_comb_sorted = self.pos_comb[index_best]
-        pos_best = all_pos_comb_sorted[0]
+        SMBO trains a surrogate model and proposes positions globally,
+        then returns the appropriate slice for continuous dimensions.
+        """
+        self._ensure_surrogate_trained()
+        return self._cached_proposed_pos[self._continuous_mask]
 
-        return pos_best
+    def _iterate_categorical_batch(self) -> np.ndarray:
+        """Return categorical portion of surrogate-proposed position.
+
+        SMBO trains a surrogate model and proposes positions globally,
+        then returns the appropriate slice for categorical dimensions.
+        """
+        self._ensure_surrogate_trained()
+        return self._cached_proposed_pos[self._categorical_mask]
+
+    def _iterate_discrete_batch(self) -> np.ndarray:
+        """Return discrete portion of surrogate-proposed position.
+
+        SMBO trains a surrogate model and proposes positions globally,
+        then returns the appropriate slice for discrete dimensions.
+        """
+        self._ensure_surrogate_trained()
+        return self._cached_proposed_pos[self._discrete_mask]
+
+    def _training(self) -> None:
+        """Train the surrogate model on X_sample and Y_sample.
+
+        Override in subclasses.
+        """
+        raise NotImplementedError("Subclass must implement _training()")
+
+    def _expected_improvement(self) -> np.ndarray:
+        """Compute acquisition function values for candidate positions.
+
+        Override in subclasses.
+        """
+        raise NotImplementedError("Subclass must implement _expected_improvement()")
+
+    def _move_random(self) -> np.ndarray:
+        """Generate a random valid position.
+
+        When replacement=False, selects from remaining positions in all_pos_comb.
+        Raises ValueError if search space is exhausted.
+        """
+        if not self.replacement:
+            if self.all_pos_comb is None or len(self.all_pos_comb) == 0:
+                raise ValueError(
+                    "Search space exhausted: no positions remaining with "
+                    "replacement=False"
+                )
+            idx = np.random.randint(len(self.all_pos_comb))
+            return self.all_pos_comb[idx]
+        return self.init.move_random_typed()
+
+    # NOTE: evaluate() is NOT overridden - uses CoreOptimizer.evaluate()
+    # Y_sample tracking happens via score_new setter
+
+    # NOTE: evaluate_init() is NOT overridden - uses CoreOptimizer.evaluate_init()
+    # Y_sample tracking happens via score_new setter
+
+    def _evaluate(self, score_new: float) -> None:
+        """SMBO-specific evaluation: update positions and handle replacement.
+
+        This template method is called by CoreOptimizer.evaluate() after
+        common tracking. SMBO uses greedy updates (always moves to new position).
+
+        Note: Y_sample tracking is handled by the score_new property setter,
+        not here, to ensure it works for both init and iterate phases.
+
+        Args:
+            score_new: Score of the most recently evaluated position
+        """
+        # Update best and current (greedy - always accept new position)
+        self._update_best(self.pos_new, score_new)
+        self._update_current(self.pos_new, score_new)
+
+        # Remove position from candidates if replacement=False
+        if not self.replacement and self.pos_new is not None:
+            self._remove_position(self.pos_new)

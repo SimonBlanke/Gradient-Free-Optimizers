@@ -2,6 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+"""Expected Improvement acquisition function for Bayesian optimization."""
 
 from gradient_free_optimizers._array_backend import array, zeros_like
 from gradient_free_optimizers._array_backend import random as np_random
@@ -9,6 +10,7 @@ from gradient_free_optimizers._math_backend import norm_cdf, norm_pdf
 
 
 def normalize(arr):
+    """Normalize array values to [0, 1] range."""
     arr = array(arr)
     num = arr - arr.min()
     den = arr.max() - arr.min()
@@ -20,12 +22,15 @@ def normalize(arr):
 
 
 class ExpectedImprovement:
+    """Expected Improvement acquisition function for selecting next query point."""
+
     def __init__(self, surrogate_model, position_l, xi):
         self.surrogate_model = surrogate_model
         self.position_l = position_l
         self.xi = xi
 
     def calculate(self, X_sample, Y_sample):
+        """Compute expected improvement values for all candidate positions."""
         mu, sigma = self.surrogate_model.predict(self.position_l, return_std=True)
         # TODO mu_sample = self.surrogate_model.predict(X_sample)
         mu = array(mu).reshape(-1, 1)

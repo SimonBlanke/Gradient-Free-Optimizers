@@ -2,6 +2,10 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+from ._individual import Individual
+from ._particle import Particle
+from ._spiral import Spiral
+from .base_population_optimizer import BasePopulationOptimizer
 from .differential_evolution import DifferentialEvolutionOptimizer
 from .evolution_strategy import EvolutionStrategyOptimizer
 from .genetic_algorithm import GeneticAlgorithmOptimizer
@@ -10,10 +14,14 @@ from .particle_swarm_optimization import ParticleSwarmOptimizer
 from .spiral_optimization import SpiralOptimization
 
 __all__ = [
-    "ParallelTemperingOptimizer",
+    "BasePopulationOptimizer",
     "ParticleSwarmOptimizer",
-    "SpiralOptimization",
+    "DifferentialEvolutionOptimizer",
     "GeneticAlgorithmOptimizer",
     "EvolutionStrategyOptimizer",
-    "DifferentialEvolutionOptimizer",
+    "SpiralOptimization",
+    "ParallelTemperingOptimizer",
+    "Individual",
+    "Particle",
+    "Spiral",
 ]

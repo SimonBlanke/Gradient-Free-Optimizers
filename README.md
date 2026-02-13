@@ -1,6 +1,10 @@
 <p align="center">
   <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers">
-    <img src="./docs/images/gradient_logo_ink.png" width="400" alt="Gradient-Free-Optimizers Logo">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="./docs/images/gradient_logo_dark_c.svg">
+      <source media="(prefers-color-scheme: light)" srcset="./docs/images/gradient_logo_ink_paths.svg">
+      <img src="./docs/images/gradient_logo_ink_paths.svg" width="400" alt="Gradient-Free-Optimizers Logo">
+    </picture>
   </a>
 </p>
 

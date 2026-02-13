@@ -62,6 +62,10 @@ class GridSearchOptimizer(_GridSearchOptimizer, Search):
         The traversal direction through the grid. "diagonal" moves across
         all dimensions simultaneously, while "orthogonal" proceeds along
         one axis at a time. Default is "diagonal".
+    resolution : int
+        Number of grid points for continuous dimensions. Default is 100.
+        Continuous dimensions (specified as tuples like (0.0, 10.0)) are
+        automatically discretized into this many evenly-spaced points.
 
     Examples
     --------
@@ -94,6 +98,7 @@ class GridSearchOptimizer(_GridSearchOptimizer, Search):
         nth_process: int = None,
         step_size: int = 1,
         direction: Literal["diagonal", "orthogonal"] = "diagonal",
+        resolution: int = 100,
     ):
         if initialize is None:
             initialize = get_default_initialize()
@@ -109,4 +114,5 @@ class GridSearchOptimizer(_GridSearchOptimizer, Search):
             nth_process=nth_process,
             step_size=step_size,
             direction=direction,
+            resolution=resolution,
         )

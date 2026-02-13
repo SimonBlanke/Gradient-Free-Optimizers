@@ -2,36 +2,36 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-from __future__ import annotations
+"""
+Hill Climbing Optimizer with dimension-type-aware iteration.
 
-from collections.abc import Callable
-from typing import Any
+Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
+"""
 
-from gradient_free_optimizers._init_utils import get_default_initialize
+import numpy as np
 
 from ..base_optimizer import BaseOptimizer
-from ..core_optimizer.converter import ArrayLike
-
-
-def max_list_idx(list_: list[float]) -> int:
-    max_item = max(list_)
-    max_item_idx = [i for i, j in enumerate(list_) if j == max_item]
-    return max_item_idx[-1:][0]
 
 
 class HillClimbingOptimizer(BaseOptimizer):
-    """Simple hill climbing optimizer that greedily moves toward better solutions.
+    """Hill Climbing optimizer using Gaussian noise for exploration.
 
-    Evaluates multiple neighbors around the current position and moves to the
-    best one. This is a local search algorithm that can get stuck in local optima.
+    Dimension Support:
+        - Continuous: YES (Gaussian noise scaled by range)
+        - Categorical: YES (probabilistic category switching)
+        - Discrete: YES (Gaussian noise, rounded to nearest index)
+
+    The epsilon parameter controls the exploration intensity:
+        - For continuous: sigma = range * epsilon
+        - For categorical: switch_probability = epsilon
+        - For discrete: sigma = max_index * epsilon
 
     Parameters
     ----------
     search_space : dict
-        Dictionary mapping parameter names to arrays of possible values.
-    initialize : dict, default=None
+        Dictionary mapping parameter names to search dimension definitions.
+    initialize : dict, optional
         Strategy for generating initial positions.
-        If None, uses {"grid": 4, "random": 2, "vertices": 4}.
     constraints : list, optional
         List of constraint functions.
     random_state : int, optional
@@ -55,20 +55,27 @@ class HillClimbingOptimizer(BaseOptimizer):
     optimizer_type = "local"
     computationally_expensive = False
 
+    # Distribution functions for noise generation
+    _DISTRIBUTIONS = {
+        "normal": lambda rng, scale, size: rng.normal(0, scale, size),
+        "laplace": lambda rng, scale, size: rng.laplace(0, scale, size),
+        "logistic": lambda rng, scale, size: rng.logistic(0, scale, size),
+        "gumbel": lambda rng, scale, size: rng.gumbel(0, scale, size),
+        "uniform": lambda rng, scale, size: rng.uniform(-scale, scale, size),
+    }
+
     def __init__(
         self,
-        search_space: dict[str, Any],
-        initialize: dict[str, int] | None = None,
-        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
-        random_state: int | None = None,
-        rand_rest_p: float = 0,
-        nth_process: int | None = None,
-        epsilon: float = 0.03,
-        distribution: str = "normal",
-        n_neighbours: int = 3,
-    ) -> None:
-        if initialize is None:
-            initialize = get_default_initialize()
+        search_space,
+        initialize=None,
+        constraints=None,
+        random_state=None,
+        rand_rest_p=0,
+        nth_process=None,
+        epsilon=0.03,
+        distribution="normal",
+        n_neighbours=3,
+    ):
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -81,31 +88,141 @@ class HillClimbingOptimizer(BaseOptimizer):
         self.distribution = distribution
         self.n_neighbours = n_neighbours
 
-    @BaseOptimizer.track_new_pos
-    @BaseOptimizer.random_iteration
-    def iterate(self) -> ArrayLike:
-        """Generate next position by climbing from current position."""
-        return self.move_climb(
-            self.pos_current,
-            epsilon=self.epsilon,
-            distribution=self.distribution,
-        )
+        # Initialize RNG for reproducibility using the actual seed
+        # (self.random_seed is set by CoreOptimizer and accounts for nth_process)
+        self._rng = np.random.default_rng(self.random_seed)
 
-    @BaseOptimizer.track_new_score
-    def evaluate(self, score_new: float) -> None:
-        """Evaluate score and update current position after n_neighbours trials."""
-        BaseOptimizer.evaluate(self, score_new)
-        if len(self.scores_valid) == 0:
-            return
+        # Validate distribution parameter
+        if distribution not in self._DISTRIBUTIONS:
+            raise ValueError(
+                f"Unknown distribution '{distribution}'. "
+                f"Choose from: {list(self._DISTRIBUTIONS.keys())}"
+            )
 
-        modZero = self.nth_trial % self.n_neighbours == 0
-        if modZero:
-            score_new_list_temp = self.scores_valid[-self.n_neighbours :]
-            pos_new_list_temp = self.positions_valid[-self.n_neighbours :]
+    def _iterate_continuous_batch(self) -> np.ndarray:
+        """Generate new continuous values using Gaussian noise scaled by range.
 
-            idx = max_list_idx(score_new_list_temp)
-            score = score_new_list_temp[idx]
-            pos = pos_new_list_temp[idx]
+        Accesses state via:
+            - self.pos_current[self._continuous_mask]
+            - self._continuous_bounds
 
-            self._eval2current(pos, score)
-            self._eval2best(pos, score)
+        The noise magnitude is proportional to the dimension's range,
+        ensuring consistent exploration behavior regardless of scale.
+
+        Returns
+        -------
+        np.ndarray
+            New values with noise added (not yet clipped to bounds)
+        """
+        # Access state from instance
+        current = self._pos_current[self._continuous_mask]
+        bounds = self._continuous_bounds
+
+        # Calculate range for each dimension
+        ranges = bounds[:, 1] - bounds[:, 0]
+
+        # Scale sigma by range and epsilon
+        sigmas = ranges * self.epsilon
+
+        # Generate noise using the configured distribution
+        noise_fn = self._DISTRIBUTIONS[self.distribution]
+        noise = noise_fn(self._rng, sigmas, len(current))
+
+        return current + noise
+
+    def _iterate_categorical_batch(self) -> np.ndarray:
+        """Generate new categorical values using probabilistic switching.
+
+        Accesses state via:
+            - self.pos_current[self._categorical_mask]
+            - self._categorical_sizes
+
+        With probability epsilon, switch to a random category.
+        Otherwise, keep the current category.
+
+        Returns
+        -------
+        np.ndarray
+            New category indices (integers)
+        """
+        # Access state from instance
+        current = self._pos_current[self._categorical_mask]
+        n_categories = self._categorical_sizes
+
+        n = len(current)
+
+        # Determine which dimensions will switch (Bernoulli trial)
+        switch_mask = self._rng.random(n) < self.epsilon
+
+        # Generate random categories for switching dimensions
+        # Use uniform distribution over [0, n_categories)
+        random_cats = np.floor(self._rng.random(n) * n_categories).astype(np.int64)
+
+        # Apply switch: use random if switching, otherwise keep current
+        return np.where(switch_mask, random_cats, current.astype(np.int64))
+
+    def _iterate_discrete_batch(self) -> np.ndarray:
+        """Generate new discrete values using Gaussian noise.
+
+        Accesses state via:
+            - self.pos_current[self._discrete_mask]
+            - self._discrete_bounds
+
+        Similar to continuous, but operates on discrete indices.
+        The result will be rounded to integers by _clip_position.
+
+        Returns
+        -------
+        np.ndarray
+            New positions with noise added (float, will be rounded)
+        """
+        # Access state from instance
+        current = self._pos_current[self._discrete_mask]
+        bounds = self._discrete_bounds
+
+        # Use max position to scale sigma (similar to continuous)
+        max_positions = bounds[:, 1]
+        sigmas = max_positions * self.epsilon
+
+        # Prevent zero sigma for single-value dimensions
+        sigmas = np.maximum(sigmas, 1e-10)
+
+        # Generate noise using the configured distribution
+        noise_fn = self._DISTRIBUTIONS[self.distribution]
+        noise = noise_fn(self._rng, sigmas, len(current))
+
+        return current + noise
+
+    def _evaluate(self, score_new):
+        """Greedy selection after n_neighbours trials.
+
+        Hill climbing evaluates n_neighbours positions, then moves to the
+        best one among them. This multi-sample approach reduces the
+        probability of missing good directions in noisy landscapes.
+
+        Note: score tracking is already done by CoreOptimizer.evaluate()
+        before this method is called.
+
+        Args:
+            score_new: Score of the most recently evaluated position
+        """
+        # Every n_neighbours trials, select the best among recent samples
+        if self.nth_trial % self.n_neighbours == 0:
+            # Get the last n_neighbours scores and positions
+            recent_scores = self.scores_valid[-self.n_neighbours :]
+            recent_positions = self.positions_valid[-self.n_neighbours :]
+
+            # Guard against empty scores (all were inf/nan)
+            if not recent_scores:
+                return
+
+            # Find the best among recent samples
+            best_idx = np.argmax(recent_scores)
+            best_score = recent_scores[best_idx]
+            best_pos = recent_positions[best_idx]
+
+            # Update current position to best found
+            self._update_current(best_pos, best_score)
+
+            # Update global best if this is better
+            self._update_best(best_pos, best_score)

@@ -2,7 +2,6 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-
 from .downhill_simplex import DownhillSimplexOptimizer
 from .hill_climbing_optimizer import HillClimbingOptimizer
 from .repulsing_hill_climbing_optimizer import RepulsingHillClimbingOptimizer
@@ -11,8 +10,8 @@ from .stochastic_hill_climbing import StochasticHillClimbingOptimizer
 
 __all__ = [
     "HillClimbingOptimizer",
+    "SimulatedAnnealingOptimizer",
     "StochasticHillClimbingOptimizer",
     "RepulsingHillClimbingOptimizer",
-    "SimulatedAnnealingOptimizer",
     "DownhillSimplexOptimizer",
 ]

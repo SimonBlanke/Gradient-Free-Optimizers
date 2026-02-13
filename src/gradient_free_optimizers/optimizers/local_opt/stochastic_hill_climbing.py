@@ -2,49 +2,55 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-from __future__ import annotations
+"""
+Stochastic Hill Climbing Optimizer.
+
+Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
+(inherits iteration methods from HillClimbingOptimizer)
+"""
 
 import math
-from collections.abc import Callable
-from random import random
-from typing import Any
 
-from gradient_free_optimizers._init_utils import get_default_initialize
-
-from ..core_optimizer.parameter_tracker.stochastic_hill_climbing import (
-    ParameterTracker,
-)
-from . import HillClimbingOptimizer
+from .hill_climbing_optimizer import HillClimbingOptimizer
 
 
-class StochasticHillClimbingOptimizer(HillClimbingOptimizer, ParameterTracker):
-    """Hill climbing with probabilistic acceptance of worse solutions.
+class StochasticHillClimbingOptimizer(HillClimbingOptimizer):
+    """Stochastic Hill Climbing with probabilistic acceptance of worse solutions.
 
-    Unlike standard hill climbing, this variant can accept worse solutions
-    with a probability based on the score difference. This helps escape
-    local optima while still preferring uphill moves.
+    Unlike pure hill climbing, this optimizer may accept worse solutions with a
+    probability based on the score difference. This helps escape local optima
+    while still preferring uphill moves.
+
+    Dimension Support:
+        - Continuous: YES (inherited from HillClimbingOptimizer)
+        - Categorical: YES (inherited from HillClimbingOptimizer)
+        - Discrete: YES (inherited from HillClimbingOptimizer)
+
+    The acceptance probability for worse solutions uses a sigmoid function:
+        p = p_accept * 2 / (1 + exp(-normalized_energy / temp))
+
+    Where normalized_energy = (score_new - score_current) / (score_new + score_current)
 
     Parameters
     ----------
     search_space : dict
-        Dictionary mapping parameter names to arrays of possible values.
-    initialize : dict, default=None
+        Dictionary mapping parameter names to search dimension definitions.
+    initialize : dict, optional
         Strategy for generating initial positions.
-        If None, uses {"grid": 4, "random": 2, "vertices": 4}.
     constraints : list, optional
         List of constraint functions.
     random_state : int, optional
         Seed for random number generation.
     rand_rest_p : float, default=0
-        Probability of random restart.
+        Probability of random restart to escape local optima.
     nth_process : int, optional
         Process index for parallel optimization.
     epsilon : float, default=0.03
-        Step size for generating neighbors.
+        Step size for generating neighbors (fraction of search space).
     distribution : str, default="normal"
-        Distribution for step sizes.
+        Distribution for step sizes: "normal", "laplace", or "logistic".
     n_neighbours : int, default=3
-        Number of neighbors to evaluate.
+        Number of neighbors to evaluate before selecting the best.
     p_accept : float, default=0.5
         Base probability for accepting worse solutions.
     """
@@ -58,19 +64,17 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer, ParameterTracker):
 
     def __init__(
         self,
-        search_space: dict[str, Any],
-        initialize: dict[str, int] | None = None,
-        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
-        random_state: int | None = None,
-        rand_rest_p: float = 0,
-        nth_process: int | None = None,
-        epsilon: float = 0.03,
-        distribution: str = "normal",
-        n_neighbours: int = 3,
-        p_accept: float = 0.5,
-    ) -> None:
-        if initialize is None:
-            initialize = get_default_initialize()
+        search_space,
+        initialize=None,
+        constraints=None,
+        random_state=None,
+        rand_rest_p=0,
+        nth_process=None,
+        epsilon=0.03,
+        distribution="normal",
+        n_neighbours=3,
+        p_accept=0.5,
+    ):
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -82,21 +86,21 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer, ParameterTracker):
             distribution=distribution,
             n_neighbours=n_neighbours,
         )
-
         self.p_accept = p_accept
-        self.temp = 1
+        self.temp = 1  # Constant temperature for stochastic hill climbing
 
-    @ParameterTracker.considered_transitions
-    def _consider(self, p_accept: float) -> None:
-        if p_accept >= random():
-            self._execute_transition()
-
-    @ParameterTracker.transitions
-    def _execute_transition(self) -> None:
-        self._new2current()
+        # Transition tracking (for diagnostics)
+        self.n_transitions = 0
+        self.n_considered_transitions = 0
 
     @property
     def _normalized_energy_state(self) -> float:
+        """Calculate normalized energy difference between new and current scores.
+
+        Returns a value in approximately [-1, 1] that represents how much
+        worse (negative) or better (positive) the new score is compared
+        to the current score, normalized by their sum.
+        """
         denom = self.score_current + self.score_new
 
         if denom == 0:
@@ -108,25 +112,56 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer, ParameterTracker):
 
     @property
     def _exponent(self) -> float:
+        """Calculate the exponent for the acceptance probability."""
         if self.temp == 0:
             return -math.inf
         else:
             return self._normalized_energy_state / self.temp
 
     def _p_accept_default(self) -> float:
+        """Calculate the acceptance probability for a worse solution.
+
+        Uses a sigmoid function that maps the normalized energy difference
+        to a probability, scaled by the base p_accept parameter.
+
+        Returns
+        -------
+        float
+            Probability of accepting the current worse solution.
+        """
         try:
             exp_val = math.exp(self._exponent)
         except OverflowError:
             exp_val = math.inf
         return self.p_accept * 2 / (1 + exp_val)
 
-    @HillClimbingOptimizer.track_new_score
-    def _transition(self, score_new: float) -> None:
-        p_accept = self._p_accept_default()
-        self._consider(p_accept)
+    def _evaluate(self, score_new):
+        """Evaluate with stochastic acceptance of worse solutions.
 
-    def evaluate(self, score_new: float) -> None:
-        if score_new <= self.score_current:
-            self._transition(score_new)
+        If the new score is better than current, use standard hill climbing
+        behavior (greedy selection after n_neighbours trials).
+
+        If the new score is worse, accept it with a probability based on
+        the score difference. This allows escaping local optima.
+
+        Args:
+            score_new: Score of the most recently evaluated position
+        """
+        # Note: score_new is already stored via evaluate() -> _track_score()
+        # Access via self.score_new for property methods like _normalized_energy_state
+
+        # If score is better or equal, use standard hill climbing logic
+        if score_new > self.score_current:
+            super()._evaluate(score_new)
         else:
-            HillClimbingOptimizer.evaluate(self, score_new)
+            # Score is worse - consider stochastic acceptance
+            self.n_considered_transitions += 1
+            p_accept = self._p_accept_default()
+
+            if self._rng.random() < p_accept:
+                # Accept the worse solution (this is what n_transitions counts)
+                self.n_transitions += 1
+                self._update_current(self.pos_new, score_new)
+
+            # Always update best (in case this is somehow better than global best)
+            self._update_best(self.pos_new, score_new)

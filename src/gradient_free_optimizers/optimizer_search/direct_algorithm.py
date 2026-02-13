@@ -5,7 +5,9 @@
 
 from typing import Literal
 
-from .._init_utils import get_default_initialize, get_default_sampling
+import pandas as pd
+
+from .._init_utils import get_default_initialize
 from ..optimizers import DirectAlgorithm as _DirectAlgorithm
 from ..search import Search
 
@@ -20,6 +22,10 @@ class DirectAlgorithm(_DirectAlgorithm, Search):
     rectangles based on a trade-off between the function value at the center
     and the size of the rectangle, balancing local refinement and global
     exploration without requiring derivatives or Lipschitz constants.
+
+    Note: Unlike surrogate-model-based optimizers (Bayesian, Forest, TPE),
+    DIRECT does not train a model. It uses deterministic subspace division
+    with Lipschitz bounds for selection.
 
     At each iteration, DIRECT identifies hyperrectangles that could contain the
     global optimum (based on comparing function values and rectangle sizes),
@@ -55,15 +61,12 @@ class DirectAlgorithm(_DirectAlgorithm, Search):
         seeded with the value.
     rand_rest_p : float
         The probability of a random iteration during the the search process.
-    warm_start_smbo : object, optional
-        Previous SMBO state for warm starting optimization.
-    max_sample_size : int
-        Maximum number of candidate points to consider.
-        Default is 10000000.
-    sampling : dict
-        Configuration for candidate sampling. Default is {"random": 1000000}.
-    replacement : bool
-        Whether to sample candidates with replacement. Default is True.
+    warm_start : pd.DataFrame, optional
+        Previous optimization results to warm-start the algorithm.
+    resolution : int
+        Number of grid points for continuous dimensions. Default is 100.
+        Continuous dimensions (specified as tuples like (0.0, 10.0)) are
+        automatically discretized into this many evenly-spaced points.
 
     Examples
     --------
@@ -94,17 +97,18 @@ class DirectAlgorithm(_DirectAlgorithm, Search):
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,
-        warm_start_smbo=None,
+        warm_start: pd.DataFrame = None,
+        resolution: int = 100,
+        # Legacy SMBO parameters - no-op, kept for backwards compatibility
+        warm_start_smbo: pd.DataFrame = None,
         max_sample_size: int = 10000000,
-        sampling: dict[Literal["random"], int] = None,
+        sampling: dict[str, int] = None,
         replacement: bool = True,
     ):
         if initialize is None:
             initialize = get_default_initialize()
         if constraints is None:
             constraints = []
-        if sampling is None:
-            sampling = get_default_sampling()
 
         super().__init__(
             search_space=search_space,
@@ -113,6 +117,8 @@ class DirectAlgorithm(_DirectAlgorithm, Search):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
+            warm_start=warm_start,
+            resolution=resolution,
             warm_start_smbo=warm_start_smbo,
             max_sample_size=max_sample_size,
             sampling=sampling,

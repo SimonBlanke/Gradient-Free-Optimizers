@@ -1,0 +1,114 @@
+# Author: Simon Blanke
+# Email: simon.blanke@yahoo.com
+# License: MIT License
+
+
+from gradient_free_optimizers._init_utils import get_default_initialize
+
+from ._spiral import Spiral
+from .base_population_optimizer import BasePopulationOptimizer
+
+
+class SpiralOptimization(BasePopulationOptimizer):
+    """Spiral Optimization Algorithm.
+
+    Particles move in a spiral pattern toward the current best position.
+    The spiral movement combines rotation and contraction to balance
+    exploration and exploitation.
+
+    Parameters
+    ----------
+    search_space : dict
+        Dictionary mapping parameter names to arrays of possible values.
+    initialize : dict, default=None
+        Strategy for generating initial positions.
+        If None, uses {"grid": 4, "random": 2, "vertices": 4}.
+    constraints : list, optional
+        List of constraint functions.
+    random_state : int, optional
+        Seed for random number generation.
+    rand_rest_p : float, default=0
+        Probability of random restart.
+    nth_process : int, optional
+        Process index for parallel optimization.
+    population : int, default=10
+        Number of particles in the swarm.
+    decay_rate : float, default=0.99
+        Rate at which spiral radius contracts per iteration.
+    """
+
+    name = "Spiral Optimization"
+    _name_ = "spiral_optimization"
+    __name__ = "SpiralOptimization"
+
+    optimizer_type = "population"
+    computationally_expensive = False
+
+    def __init__(
+        self,
+        search_space,
+        initialize=None,
+        constraints=None,
+        random_state=None,
+        rand_rest_p=0,
+        nth_process=None,
+        population=10,
+        decay_rate=0.99,
+    ):
+        if initialize is None:
+            initialize = get_default_initialize()
+
+        super().__init__(
+            search_space=search_space,
+            initialize=initialize,
+            constraints=constraints,
+            random_state=random_state,
+            rand_rest_p=rand_rest_p,
+            nth_process=nth_process,
+        )
+
+        self.population = population
+        self.decay_rate = decay_rate
+
+        self.particles = self._create_population(Spiral)
+        self.optimizers = self.particles
+
+    @BasePopulationOptimizer.track_new_pos
+    def init_pos(self):
+        nth_pop = self.nth_trial % len(self.particles)
+
+        self.p_current = self.particles[nth_pop]
+        self.p_current.decay_rate = self.decay_rate
+
+        return self.p_current.init_pos()
+
+    def finish_initialization(self):
+        self.sort_pop_best_score()
+        self.center_pos = self.pop_sorted[0].pos_current
+        self.center_score = self.pop_sorted[0].score_current
+
+        self.search_state = "iter"
+
+    @BasePopulationOptimizer.track_new_pos
+    def iterate(self):
+        """Move current particle in spiral pattern toward center."""
+        while True:
+            self.p_current = self.particles[self.nth_trial % len(self.particles)]
+
+            self.sort_pop_best_score()
+            self.p_current.global_pos_best = self.pop_sorted[0].pos_current
+
+            pos_new = self.p_current.move_spiral(self.center_pos)
+
+            if self.conv.not_in_constraint(pos_new):
+                return pos_new
+            return self.p_current.iterate()
+
+    @BasePopulationOptimizer.track_new_score
+    def evaluate(self, score_new):
+        if self.search_state == "iter":
+            if self.pop_sorted[0].score_current > self.center_score:
+                self.center_pos = self.pop_sorted[0].pos_current
+                self.center_score = self.pop_sorted[0].score_current
+
+        self.p_current.evaluate(score_new)

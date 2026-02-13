@@ -1,0 +1,178 @@
+# Author: Simon Blanke
+# Email: simon.blanke@yahoo.com
+# License: MIT License
+
+from __future__ import annotations
+
+import random
+from collections.abc import Callable
+from typing import Any
+
+from gradient_free_optimizers._array_backend import array
+from gradient_free_optimizers._init_utils import get_default_initialize
+
+from ..base_optimizer import BaseOptimizer
+from ..core_optimizer.converter import ArrayLike
+
+
+def _arrays_equal(a, b):
+    """Check if two arrays are element-wise equal."""
+    if hasattr(a, "__len__") and hasattr(b, "__len__"):
+        if len(a) != len(b):
+            return False
+        return all(x == y for x, y in zip(a, b))
+    return a == b
+
+
+def _arrays_equal(a, b):
+    """Check if two arrays are element-wise equal."""
+    if hasattr(a, "__len__") and hasattr(b, "__len__"):
+        if len(a) != len(b):
+            return False
+        return all(x == y for x, y in zip(a, b))
+    return a == b
+
+
+def max_list_idx(list_):
+    max_item = max(list_)
+    max_item_idx = [i for i, j in enumerate(list_) if j == max_item]
+    return max_item_idx[-1:][0]
+
+
+class PatternSearch(BaseOptimizer):
+    """Pattern search optimizer using coordinate-wise exploration.
+
+    Explores the search space by evaluating positions along coordinate axes
+    from the current best position. The pattern size reduces when the best
+    position is found within recent evaluations.
+
+    Parameters
+    ----------
+    search_space : dict
+        Dictionary mapping parameter names to arrays of possible values.
+    initialize : dict, default=None
+        Strategy for generating initial positions.
+        If None, uses {"grid": 4, "random": 2, "vertices": 4}.
+    constraints : list, optional
+        List of constraint functions.
+    random_state : int, optional
+        Seed for random number generation.
+    rand_rest_p : float, default=0
+        Probability of random restart.
+    nth_process : int, optional
+        Process index for parallel optimization.
+    n_positions : int, default=4
+        Number of pattern positions to evaluate per iteration.
+    pattern_size : float, default=0.25
+        Initial pattern size as fraction of dimension size.
+    reduction : float, default=0.9
+        Factor to reduce pattern size when converging.
+    """
+
+    name = "Pattern Search"
+    _name_ = "pattern_search"
+    __name__ = "PatternSearch"
+
+    optimizer_type = "global"
+    computationally_expensive = False
+
+    def __init__(
+        self,
+        search_space: dict[str, Any],
+        initialize: dict[str, int] | None = None,
+        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
+        random_state: int | None = None,
+        rand_rest_p: float = 0,
+        nth_process: int | None = None,
+        n_positions: int = 4,
+        pattern_size: float = 0.25,
+        reduction: float = 0.9,
+    ) -> None:
+        if initialize is None:
+            initialize = get_default_initialize()
+
+        super().__init__(
+            search_space=search_space,
+            initialize=initialize,
+            constraints=constraints,
+            random_state=random_state,
+            rand_rest_p=rand_rest_p,
+            nth_process=nth_process,
+        )
+
+        self.n_positions = n_positions
+        self.pattern_size = pattern_size
+        self.reduction = reduction
+
+        self.n_positions_ = min(n_positions, self.conv.n_dimensions)
+        self.pattern_size_tmp = pattern_size
+        self.pattern_pos_l: list[ArrayLike] = []
+
+    def generate_pattern(self, current_position: ArrayLike) -> None:
+        pattern_pos_l = []
+
+        n_valid_pos = len(self.positions_valid)
+        n_pattern_pos = int(self.n_positions_ * 2)
+        n_pos_min = min(n_valid_pos, n_pattern_pos)
+
+        best_in_recent_pos = any(
+            _arrays_equal(array(self.pos_best), pos)
+            for pos in self.positions_valid[n_pos_min:]
+        )
+        if best_in_recent_pos:
+            self.pattern_size_tmp *= self.reduction
+        pattern_size = self.pattern_size_tmp
+
+        for idx, dim_size in enumerate(self.conv.dim_sizes):
+            pos_pattern_p = array(current_position)
+            pos_pattern_n = array(current_position)
+
+            pos_pattern_p[idx] += pattern_size * dim_size
+            pos_pattern_n[idx] -= pattern_size * dim_size
+
+            pos_pattern_p = self.conv2pos(pos_pattern_p)
+            pos_pattern_n = self.conv2pos(pos_pattern_n)
+
+            pattern_pos_l.append(pos_pattern_p)
+            pattern_pos_l.append(pos_pattern_n)
+
+        self.pattern_pos_l = list(random.sample(pattern_pos_l, self.n_positions_))
+
+    @BaseOptimizer.track_new_pos
+    @BaseOptimizer.random_iteration
+    def iterate(self) -> ArrayLike:
+        """Generate next position from the current pattern."""
+        while True:
+            pos_new = self.pattern_pos_l[0]
+            self.pattern_pos_l.pop(0)
+
+            if self.conv.not_in_constraint(pos_new):
+                return pos_new
+            return self.move_climb(pos_new)
+
+    def finish_initialization(self) -> None:
+        self.generate_pattern(self.pos_current)
+        self.search_state = "iter"
+
+    @BaseOptimizer.track_new_score
+    def evaluate(self, score_new: float) -> None:
+        """Evaluate score and regenerate pattern when needed."""
+        BaseOptimizer.evaluate(self, score_new)
+        if len(self.scores_valid) == 0:
+            return
+
+        modZero = self.nth_trial % int(self.n_positions_ * 2) == 0
+
+        if modZero or len(self.pattern_pos_l) == 0:
+            if self.search_state == "iter":
+                self.generate_pattern(self.pos_current)
+
+            score_new_list_temp = self.scores_valid[-self.n_positions_ :]
+            pos_new_list_temp = self.positions_valid[-self.n_positions_ :]
+
+            idx = max_list_idx(score_new_list_temp)
+            score = score_new_list_temp[idx]
+            pos = pos_new_list_temp[idx]
+
+            self._eval2current(pos, score)
+            self._eval2best(pos, score)

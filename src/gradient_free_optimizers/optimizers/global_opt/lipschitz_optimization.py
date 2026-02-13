@@ -2,24 +2,59 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-# NOTE: This optimizer uses numpy directly due to complex array operations.
-# TODO: Refactor to use backend when numpy masked arrays are supported.
+"""
+Lipschitz Optimization.
+
+Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
+"""
+
+from __future__ import annotations
+
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any, Literal
+
 import numpy as np
 
-from gradient_free_optimizers._init_utils import (
-    get_default_initialize,
-    get_default_sampling,
-)
 from gradient_free_optimizers._math_backend import cdist
 
-from ..smb_opt.smbo import SMBO
+from ..smb_opt import SMBO
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 
 class LipschitzFunction:
+    """Computes Lipschitz-based upper bounds for objective function values.
+
+    Given observed samples (X, Y), estimates the Lipschitz constant from
+    pairwise slopes and computes upper bounds at candidate positions.
+
+    Parameters
+    ----------
+    position_l : array-like
+        List of candidate positions to compute bounds for.
+    """
+
     def __init__(self, position_l):
         self.position_l = position_l
 
     def find_best_slope(self, X_sample, Y_sample):
+        """Estimate Lipschitz constant from observed samples.
+
+        Computes the maximum absolute slope between all pairs of samples.
+
+        Parameters
+        ----------
+        X_sample : list
+            List of evaluated positions.
+        Y_sample : list
+            List of scores at those positions.
+
+        Returns
+        -------
+        float
+            Estimated Lipschitz constant (maximum slope).
+        """
         slopes = []
 
         len_sample = len(X_sample)
@@ -38,24 +73,92 @@ class LipschitzFunction:
         return np.max(slopes)
 
     def calculate(self, X_sample, Y_sample, score_best):
+        """Compute upper bounds for all candidate positions.
+
+        Uses the estimated Lipschitz constant to bound the possible
+        function value at each candidate position based on distance
+        to observed samples.
+
+        Parameters
+        ----------
+        X_sample : list
+            List of evaluated positions.
+        Y_sample : list
+            List of scores at those positions.
+        score_best : float
+            Best score observed so far.
+
+        Returns
+        -------
+        np.ndarray
+            Upper bounds for each candidate position.
+        """
         lip_c = self.find_best_slope(X_sample, Y_sample)
 
         positions_np = np.array(self.position_l)
         samples_np = np.array(X_sample)
 
+        # Compute distances and scale by Lipschitz constant
         pos_dist = cdist(positions_np, samples_np) * lip_c
 
+        # Upper bound = distance * L + observed value
         upper_bound_l = pos_dist
         upper_bound_l += np.array(Y_sample)
 
+        # Mask zeros and take minimum across samples for each position
         mx = np.ma.masked_array(upper_bound_l, mask=upper_bound_l == 0)
         upper_bound_l = mx.min(1).reshape(1, -1).T
+
+        # Positions that can't improve on best are marked -inf
         upper_bound_l[upper_bound_l <= score_best] = -np.inf
 
         return upper_bound_l
 
 
 class LipschitzOptimizer(SMBO):
+    """Lipschitz-based global optimizer.
+
+    Dimension Support:
+        - Continuous: YES (Lipschitz bounds)
+        - Categorical: YES (with appropriate distance metric)
+        - Discrete: YES (Lipschitz bounds)
+
+    This optimizer exploits Lipschitz continuity to bound the objective
+    function and guide the search. It estimates the Lipschitz constant
+    from observed data and uses it to compute upper bounds on the
+    objective function across the search space. Points with the highest
+    potential (according to these bounds) are selected for evaluation.
+
+    The algorithm:
+    1. Estimate Lipschitz constant L from pairwise sample slopes
+    2. For each candidate position, compute upper bound using L
+    3. Select position with highest upper bound (most potential)
+    4. Repeat until convergence
+
+    Parameters
+    ----------
+    search_space : dict
+        Dictionary mapping parameter names to search dimension definitions.
+    initialize : dict, optional
+        Strategy for generating initial positions.
+    constraints : list, optional
+        List of constraint functions.
+    random_state : int, optional
+        Seed for random number generation.
+    rand_rest_p : float, default=0
+        Probability of random restart.
+    nth_process : int, optional
+        Process index for parallel optimization.
+    warm_start_smbo : pd.DataFrame, optional
+        Previous optimization results to initialize the surrogate model.
+    max_sample_size : int, default=10000000
+        Maximum number of positions to consider for sampling.
+    sampling : dict, False, or None, default=None
+        Sampling strategy for large search spaces.
+    replacement : bool, default=True
+        Whether to allow re-evaluation of the same position.
+    """
+
     name = "Lipschitz Optimizer"
     _name_ = "lipschitz_optimizer"
     __name__ = "LipschitzOptimizer"
@@ -65,22 +168,17 @@ class LipschitzOptimizer(SMBO):
 
     def __init__(
         self,
-        search_space,
-        initialize=None,
-        constraints=None,
-        random_state=None,
-        rand_rest_p=0,
-        nth_process=None,
-        warm_start_smbo=None,
-        max_sample_size=10000000,
-        sampling=None,
-        replacement=True,
-    ):
-        if initialize is None:
-            initialize = get_default_initialize()
-        if sampling is None:
-            sampling = get_default_sampling()
-
+        search_space: dict[str, Any],
+        initialize: dict[str, int] | None = None,
+        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
+        random_state: int | None = None,
+        rand_rest_p: float = 0,
+        nth_process: int | None = None,
+        warm_start_smbo: pd.DataFrame | None = None,
+        max_sample_size: int = 10000000,
+        sampling: dict[str, int] | Literal[False] | None = None,
+        replacement: bool = True,
+    ) -> None:
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -94,22 +192,39 @@ class LipschitzOptimizer(SMBO):
             replacement=replacement,
         )
 
-    def finish_initialization(self):
-        self.all_pos_comb = self._all_possible_pos()
-        return super().finish_initialization()
+    # =========================================================================
+    # SMBO Template Methods
+    # =========================================================================
+    # Note: finish_initialization() and iterate() are inherited from SMBO.
+    # LipschitzOptimizer only implements the algorithm-specific methods.
 
-    @SMBO.track_new_pos
-    @SMBO.track_X_sample
-    def iterate(self):
+    def _training(self) -> None:
+        """Prepare candidate positions for Lipschitz bound computation.
+
+        Unlike traditional SMBO algorithms that train a surrogate model,
+        Lipschitz optimization computes bounds analytically from the
+        estimated Lipschitz constant. This method only prepares the
+        candidate positions for evaluation.
+        """
         self.pos_comb = self._sampling(self.all_pos_comb)
 
+    def _expected_improvement(self) -> np.ndarray:
+        """Compute Lipschitz upper bounds for candidate positions.
+
+        The upper bound at each candidate position is computed using:
+            upper_bound = min(y_i + L * dist(x, x_i)) for all observed (x_i, y_i)
+
+        where L is the estimated Lipschitz constant.
+
+        Returns
+        -------
+        np.ndarray
+            1D array of upper bounds, one per candidate position.
+            Higher values indicate more potential for improvement.
+        """
         lip_func = LipschitzFunction(self.pos_comb)
         upper_bound_l = lip_func.calculate(
             self.X_sample, self.Y_sample, self.score_best
         )
-
-        index_best = list(upper_bound_l.argsort()[::-1])
-        all_pos_comb_sorted = self.pos_comb[index_best]
-        pos_best = all_pos_comb_sorted[0]
-
-        return pos_best
+        # Flatten from (n, 1) to (n,) for SMBO template compatibility
+        return upper_bound_l.flatten()

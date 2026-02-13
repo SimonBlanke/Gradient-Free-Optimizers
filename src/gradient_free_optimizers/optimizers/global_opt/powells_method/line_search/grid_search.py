@@ -2,8 +2,9 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+"""Grid-based line search strategy for Powell's method."""
 
-from gradient_free_optimizers._array_backend import argmax, array, linspace
+import numpy as np
 
 from .base import LineSearch
 
@@ -76,10 +77,10 @@ class GridLineSearch(LineSearch):
         max_t = self._compute_max_step(origin, direction)
 
         positions = []
-        t_values = linspace(-max_t, max_t, n_steps)
+        t_values = np.linspace(-max_t, max_t, n_steps)
 
-        origin_arr = array(origin)
-        direction_arr = array(direction)
+        origin_arr = np.array(origin)
+        direction_arr = np.array(direction)
 
         for t in t_values:
             pos_float = origin_arr + float(t) * direction_arr
@@ -104,7 +105,7 @@ class GridLineSearch(LineSearch):
 
     def update(self, position, score: float) -> None:
         """Record the evaluation result."""
-        self.evaluated_positions.append(array(position).copy())
+        self.evaluated_positions.append(np.array(position).copy())
         self.evaluated_scores.append(score)
 
     def get_best_result(self) -> tuple:
@@ -112,7 +113,7 @@ class GridLineSearch(LineSearch):
         if not self.evaluated_scores:
             return None, None
 
-        best_idx = argmax(self.evaluated_scores)
+        best_idx = np.argmax(self.evaluated_scores)
         return self.evaluated_positions[best_idx], self.evaluated_scores[best_idx]
 
     def is_active(self) -> bool:

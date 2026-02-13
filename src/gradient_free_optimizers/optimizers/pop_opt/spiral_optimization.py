@@ -2,27 +2,64 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+"""
+Spiral Optimization Algorithm.
 
-from gradient_free_optimizers._init_utils import get_default_initialize
+Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
 
-from ._spiral import Spiral
+Template Method Pattern Compliance:
+    - Does NOT override iterate() - uses CoreOptimizer's orchestration
+    - Implements _iterate_*_batch() for dimension-type-aware spiral movement
+    - Overrides init_pos()/evaluate_init() for population management (acceptable)
+"""
+
+from __future__ import annotations
+
+import random
+from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
+
+import numpy as np
+
+from ._spiral import Spiral, rotation
 from .base_population_optimizer import BasePopulationOptimizer
+
+if TYPE_CHECKING:
+    pass
 
 
 class SpiralOptimization(BasePopulationOptimizer):
     """Spiral Optimization Algorithm.
 
+    Dimension Support:
+        - Continuous: YES (spiral movement)
+        - Categorical: YES (decay factor as switch probability)
+        - Discrete: YES (spiral movement, rounded)
+
     Particles move in a spiral pattern toward the current best position.
     The spiral movement combines rotation and contraction to balance
     exploration and exploitation.
 
+    The spiral equation is:
+        new_pos = center + decay * rotation(current - center)
+
+    Where:
+        - center is the global best position
+        - decay contracts over time (decay_rate^iteration)
+        - rotation creates the spiral trajectory
+
+    Template Method Pattern:
+        This optimizer follows the Template Method Pattern by implementing
+        _iterate_*_batch() methods instead of overriding iterate().
+        The spiral position is computed once per iteration, then portions
+        are extracted for each dimension type.
+
     Parameters
     ----------
     search_space : dict
-        Dictionary mapping parameter names to arrays of possible values.
-    initialize : dict, default=None
+        Dictionary mapping parameter names to search dimension definitions.
+    initialize : dict, optional
         Strategy for generating initial positions.
-        If None, uses {"grid": 4, "random": 2, "vertices": 4}.
     constraints : list, optional
         List of constraint functions.
     random_state : int, optional
@@ -35,6 +72,7 @@ class SpiralOptimization(BasePopulationOptimizer):
         Number of particles in the swarm.
     decay_rate : float, default=0.99
         Rate at which spiral radius contracts per iteration.
+        Values closer to 1 cause slower contraction (more exploration).
     """
 
     name = "Spiral Optimization"
@@ -46,18 +84,15 @@ class SpiralOptimization(BasePopulationOptimizer):
 
     def __init__(
         self,
-        search_space,
-        initialize=None,
-        constraints=None,
-        random_state=None,
-        rand_rest_p=0,
-        nth_process=None,
-        population=10,
-        decay_rate=0.99,
-    ):
-        if initialize is None:
-            initialize = get_default_initialize()
-
+        search_space: dict[str, Any],
+        initialize: dict[str, int] | None = None,
+        constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
+        random_state: int | None = None,
+        rand_rest_p: float = 0,
+        nth_process: int | None = None,
+        population: int = 10,
+        decay_rate: float = 0.99,
+    ) -> None:
         super().__init__(
             search_space=search_space,
             initialize=initialize,
@@ -65,50 +100,261 @@ class SpiralOptimization(BasePopulationOptimizer):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
+            population=population,
         )
 
-        self.population = population
         self.decay_rate = decay_rate
 
+        # Create population of spiral particles
         self.particles = self._create_population(Spiral)
         self.optimizers = self.particles
 
-    @BasePopulationOptimizer.track_new_pos
-    def init_pos(self):
-        nth_pop = self.nth_trial % len(self.particles)
+        # Set decay_rate on all particles upfront
+        for p in self.particles:
+            p.decay_rate = self.decay_rate
 
+        # Center position (best found so far)
+        self.center_pos = None
+        self.center_score = None
+
+        # Iteration state for template method coordination
+        self._iteration_setup_done = False
+        self._spiral_new_pos = None
+        self._decay_factor = 3.0  # Initial scaling factor
+
+    def _init_pos(self, position) -> None:
+        """Initialize current particle with the given position.
+
+        Sets up particle decay rate and assigns the position.
+
+        Args:
+            position: The initialization position from CoreOptimizer.init_pos()
+        """
+        # Select particle via round-robin (use nth_init-1 since it was incremented)
+        nth_pop = (self.nth_init - 1) % len(self.particles)
         self.p_current = self.particles[nth_pop]
         self.p_current.decay_rate = self.decay_rate
 
-        return self.p_current.init_pos()
+        # Track position on current particle
+        self.p_current.pos_new = position.copy()
+        self.p_current.pos_current = position.copy()
 
-    def finish_initialization(self):
+    def _evaluate_init(self, score_new: float) -> None:
+        """Evaluate during initialization phase.
+
+        Delegates evaluation to the current particle for particle-level tracking.
+
+        Args:
+            score_new: Score of the most recently evaluated init position
+        """
+        # Track on current particle
+        self.p_current.score_new = score_new
+
+        # Update particle's best if this is better
+        if self.p_current.pos_best is None or score_new > self.p_current.score_best:
+            self.p_current.pos_best = self.p_current.pos_new.copy()
+            self.p_current.score_best = score_new
+
+        # Update particle's current
+        self.p_current.score_current = score_new
+
+    def _finish_initialization(self) -> None:
+        """Set up initial center position from best particle.
+
+        Called by CoreOptimizer.finish_initialization() after all init
+        positions have been evaluated. Initializes the spiral center
+        to the best position found during initialization.
+
+        Note: DO NOT set search_state here - CoreOptimizer handles that.
+        """
         self.sort_pop_best_score()
         self.center_pos = self.pop_sorted[0].pos_current
         self.center_score = self.pop_sorted[0].score_current
 
-        self.search_state = "iter"
+    # =========================================================================
+    # Template Method Implementation - NO iterate() override!
+    # =========================================================================
 
-    @BasePopulationOptimizer.track_new_pos
-    def iterate(self):
-        """Move current particle in spiral pattern toward center."""
-        while True:
-            self.p_current = self.particles[self.nth_trial % len(self.particles)]
+    def _setup_iteration(self) -> None:
+        """Set up current iteration by selecting particle and computing spiral position.
 
-            self.sort_pop_best_score()
-            self.p_current.global_pos_best = self.pop_sorted[0].pos_current
+        Called lazily by the first _iterate_*_batch() method.
+        Computes the full spiral position once, which is then extracted
+        by the individual batch methods.
+        """
+        if self._iteration_setup_done:
+            return
 
-            pos_new = self.p_current.move_spiral(self.center_pos)
+        # Select current particle (round-robin)
+        self.p_current = self.particles[self.nth_trial % len(self.particles)]
 
-            if self.conv.not_in_constraint(pos_new):
-                return pos_new
-            return self.p_current.iterate()
+        # Update global best reference for this particle
+        self.sort_pop_best_score()
+        self.p_current.global_pos_best = self.pop_sorted[0].pos_current
 
-    @BasePopulationOptimizer.track_new_score
-    def evaluate(self, score_new):
+        # Compute full spiral position
+        self._spiral_new_pos = self._compute_spiral_position()
+
+        self._iteration_setup_done = True
+
+    def _compute_spiral_position(self) -> np.ndarray:
+        """Compute new position using spiral movement equation.
+
+        The spiral equation is:
+            new_pos = center + decay * rotation(current - center)
+
+        Returns
+        -------
+        np.ndarray
+            New position after spiral movement.
+        """
+        # Random restart check
+        if random.random() < self.rand_rest_p:
+            return self.p_current.init.move_random_typed()
+
+        # Guard against None positions during early iterations
+        if self.center_pos is None or self.p_current.pos_current is None:
+            return self.p_current.init.move_random_typed()
+
+        # Update decay factor
+        self._decay_factor *= self.decay_rate
+
+        # Compute step rate based on search space size
+        scales = self._compute_dimension_scales()
+        step_rate = self._decay_factor * scales / 1000
+
+        # Compute rotated offset from center
+        center = np.array(self.center_pos)
+        current = np.array(self.p_current.pos_current)
+        rot = rotation(len(center), current - center)
+
+        # Combine rotation with decay
+        offset = step_rate * rot
+        new_pos = center + offset
+
+        return new_pos
+
+    def _compute_dimension_scales(self) -> np.ndarray:
+        """Compute scale factors for each dimension.
+
+        Returns
+        -------
+        np.ndarray
+            Scale factor for each dimension based on its type and bounds.
+        """
+        n_dims = len(self.search_space)
+        scales = np.zeros(n_dims)
+        dim_names = list(self.search_space.keys())
+
+        for i, name in enumerate(dim_names):
+            dim_def = self.search_space[name]
+
+            if isinstance(dim_def, tuple) and len(dim_def) == 2:
+                # Continuous: use range
+                scales[i] = dim_def[1] - dim_def[0]
+            elif isinstance(dim_def, list):
+                # Categorical: use number of categories
+                scales[i] = len(dim_def) - 1
+            elif isinstance(dim_def, np.ndarray):
+                # Discrete: use max index
+                scales[i] = len(dim_def) - 1
+
+        return scales
+
+    def _iterate_continuous_batch(self) -> np.ndarray:
+        """Generate continuous values using spiral movement.
+
+        Returns the continuous portion of the spiral-computed position.
+
+        Returns
+        -------
+        np.ndarray
+            New continuous values from spiral movement.
+        """
+        self._setup_iteration()
+        return self._spiral_new_pos[self._continuous_mask]
+
+    def _iterate_categorical_batch(self) -> np.ndarray:
+        """Generate categorical indices using spiral decay as switch probability.
+
+        For categorical dimensions, the decay factor magnitude determines the
+        probability of switching to a different category. Lower decay (more
+        exploitation) means lower switch probability.
+
+        Returns
+        -------
+        np.ndarray
+            New category indices.
+        """
+        self._setup_iteration()
+
+        # Get current categorical indices
+        current = self.p_current.pos_current[self._categorical_mask]
+
+        new_cats = []
+        for i, cur_idx in enumerate(current):
+            # Get max valid index for this categorical dimension
+            max_idx = self._categorical_sizes[i] - 1
+
+            # Decay factor determines switch probability
+            # Higher decay_factor (early iterations) = more exploration
+            # Lower decay_factor (later iterations) = more exploitation
+            switch_prob = min(1.0, self._decay_factor / 10.0)
+
+            if random.random() < switch_prob:
+                # Switch to a random category
+                new_cats.append(random.randint(0, max_idx))
+            else:
+                # Keep current category
+                new_cats.append(int(cur_idx))
+
+        return np.array(new_cats)
+
+    def _iterate_discrete_batch(self) -> np.ndarray:
+        """Generate discrete indices using spiral movement.
+
+        Returns the discrete portion of the spiral-computed position.
+
+        Returns
+        -------
+        np.ndarray
+            New discrete indices from spiral movement.
+        """
+        self._setup_iteration()
+        return self._spiral_new_pos[self._discrete_mask]
+
+    def _evaluate(self, score_new: float) -> None:
+        """Evaluate current particle and update center if improved.
+
+        Updates the spiral center to the best position found so far.
+        Also resets iteration state for the next iteration.
+
+        Parameters
+        ----------
+        score_new : float
+            Score of the most recently evaluated position.
+        """
+        # Track position on particle
+        self.p_current.pos_new = self.pos_new
+
+        # Update center if better position found
         if self.search_state == "iter":
-            if self.pop_sorted[0].score_current > self.center_score:
-                self.center_pos = self.pop_sorted[0].pos_current
-                self.center_score = self.pop_sorted[0].score_current
+            self.sort_pop_best_score()
+            if self.pop_sorted[0].score_current is not None:
+                if (
+                    self.center_score is None
+                    or self.pop_sorted[0].score_current > self.center_score
+                ):
+                    self.center_pos = self.pop_sorted[0].pos_current
+                    self.center_score = self.pop_sorted[0].score_current
 
+        # Delegate to current particle's evaluate
         self.p_current.evaluate(score_new)
+
+        # Update global tracking
+        self._update_best(self.pos_new, score_new)
+        self._update_current(self.pos_new, score_new)
+
+        # Reset iteration setup for next iteration
+        self._iteration_setup_done = False
+        self._spiral_new_pos = None

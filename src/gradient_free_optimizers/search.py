@@ -80,7 +80,8 @@ class Search(TimesTracker, SearchStatistics):
         self.pos_l = []
         self.random_seed = None
 
-        self.results_manager = ResultsManager()
+        self.results_manager = None  # Initialized in init_search with converter
+        self._search_data_cache = None  # Lazy DataFrame cache
 
     @TimesTracker.eval_time
     def _score(self, pos):
@@ -168,7 +169,9 @@ class Search(TimesTracker, SearchStatistics):
 
     def _evaluate_position(self, pos: list[int]) -> float:
         result, params = self.adapter(pos)
-        self.results_manager.add(result, params)
+        # Store position instead of params dict for memory efficiency
+        # Params are reconstructed lazily when search_data DataFrame is accessed
+        self.results_manager.add(result, pos)
         self._iter += 1
         return result.score
 
@@ -197,6 +200,15 @@ class Search(TimesTracker, SearchStatistics):
         self.verbosity = verbosity
 
         self._iter = 0
+
+        # Initialize ResultsManager only if not already created
+        # (preserves results across searches)
+        # Using lazy DataFrame construction to reduce memory for high-dimensional spaces
+        if self.results_manager is None:
+            self.results_manager = ResultsManager(self.conv)
+
+        # Invalidate cached DataFrame since new results will be added
+        self._search_data_cache = None
 
         if self.verbosity is False:
             self.verbosity = []
@@ -227,7 +239,9 @@ class Search(TimesTracker, SearchStatistics):
         self.n_inits_norm = min((self.init.n_inits - self.n_init_total), self.n_iter)
 
     def finish_search(self) -> None:
-        self.search_data = self.results_manager.dataframe
+        # Don't construct DataFrame here - it's built lazily via search_data property
+        # This avoids memory spike for high-dimensional search spaces
+        self._search_data_cache = None
 
         self.best_score = self.p_bar.score_best
         self.best_value = self.conv.position2value(self.p_bar.pos_best)
@@ -250,6 +264,23 @@ class Search(TimesTracker, SearchStatistics):
             self.n_iter,
             self.random_seed,
         )
+
+    @property
+    def search_data(self) -> pd.DataFrame:
+        """Lazily construct and return the search results DataFrame.
+
+        The DataFrame is only built when this property is accessed, avoiding
+        a large memory spike at the end of high-dimensional optimizations.
+        The result is cached so subsequent accesses don't rebuild it.
+        """
+        if self._search_data_cache is None:
+            self._search_data_cache = self.results_manager.dataframe
+        return self._search_data_cache
+
+    @search_data.setter
+    def search_data(self, value: pd.DataFrame) -> None:
+        """Allow direct assignment for backward compatibility."""
+        self._search_data_cache = value
 
     def search_step(self, nth_iter: int) -> None:
         self.nth_iter = nth_iter

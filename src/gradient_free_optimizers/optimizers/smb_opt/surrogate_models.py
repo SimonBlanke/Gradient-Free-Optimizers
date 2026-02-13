@@ -48,11 +48,13 @@ class EnsembleRegressor:
         self.min_std = min_std
 
     def fit(self, X, y):
+        """Fit all ensemble estimators on training data."""
         y_flat = ravel(array(y))
         for estimator in self.estimators:
             estimator.fit(X, y_flat)
 
     def predict(self, X, return_std=False):
+        """Predict mean and optionally std across ensemble."""
         predictions = []
         for estimator in self.estimators:
             pred = array(estimator.predict(X)).reshape(-1, 1)
@@ -110,10 +112,12 @@ class TreeEnsembleBase:
         self.min_variance = min_variance
 
     def fit(self, X, y):
+        """Fit the tree ensemble on training data."""
         y_flat = ravel(array(y))
         self._estimator.fit(X, y_flat)
 
     def predict(self, X, return_std=False):
+        """Predict mean and optionally std from tree variance."""
         mean = self._estimator.predict(X)
 
         if return_std:
@@ -174,7 +178,9 @@ class GPR:
             self.gpr = NativeGPR(optimize=True)
 
     def fit(self, X, y):
+        """Fit the Gaussian Process on training data."""
         self.gpr.fit(X, y)
 
     def predict(self, X, return_std=False):
+        """Predict mean and optionally std from the GP posterior."""
         return self.gpr.predict(X, return_std=return_std)

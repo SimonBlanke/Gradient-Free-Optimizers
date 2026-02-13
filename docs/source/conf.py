@@ -122,13 +122,9 @@ def linkcode_resolve(domain, info):
 html_theme = "pydata_sphinx_theme"
 
 html_theme_options = {
-    "announcement": (
-        "This documentation is under active development. "
-        "Some sections may be incomplete or subject to change."
-    ),
     "logo": {
-        "image_light": "_static/images/gradient_logo_ink.png",
-        "image_dark": "_static/images/gradient_logo_ink.png",
+        "image_light": "_static/images/navbar_logo.svg",
+        "image_dark": "_static/images/navbar_logo_dark.svg",
     },
     "icon_links": [
         {
@@ -162,7 +158,7 @@ html_context = {
 html_sidebars = {
     "**": ["sidebar-nav-bs.html"],
     "index": [],
-    "get_started": [],
+    "get_started/index": [],
     "installation": [],
     "search": [],
 }
