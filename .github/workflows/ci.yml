@@ -112,6 +112,10 @@ jobs:
             numpy-version: "1"
           - python-version: "3.14"
             numpy-version: "1"
+          # pandas 1.x has no pre-built wheel for Python 3.12, source build
+          # broken since setuptools 81 removed pkg_resources (Feb 2026)
+          - python-version: "3.12"
+            numpy-version: "1"
           # Reduce macOS/Windows matrix to save CI minutes
           - os: macos-latest
             numpy-version: "1"
