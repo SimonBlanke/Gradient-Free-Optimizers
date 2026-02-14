@@ -128,7 +128,7 @@ Algorithm Categories
 Key Features
 ------------
 
-.. grid:: 3
+.. grid:: 2
     :gutter: 3
 
     .. grid-item-card:: Simple Search Space Definition
