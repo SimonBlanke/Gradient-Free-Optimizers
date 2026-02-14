@@ -68,6 +68,8 @@ add_module_names = False
 toc_object_entries_show_parents = "hide"
 pygments_style = "sphinx"
 
+html_permalinks = False
+
 numpydoc_show_class_members = True
 numpydoc_class_members_toctree = False
 numpydoc_validation_checks = set()
