@@ -324,12 +324,19 @@ GFO is maintained primarily by one person, so please be patient.
 
 ----
 
+Where is the documentation for older versions?
+===============================================
+
+Documentation for previous versions of GFO is available at:
+`Legacy Documentation (v1.x) <https://simonblanke.github.io/gradient-free-optimizers-documentation/1.5/>`_
+
+----
+
 Related Resources
 =================
 
 **Documentation**
 
-- Full docs: https://simonblanke.github.io/gradient-free-optimizers-documentation
 - GitHub: https://github.com/SimonBlanke/Gradient-Free-Optimizers
 
 **Related Projects**

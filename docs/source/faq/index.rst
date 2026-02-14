@@ -136,6 +136,12 @@ Possible causes:
 4. For minimization: check ``optimum="minimum"`` or negate the score
 
 
+**Where is the documentation for older versions?**
+
+Documentation for previous versions of GFO is available at the
+`Legacy Documentation (v1.x) <https://simonblanke.github.io/gradient-free-optimizers-documentation/1.5/>`_.
+
+
 **How do I make results reproducible?**
 
 Set the random seed:

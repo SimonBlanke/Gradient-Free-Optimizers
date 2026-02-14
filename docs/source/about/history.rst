@@ -156,6 +156,21 @@ Timeline
 
 ----
 
+Legacy Documentation
+--------------------
+
+Documentation for previous versions of Gradient-Free-Optimizers is still available at the legacy documentation site:
+
+`Legacy Documentation (v1.x) <https://simonblanke.github.io/gradient-free-optimizers-documentation/1.5/>`_
+
+This may be useful if you:
+
+- Are maintaining projects that use older versions of GFO
+- Need to reference the previous API design
+- Want to compare the old and new documentation
+
+----
+
 Releases
 --------
 

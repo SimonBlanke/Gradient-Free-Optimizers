@@ -285,6 +285,20 @@ While GFO is not on conda-forge yet, you can install via pip in a conda environm
 
 ----
 
+Using Older Versions
+====================
+
+If you need to use an older version of GFO, you can install a specific version:
+
+.. code-block:: bash
+
+    pip install gradient-free-optimizers==1.5.0
+
+Documentation for older versions is available at:
+`Legacy Documentation (v1.x) <https://simonblanke.github.io/gradient-free-optimizers-documentation/1.5/>`_
+
+----
+
 Next Steps
 ==========
 
