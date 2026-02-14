@@ -38,6 +38,15 @@ Similar to Bayesian Optimization, but using tree ensembles:
 4. **Acquisition**: Expected Improvement using mean and variance
 5. **Select and evaluate**: Choose best acquisition, run objective
 
+.. note::
+
+    **Key Insight:** Tree ensembles provide a practical "free" uncertainty
+    estimate: the variance across individual tree predictions. Each tree sees
+    a different bootstrap sample, so regions with consistent data produce
+    agreement (low variance), while sparse or conflicting regions produce
+    disagreement (high variance). This is computationally cheaper than GP
+    uncertainty and degrades more gracefully in high dimensions.
+
 
 Why Trees?
 ----------
@@ -147,6 +156,64 @@ When to Use
 
 - **vs. Bayesian**: Better scaling, worse uncertainty
 - **vs. TPE**: Similar performance, different mechanism
+
+
+Higher-Dimensional Example
+--------------------------
+
+.. code-block:: python
+
+    import numpy as np
+    from gradient_free_optimizers import ForestOptimizer
+    from sklearn.ensemble import RandomForestClassifier
+    from sklearn.model_selection import cross_val_score
+    from sklearn.datasets import load_digits
+
+    X, y = load_digits(return_X_y=True)
+
+    def objective(para):
+        clf = RandomForestClassifier(
+            n_estimators=para["n_estimators"],
+            max_depth=para["max_depth"],
+            min_samples_split=para["min_samples_split"],
+            min_samples_leaf=para["min_samples_leaf"],
+            max_features=para["max_features"],
+            random_state=42,
+        )
+        return cross_val_score(clf, X, y, cv=3).mean()
+
+    search_space = {
+        "n_estimators": np.arange(50, 300, 10),
+        "max_depth": np.arange(3, 20),
+        "min_samples_split": np.arange(2, 20),
+        "min_samples_leaf": np.arange(1, 10),
+        "max_features": np.array(["sqrt", "log2"]),
+    }
+
+    opt = ForestOptimizer(
+        search_space,
+        tree_regressor="extra_tree",
+        tree_para={"n_estimators": 150},
+        xi=0.02,
+    )
+    opt.search(objective, n_iter=60)
+
+    print(f"Best accuracy: {opt.best_score:.4f}")
+    print(f"Best params: {opt.best_para}")
+
+
+Trade-offs
+----------
+
+- **Exploration vs. exploitation**: ``xi`` controls the trade-off as with other
+  SMBO methods. The tree ensemble's variance estimate tends to be noisier than
+  a GP's, which can provide natural exploration through prediction disagreement.
+- **Computational overhead**: O(n log n) training per iteration, much better
+  than GP's O(n^3). The ``tree_para`` configuration (especially ``n_estimators``)
+  directly affects this overhead.
+- **Parameter sensitivity**: The choice between ``extra_tree``, ``random_forest``,
+  and ``gradient_boost`` matters more than the tree hyperparameters. Extra Trees
+  is the fastest; Gradient Boosting is the most powerful but sequential.
 
 
 Related Algorithms

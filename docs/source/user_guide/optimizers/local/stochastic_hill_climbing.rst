@@ -38,8 +38,20 @@ At each iteration:
 3. If a neighbor is better, move to it
 4. If a neighbor is worse, move to it with probability ``p_accept``
 
-The key insight: sometimes accepting a worse solution allows the algorithm
-to escape local optima and find better regions.
+.. code-block:: text
+
+    if score(neighbor) > score(current):
+        accept move
+    else:
+        accept with probability p_accept
+
+.. note::
+
+    **Key Insight:** Unlike Simulated Annealing where acceptance probability
+    **decreases** over time via a temperature schedule, Stochastic Hill Climbing
+    uses a **constant** acceptance probability throughout the entire search. This
+    means it never fully transitions to pure exploitation, providing continuous
+    escape capability at the cost of convergence precision.
 
 
 Parameters
@@ -127,6 +139,51 @@ When to Use
 Stochastic Hill Climbing has a **constant** acceptance probability, while
 Simulated Annealing **decreases** it over time. Use Simulated Annealing when
 you want to explore broadly at first and exploit later.
+
+
+Higher-Dimensional Example
+--------------------------
+
+.. code-block:: python
+
+    import numpy as np
+    from gradient_free_optimizers import StochasticHillClimbingOptimizer
+
+    def ackley_3d(para):
+        import math
+        vals = [para["x"], para["y"], para["z"]]
+        n = len(vals)
+        sum_sq = sum(v**2 for v in vals) / n
+        sum_cos = sum(np.cos(2 * math.pi * v) for v in vals) / n
+        return -(- 20 * np.exp(-0.2 * np.sqrt(sum_sq))
+                 - np.exp(sum_cos) + 20 + math.e)
+
+    search_space = {
+        "x": np.linspace(-5, 5, 200),
+        "y": np.linspace(-5, 5, 200),
+        "z": np.linspace(-5, 5, 200),
+    }
+
+    opt = StochasticHillClimbingOptimizer(
+        search_space,
+        p_accept=0.2,
+        epsilon=0.05,
+        n_neighbours=5,
+    )
+
+    opt.search(ackley_3d, n_iter=2000)
+    print(f"Best: {opt.best_para}")
+    print(f"Score: {opt.best_score}")
+
+
+Trade-offs
+----------
+
+- **Exploration vs. exploitation**: ``p_accept`` directly controls this balance.
+  Higher values give more exploration but slower convergence.
+- **Computational overhead**: Same as Hill Climbing (minimal).
+- **Parameter sensitivity**: The ``p_accept`` parameter is critical. Values near 1.0
+  degrade to a random walk; values near 0.0 reduce to standard Hill Climbing.
 
 
 Related Algorithms

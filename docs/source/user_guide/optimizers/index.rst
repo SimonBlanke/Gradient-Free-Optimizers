@@ -141,6 +141,13 @@ Categories
 How to Choose
 -------------
 
+.. figure:: /_static/diagrams/algorithm_selection_flowchart.svg
+    :alt: Algorithm selection flowchart
+    :align: center
+
+    Use this decision tree to narrow down the best algorithm category for your
+    problem. For a more detailed guide, see :doc:`/user_guide/optimizer_selection`.
+
 .. tip::
 
     **Quick Decision Guide:**

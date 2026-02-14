@@ -29,6 +29,13 @@ Overview
 How SMBO Works
 --------------
 
+.. figure:: /_static/diagrams/smbo_loop.svg
+    :alt: SMBO workflow loop
+    :align: center
+
+    The SMBO loop: fit a surrogate model, use an acquisition function to
+    select the next point, evaluate, and update the model.
+
 The general SMBO workflow:
 
 1. **Initialize**: Evaluate a few random points to build initial dataset
@@ -126,6 +133,18 @@ Algorithm Comparison
       - Multiple models
       - Combined
       - Robust predictions
+
+
+Surrogate Model Comparison
+--------------------------
+
+.. figure:: /_static/diagrams/smbo_comparison.svg
+    :alt: SMBO surrogate model comparison
+    :align: center
+
+    The four SMBO approaches use different surrogate models: GP with
+    uncertainty bands, TPE with good/bad density separation, Forest with
+    tree ensemble variance, and Ensemble combining multiple model types.
 
 
 Visualization

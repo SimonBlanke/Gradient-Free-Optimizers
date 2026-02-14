@@ -122,6 +122,18 @@ Algorithm Comparison
       - Self-adaptive steps
 
 
+Conceptual Comparison
+---------------------
+
+.. figure:: /_static/diagrams/population_comparison.svg
+    :alt: Population-based algorithm comparison
+    :align: center
+
+    How different population-based algorithms move their individuals.
+    PSO uses velocity vectors, GA recombines parent genes, and DE creates
+    new candidates from weighted differences.
+
+
 Visualization
 -------------
 

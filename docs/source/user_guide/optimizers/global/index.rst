@@ -96,6 +96,18 @@ Algorithm Comparison
       - Guaranteed convergence
 
 
+Conceptual Comparison
+---------------------
+
+.. figure:: /_static/diagrams/global_search_comparison.svg
+    :alt: Global search algorithm comparison
+    :align: center
+
+    How each global search algorithm covers a 2D search space. Random Search
+    samples uniformly, Grid Search covers systematically, Pattern Search uses
+    geometric patterns, and DIRECT divides hierarchically.
+
+
 Visualization
 -------------
 

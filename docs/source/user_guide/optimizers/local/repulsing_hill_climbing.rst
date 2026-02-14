@@ -46,8 +46,21 @@ At each iteration:
    - Larger steps help escape flat regions or local optima
 
 
-The key insight: when stuck, take bigger steps to explore further away.
-When making progress, take small steps for precision.
+.. code-block:: text
+
+    if improvement found:
+        epsilon = initial_epsilon            # Reset to precise steps
+    else:
+        epsilon = epsilon * repulsion_factor  # Exponential growth
+
+.. note::
+
+    **Key Insight:** The step size grows **exponentially** when stuck
+    (``epsilon * repulsion_factor^n``), which means the algorithm can very
+    quickly escape even wide plateaus. But the instant an improvement is found,
+    epsilon resets to its initial value for precise local search. This
+    all-or-nothing behavior makes it aggressive at escaping but precise
+    when making progress.
 
 
 Parameters
@@ -132,6 +145,47 @@ When to Use
 - **vs. Stochastic HC**: Repulsing uses adaptive step size, not random acceptance
 - **vs. Simulated Annealing**: Repulsing increases exploration when stuck,
   SA decreases it over time regardless of progress
+
+
+Higher-Dimensional Example
+--------------------------
+
+.. code-block:: python
+
+    import numpy as np
+    from gradient_free_optimizers import RepulsingHillClimbingOptimizer
+
+    def plateau_function(para):
+        """Function with large flat regions and a narrow optimum."""
+        x, y, z = para["x"], para["y"], para["z"]
+        return -(np.round(x**2 + y**2 + z**2, 1))
+
+    search_space = {
+        "x": np.linspace(-10, 10, 200),
+        "y": np.linspace(-10, 10, 200),
+        "z": np.linspace(-10, 10, 200),
+    }
+
+    opt = RepulsingHillClimbingOptimizer(
+        search_space,
+        repulsion_factor=5.0,
+        epsilon=0.02,
+        n_neighbours=5,
+    )
+
+    opt.search(plateau_function, n_iter=1000)
+    print(f"Best: {opt.best_para}")
+    print(f"Score: {opt.best_score}")
+
+
+Trade-offs
+----------
+
+- **Exploration vs. exploitation**: Automatically adaptive. The algorithm is
+  exploitative by default and only becomes exploratory when stuck.
+- **Computational overhead**: Same as Hill Climbing (minimal).
+- **Parameter sensitivity**: ``repulsion_factor`` determines how aggressively the
+  algorithm escapes. Very high values can cause it to jump far from good regions.
 
 
 Related Algorithms

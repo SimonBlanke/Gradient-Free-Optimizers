@@ -47,6 +47,14 @@ This approach balances:
 - **Exploitation**: Focus on regions with good values
 - **Exploration**: Continue investigating large, unexplored regions
 
+.. note::
+
+    **Key Insight:** DIRECT's "potentially optimal" selection is the key to
+    its balance. A rectangle is potentially optimal if no other rectangle is
+    both smaller and has a better center value. This Pareto criterion ensures
+    that both small rectangles in good regions AND large unexplored rectangles
+    are selected, providing provable convergence without any tuning.
+
 
 Key Properties
 --------------
@@ -139,6 +147,47 @@ Comparison with Other Global Methods
     * - Bayesian
       - Surrogate model
       - None (model-based)
+
+
+3D Example
+----------
+
+.. code-block:: python
+
+    import numpy as np
+    from gradient_free_optimizers import DirectAlgorithm
+
+    def ackley_3d(para):
+        import math
+        vals = [para["x"], para["y"], para["z"]]
+        n = len(vals)
+        sum_sq = sum(v**2 for v in vals) / n
+        sum_cos = sum(np.cos(2 * math.pi * v) for v in vals) / n
+        return -(- 20 * np.exp(-0.2 * np.sqrt(sum_sq))
+                 - np.exp(sum_cos) + 20 + math.e)
+
+    search_space = {
+        "x": np.linspace(-5, 5, 200),
+        "y": np.linspace(-5, 5, 200),
+        "z": np.linspace(-5, 5, 200),
+    }
+
+    opt = DirectAlgorithm(search_space)
+    opt.search(ackley_3d, n_iter=200)
+
+    print(f"Best: {opt.best_para}")
+    print(f"Score: {opt.best_score}")
+
+
+Trade-offs
+----------
+
+- **Exploration vs. exploitation**: Automatically balanced through the
+  "potentially optimal" rectangle selection. No parameters to tune.
+- **Computational overhead**: Moderate. Rectangle management and selection
+  adds overhead that grows with the number of iterations.
+- **Parameter sensitivity**: DIRECT has no tunable hyperparameters, which
+  is both a strength (robust) and limitation (no way to bias the search).
 
 
 Related Algorithms

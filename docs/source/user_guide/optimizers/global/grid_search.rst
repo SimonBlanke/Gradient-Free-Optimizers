@@ -38,10 +38,25 @@ Grid Search traverses positions in a structured pattern:
 3. Evaluate each position
 4. Track the best found
 
+.. code-block:: text
+
+    for each position on grid (step_size spacing):
+        score = objective(position)
+        if score > best_score:
+            best_score, best_pos = score, position
+
 GFO supports two traversal patterns:
 
 - **Diagonal**: Moves diagonally across the grid (default)
 - **Orthogonal**: Moves along axes, one dimension at a time
+
+.. note::
+
+    **Key Insight:** Grid Search is the only algorithm that guarantees finding
+    the global optimum (if it lies on a grid point) given enough iterations.
+    However, it projects poorly to important dimensions: in a 5D space where
+    only 2 dimensions matter, grid search wastes most evaluations on
+    irrelevant combinations.
 
 
 Parameters
@@ -175,6 +190,42 @@ Comparison with Random Search
     * - Early stopping
       - May miss optimum
       - Probabilistically fair
+
+
+Sparse Grid Example
+-------------------
+
+.. code-block:: python
+
+    import numpy as np
+    from gradient_free_optimizers import GridSearchOptimizer
+
+    def objective(para):
+        return -(para["x"]**2 + para["y"]**2 + para["z"]**2)
+
+    # Coarse grid to manage 3D space
+    search_space = {
+        "x": np.linspace(-5, 5, 10),
+        "y": np.linspace(-5, 5, 10),
+        "z": np.linspace(-5, 5, 10),
+    }
+
+    opt = GridSearchOptimizer(search_space, step_size=2)
+    opt.search(objective, n_iter=200)
+
+    print(f"Best: {opt.best_para}")
+    print(f"Score: {opt.best_score}")
+
+
+Trade-offs
+----------
+
+- **Exploration vs. exploitation**: Pure exploration with complete coverage
+  but no adaptation to promising regions.
+- **Computational overhead**: Effectively zero per step, but total cost
+  grows exponentially with dimensions.
+- **Parameter sensitivity**: ``step_size`` trades resolution for speed.
+  Larger steps risk missing the optimum between grid points.
 
 
 Related Algorithms

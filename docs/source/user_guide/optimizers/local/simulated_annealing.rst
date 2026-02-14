@@ -44,6 +44,21 @@ At each iteration:
 As temperature decreases, the probability of accepting worse solutions
 approaches zero, and the algorithm behaves more like Hill Climbing.
 
+.. note::
+
+    **Key Insight:** The acceptance probability ``exp(delta / temperature)``
+    depends on both the quality difference and the current temperature. Early
+    in the search, even large degradations are accepted frequently. Late in
+    the search, only tiny degradations have any chance. This provides a smooth,
+    principled transition from exploration to exploitation.
+
+.. figure:: /_static/diagrams/simulated_annealing_flowchart.svg
+    :alt: Simulated Annealing algorithm flowchart
+    :align: center
+
+    The Simulated Annealing loop: generate neighbor, apply Metropolis
+    criterion, and cool the temperature.
+
 
 The Temperature Schedule
 ------------------------
@@ -169,6 +184,49 @@ For very long runs, you might want to adjust the annealing rate:
         start_temp=2.0,
     )
     opt.search(objective, n_iter=5000)
+
+
+Higher-Dimensional Example
+--------------------------
+
+.. code-block:: python
+
+    import numpy as np
+    from gradient_free_optimizers import SimulatedAnnealingOptimizer
+
+    def rastrigin_5d(para):
+        A = 10
+        vals = [para[f"x{i}"] for i in range(5)]
+        return -(A * len(vals) + sum(
+            v**2 - A * np.cos(2 * np.pi * v) for v in vals
+        ))
+
+    search_space = {
+        f"x{i}": np.linspace(-5.12, 5.12, 200)
+        for i in range(5)
+    }
+
+    opt = SimulatedAnnealingOptimizer(
+        search_space,
+        annealing_rate=0.995,
+        start_temp=2.0,
+        epsilon=0.08,
+    )
+
+    opt.search(rastrigin_5d, n_iter=5000)
+    print(f"Best: {opt.best_para}")
+    print(f"Score: {opt.best_score}")
+
+
+Trade-offs
+----------
+
+- **Exploration vs. exploitation**: Controlled by ``annealing_rate`` and
+  ``start_temp``. Slower cooling gives more exploration but needs more iterations.
+- **Computational overhead**: Same as Hill Climbing (minimal).
+- **Parameter sensitivity**: The cooling schedule is critical. If temperature drops
+  too fast, the algorithm becomes a greedy Hill Climber before exploring enough.
+  If too slow, it wastes iterations accepting bad moves.
 
 
 Related Algorithms

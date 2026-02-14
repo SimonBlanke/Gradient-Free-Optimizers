@@ -52,6 +52,22 @@ Then position is updated:
 
     position = position + velocity
 
+.. note::
+
+    **Key Insight:** The three velocity components create a balance: **inertia**
+    preserves the current trajectory (momentum), **cognitive weight** pulls toward
+    each particle's own discovery (independence), and **social weight** pulls
+    toward the swarm's best (cooperation). The ratio between cognitive and social
+    weights determines whether the swarm behaves more like independent explorers
+    or a coordinated team.
+
+.. figure:: /_static/diagrams/particle_swarm_flowchart.svg
+    :alt: Particle Swarm algorithm flowchart
+    :align: center
+
+    The PSO loop: update velocity from three components, move particle,
+    evaluate, and update personal and global bests.
+
 
 Parameters
 ----------
@@ -176,6 +192,53 @@ Population Size Guidelines
       - 20-40
     * - 10-20
       - 40-100
+
+
+Higher-Dimensional Example
+--------------------------
+
+.. code-block:: python
+
+    import numpy as np
+    from gradient_free_optimizers import ParticleSwarmOptimizer
+
+    def griewank_4d(para):
+        vals = [para[f"x{i}"] for i in range(4)]
+        sum_sq = sum(v**2 for v in vals) / 4000
+        prod_cos = 1
+        for i, v in enumerate(vals):
+            prod_cos *= np.cos(v / np.sqrt(i + 1))
+        return -(sum_sq - prod_cos + 1)
+
+    search_space = {
+        f"x{i}": np.linspace(-10, 10, 200)
+        for i in range(4)
+    }
+
+    opt = ParticleSwarmOptimizer(
+        search_space,
+        population=30,
+        inertia=0.6,
+        cognitive_weight=0.4,
+        social_weight=0.6,
+    )
+
+    opt.search(griewank_4d, n_iter=500)
+    print(f"Best: {opt.best_para}")
+    print(f"Score: {opt.best_score}")
+
+
+Trade-offs
+----------
+
+- **Exploration vs. exploitation**: Controlled by the weight parameters.
+  High inertia + high cognitive = more exploration. High social = faster
+  convergence but risk of premature convergence.
+- **Computational overhead**: Low per particle. Total cost scales linearly
+  with population size.
+- **Parameter sensitivity**: The three weights (inertia, cognitive, social)
+  interact with each other. The default balanced values (0.5, 0.5, 0.5) work
+  well for most problems.
 
 
 Related Algorithms

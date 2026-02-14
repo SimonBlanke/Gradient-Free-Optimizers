@@ -38,10 +38,26 @@ At each iteration:
 3. Move to the best neighbor if it improves the current score
 4. If no improvement, stay in place (may try different neighbors)
 
+.. code-block:: text
+
+    neighbor = current_pos + epsilon * range(dim) * sample(distribution)
+    if score(neighbor) > score(current_pos):
+        current_pos = neighbor
+
 .. note::
 
-    Hill Climbing is a **greedy** algorithm. It always moves toward improvement
-    and never accepts worse solutions. This makes it fast but prone to local optima.
+    **Key Insight:** Hill Climbing is a **greedy** algorithm. It always moves toward
+    improvement and never accepts worse solutions. This makes it the fastest local
+    search method but also the most vulnerable to local optima. Its simplicity makes
+    it an ideal building block: most other local search algorithms are modifications
+    of Hill Climbing that add escape mechanisms.
+
+.. figure:: /_static/diagrams/hill_climbing_flowchart.svg
+    :alt: Hill Climbing algorithm flowchart
+    :align: center
+
+    The Hill Climbing loop: generate neighbors, evaluate, and move only
+    if an improvement is found.
 
 
 When to Use
@@ -170,6 +186,49 @@ Use ``rand_rest_p`` to occasionally jump to random positions:
         search_space,
         rand_rest_p=0.1,  # 10% chance of random jump per iteration
     )
+
+
+Higher-Dimensional Example
+--------------------------
+
+.. code-block:: python
+
+    import numpy as np
+    from gradient_free_optimizers import HillClimbingOptimizer
+
+    def styblinski_tang_4d(para):
+        vals = [para["x0"], para["x1"], para["x2"], para["x3"]]
+        return -sum(v**4 - 16 * v**2 + 5 * v for v in vals) / 2
+
+    search_space = {
+        "x0": np.linspace(-5, 5, 100),
+        "x1": np.linspace(-5, 5, 100),
+        "x2": np.linspace(-5, 5, 100),
+        "x3": np.linspace(-5, 5, 100),
+    }
+
+    opt = HillClimbingOptimizer(
+        search_space,
+        epsilon=0.08,
+        n_neighbours=10,
+        distribution="logistic",
+    )
+
+    opt.search(styblinski_tang_4d, n_iter=2000)
+    print(f"Best: {opt.best_para}")
+    print(f"Score: {opt.best_score}")
+
+
+Trade-offs
+----------
+
+- **Exploration vs. exploitation**: Hill Climbing is purely exploitative. Increase
+  ``epsilon`` or ``n_neighbours`` for broader search, but it will never intentionally
+  explore distant regions.
+- **Computational overhead**: Minimal. The only cost is evaluating ``n_neighbours``
+  candidates per iteration.
+- **Parameter sensitivity**: Mostly controlled by ``epsilon``. Too small and convergence
+  stalls; too large and it oscillates around the optimum.
 
 
 Related Algorithms

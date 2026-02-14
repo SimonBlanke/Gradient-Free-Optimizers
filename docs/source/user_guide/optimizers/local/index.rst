@@ -106,6 +106,18 @@ The ``distribution`` parameter affects how step sizes are sampled:
     opt = HillClimbingOptimizer(search_space, distribution="logistic")
 
 
+Conceptual Comparison
+---------------------
+
+.. figure:: /_static/diagrams/local_search_comparison.svg
+    :alt: Local search algorithm comparison
+    :align: center
+
+    How each local search algorithm handles the same 1D landscape.
+    Hill Climbing gets stuck, while other variants use different escape
+    mechanisms.
+
+
 Visualization
 -------------
 

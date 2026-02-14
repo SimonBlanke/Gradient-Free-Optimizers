@@ -167,6 +167,47 @@ Comparison with Other Methods
       - Attraction to bests
 
 
+Higher-Dimensional Example
+--------------------------
+
+.. code-block:: python
+
+    import numpy as np
+    from gradient_free_optimizers import DifferentialEvolutionOptimizer
+
+    def styblinski_tang_4d(para):
+        vals = [para[f"x{i}"] for i in range(4)]
+        return -sum(v**4 - 16 * v**2 + 5 * v for v in vals) / 2
+
+    search_space = {
+        f"x{i}": np.linspace(-5, 5, 200)
+        for i in range(4)
+    }
+
+    opt = DifferentialEvolutionOptimizer(
+        search_space,
+        population=25,
+        mutation_rate=0.7,
+        crossover_rate=0.9,
+    )
+
+    opt.search(styblinski_tang_4d, n_iter=500)
+    print(f"Best: {opt.best_para}")
+    print(f"Score: {opt.best_score}")
+
+
+Trade-offs
+----------
+
+- **Exploration vs. exploitation**: Self-adaptive through difference vectors.
+  ``mutation_rate`` (F) and ``crossover_rate`` (CR) provide additional control.
+- **Computational overhead**: Low per individual. Population must be at least 4
+  to form the required difference vectors.
+- **Parameter sensitivity**: The standard settings (F=0.8, CR=0.9) work
+  surprisingly well across a wide range of problems. Population size matters
+  more than the rates.
+
+
 Related Algorithms
 ------------------
 

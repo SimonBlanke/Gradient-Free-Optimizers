@@ -46,6 +46,14 @@ The algorithm:
 3. Select the point with the best potential (highest upper bound)
 4. Evaluate and add to the set of observations
 
+.. note::
+
+    **Key Insight:** The Lipschitz condition provides **mathematical bounds**
+    on possible function values. If a nearby evaluated point has value v, then
+    any unevaluated point within distance d can have at most value v + L*d.
+    This allows the algorithm to provably rule out regions that cannot contain
+    the global optimum, making it more efficient than random sampling.
+
 
 Parameters
 ----------
@@ -107,6 +115,46 @@ When to Use
 - Discontinuous or very noisy functions
 - Functions with unknown Lipschitz constant
 - Very cheap function evaluations (overhead may dominate)
+
+
+Higher-Dimensional Example
+--------------------------
+
+.. code-block:: python
+
+    import numpy as np
+    from gradient_free_optimizers import LipschitzOptimizer
+
+    def smooth_3d(para):
+        x, y, z = para["x"], para["y"], para["z"]
+        return -(x**2 + y**2 + z**2 + 0.5 * np.sin(5 * x) * np.sin(5 * y))
+
+    search_space = {
+        "x": np.linspace(-5, 5, 100),
+        "y": np.linspace(-5, 5, 100),
+        "z": np.linspace(-5, 5, 100),
+    }
+
+    opt = LipschitzOptimizer(
+        search_space,
+        sampling={"random": 50000},
+    )
+
+    opt.search(smooth_3d, n_iter=100)
+    print(f"Best: {opt.best_para}")
+    print(f"Score: {opt.best_score}")
+
+
+Trade-offs
+----------
+
+- **Exploration vs. exploitation**: Automatically balanced through the upper
+  bound computation. Regions with high potential (either from good nearby values
+  or large unexplored volume) are prioritized.
+- **Computational overhead**: High. Computing bounds requires comparing against
+  all previously evaluated points.
+- **Parameter sensitivity**: The ``sampling`` parameter controls the resolution
+  of candidate evaluation. More samples give better coverage but higher cost.
 
 
 Related Algorithms

@@ -41,6 +41,22 @@ Each generation:
 3. **Mutation**: Randomly perturb some genes
 4. **Replacement**: New generation replaces old (or merge with elitism)
 
+.. code-block:: text
+
+    parents = select(population, fitness_proportional)
+    child = crossover(parent1, parent2, rate=crossover_rate)
+    child = mutate(child, rate=mutation_rate)
+    population = replace(population, child)
+
+.. note::
+
+    **Key Insight:** GA's crossover operation is what distinguishes it from
+    other evolutionary methods. By combining "genes" from two good parents,
+    crossover can discover solutions that neither parent contained. This is
+    particularly powerful for discrete/combinatorial problems where the optimal
+    solution is a specific combination of features from different regions of
+    the search space.
+
 
 Parameters
 ----------
@@ -147,6 +163,53 @@ When to Use
 
 - Simple, smooth continuous functions
 - Very expensive evaluations (large population overhead)
+
+
+Higher-Dimensional Example
+--------------------------
+
+.. code-block:: python
+
+    import numpy as np
+    from gradient_free_optimizers import GeneticAlgorithmOptimizer
+
+    def feature_selection_proxy(para):
+        """Simulates a feature selection objective."""
+        features = [para[f"f{i}"] for i in range(6)]
+        # Prefer solutions with fewer active features but good coverage
+        active = sum(1 for f in features if f > 0.5)
+        quality = sum(np.sin(f * 3) for f in features)
+        return quality - 0.5 * active
+
+    search_space = {
+        f"f{i}": np.array([0.0, 1.0])
+        for i in range(6)
+    }
+
+    opt = GeneticAlgorithmOptimizer(
+        search_space,
+        population=30,
+        offspring=30,
+        mutation_rate=0.2,
+        crossover_rate=0.8,
+    )
+
+    opt.search(feature_selection_proxy, n_iter=500)
+    print(f"Best: {opt.best_para}")
+    print(f"Score: {opt.best_score}")
+
+
+Trade-offs
+----------
+
+- **Exploration vs. exploitation**: ``mutation_rate`` drives exploration;
+  ``crossover_rate`` combines existing solutions (exploitation of known
+  good regions). Population size provides baseline diversity.
+- **Computational overhead**: Moderate. Selection, crossover, and mutation
+  all add overhead per generation.
+- **Parameter sensitivity**: The balance between mutation and crossover
+  rates is critical. Too much mutation destroys good solutions; too little
+  leads to premature convergence.
 
 
 Related Algorithms

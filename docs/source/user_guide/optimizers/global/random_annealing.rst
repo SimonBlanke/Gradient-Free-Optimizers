@@ -7,6 +7,28 @@ acceptance probability. It starts with large random steps for broad exploration
 and gradually decreases the step size for focused exploitation.
 
 
+.. grid:: 2
+    :gutter: 3
+
+    .. grid-item::
+        :columns: 6
+
+        .. figure:: /_static/gifs/random_annealing_sphere_function_.gif
+            :alt: Random Annealing on Sphere function
+
+            **Convex function**: Large initial steps quickly find
+            the region, then small steps refine.
+
+    .. grid-item::
+        :columns: 6
+
+        .. figure:: /_static/gifs/random_annealing_ackley_function_.gif
+            :alt: Random Annealing on Ackley function
+
+            **Multi-modal function**: Broad early exploration
+            followed by focused local search.
+
+
 Algorithm
 ---------
 
@@ -18,6 +40,14 @@ At each iteration:
 
 Unlike Simulated Annealing which decreases the probability of accepting worse
 solutions, Random Annealing keeps greedy acceptance but shrinks the search radius.
+
+.. note::
+
+    **Key Insight:** Random Annealing never accepts worse solutions (it's always
+    greedy). Instead, it controls exploration through **step size decay**. This
+    makes it more predictable than SA: early iterations explore broadly because
+    steps are large, late iterations exploit because steps are small. The result
+    is similar to SA but without the stochastic acceptance.
 
 
 Parameters
@@ -100,6 +130,55 @@ When to Use
 
 - Random Annealing: Shrinks search radius, never accepts worse
 - Simulated Annealing: Constant radius, decreasing bad acceptance
+
+
+Higher-Dimensional Example
+--------------------------
+
+.. code-block:: python
+
+    import numpy as np
+    from gradient_free_optimizers import RandomAnnealingOptimizer
+
+    def levy_3d(para):
+        import math
+        vals = [para["x"], para["y"], para["z"]]
+        w = [1 + (v - 1) / 4 for v in vals]
+        term1 = np.sin(math.pi * w[0])**2
+        term_sum = sum(
+            (wi - 1)**2 * (1 + 10 * np.sin(math.pi * wi + 1)**2)
+            for wi in w[:-1]
+        )
+        term_last = (w[-1] - 1)**2 * (1 + np.sin(2 * math.pi * w[-1])**2)
+        return -(term1 + term_sum + term_last)
+
+    search_space = {
+        "x": np.linspace(-10, 10, 200),
+        "y": np.linspace(-10, 10, 200),
+        "z": np.linspace(-10, 10, 200),
+    }
+
+    opt = RandomAnnealingOptimizer(
+        search_space,
+        annealing_rate=0.99,
+        start_temp=20.0,
+    )
+
+    opt.search(levy_3d, n_iter=2000)
+    print(f"Best: {opt.best_para}")
+    print(f"Score: {opt.best_score}")
+
+
+Trade-offs
+----------
+
+- **Exploration vs. exploitation**: Automatically transitions from exploration
+  to exploitation via step size decay. No stochastic acceptance means more
+  predictable behavior than SA.
+- **Computational overhead**: Minimal (same as Hill Climbing).
+- **Parameter sensitivity**: ``start_temp`` and ``annealing_rate`` jointly
+  determine the exploration schedule. Too fast a decay narrows the search
+  prematurely.
 
 
 Related Algorithms

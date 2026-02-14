@@ -39,8 +39,26 @@ At each iteration:
 3. If improvement found: move to best position
 4. If no improvement: shrink the pattern by ``reduction`` factor
 
+.. code-block:: text
+
+    positions = [center + pattern_size * unit_vector[i] for i in dims]
+             + [center - pattern_size * unit_vector[i] for i in dims]
+
+    if any position improves:
+        center = best_position
+    else:
+        pattern_size *= reduction
+
 The pattern typically forms a cross shape (positive and negative steps along
 each dimension), providing directional information without gradients.
+
+.. note::
+
+    **Key Insight:** Pattern Search is completely **deterministic**. Given the
+    same starting point and parameters, it always produces identical results.
+    This makes it valuable for reproducible optimization and debugging. It's
+    also the only algorithm in GFO that provides directional information
+    (testing each axis independently) without computing gradients.
 
 
 Parameters
@@ -125,6 +143,47 @@ When to Use
 - Very high dimensions (pattern grows with dimensions)
 - Noisy objective functions
 - Functions with many local optima
+
+
+3D Example with Tight Pattern
+-----------------------------
+
+.. code-block:: python
+
+    import numpy as np
+    from gradient_free_optimizers import PatternSearch
+
+    def sphere_3d(para):
+        return -(para["x"]**2 + para["y"]**2 + para["z"]**2)
+
+    search_space = {
+        "x": np.linspace(-10, 10, 200),
+        "y": np.linspace(-10, 10, 200),
+        "z": np.linspace(-10, 10, 200),
+    }
+
+    opt = PatternSearch(
+        search_space,
+        n_positions=6,
+        pattern_size=0.5,
+        reduction=0.95,
+    )
+
+    opt.search(sphere_3d, n_iter=1000)
+    print(f"Best: {opt.best_para}")
+    print(f"Score: {opt.best_score}")
+
+
+Trade-offs
+----------
+
+- **Exploration vs. exploitation**: Starts with broad exploration (large pattern)
+  and gradually shifts to exploitation as the pattern shrinks. The transition
+  is monotonic: the pattern never grows again once it shrinks.
+- **Computational overhead**: Minimal. Evaluates ``n_positions`` per iteration.
+- **Parameter sensitivity**: ``pattern_size`` and ``reduction`` together determine
+  the search trajectory. Slow reduction (0.95+) gives more exploration but
+  slower convergence.
 
 
 Related Algorithms

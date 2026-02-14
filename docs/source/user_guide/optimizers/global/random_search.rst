@@ -37,6 +37,13 @@ At each iteration:
 2. Evaluate the objective function
 3. If better than current best, update best
 
+.. code-block:: text
+
+    pos = uniform_random(search_space)
+    score = objective(pos)
+    if score > best_score:
+        best_score, best_pos = score, pos
+
 That's it. No memory, no adaptation, no information sharing.
 
 
@@ -157,6 +164,40 @@ Comparison with Grid Search
     * - Reproducibility
       - With random_state
       - Always identical
+
+
+Higher-Dimensional Example
+--------------------------
+
+.. code-block:: python
+
+    import numpy as np
+    from gradient_free_optimizers import RandomSearchOptimizer
+
+    def sphere_5d(para):
+        return -sum(para[f"x{i}"]**2 for i in range(5))
+
+    search_space = {
+        f"x{i}": np.linspace(-10, 10, 500)
+        for i in range(5)
+    }
+
+    opt = RandomSearchOptimizer(search_space, random_state=42)
+    opt.search(sphere_5d, n_iter=5000)
+
+    print(f"Best: {opt.best_para}")
+    print(f"Score: {opt.best_score}")
+
+
+Trade-offs
+----------
+
+- **Exploration vs. exploitation**: Pure exploration, zero exploitation. Every
+  sample is independent of all previous samples.
+- **Computational overhead**: Effectively zero. The only cost is the objective
+  function evaluation itself.
+- **Parameter sensitivity**: None. Random Search has no algorithm-specific
+  parameters to tune, which is both its greatest strength and limitation.
 
 
 Related Algorithms

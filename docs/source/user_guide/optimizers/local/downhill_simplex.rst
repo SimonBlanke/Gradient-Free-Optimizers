@@ -47,6 +47,15 @@ iteration:
 This geometric approach doesn't require gradient information but adapts to
 the local curvature of the objective function.
 
+.. note::
+
+    **Key Insight:** The Downhill Simplex is the only algorithm in GFO that
+    uses **geometric transformations** rather than random sampling. The simplex
+    shape adapts to the local landscape: it elongates along valleys, contracts
+    near optima, and can flip over ridges through reflection. This makes it
+    particularly effective for smooth, low-dimensional functions with curved
+    valleys (like Rosenbrock's function).
+
 
 Simplex Operations
 ------------------
@@ -174,6 +183,53 @@ Ensure you have at least n+1 initial positions:
         search_space,
         initialize={"random": n_dims + 1}  # Ensure enough initial points
     )
+
+
+3D Example with Warm Start
+--------------------------
+
+.. code-block:: python
+
+    import numpy as np
+    from gradient_free_optimizers import DownhillSimplexOptimizer
+
+    def rosenbrock_3d(para):
+        x, y, z = para["x"], para["y"], para["z"]
+        return -(
+            (1 - x)**2 + 100 * (y - x**2)**2
+            + (1 - y)**2 + 100 * (z - y**2)**2
+        )
+
+    search_space = {
+        "x": np.linspace(-5, 5, 200),
+        "y": np.linspace(-5, 5, 200),
+        "z": np.linspace(-5, 5, 200),
+    }
+
+    opt = DownhillSimplexOptimizer(
+        search_space,
+        alpha=1.0,
+        gamma=2.0,
+        beta=0.5,
+        initialize={"warm_start": [{"x": 0.5, "y": 0.5, "z": 0.5}],
+                     "random": 3},
+    )
+
+    opt.search(rosenbrock_3d, n_iter=1000)
+    print(f"Best: {opt.best_para}")
+    print(f"Score: {opt.best_score}")
+
+
+Trade-offs
+----------
+
+- **Exploration vs. exploitation**: Downhill Simplex is primarily exploitative.
+  The simplex explores locally through its geometric operations but has no mechanism
+  for large jumps to unexplored regions.
+- **Computational overhead**: Requires n+1 points per dimension, which means
+  overhead grows linearly with dimensionality.
+- **Parameter sensitivity**: The standard coefficients (alpha=1, gamma=2, beta=0.5)
+  work well for most problems. Rarely needs tuning.
 
 
 Related Algorithms

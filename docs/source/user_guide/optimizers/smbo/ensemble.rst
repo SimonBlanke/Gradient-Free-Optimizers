@@ -18,6 +18,23 @@ At each iteration:
 4. **Acquisition**: Expected Improvement using combined predictions
 5. **Select and evaluate**: Standard SMBO loop
 
+.. code-block:: text
+
+    predictions = [model.predict(candidates) for model in estimators]
+    mean_pred = average(predictions)
+    uncertainty = variance(predictions)
+    EI = expected_improvement(mean_pred, uncertainty, best_score, xi)
+    next_point = argmax(EI)
+
+.. note::
+
+    **Key Insight:** The ensemble's uncertainty estimate comes from model
+    disagreement rather than a single model's internal uncertainty. When a GP
+    and a Random Forest disagree about a region, that disagreement signals
+    genuine uncertainty that neither model alone would capture. This
+    "epistemic diversity" makes the ensemble more robust to model
+    misspecification than any single surrogate.
+
 
 Why Ensemble?
 -------------
@@ -98,11 +115,58 @@ When to Use
 - Complex landscapes that might fool single models
 - When robustness is more important than speed
 
-**Trade-offs:**
+**Not ideal for:**
 
-- More computational overhead (training multiple models)
-- More complex to tune
-- May average out good predictions with poor ones
+- Tight computational budgets (training multiple models)
+- Problems where a single model type is clearly best
+- Simple, low-dimensional continuous functions (GP alone is sufficient)
+
+
+Higher-Dimensional Example
+--------------------------
+
+.. code-block:: python
+
+    import numpy as np
+    from gradient_free_optimizers import EnsembleOptimizer
+    from sklearn.ensemble import GradientBoostingRegressor, ExtraTreesRegressor
+    from sklearn.gaussian_process import GaussianProcessRegressor
+
+    def schwefel_4d(para):
+        vals = [para[f"x{i}"] for i in range(4)]
+        return -sum(418.9829 - v * np.sin(np.sqrt(abs(v))) for v in vals)
+
+    search_space = {
+        f"x{i}": np.linspace(-500, 500, 200)
+        for i in range(4)
+    }
+
+    opt = EnsembleOptimizer(
+        search_space,
+        estimators=[
+            GradientBoostingRegressor,
+            ExtraTreesRegressor,
+            GaussianProcessRegressor,
+        ],
+        xi=0.03,
+    )
+
+    opt.search(schwefel_4d, n_iter=80)
+    print(f"Best: {opt.best_para}")
+    print(f"Score: {opt.best_score}")
+
+
+Trade-offs
+----------
+
+- **Exploration vs. exploitation**: The ensemble naturally explores through model
+  disagreement. ``xi`` provides additional control. The diversity of estimator
+  types matters more than the number of estimators.
+- **Computational overhead**: Linear in the number of estimators. Each estimator
+  is trained independently, so the slowest model dominates wall-clock time.
+- **Parameter sensitivity**: The choice of estimator types is the most important
+  decision. Including models with different inductive biases (e.g., GP + tree-based)
+  is more valuable than multiple similar models.
 
 
 Related Algorithms

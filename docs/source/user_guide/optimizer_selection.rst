@@ -47,32 +47,41 @@ where to search next.
 Decision Tree
 -------------
 
-.. code-block:: text
+.. figure:: /_static/diagrams/algorithm_selection_flowchart.svg
+    :alt: Algorithm selection flowchart
+    :align: center
 
-    Is your objective function expensive (> 1 second)?
-    ├── Yes → Use SMBO (Bayesian, TPE, Forest)
-    │         └── Continuous params? → BayesianOptimizer
-    │         └── Many categoricals? → TreeStructuredParzenEstimators
-    │         └── Many iterations? → ForestOptimizer
-    │
-    └── No → Continue...
+    Follow the decision tree to find the best algorithm for your problem.
 
-    Do you have a good starting point?
-    ├── Yes → Use Local Search
-    │         └── Smooth function? → HillClimbingOptimizer
-    │         └── Multiple local optima? → SimulatedAnnealingOptimizer
-    │
-    └── No → Continue...
+.. dropdown:: Text version of the decision tree
+    :color: muted
 
-    Can you evaluate in parallel?
-    ├── Yes → Use Population-Based
-    │         └── Continuous? → ParticleSwarmOptimizer
-    │         └── Discrete? → GeneticAlgorithmOptimizer
-    │
-    └── No → Use Global Search
-              └── Need baseline? → RandomSearchOptimizer
-              └── Small space? → GridSearchOptimizer
-              └── Unknown landscape? → DirectAlgorithm
+    .. code-block:: text
+
+        Is your objective function expensive (> 1 second)?
+        ├── Yes → Use SMBO (Bayesian, TPE, Forest)
+        │         └── Continuous params? → BayesianOptimizer
+        │         └── Many categoricals? → TreeStructuredParzenEstimators
+        │         └── Many iterations? → ForestOptimizer
+        │
+        └── No → Continue...
+
+        Do you have a good starting point?
+        ├── Yes → Use Local Search
+        │         └── Smooth function? → HillClimbingOptimizer
+        │         └── Multiple local optima? → SimulatedAnnealingOptimizer
+        │
+        └── No → Continue...
+
+        Can you evaluate in parallel?
+        ├── Yes → Use Population-Based
+        │         └── Continuous? → ParticleSwarmOptimizer
+        │         └── Discrete? → GeneticAlgorithmOptimizer
+        │
+        └── No → Use Global Search
+                  └── Need baseline? → RandomSearchOptimizer
+                  └── Small space? → GridSearchOptimizer
+                  └── Unknown landscape? → DirectAlgorithm
 
 
 By Problem Type

@@ -7,6 +7,28 @@ along each axis before moving to the next. This works particularly well for
 **separable functions** where dimensions are independent.
 
 
+.. grid:: 2
+    :gutter: 3
+
+    .. grid-item::
+        :columns: 6
+
+        .. figure:: /_static/gifs/powells_method_sphere_function_.gif
+            :alt: Powell's Method on Sphere function
+
+            **Convex function**: Sequential axis-aligned optimization
+            converges efficiently.
+
+    .. grid-item::
+        :columns: 6
+
+        .. figure:: /_static/gifs/powells_method_ackley_function_.gif
+            :alt: Powell's Method on Ackley function
+
+            **Multi-modal function**: Axis-aligned search may miss
+            diagonal optima.
+
+
 Algorithm
 ---------
 
@@ -16,6 +38,21 @@ At each iteration:
 2. Perform 1D optimization along that dimension (keeping others fixed)
 3. Move to the next dimension
 4. Repeat through all dimensions
+
+.. code-block:: text
+
+    for dim in dimensions:
+        # Line search along dim, others fixed
+        best_val = line_search(pos, direction=dim)
+        pos[dim] = best_val
+
+.. note::
+
+    **Key Insight:** Powell's Method decomposes an n-dimensional problem into
+    n sequential 1D optimizations. This works well when dimensions are
+    independent (separable functions like ``f = g(x) + h(y)``) but fails when
+    dimensions interact (``f = (x + y)^2``), because the optimal value of one
+    dimension depends on the other.
 
 This sequential approach is efficient when dimensions are independent but
 may struggle with coupled parameters.
@@ -77,6 +114,45 @@ Separable vs. Non-Separable Functions
 
 For non-separable functions, consider :doc:`pattern_search` or
 :doc:`../local/downhill_simplex` instead.
+
+
+Higher-Dimensional Separable Example
+-------------------------------------
+
+.. code-block:: python
+
+    import numpy as np
+    from gradient_free_optimizers import PowellsMethod
+
+    # Each dimension is independent - ideal for Powell's Method
+    def sum_of_squares_4d(para):
+        return -(
+            para["x"]**2 + 2 * para["y"]**2
+            + 3 * para["z"]**2 + 4 * para["w"]**2
+        )
+
+    search_space = {
+        "x": np.linspace(-10, 10, 200),
+        "y": np.linspace(-10, 10, 200),
+        "z": np.linspace(-10, 10, 200),
+        "w": np.linspace(-10, 10, 200),
+    }
+
+    opt = PowellsMethod(search_space)
+    opt.search(sum_of_squares_4d, n_iter=500)
+
+    print(f"Best: {opt.best_para}")
+    print(f"Score: {opt.best_score}")
+
+
+Trade-offs
+----------
+
+- **Exploration vs. exploitation**: Purely exploitative along each axis.
+  No mechanism for global exploration.
+- **Computational overhead**: Minimal. Each step is a 1D optimization.
+- **Parameter sensitivity**: No algorithm-specific parameters to tune.
+  Performance depends entirely on whether the function is separable.
 
 
 Related Algorithms

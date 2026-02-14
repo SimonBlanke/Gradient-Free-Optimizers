@@ -46,6 +46,23 @@ At each iteration:
 5. **Evaluate**: Run actual objective function
 6. **Update**: Add new observation, repeat
 
+.. note::
+
+    **Key Insight:** Bayesian Optimization is fundamentally about making
+    decisions under uncertainty. The GP surrogate provides not just a prediction
+    but a full probability distribution at every point. The Expected Improvement
+    acquisition function then naturally balances exploration (high uncertainty)
+    and exploitation (high predicted value) in a single, principled formula.
+    This is why BO can find good solutions in remarkably few evaluations
+    compared to methods that lack an uncertainty model.
+
+.. figure:: /_static/diagrams/bayesian_optimization_flowchart.svg
+    :alt: Bayesian Optimization algorithm flowchart
+    :align: center
+
+    The BO loop: fit GP, compute Expected Improvement, select the point
+    with highest acquisition value, evaluate, and update the dataset.
+
 
 The Gaussian Process
 --------------------
@@ -159,6 +176,56 @@ GP training is O(n^3) where n is the number of observations:
 - 1000 observations: significant
 
 For many evaluations, consider :doc:`forest` or :doc:`tpe`.
+
+
+Higher-Dimensional Example
+--------------------------
+
+.. code-block:: python
+
+    import numpy as np
+    from gradient_free_optimizers import BayesianOptimizer
+    from sklearn.neighbors import KNeighborsClassifier
+    from sklearn.model_selection import cross_val_score
+    from sklearn.datasets import load_digits
+
+    X, y = load_digits(return_X_y=True)
+
+    def objective(para):
+        clf = KNeighborsClassifier(
+            n_neighbors=para["n_neighbors"],
+            weights=para["weights"],
+            p=para["p"],
+            leaf_size=para["leaf_size"],
+        )
+        return cross_val_score(clf, X, y, cv=3).mean()
+
+    search_space = {
+        "n_neighbors": np.arange(1, 30),
+        "weights": np.array(["uniform", "distance"]),
+        "p": np.array([1, 2]),
+        "leaf_size": np.arange(10, 60, 5),
+    }
+
+    opt = BayesianOptimizer(search_space, xi=0.05)
+    opt.search(objective, n_iter=40)
+
+    print(f"Best accuracy: {opt.best_score:.4f}")
+    print(f"Best params: {opt.best_para}")
+
+
+Trade-offs
+----------
+
+- **Exploration vs. exploitation**: Controlled by ``xi``. The GP's uncertainty
+  naturally decays in well-sampled regions, so exploration shifts automatically
+  toward unexplored areas.
+- **Computational overhead**: GP training is O(n^3) in observations. This makes
+  BO best suited for problems where the objective function is far more expensive
+  than the surrogate model fitting.
+- **Parameter sensitivity**: The default ``xi=0.03`` works well for most problems.
+  The choice of GP kernel (via ``gpr``) can matter more than ``xi`` for complex
+  landscapes.
 
 
 Related Algorithms
