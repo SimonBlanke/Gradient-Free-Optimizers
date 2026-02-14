@@ -235,7 +235,7 @@ Next Steps
     :gutter: 3
 
     .. grid-item-card:: User Guide
-        :link: ../user_guide/index
+        :link: ../user_guide
         :link-type: doc
 
         Deep dive into all features: constraints, memory, stopping conditions,
@@ -249,7 +249,7 @@ Next Steps
         visualizations and parameter guides.
 
     .. grid-item-card:: Examples
-        :link: ../examples/index
+        :link: ../examples
         :link-type: doc
 
         Complete code examples for various optimization scenarios from

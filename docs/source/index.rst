@@ -356,7 +356,7 @@ Documentation
         Quick installation and first optimization
 
     .. grid-item-card:: User Guide
-        :link: user_guide/index
+        :link: user_guide
         :link-type: doc
         :text-align: center
 
@@ -370,7 +370,7 @@ Documentation
         All 22 optimization algorithms explained
 
     .. grid-item-card:: Examples
-        :link: examples/index
+        :link: examples
         :link-type: doc
         :text-align: center
 

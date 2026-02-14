@@ -16,8 +16,8 @@ Check These Resources First
 
 1. **Documentation**
 
-   - :doc:`../user_guide/index` - Core concepts and features
-   - :doc:`../examples/index` - Working code examples
+   - :doc:`../user_guide` - Core concepts and features
+   - :doc:`../examples` - Working code examples
    - :doc:`../faq/index` - Common questions
    - :doc:`../troubleshooting` - Other troubleshooting pages
 

@@ -96,7 +96,12 @@ By Use Case
 ----
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    :hidden:
 
-   examples/index
+   examples/simple_optimization
+   examples/hyperparameter_tuning
+   examples/constrained_optimization
+   examples/ask_tell_example
+   examples/comparing_optimizers
+   examples/warm_start

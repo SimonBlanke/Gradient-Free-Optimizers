@@ -304,4 +304,4 @@ Next Steps
 
 - **Quick Start**: Head to :doc:`get_started` for your first optimization
 - **User Guide**: Learn about :doc:`user_guide/search_spaces` and :doc:`user_guide/optimizers/index`
-- **Examples**: See practical usage in :doc:`examples/index`
+- **Examples**: See practical usage in :doc:`examples`

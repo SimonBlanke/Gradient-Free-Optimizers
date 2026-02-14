@@ -209,4 +209,13 @@ GFO provides 22 optimization algorithms organized into four categories:
    :maxdepth: 2
    :hidden:
 
-   user_guide/index
+   user_guide/search_spaces
+   user_guide/objective_functions
+   user_guide/optimizer_selection
+   user_guide/constraints
+   user_guide/initialization
+   user_guide/memory
+   user_guide/stopping_conditions
+   user_guide/search_interface
+   user_guide/ask_tell
+   user_guide/optimizers/index
