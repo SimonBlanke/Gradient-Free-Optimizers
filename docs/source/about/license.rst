@@ -82,7 +82,7 @@ Full License Text
 -----------------
 
 The complete license is available in the repository:
-`LICENSE <https://github.com/SimonBlanke/Gradient-Free-Optimizers/blob/master/LICENSE>`_
+`LICENSE <https://github.com/SimonBlanke/Gradient-Free-Optimizers/blob/main/LICENSE>`_
 
 ----
 

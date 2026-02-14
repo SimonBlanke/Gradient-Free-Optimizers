@@ -9,7 +9,7 @@ will help you get started with development and submit your contributions.
 
 .. seealso::
 
-   Also see `CONTRIBUTING.md <https://github.com/SimonBlanke/Gradient-Free-Optimizers/blob/master/CONTRIBUTING.md>`_
+   Also see `CONTRIBUTING.md <https://github.com/SimonBlanke/Gradient-Free-Optimizers/blob/main/CONTRIBUTING.md>`_
    in the repository for additional guidelines.
 
 ----

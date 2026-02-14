@@ -22,7 +22,7 @@ Full Code of Conduct
 
 Please see our complete Code of Conduct in the repository:
 
-`CODE_OF_CONDUCT.md <https://github.com/SimonBlanke/Gradient-Free-Optimizers/blob/master/CODE_OF_CONDUCT.md>`_
+`CODE_OF_CONDUCT.md <https://github.com/SimonBlanke/Gradient-Free-Optimizers/blob/main/CODE_OF_CONDUCT.md>`_
 
 The full document covers:
 

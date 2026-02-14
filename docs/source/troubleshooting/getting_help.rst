@@ -269,7 +269,7 @@ Contributing
 Want to fix a bug or add a feature yourself?
 
 1. **Read the Contributing Guide**:
-   `CONTRIBUTING.md <https://github.com/SimonBlanke/Gradient-Free-Optimizers/blob/master/CONTRIBUTING.md>`_
+   `CONTRIBUTING.md <https://github.com/SimonBlanke/Gradient-Free-Optimizers/blob/main/CONTRIBUTING.md>`_
 
 2. **Set up development environment**:
 

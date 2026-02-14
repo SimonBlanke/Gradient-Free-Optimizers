@@ -151,7 +151,7 @@ html_title = "Gradient-Free-Optimizers"
 html_context = {
     "github_user": "SimonBlanke",
     "github_repo": "Gradient-Free-Optimizers",
-    "github_version": "master",
+    "github_version": "main",
     "doc_path": "docs/source/",
 }
 
