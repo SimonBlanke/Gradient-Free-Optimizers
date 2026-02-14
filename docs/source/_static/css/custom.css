@@ -908,6 +908,13 @@ html[data-theme="dark"] .stat-value {
     margin-bottom: 0 !important;
 }
 
+/* -- Category-colored sphinx-design cards ---------------------------------- */
+
+.sd-card.gfo-local { border-color: var(--gfo-local) !important; }
+.sd-card.gfo-global { border-color: var(--gfo-global) !important; }
+.sd-card.gfo-population { border-color: var(--gfo-population) !important; }
+.sd-card.gfo-smbo { border-color: var(--gfo-smbo) !important; }
+
 /* -- sphinx-design overrides ----------------------------------------------- */
 
 .sd-card {

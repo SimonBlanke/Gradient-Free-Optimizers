@@ -6,6 +6,26 @@ The objective function is what you want to optimize. It takes a dictionary of
 parameters and returns a score.
 
 
+.. grid:: 1 1 2 2
+   :gutter: 3
+
+   .. grid-item-card:: Input
+      :class-card: sd-border-primary gfo-compact
+
+      ``params = {"x": 0.5, "y": 1.2}``
+
+      A dictionary of parameter values
+      proposed by the optimizer.
+
+   .. grid-item-card:: Output
+      :class-card: sd-border-success gfo-compact
+
+      ``return score``
+
+      A single numeric value (int or float).
+      Higher is better by default.
+
+
 Basic Structure
 ---------------
 

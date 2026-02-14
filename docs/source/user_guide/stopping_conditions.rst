@@ -3,6 +3,31 @@ Stopping Conditions
 ===================
 
 GFO supports multiple stopping conditions that can be combined.
+Optimization stops when **any** condition is met.
+
+
+.. grid:: 1 1 2 2
+   :gutter: 3
+
+   .. grid-item-card:: n_iter
+      :class-card: gfo-compact
+
+      Fixed iteration count limit.
+
+   .. grid-item-card:: max_time
+      :class-card: gfo-compact
+
+      Wall-clock time limit in seconds.
+
+   .. grid-item-card:: max_score
+      :class-card: gfo-compact
+
+      Stop when target score is reached.
+
+   .. grid-item-card:: early_stopping
+      :class-card: gfo-compact
+
+      Stop after N iterations without improvement.
 
 
 Available Conditions

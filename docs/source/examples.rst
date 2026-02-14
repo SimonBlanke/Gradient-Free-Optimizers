@@ -46,13 +46,6 @@ Advanced Features
       Define parameter constraints to restrict the search space. Perfect
       for problems with physical constraints or valid parameter combinations.
 
-   .. grid-item-card:: Ask-Tell Interface
-      :link: examples/ask_tell_example
-      :link-type: doc
-
-      Manual control over the optimization loop. Useful for distributed
-      computing, custom logging, or integration with external systems.
-
    .. grid-item-card:: Comparing Algorithms
       :link: examples/comparing_optimizers
       :link-type: doc
@@ -102,6 +95,5 @@ By Use Case
    examples/simple_optimization
    examples/hyperparameter_tuning
    examples/constrained_optimization
-   examples/ask_tell_example
    examples/comparing_optimizers
    examples/warm_start

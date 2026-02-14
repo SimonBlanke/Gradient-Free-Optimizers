@@ -6,6 +6,26 @@ GFO can cache function evaluations to avoid redundant computation and support
 warm-starting from previous optimization runs.
 
 
+.. grid:: 1 1 2 2
+   :gutter: 3
+
+   .. grid-item-card:: Memory
+      :class-card: sd-border-primary gfo-compact
+
+      ``memory=True``
+
+      Cache evaluations within a single run.
+      Avoids redundant function calls.
+
+   .. grid-item-card:: Warm Start
+      :class-card: sd-border-success gfo-compact
+
+      ``memory_warm_start=df``
+
+      Continue from a previous optimization
+      run using saved results.
+
+
 Memory Caching
 --------------
 

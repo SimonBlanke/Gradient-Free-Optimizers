@@ -5,6 +5,18 @@ The search() Method
 The ``search()`` method is the primary interface for running optimization.
 
 
+.. grid:: 1
+
+   .. grid-item-card::
+      :class-card: sd-border-primary gfo-compact
+
+      .. code-block:: python
+
+          opt = Optimizer(search_space)        # 1. Create
+          opt.search(objective, n_iter=100)    # 2. Search
+          opt.best_para                        # 3. Results
+
+
 Basic Usage
 -----------
 

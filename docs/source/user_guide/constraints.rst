@@ -6,6 +6,15 @@ Constraints restrict which parameter combinations are valid. The optimizer
 automatically avoids invalid regions of the search space.
 
 
+.. grid:: 1
+
+   .. grid-item-card:: Constraint Function
+      :class-card: sd-border-warning gfo-compact
+
+      ``constraint(params)`` returns ``True`` (valid, keep position)
+      or ``False`` (invalid, retry with a new position).
+
+
 Defining Constraints
 --------------------
 

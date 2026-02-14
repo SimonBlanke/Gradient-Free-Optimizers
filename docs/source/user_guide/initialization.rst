@@ -6,6 +6,42 @@ Initialization controls where the optimizer starts its search. Good
 initialization can significantly improve optimization efficiency.
 
 
+.. grid:: 1 1 2 2
+   :gutter: 3
+
+   .. grid-item-card:: Grid
+      :class-card: gfo-compact
+
+      ``"grid": 10``
+
+      Systematic, evenly spaced coverage
+      across the search space.
+
+   .. grid-item-card:: Random
+      :class-card: gfo-compact
+
+      ``"random": 20``
+
+      Diverse starting points sampled
+      uniformly at random.
+
+   .. grid-item-card:: Vertices
+      :class-card: gfo-compact
+
+      ``"vertices": 8``
+
+      Corners and edges of the
+      search space boundaries.
+
+   .. grid-item-card:: Warm Start
+      :class-card: gfo-compact
+
+      ``"warm_start": [...]``
+
+      Known good positions from
+      prior knowledge or previous runs.
+
+
 Default Initialization
 ----------------------
 

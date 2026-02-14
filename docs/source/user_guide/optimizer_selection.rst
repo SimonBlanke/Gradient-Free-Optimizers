@@ -6,6 +6,37 @@ Choosing the right optimizer depends on your problem characteristics. This
 guide helps you select the best algorithm for your use case.
 
 
+.. grid:: 1 1 2 2
+   :gutter: 3
+
+   .. grid-item-card:: Local Search
+      :class-card: gfo-compact gfo-local
+
+      Hill Climbing, Simulated Annealing,
+      Downhill Simplex. Best for exploiting
+      promising regions.
+
+   .. grid-item-card:: Global Search
+      :class-card: gfo-compact gfo-global
+
+      Random Search, Grid Search, Pattern
+      Search, DIRECT. Best for broad
+      exploration.
+
+   .. grid-item-card:: Population-Based
+      :class-card: gfo-compact gfo-population
+
+      Particle Swarm, Genetic Algorithm,
+      Evolution Strategy. Best for
+      parallel evaluation.
+
+   .. grid-item-card:: Sequential Model-Based
+      :class-card: gfo-compact gfo-smbo
+
+      Bayesian, TPE, Forest, Ensemble.
+      Best for expensive objective functions.
+
+
 Decision Tree
 -------------
 

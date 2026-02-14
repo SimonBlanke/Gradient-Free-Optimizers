@@ -146,13 +146,6 @@ Guide Sections
       Using the simple ``.search()``
       method.
 
-   .. grid-item-card:: Ask-Tell Interface
-      :link: user_guide/ask_tell
-      :link-type: doc
-
-      Manual control over the
-      optimization loop.
-
 ----
 
 Algorithms
@@ -217,5 +210,4 @@ GFO provides 22 optimization algorithms organized into four categories:
    user_guide/memory
    user_guide/stopping_conditions
    user_guide/search_interface
-   user_guide/ask_tell
    user_guide/optimizers/index
