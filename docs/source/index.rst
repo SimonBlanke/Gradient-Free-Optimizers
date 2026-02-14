@@ -377,7 +377,7 @@ Documentation
         Code examples for common use cases
 
     .. grid-item-card:: API Reference
-        :link: api_reference/index
+        :link: api_reference
         :link-type: doc
         :text-align: center
 

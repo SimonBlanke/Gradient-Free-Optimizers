@@ -256,7 +256,7 @@ Next Steps
         simple functions to ML hyperparameter tuning.
 
     .. grid-item-card:: API Reference
-        :link: ../api_reference/index
+        :link: ../api_reference
         :link-type: doc
 
         Full API documentation with all parameters and return types.
