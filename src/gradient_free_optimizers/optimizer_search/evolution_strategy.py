@@ -42,35 +42,174 @@ class EvolutionStrategyOptimizer(_EvolutionStrategyOptimizer, Search):
     Parameters
     ----------
     search_space : dict[str, list]
-        The search space to explore. A dictionary with parameter
-        names as keys and a numpy array as values.
-    initialize : dict[str, int]
-        The method to generate initial positions. A dictionary with
-        the following key literals and the corresponding value type:
-        {"grid": int, "vertices": int, "random": int, "warm_start": list[dict]}
-    constraints : list[callable]
-        A list of constraints, where each constraint is a callable.
-        The callable returns `True` or `False` dependend on the input parameters.
-    random_state : None, int
-        If None, create a new random state. If int, create a new random state
-        seeded with the value.
-    rand_rest_p : float
-        The probability of a random iteration during the the search process.
-    population : int
-        Number of parent individuals (mu). Default is 10.
-    offspring : int
-        Number of offspring to generate each generation (lambda). Should be
-        larger than population for effective selection. Default is 20.
-    replace_parents : bool
-        Selection scheme. If True, uses (mu, lambda) strategy where only
-        offspring can become parents. If False, uses (mu + lambda) where
-        parents compete with offspring. Default is False.
-    mutation_rate : float
-        Probability of mutating each parameter in an offspring. Higher values
-        increase exploration. Default is 0.7.
-    crossover_rate : float
-        Probability of recombining parent solutions. ES traditionally
-        emphasizes mutation, so this is often lower. Default is 0.3.
+        The search space to explore, defined as a dictionary mapping parameter
+        names to arrays of possible values.
+
+        Each key is a parameter name (string), and each value is a numpy array
+        or list of discrete values that the parameter can take. The optimizer
+        will only evaluate positions that are on this discrete grid.
+
+        Example: A 2D search space with 100 points per dimension::
+
+            search_space = {
+                "x": np.linspace(-10, 10, 100),
+                "y": np.linspace(-10, 10, 100),
+            }
+
+        The resolution of each dimension (number of points in the array)
+        directly affects optimization quality and speed. More points give
+        finer resolution but increase the search space size exponentially.
+    initialize : dict[str, int], default={"vertices": 4, "random": 2}
+        Strategy for generating initial positions before the main optimization
+        loop begins. Initialization samples are evaluated first, and the best
+        one becomes the starting point for the optimizer.
+
+        Supported keys:
+
+        - ``"grid"``: ``int`` -- Number of positions on a regular grid.
+        - ``"vertices"``: ``int`` -- Number of corner/edge positions of the
+          search space.
+        - ``"random"``: ``int`` -- Number of uniformly random positions.
+        - ``"warm_start"``: ``list[dict]`` -- Specific positions to evaluate,
+          each as a dict mapping parameter names to values.
+
+        Multiple strategies can be combined::
+
+            initialize = {"vertices": 4, "random": 10}
+            initialize = {"warm_start": [{"x": 0.5, "y": 1.0}], "random": 5}
+
+        More initialization samples improve the starting point but consume
+        iterations from ``n_iter``. For expensive objectives, a few targeted
+        warm-start points are often more efficient than many random samples.
+    constraints : list[callable], default=[]
+        A list of constraint functions that restrict the search space. Each
+        constraint is a callable that receives a parameter dictionary and
+        returns ``True`` if the position is valid, ``False`` if it should
+        be rejected.
+
+        Rejected positions are discarded and regenerated: the optimizer
+        resamples a new candidate position (up to 100 retries per step).
+        During initialization, positions that violate constraints are
+        filtered out entirely.
+
+        Example: Constrain the search to a circular region::
+
+            def circular_constraint(para):
+                return para["x"]**2 + para["y"]**2 <= 25
+
+            constraints = [circular_constraint]
+
+        Multiple constraints are combined with AND logic (all must return
+        ``True``).
+    random_state : int or None, default=None
+        Seed for the random number generator to ensure reproducible results.
+
+        - ``None``: Use a new random state each run (non-deterministic).
+        - ``int``: Seed the random number generator for reproducibility.
+
+        Setting a fixed seed is recommended for debugging and benchmarking.
+        Different seeds may lead to different optimization trajectories,
+        especially for stochastic optimizers.
+    rand_rest_p : float, default=0
+        Probability of performing a random restart instead of the normal
+        algorithm step. At each iteration, a uniform random number is drawn;
+        if it falls below ``rand_rest_p``, the optimizer jumps to a random
+        position instead of following its strategy.
+
+        - ``0.0``: No random restarts (pure algorithm behavior).
+        - ``0.01-0.05``: Light diversification, helps escape shallow local
+          optima.
+        - ``0.1-0.3``: Aggressive restarts, useful for highly multi-modal
+          landscapes.
+        - ``1.0``: Equivalent to random search.
+
+        This is especially useful for local search optimizers (Hill Climbing,
+        Simulated Annealing) that can get trapped. For population-based
+        optimizers, the effect is less pronounced since they already maintain
+        diversity through multiple agents.
+    population : int, default=10
+        Number of parent individuals (mu) in the population. Parents are
+        the elite solutions that survive selection.
+
+        - ``5-10``: Small populations, fast per generation but risk of
+          premature convergence.
+        - ``15-30``: Good diversity-convergence balance for most problems.
+        - ``50-100``: Thorough exploration, better for high-dimensional or
+          highly multimodal problems.
+
+        Each individual requires one function evaluation per generation, so
+        total cost scales linearly with population size. As a rule of thumb,
+        use larger populations for higher-dimensional or more multimodal
+        problems.
+    offspring : int, default=20
+        Number of offspring (lambda) generated each generation through
+        mutation and optional crossover. Should typically be larger than
+        ``population`` for effective selection pressure.
+
+        - ``population``: Minimal offspring, weak selection. Common
+          notation: (mu, mu) or (mu + mu).
+        - ``2-5 * population``: Standard range. Notation examples:
+          (10, 20) or (10, 50).
+        - ``10 * population``: Very strong selection, only the best
+          survive.
+
+        The ratio ``offspring / population`` determines selection
+        pressure. A ratio of 7:1 is commonly recommended in the
+        literature.
+
+    replace_parents : bool, default=False
+        Selection scheme controlling how the next generation is formed.
+
+        - ``False``: **(mu + lambda)** strategy. Parents compete with
+          offspring for survival. Preserves elite solutions, which
+          guarantees monotonic improvement. More conservative.
+        - ``True``: **(mu, lambda)** strategy. Only offspring can become
+          parents. Provides stronger selection pressure and better ability
+          to escape local optima, but may lose good solutions. Requires
+          ``offspring >= population``.
+
+    mutation_rate : float, default=0.7
+        Probability of mutating each parameter in an offspring. ES
+        traditionally relies heavily on mutation as the primary variation
+        operator.
+
+        - ``0.3-0.5``: Moderate mutation, stable evolution.
+        - ``0.7``: Standard ES mutation rate (default).
+        - ``0.9-1.0``: Nearly all genes mutated, maximum exploration.
+
+    crossover_rate : float, default=0.3
+        Probability of applying recombination to create offspring.
+        In classical ES, crossover plays a secondary role compared to
+        mutation.
+
+        - ``0.0``: Pure mutation-based ES (classical approach).
+        - ``0.3``: Mild crossover (default).
+        - ``0.5-0.7``: Stronger recombination, more GA-like behavior.
+
+    Notes
+    -----
+    Evolution Strategy follows a (mu, lambda) or (mu + lambda) scheme:
+
+    1. Generate ``offspring`` new solutions by mutating and optionally
+       recombining ``population`` parents.
+    2. Evaluate all offspring.
+    3. Select the best ``population`` individuals as parents for the
+       next generation (from offspring only in comma strategy, or from
+       parents + offspring in plus strategy).
+
+    The key difference from Genetic Algorithms is the emphasis on
+    mutation as the primary search operator, making ES naturally suited
+    for continuous optimization. Classical ES uses self-adaptive mutation
+    step sizes, though this implementation uses a fixed ``mutation_rate``.
+
+    For visual explanations and tuning guides, see
+    the :ref:`Evolution Strategy user guide <evolution_strategy>`.
+
+    See Also
+    --------
+    GeneticAlgorithmOptimizer : Crossover-focused evolutionary approach.
+    DifferentialEvolutionOptimizer : Mutation using vector differences.
+    ParticleSwarmOptimizer : Swarm intelligence without evolutionary operators.
 
     Examples
     --------

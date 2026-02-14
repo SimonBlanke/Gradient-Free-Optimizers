@@ -13,7 +13,7 @@ from ..search import Search
 
 
 class DirectAlgorithm(_DirectAlgorithm, Search):
-    """
+    r"""
     Deterministic global optimizer using adaptive hyperrectangle subdivision.
 
     DIRECT (DIviding RECTangles) is a deterministic global optimization algorithm
@@ -47,26 +47,141 @@ class DirectAlgorithm(_DirectAlgorithm, Search):
     Parameters
     ----------
     search_space : dict[str, list]
-        The search space to explore. A dictionary with parameter
-        names as keys and a numpy array as values.
-    initialize : dict[str, int]
-        The method to generate initial positions. A dictionary with
-        the following key literals and the corresponding value type:
-        {"grid": int, "vertices": int, "random": int, "warm_start": list[dict]}
-    constraints : list[callable]
-        A list of constraints, where each constraint is a callable.
-        The callable returns `True` or `False` dependend on the input parameters.
-    random_state : None, int
-        If None, create a new random state. If int, create a new random state
-        seeded with the value.
-    rand_rest_p : float
-        The probability of a random iteration during the the search process.
-    warm_start : pd.DataFrame, optional
-        Previous optimization results to warm-start the algorithm.
-    resolution : int
-        Number of grid points for continuous dimensions. Default is 100.
-        Continuous dimensions (specified as tuples like (0.0, 10.0)) are
-        automatically discretized into this many evenly-spaced points.
+        The search space to explore, defined as a dictionary mapping parameter
+        names to arrays of possible values.
+
+        Each key is a parameter name (string), and each value is a numpy array
+        or list of discrete values that the parameter can take. The optimizer
+        will only evaluate positions that are on this discrete grid.
+
+        Example: A 2D search space with 100 points per dimension::
+
+            search_space = {
+                "x": np.linspace(-10, 10, 100),
+                "y": np.linspace(-10, 10, 100),
+            }
+
+        The resolution of each dimension (number of points in the array)
+        directly affects optimization quality and speed. More points give
+        finer resolution but increase the search space size exponentially.
+
+    initialize : dict[str, int], default={"vertices": 4, "random": 2}
+        Strategy for generating initial positions before the main optimization
+        loop begins. Initialization samples are evaluated first, and the best
+        one becomes the starting point for the optimizer.
+
+        Supported keys:
+
+        - ``"grid"``: ``int`` -- Number of positions on a regular grid.
+        - ``"vertices"``: ``int`` -- Number of corner/edge positions of the
+          search space.
+        - ``"random"``: ``int`` -- Number of uniformly random positions.
+        - ``"warm_start"``: ``list[dict]`` -- Specific positions to evaluate,
+          each as a dict mapping parameter names to values.
+
+        Multiple strategies can be combined::
+
+            initialize = {"vertices": 4, "random": 10}
+            initialize = {"warm_start": [{"x": 0.5, "y": 1.0}], "random": 5}
+
+        More initialization samples improve the starting point but consume
+        iterations from ``n_iter``. For expensive objectives, a few targeted
+        warm-start points are often more efficient than many random samples.
+
+    constraints : list[callable], default=[]
+        A list of constraint functions that restrict the search space. Each
+        constraint is a callable that receives a parameter dictionary and
+        returns ``True`` if the position is valid, ``False`` if it should
+        be rejected.
+
+        Rejected positions are discarded and regenerated: the optimizer
+        resamples a new candidate position (up to 100 retries per step).
+        During initialization, positions that violate constraints are
+        filtered out entirely.
+
+        Example: Constrain the search to a circular region::
+
+            def circular_constraint(para):
+                return para["x"]**2 + para["y"]**2 <= 25
+
+            constraints = [circular_constraint]
+
+        Multiple constraints are combined with AND logic (all must return
+        ``True``).
+
+    random_state : int or None, default=None
+        Seed for the random number generator to ensure reproducible results.
+
+        - ``None``: Use a new random state each run (non-deterministic).
+        - ``int``: Seed the random number generator for reproducibility.
+
+        Setting a fixed seed is recommended for debugging and benchmarking.
+        Different seeds may lead to different optimization trajectories,
+        especially for stochastic optimizers.
+
+    rand_rest_p : float, default=0
+        Probability of performing a random restart instead of the normal
+        algorithm step. At each iteration, a uniform random number is drawn;
+        if it falls below ``rand_rest_p``, the optimizer jumps to a random
+        position instead of following its strategy.
+
+        - ``0.0``: No random restarts (pure algorithm behavior).
+        - ``0.01-0.05``: Light diversification, helps escape shallow local
+          optima.
+        - ``0.1-0.3``: Aggressive restarts, useful for highly multi-modal
+          landscapes.
+        - ``1.0``: Equivalent to random search.
+
+        This is especially useful for local search optimizers (Hill Climbing,
+        Simulated Annealing) that can get trapped. For population-based
+        optimizers, the effect is less pronounced since they already maintain
+        diversity through multiple agents.
+
+    warm_start : pd.DataFrame or None, default=None
+        Previous optimization results to warm-start the algorithm. The
+        DataFrame should contain columns matching the search space parameter
+        names plus a "score" column. This allows continuing a previous
+        optimization run.
+
+    resolution : int, default=100
+        Number of grid points for continuous dimensions specified as tuples
+        (e.g., ``(0.0, 10.0)``). These are automatically discretized into
+        this many evenly-spaced points. Has no effect on dimensions already
+        specified as arrays.
+
+        - ``50``: Coarse resolution, faster but less precise.
+        - ``100``: Standard resolution (default).
+        - ``500-1000``: Fine resolution for high-precision optimization.
+
+    Notes
+    -----
+    DIRECT (DIviding RECTangles) partitions the search space into
+    hyperrectangles and identifies "potentially optimal" rectangles
+    that balance function value and rectangle size:
+
+    A rectangle is potentially optimal if there exists a Lipschitz
+    constant :math:`\\hat{L} > 0` such that it could contain the global
+    minimum. This criterion naturally balances:
+
+    - **Exploitation**: Rectangles with good function values (small
+      :math:`f` at center).
+    - **Exploration**: Large rectangles (high :math:`\\|d\\|` diameter).
+
+    Potentially optimal rectangles are divided along their longest
+    dimension, creating a tree structure that adaptively refines the
+    most promising regions.
+
+    Unlike Lipschitz optimization, DIRECT does not require knowing or
+    estimating the Lipschitz constant explicitly.
+
+    For visual explanations and tuning guides, see
+    the :ref:`DIRECT Algorithm user guide <direct>`.
+
+    See Also
+    --------
+    LipschitzOptimizer : Global optimization using Lipschitz constants.
+    GridSearchOptimizer : Exhaustive fixed-grid search without adaptive subdivision.
+    PatternSearch : Adaptive pattern-based search at a single resolution level.
 
     Examples
     --------

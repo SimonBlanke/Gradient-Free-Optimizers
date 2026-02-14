@@ -11,7 +11,7 @@ from ..search import Search
 
 
 class RandomSearchOptimizer(_RandomSearchOptimizer, Search):
-    """
+    r"""
     Simple optimizer that samples random positions from the search space.
 
     Random Search is the simplest optimization strategy that samples positions
@@ -40,18 +40,104 @@ class RandomSearchOptimizer(_RandomSearchOptimizer, Search):
     Parameters
     ----------
     search_space : dict[str, list]
-        The search space to explore. A dictionary with parameter
-        names as keys and a numpy array as values.
-    initialize : dict[str, int]
-        The method to generate initial positions. A dictionary with
-        the following key literals and the corresponding value type:
-        {"grid": int, "vertices": int, "random": int, "warm_start": list[dict]}
-    constraints : list[callable]
-        A list of constraints, where each constraint is a callable.
-        The callable returns `True` or `False` dependend on the input parameters.
-    random_state : None, int
-        If None, create a new random state. If int, create a new random state
-        seeded with the value.
+        The search space to explore, defined as a dictionary mapping parameter
+        names to arrays of possible values.
+
+        Each key is a parameter name (string), and each value is a numpy array
+        or list of discrete values that the parameter can take. The optimizer
+        will only evaluate positions that are on this discrete grid.
+
+        Example: A 2D search space with 100 points per dimension::
+
+            search_space = {
+                "x": np.linspace(-10, 10, 100),
+                "y": np.linspace(-10, 10, 100),
+            }
+
+        The resolution of each dimension (number of points in the array)
+        directly affects optimization quality and speed. More points give
+        finer resolution but increase the search space size exponentially.
+
+    initialize : dict[str, int], default={"vertices": 4, "random": 2}
+        Strategy for generating initial positions before the main optimization
+        loop begins. Initialization samples are evaluated first, and the best
+        one becomes the starting point for the optimizer.
+
+        Supported keys:
+
+        - ``"grid"``: ``int`` -- Number of positions on a regular grid.
+        - ``"vertices"``: ``int`` -- Number of corner/edge positions of the
+          search space.
+        - ``"random"``: ``int`` -- Number of uniformly random positions.
+        - ``"warm_start"``: ``list[dict]`` -- Specific positions to evaluate,
+          each as a dict mapping parameter names to values.
+
+        Multiple strategies can be combined::
+
+            initialize = {"vertices": 4, "random": 10}
+            initialize = {"warm_start": [{"x": 0.5, "y": 1.0}], "random": 5}
+
+        More initialization samples improve the starting point but consume
+        iterations from ``n_iter``. For expensive objectives, a few targeted
+        warm-start points are often more efficient than many random samples.
+
+    constraints : list[callable], default=[]
+        A list of constraint functions that restrict the search space. Each
+        constraint is a callable that receives a parameter dictionary and
+        returns ``True`` if the position is valid, ``False`` if it should
+        be rejected.
+
+        Rejected positions are discarded and regenerated: the optimizer
+        resamples a new candidate position (up to 100 retries per step).
+        During initialization, positions that violate constraints are
+        filtered out entirely.
+
+        Example: Constrain the search to a circular region::
+
+            def circular_constraint(para):
+                return para["x"]**2 + para["y"]**2 <= 25
+
+            constraints = [circular_constraint]
+
+        Multiple constraints are combined with AND logic (all must return
+        ``True``).
+
+    random_state : int or None, default=None
+        Seed for the random number generator to ensure reproducible results.
+
+        - ``None``: Use a new random state each run (non-deterministic).
+        - ``int``: Seed the random number generator for reproducibility.
+
+        Setting a fixed seed is recommended for debugging and benchmarking.
+        Different seeds may lead to different optimization trajectories,
+        especially for stochastic optimizers.
+
+    Notes
+    -----
+    At each iteration, the algorithm independently samples a uniformly
+    random position from the search space:
+
+    .. math::
+
+        x_t \\sim \\text{Uniform}(\\text{search\\_space})
+
+    Random search has no memory of previous evaluations. Each sample is
+    independent, making it trivially parallelizable and immune to local
+    optima traps. Research has shown that random search is more efficient
+    than grid search in high dimensions because it provides better coverage
+    of each individual dimension.
+
+    Time complexity per iteration is O(d), where d is the number of
+    dimensions.
+
+    For visual explanations and comparisons, see
+    the :ref:`Random Search user guide <random_search>`.
+
+    See Also
+    --------
+    GridSearchOptimizer : Systematic exhaustive search on a regular grid.
+    RandomAnnealingOptimizer : Starts with large random steps and narrows over time.
+    BayesianOptimizer : Sample-efficient alternative that builds a surrogate model.
 
     Examples
     --------

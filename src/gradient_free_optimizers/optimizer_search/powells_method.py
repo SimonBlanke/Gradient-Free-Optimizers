@@ -11,7 +11,7 @@ from ..search import Search
 
 
 class PowellsMethod(_PowellsMethod, Search):
-    """
+    r"""
     Derivative-free optimizer using sequential line searches along conjugate directions.
 
     Powell's method is a powerful derivative-free optimization algorithm that
@@ -41,39 +41,166 @@ class PowellsMethod(_PowellsMethod, Search):
     Parameters
     ----------
     search_space : dict[str, list]
-        The search space to explore. A dictionary with parameter
-        names as keys and a numpy array as values.
-    initialize : dict[str, int]
-        The method to generate initial positions. A dictionary with
-        the following key literals and the corresponding value type:
-        {"grid": int, "vertices": int, "random": int, "warm_start": list[dict]}
-    constraints : list[callable]
-        A list of constraints, where each constraint is a callable.
-        The callable returns `True` or `False` dependend on the input parameters.
-    random_state : None, int
-        If None, create a new random state. If int, create a new random state
-        seeded with the value.
-    rand_rest_p : float
-        The probability of a random iteration during the search process.
-    epsilon : float
-        The step-size for hill climbing line search. Only used when
-        line_search="hill_climb".
-    distribution : str
-        The type of distribution to sample from for hill climbing line search.
-        Options are "normal", "laplace", "gumbel", or "logistic".
-    iters_p_dim : int
-        Number of evaluations per direction during line search. Higher values
-        provide more accurate line searches but increase function evaluations.
-        Default is 10.
-    line_search : str
-        Line search method to use. Options are "grid" (systematic evaluation),
-        "golden" (golden-section search), or "hill_climb" (local search).
-        Default is "grid".
-    convergence_threshold : float
-        Minimum total improvement per cycle required to continue. If the
-        sum of improvements across all directions falls below this threshold,
-        the optimizer considers itself converged and switches to random
-        exploration. Default is 1e-8.
+        The search space to explore, defined as a dictionary mapping parameter
+        names to arrays of possible values.
+
+        Each key is a parameter name (string), and each value is a numpy array
+        or list of discrete values that the parameter can take. The optimizer
+        will only evaluate positions that are on this discrete grid.
+
+        Example: A 2D search space with 100 points per dimension::
+
+            search_space = {
+                "x": np.linspace(-10, 10, 100),
+                "y": np.linspace(-10, 10, 100),
+            }
+
+        The resolution of each dimension (number of points in the array)
+        directly affects optimization quality and speed. More points give
+        finer resolution but increase the search space size exponentially.
+
+    initialize : dict[str, int], default={"vertices": 4, "random": 2}
+        Strategy for generating initial positions before the main optimization
+        loop begins. Initialization samples are evaluated first, and the best
+        one becomes the starting point for the optimizer.
+
+        Supported keys:
+
+        - ``"grid"``: ``int`` -- Number of positions on a regular grid.
+        - ``"vertices"``: ``int`` -- Number of corner/edge positions of the
+          search space.
+        - ``"random"``: ``int`` -- Number of uniformly random positions.
+        - ``"warm_start"``: ``list[dict]`` -- Specific positions to evaluate,
+          each as a dict mapping parameter names to values.
+
+        Multiple strategies can be combined::
+
+            initialize = {"vertices": 4, "random": 10}
+            initialize = {"warm_start": [{"x": 0.5, "y": 1.0}], "random": 5}
+
+        More initialization samples improve the starting point but consume
+        iterations from ``n_iter``. For expensive objectives, a few targeted
+        warm-start points are often more efficient than many random samples.
+
+    constraints : list[callable], default=[]
+        A list of constraint functions that restrict the search space. Each
+        constraint is a callable that receives a parameter dictionary and
+        returns ``True`` if the position is valid, ``False`` if it should
+        be rejected.
+
+        Rejected positions are discarded and regenerated: the optimizer
+        resamples a new candidate position (up to 100 retries per step).
+        During initialization, positions that violate constraints are
+        filtered out entirely.
+
+        Example: Constrain the search to a circular region::
+
+            def circular_constraint(para):
+                return para["x"]**2 + para["y"]**2 <= 25
+
+            constraints = [circular_constraint]
+
+        Multiple constraints are combined with AND logic (all must return
+        ``True``).
+
+    random_state : int or None, default=None
+        Seed for the random number generator to ensure reproducible results.
+
+        - ``None``: Use a new random state each run (non-deterministic).
+        - ``int``: Seed the random number generator for reproducibility.
+
+        Setting a fixed seed is recommended for debugging and benchmarking.
+        Different seeds may lead to different optimization trajectories,
+        especially for stochastic optimizers.
+
+    rand_rest_p : float, default=0
+        Probability of performing a random restart instead of the normal
+        algorithm step. At each iteration, a uniform random number is drawn;
+        if it falls below ``rand_rest_p``, the optimizer jumps to a random
+        position instead of following its strategy.
+
+        - ``0.0``: No random restarts (pure algorithm behavior).
+        - ``0.01-0.05``: Light diversification, helps escape shallow local
+          optima.
+        - ``0.1-0.3``: Aggressive restarts, useful for highly multi-modal
+          landscapes.
+        - ``1.0``: Equivalent to random search.
+
+        This is especially useful for local search optimizers (Hill Climbing,
+        Simulated Annealing) that can get trapped. For population-based
+        optimizers, the effect is less pronounced since they already maintain
+        diversity through multiple agents.
+
+    epsilon : float, default=0.03
+        Step size for hill climbing line search. Only used when
+        ``line_search="hill_climb"``. Ignored for "grid" and "golden"
+        line search methods.
+
+    distribution : {"normal", "laplace", "gumbel", "logistic"}, default="normal"
+        Distribution for sampling during hill climbing line search. Only
+        used when ``line_search="hill_climb"``. Ignored for other line
+        search methods.
+
+    iters_p_dim : int, default=10
+        Number of function evaluations per direction during each line
+        search. Higher values provide more accurate line searches but
+        increase the total cost per cycle.
+
+        - ``5``: Fast but coarse line search.
+        - ``10``: Good balance for most problems (default).
+        - ``20-50``: Thorough line search, recommended for functions with
+          narrow valleys.
+
+        Total evaluations per cycle is approximately
+        ``iters_p_dim * d`` where d is the number of dimensions.
+
+    line_search : {"grid", "golden", "hill_climb"}, default="grid"
+        Method used for one-dimensional optimization along each direction.
+
+        - ``"grid"``: Evaluates evenly spaced points along the direction.
+          Simple and robust, no assumptions about function shape.
+        - ``"golden"``: Golden-section search, efficient for unimodal
+          functions along each direction.
+        - ``"hill_climb"``: Uses hill climbing with ``epsilon`` and
+          ``distribution`` for the line search. More flexible but
+          stochastic.
+
+    convergence_threshold : float, default=1e-8
+        Minimum total improvement per cycle required to continue
+        optimizing. If the sum of improvements across all direction
+        searches falls below this threshold, the optimizer considers
+        itself converged and switches to random exploration.
+
+        - ``1e-6``: Relatively loose convergence criterion.
+        - ``1e-8``: Standard precision (default).
+        - ``1e-12``: Very tight convergence, for high-precision needs.
+
+    Notes
+    -----
+    Powell's method performs sequential line searches along a set of
+    d conjugate directions:
+
+    1. Start with coordinate axes as initial directions.
+    2. For each direction :math:`\\mathbf{d}_i`, find the optimal step
+       :math:`\\alpha_i` via line search.
+    3. After completing all directions, update the direction set by
+       replacing one direction with the overall displacement vector.
+    4. If total improvement falls below ``convergence_threshold``, switch
+       to random exploration.
+
+    The direction update builds up curvature information, creating
+    conjugate directions that accelerate convergence for quadratic-like
+    functions. For a perfectly quadratic function in d dimensions, the
+    algorithm converges in d cycles.
+
+    For visual explanations and tuning guides, see
+    the :ref:`Powell's Method user guide <powells_method>`.
+
+    See Also
+    --------
+    DownhillSimplexOptimizer : Derivative-free optimization using simplex geometry.
+    PatternSearch : Simpler pattern-based direct search method.
+    HillClimbingOptimizer : Stochastic local search without line search structure.
 
     Examples
     --------
