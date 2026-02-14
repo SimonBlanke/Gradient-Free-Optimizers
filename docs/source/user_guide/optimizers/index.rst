@@ -196,13 +196,3 @@ vs. evaluating the objective function):
 For expensive objective functions (training ML models, running simulations),
 the overhead is negligible. For cheap functions (mathematical expressions),
 consider the simpler algorithms.
-
-
-.. toctree::
-    :maxdepth: 2
-    :hidden:
-
-    local/index
-    global/index
-    population/index
-    smbo/index
