@@ -187,47 +187,6 @@ Here's a practical example tuning a Random Forest classifier:
     print(opt.search_data.head())
 
 
-Using the Ask-Tell Interface
-----------------------------
-
-For more control over the optimization loop, use the ask-tell interface:
-
-.. code-block:: python
-
-    import numpy as np
-    from gradient_free_optimizers import ParticleSwarmOptimizer
-
-    def objective(para):
-        return -(para["x"]**2 + para["y"]**2)
-
-    search_space = {
-        "x": np.linspace(-10, 10, 100),
-        "y": np.linspace(-10, 10, 100),
-    }
-
-    # Create optimizer and set up the search
-    opt = ParticleSwarmOptimizer(search_space, population=10)
-    opt.setup_search(objective, n_iter=100)
-
-    # Manual optimization loop
-    for iteration in range(100):
-        # Get next parameters to evaluate
-        params = opt.ask()
-
-        # Evaluate (you could do this anywhere, even distributed)
-        score = objective(params)
-
-        # Report result back to optimizer
-        opt.tell(params, score)
-
-        # You have full control here: logging, early stopping, etc.
-        if iteration % 25 == 0:
-            print(f"Iteration {iteration}: best = {opt.best_score:.4f}")
-
-    print(f"\nFinal best: {opt.best_score:.4f}")
-    print(f"Best params: {opt.best_para}")
-
-
 Next Steps
 ----------
 

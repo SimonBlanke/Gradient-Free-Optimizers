@@ -346,7 +346,7 @@ Naming Conventions
 ^^^^^^^^^^^^^^^^^^
 
 - **Classes**: ``PascalCase`` (e.g., ``HillClimbingOptimizer``)
-- **Functions/methods**: ``snake_case`` (e.g., ``setup_search``)
+- **Functions/methods**: ``snake_case`` (e.g., ``search``)
 - **Constants**: ``UPPER_SNAKE_CASE`` (e.g., ``DEFAULT_N_ITER``)
 - **Private members**: ``_leading_underscore`` (e.g., ``_internal_method``)
 

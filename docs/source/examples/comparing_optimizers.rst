@@ -121,16 +121,12 @@ Track optimization progress over iterations:
     }
 
     def track_convergence(OptimizerClass, name, **kwargs):
-        """Track best score at each iteration"""
+        """Track best score across iterations"""
         opt = OptimizerClass(search_space, random_state=42, **kwargs)
-        opt.setup_search(objective, n_iter=100)
+        opt.search(objective, n_iter=100, verbosity=False)
 
-        best_scores = []
-        for i in range(100):
-            params = opt.ask()
-            score = objective(params)
-            opt.tell(params, score)
-            best_scores.append(opt.best_score)
+        scores = opt.search_data["score"].values
+        best_scores = np.maximum.accumulate(scores)
 
         return name, best_scores
 

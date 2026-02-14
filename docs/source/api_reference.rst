@@ -162,21 +162,6 @@ search() Method
     )
 
 
-Ask-Tell Interface
-^^^^^^^^^^^^^^^^^^
-
-.. code-block:: python
-
-    # Setup (required before ask/tell)
-    optimizer.setup_search(objective_function, n_iter, ...)
-
-    # Get next parameters to evaluate
-    params = optimizer.ask()
-
-    # Report evaluation result
-    optimizer.tell(params, score)
-
-
 Result Attributes
 ^^^^^^^^^^^^^^^^^
 

@@ -145,23 +145,6 @@ Key Features
                 "method": ["adam", "sgd", "rmsprop"],
             }
 
-    .. grid-item-card:: Dual API: search() & ask-tell
-        :class-card: sd-rounded-3
-
-        Use the simple ``search()`` method for quick optimization,
-        or the ``ask()``/``tell()`` interface for full control over
-        the optimization loop.
-
-        .. code-block:: python
-
-            # Simple API
-            opt.search(objective, n_iter=100)
-
-            # Ask-tell API
-            params = opt.ask()
-            score = objective(params)
-            opt.tell(params, score)
-
     .. grid-item-card:: Constraint Support
         :class-card: sd-rounded-3
 
@@ -322,7 +305,6 @@ tool for hyperparameter optimization and experiment tracking.
         - 22 algorithms
         - NumPy-based search spaces
         - Constraint support
-        - Ask-tell interface
 
     .. grid-item-card:: Hyperactive
         :link: https://github.com/SimonBlanke/Hyperactive

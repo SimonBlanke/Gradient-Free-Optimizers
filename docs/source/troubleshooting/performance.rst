@@ -264,28 +264,6 @@ Disable Search Data Collection
     opt.search(objective, n_iter=10000, memory=False)
 
 
-Clear Data Periodically
-------------------------
-
-**Problem**: Long-running optimization accumulates data.
-
-**Solution**: Use ask-tell with manual clearing:
-
-.. code-block:: python
-
-    opt = HillClimbingOptimizer(search_space)
-    opt.setup_search(objective, n_iter=10000)
-
-    for i in range(10000):
-        params = opt.ask()
-        score = objective(params)
-        opt.tell(params, score)
-
-        # Clear every 1000 iterations
-        if i % 1000 == 0:
-            opt.search_data = opt.search_data.iloc[-100:]  # Keep last 100
-
-
 Reduce Surrogate Model Size
 ----------------------------
 
