@@ -11,7 +11,7 @@
 ---
 
 <h3 align="center">
-Simple and reliable optimization with local, global, population-based and sequential techniques in numerical discrete search spaces.
+Lightweight optimization with local, global, population-based and sequential techniques across mixed search spaces
 </h3>
 
 <p align="center">
