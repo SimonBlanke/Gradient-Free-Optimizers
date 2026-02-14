@@ -2,7 +2,12 @@
 The search() Method
 ======================
 
-The ``search()`` method is the primary interface for running optimization.
+The ``search()`` method is the primary interface for running optimization in
+GFO. Once you have defined a search space and created an optimizer, calling
+``search()`` starts the optimization loop. The method accepts your objective
+function, the number of iterations, and optional parameters for stopping
+conditions, memory caching, and output control. After the search completes,
+results are available as attributes on the optimizer object.
 
 
 .. grid:: 1

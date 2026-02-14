@@ -2,9 +2,13 @@
 Search Spaces
 =============
 
-Search spaces define what parameters the optimizer can explore. A search space
-is a Python dictionary mapping parameter names to their domains. The **type of
-each domain** is determined by the Python data structure you use:
+Before running any optimization you need to tell the optimizer which parameters
+exist, what values they can take, and what type each parameter is. In GFO a
+search space is a Python dictionary mapping parameter names to their domains.
+The **type of each domain** is determined by the Python data structure you use:
+tuples for continuous ranges, NumPy arrays for discrete grids, and Python lists
+for categorical choices. The optimizer adapts its search strategy per dimension
+type, so choosing the right data structure matters.
 
 
 .. grid:: 1

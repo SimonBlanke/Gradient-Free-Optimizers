@@ -2,8 +2,12 @@
 Stopping Conditions
 ===================
 
-GFO supports multiple stopping conditions that can be combined.
-Optimization stops when **any** condition is met.
+By default GFO runs for a fixed number of iterations specified by ``n_iter``.
+In practice you often want additional safeguards: a time limit to prevent
+runaway computations, a target score to stop early when good enough results
+are found, or early stopping to detect when the optimizer has converged and
+further iterations would not improve the result. All of these can be combined
+freely. Optimization stops when **any** condition is met.
 
 
 .. grid:: 1 1 2 2

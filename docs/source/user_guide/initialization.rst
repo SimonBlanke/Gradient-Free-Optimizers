@@ -2,8 +2,12 @@
 Initialization
 ==============
 
-Initialization controls where the optimizer starts its search. Good
-initialization can significantly improve optimization efficiency.
+Before the main optimization loop begins, the optimizer needs starting
+positions to evaluate. The choice of initialization strategy affects how
+quickly the optimizer finds good solutions: starting from well-distributed
+points gives the algorithm a broad view of the search landscape, while
+starting from known good positions lets it refine solutions immediately.
+GFO offers four initialization strategies that can be combined freely.
 
 
 .. grid:: 1 1 2 2

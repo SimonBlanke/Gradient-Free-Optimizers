@@ -2,8 +2,12 @@
 Objective Functions
 ===================
 
-The objective function is what you want to optimize. It takes a dictionary of
-parameters and returns a score.
+The objective function is the core of every optimization run. The optimizer
+proposes parameter combinations, your objective function evaluates them, and
+the optimizer learns from the results to propose better combinations over
+time. An objective function takes a dictionary of parameters as input and
+returns a single numeric score. By default GFO maximizes this score, meaning
+higher values are considered better.
 
 
 .. grid:: 1 1 2 2

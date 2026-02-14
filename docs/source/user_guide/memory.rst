@@ -2,8 +2,13 @@
 Memory & Caching
 ================
 
-GFO can cache function evaluations to avoid redundant computation and support
-warm-starting from previous optimization runs.
+When the optimizer revisits a parameter combination it has already evaluated,
+repeating the objective function call wastes computation, especially for
+expensive functions like model training or simulation. GFO provides two
+mechanisms to address this: memory caching stores evaluations during a single
+run to avoid redundant function calls, and warm starting loads results from
+a previous run so the optimizer can continue where it left off instead of
+starting from scratch.
 
 
 .. grid:: 1 1 2 2

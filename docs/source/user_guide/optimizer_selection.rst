@@ -2,8 +2,15 @@
 Optimizer Selection
 ===================
 
-Choosing the right optimizer depends on your problem characteristics. This
-guide helps you select the best algorithm for your use case.
+GFO provides |n_algorithms| optimization algorithms organized into four
+categories. Each category uses a fundamentally different search strategy,
+making some algorithms better suited to certain problem types than others.
+Local search algorithms exploit promising regions efficiently but can get
+stuck in local optima. Global search algorithms explore broadly but may be
+slow to converge. Population-based methods maintain multiple candidate
+solutions simultaneously. Sequential model-based optimization (SMBO) builds
+a surrogate model of the objective function to make informed decisions about
+where to search next.
 
 
 .. grid:: 1 1 2 2

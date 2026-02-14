@@ -2,8 +2,12 @@
 Constraints
 ===========
 
-Constraints restrict which parameter combinations are valid. The optimizer
-automatically avoids invalid regions of the search space.
+Not all parameter combinations are valid. A neural network with 10 layers
+but only 4 hidden units per layer might be nonsensical. A simulation with
+a time step larger than the total duration would fail. Constraints let you
+define rules that the optimizer must respect. Instead of letting the objective
+function crash on invalid inputs, you tell the optimizer upfront which
+parameter combinations are allowed, and it automatically avoids the rest.
 
 
 .. grid:: 1
