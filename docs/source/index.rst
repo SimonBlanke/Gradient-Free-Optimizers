@@ -283,14 +283,13 @@ Quick Start
 
 ----
 
-The GFO Ecosystem
------------------
+Optimization Ecosystem
+----------------------
 
-Gradient-Free-Optimizers serves as the optimization backend for
-`Hyperactive <https://github.com/SimonBlanke/Hyperactive>`_, a broader
-tool for hyperparameter optimization and experiment tracking.
+Gradient-Free-Optimizers is part of a broader optimization ecosystem
+for Python.
 
-.. grid:: 2
+.. grid:: 3
     :gutter: 3
 
     .. grid-item-card:: Gradient-Free-Optimizers
@@ -317,9 +316,21 @@ tool for hyperparameter optimization and experiment tracking.
         integration with scikit-learn, PyTorch, and more.
 
         - Parallel optimization
-        - Multiple backends (GFO, Optuna, sklearn)
+        - Multiple backends
         - Framework integrations
-        - Experiment tracking
+
+    .. grid-item-card:: Surfaces
+        :link: https://github.com/SimonBlanke/Surfaces
+        :class-card: sd-rounded-3 sd-border-start sd-border-success
+
+        **Objective function collection**
+
+        A collection of test and benchmark objective functions
+        for evaluating and comparing optimization algorithms.
+
+        - Analytical test functions
+        - ML benchmark functions
+        - Visualization tools
 
 
 ----
