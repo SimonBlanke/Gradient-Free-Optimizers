@@ -103,7 +103,7 @@ class HillClimbingOptimizer(BaseOptimizer):
         """Generate new continuous values using Gaussian noise scaled by range.
 
         Accesses state via:
-            - self.pos_current[self._continuous_mask]
+            - self._pos_current[self._continuous_mask]
             - self._continuous_bounds
 
         The noise magnitude is proportional to the dimension's range,
@@ -134,7 +134,7 @@ class HillClimbingOptimizer(BaseOptimizer):
         """Generate new categorical values using probabilistic switching.
 
         Accesses state via:
-            - self.pos_current[self._categorical_mask]
+            - self._pos_current[self._categorical_mask]
             - self._categorical_sizes
 
         With probability epsilon, switch to a random category.
@@ -165,7 +165,7 @@ class HillClimbingOptimizer(BaseOptimizer):
         """Generate new discrete values using Gaussian noise.
 
         Accesses state via:
-            - self.pos_current[self._discrete_mask]
+            - self._pos_current[self._discrete_mask]
             - self._discrete_bounds
 
         Similar to continuous, but operates on discrete indices.
@@ -193,7 +193,7 @@ class HillClimbingOptimizer(BaseOptimizer):
 
         return current + noise
 
-    def _evaluate(self, score_new):
+    def _on_evaluate(self, score_new):
         """Greedy selection after n_neighbours trials.
 
         Hill climbing evaluates n_neighbours positions, then moves to the

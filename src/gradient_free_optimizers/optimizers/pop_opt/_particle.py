@@ -97,7 +97,7 @@ class Particle(HillClimbingOptimizer):
         pos_new = []
         for idx, dim_type in enumerate(self.conv.dim_types):
             if dim_type == DimensionType.CONTINUOUS:
-                # Keep as float, will be clipped by conv2pos_typed
+                # Keep as float, will be clipped by _conv2pos_typed
                 new_val = float(pos[idx]) + float(velo[idx])
                 pos_new.append(new_val)
             elif dim_type == DimensionType.CATEGORICAL:
@@ -112,7 +112,7 @@ class Particle(HillClimbingOptimizer):
                 new_val = int(round(pos[idx] + velo[idx]))
                 pos_new.append(new_val)
 
-        return self.conv2pos_typed(np.array(pos_new))
+        return self._conv2pos_typed(np.array(pos_new))
 
     def move_linear(self):
         """Compute velocity update and move particle.
@@ -134,24 +134,24 @@ class Particle(HillClimbingOptimizer):
         # Random restart check
         if random.random() < self.rand_rest_p:
             pos_new = self.init.move_random_typed()
-            self.pos_new = pos_new  # Property setter auto-appends
+            self._pos_new = pos_new  # Property setter auto-appends
             return pos_new
 
         # Guard against None positions during early iterations
         if (
-            self.pos_current is None
-            or self.pos_best is None
+            self._pos_current is None
+            or self._pos_best is None
             or self.global_pos_best is None
         ):
             # Fall back to random move during early iterations
             pos_new = self.init.move_random_typed()
-            self.pos_new = pos_new  # Property setter auto-appends
+            self._pos_new = pos_new  # Property setter auto-appends
             return pos_new
 
         r1, r2 = random.random(), random.random()
 
-        pos_current = np.array(self.pos_current)
-        pos_best = np.array(self.pos_best)
+        pos_current = np.array(self._pos_current)
+        pos_best = np.array(self._pos_best)
         global_pos_best = np.array(self.global_pos_best)
 
         # Inertia term: maintain current direction
@@ -170,15 +170,15 @@ class Particle(HillClimbingOptimizer):
         pos_new = self._move_part(pos_current, self.velo)
 
         # Track new position (property setter auto-appends)
-        self.pos_new = pos_new
+        self._pos_new = pos_new
 
         return pos_new
 
     def move_climb_typed(self, pos_new):
         """Fallback movement using hill climbing when constraints violated."""
-        return self.iterate()
+        return self._iterate()
 
-    def conv2pos_typed(self, pos):
+    def _conv2pos_typed(self, pos):
         """Convert position array to valid position with proper types.
 
         Clips values to bounds and ensures correct data types for each dimension.

@@ -175,13 +175,13 @@ class TestHillClimbingTemplatePattern:
     def test_full_iterate_cycle(self, optimizer):
         """Test a complete iterate cycle with clipping."""
         # Set up initial position
-        optimizer.pos_current = np.array([0.05, 0.5, 1, 2, 2.0, 3.0])
+        optimizer._pos_current = np.array([0.05, 0.5, 1, 2, 2.0, 3.0])
 
         # Run iterate
-        new_pos = optimizer.iterate()
+        new_pos = optimizer._iterate()
 
         # Should return valid position
-        assert new_pos.shape == optimizer.pos_current.shape
+        assert new_pos.shape == optimizer._pos_current.shape
 
         # Continuous should be within bounds
         cont_idx = np.where(optimizer._continuous_mask)[0]
@@ -229,9 +229,9 @@ class TestHillClimbingDistributions:
             distribution=distribution,
         )
         # _setup_dimension_masks() is now auto-called in __init__
-        opt.pos_current = np.array([5.0, 5.0])
+        opt._pos_current = np.array([5.0, 5.0])
 
-        new_pos = opt.iterate()
+        new_pos = opt._iterate()
 
         assert new_pos.shape == (2,)
         assert 0.0 <= new_pos[0] <= 10.0
@@ -247,7 +247,7 @@ class TestHillClimbingDistributions:
 
 
 class TestHillClimbingEvaluate:
-    """Test the evaluate method (Template Pattern)."""
+    """Test the _evaluate method (Template Pattern)."""
 
     @pytest.fixture
     def optimizer(self):
@@ -259,22 +259,22 @@ class TestHillClimbingEvaluate:
             n_neighbours=3,
         )
         # _setup_dimension_masks() is now auto-called in __init__
-        opt.pos_current = np.array([5.0, 5.0])
-        opt.pos_new = np.array([5.0, 5.0])
+        opt._pos_current = np.array([5.0, 5.0])
+        opt._pos_new = np.array([5.0, 5.0])
         return opt
 
     def test_evaluate_tracks_scores(self, optimizer):
-        """Test that evaluate tracks scores and positions via _track_score."""
-        optimizer.pos_new = np.array([6.0, 6.0])
-        optimizer.evaluate(1.0)
+        """Test that _evaluate tracks scores and positions via _track_score."""
+        optimizer._pos_new = np.array([6.0, 6.0])
+        optimizer._evaluate(1.0)
 
-        # CoreOptimizer.evaluate calls _track_score which updates these
+        # CoreOptimizer._evaluate calls _track_score which updates these
         assert len(optimizer.scores_valid) == 1
         assert optimizer.scores_valid[0] == 1.0
         assert optimizer.nth_trial == 1
 
     def test_evaluate_n_neighbours_update(self, optimizer):
-        """Test that _evaluate updates after n_neighbours trials."""
+        """Test that _on_evaluate updates after n_neighbours trials."""
         positions = [
             np.array([6.0, 6.0]),
             np.array([7.0, 7.0]),
@@ -283,18 +283,18 @@ class TestHillClimbingEvaluate:
         scores = [1.0, 3.0, 2.0]  # Best is index 1
 
         for pos, score in zip(positions, scores):
-            optimizer.pos_new = pos.copy()
-            optimizer.evaluate(score)
+            optimizer._pos_new = pos.copy()
+            optimizer._evaluate(score)
 
         # After 3 evaluations (n_neighbours=3), should update to best
-        assert optimizer.score_best == 3.0
-        assert np.array_equal(optimizer.pos_best, positions[1])
+        assert optimizer._score_best == 3.0
+        assert np.array_equal(optimizer._pos_best, positions[1])
 
     def test_template_pattern_separation(self, optimizer):
         """Test that tracking happens before algorithm-specific logic."""
         # First evaluation - tracking should happen immediately
-        optimizer.pos_new = np.array([6.0, 6.0])
-        optimizer.evaluate(1.0)
+        optimizer._pos_new = np.array([6.0, 6.0])
+        optimizer._evaluate(1.0)
 
         # Verify tracking was done (by CoreOptimizer._track_score)
         assert optimizer.nth_trial == 1
@@ -302,16 +302,16 @@ class TestHillClimbingEvaluate:
 
         # After first evaluation, best IS set (CoreOptimizer initializes it)
         # This is needed for Search progress tracking
-        assert optimizer.score_best == 1.0
+        assert optimizer._score_best == 1.0
 
         # Complete 2 more evaluations
-        optimizer.pos_new = np.array([7.0, 7.0])
-        optimizer.evaluate(2.0)
-        optimizer.pos_new = np.array([8.0, 8.0])
-        optimizer.evaluate(3.0)
+        optimizer._pos_new = np.array([7.0, 7.0])
+        optimizer._evaluate(2.0)
+        optimizer._pos_new = np.array([8.0, 8.0])
+        optimizer._evaluate(3.0)
 
-        # After n_neighbours (3), _evaluate runs and updates best to the best score
-        assert optimizer.score_best == 3.0
+        # After n_neighbours (3), _on_evaluate runs and updates best to the best score
+        assert optimizer._score_best == 3.0
 
 
 if __name__ == "__main__":

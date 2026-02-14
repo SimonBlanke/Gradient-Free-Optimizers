@@ -1,4 +1,4 @@
-"""Tests for the search_step() method for manual iteration control."""
+"""Tests for the _search_step() method for manual iteration control."""
 
 import numpy as np
 import pytest
@@ -22,7 +22,7 @@ def test_search_step_0(Optimizer):
 
     opt = Optimizer(search_space)
 
-    opt.init_search(
+    opt._init_search(
         objective_function,
         n_iter,
         max_time=None,
@@ -34,6 +34,6 @@ def test_search_step_0(Optimizer):
     )
 
     for nth_iter in range(n_iter):
-        opt.search_step(nth_iter)
+        opt._search_step(nth_iter)
 
-    opt.finish_search()
+    opt._finish_search()

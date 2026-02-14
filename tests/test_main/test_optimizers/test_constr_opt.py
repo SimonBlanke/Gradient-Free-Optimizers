@@ -100,18 +100,18 @@ def test_constr_opt_2(Optimizer):
     n_best_scores = 0
 
     for optimizer in opt.optimizers:
-        n_new_positions = n_new_positions + len(optimizer.pos_new_list)
-        n_new_scores = n_new_scores + len(optimizer.score_new_list)
+        n_new_positions = n_new_positions + len(optimizer._pos_new_list)
+        n_new_scores = n_new_scores + len(optimizer._score_new_list)
 
-        n_current_positions = n_current_positions + len(optimizer.pos_current_list)
-        n_current_scores = n_current_scores + len(optimizer.score_current_list)
+        n_current_positions = n_current_positions + len(optimizer._pos_current_list)
+        n_current_scores = n_current_scores + len(optimizer._score_current_list)
 
-        n_best_positions = n_best_positions + len(optimizer.pos_best_list)
-        n_best_scores = n_best_scores + len(optimizer.score_best_list)
+        n_best_positions = n_best_positions + len(optimizer._pos_best_list)
+        n_best_scores = n_best_scores + len(optimizer._score_best_list)
 
         print("\n  optimizer", optimizer)
-        print("  n_new_positions", optimizer.pos_new_list)
-        print("  n_new_scores", optimizer.score_new_list)
+        print("  n_new_positions", optimizer._pos_new_list)
+        print("  n_new_scores", optimizer._score_new_list)
 
     assert n_new_positions == n_iter
     assert n_new_scores == n_iter

@@ -300,8 +300,8 @@ def test_position_array_length_matches_space(OptimizerClass):
     opt.search(simple_objective, n_iter=10)
 
     # pos_best should have length equal to search space
-    assert len(opt.pos_best) == 25
-    assert len(opt.pos_current) == 25
+    assert len(opt._pos_best) == 25
+    assert len(opt._pos_current) == 25
 
 
 @pytest.mark.parametrize("OptimizerClass", OPTIMIZERS)
@@ -311,7 +311,7 @@ def test_position_values_correct_types(OptimizerClass):
     opt = OptimizerClass(space, random_state=42)
     opt.search(simple_objective, n_iter=10)
 
-    pos = opt.pos_best
+    pos = opt._pos_best
 
     # Continuous values (first 5) should be floats in range
     for i in range(5):
@@ -352,7 +352,7 @@ def test_clipping_continuous_enforced(OptimizerClass):
     opt.search(simple_objective, n_iter=50)
 
     # Check all positions in history are within bounds
-    for pos in opt.pos_new_list:
+    for pos in opt._pos_new_list:
         continuous_vals = pos[opt._continuous_mask]
         assert all(continuous_vals >= -10.0)
         assert all(continuous_vals <= 10.0)
@@ -366,7 +366,7 @@ def test_clipping_categorical_enforced(OptimizerClass):
     opt.search(simple_objective, n_iter=50)
 
     # Check all positions have valid category indices
-    for pos in opt.pos_new_list:
+    for pos in opt._pos_new_list:
         cat_vals = pos[opt._categorical_mask]
         assert all(cat_vals >= 0)
         assert all(cat_vals < 6)
@@ -380,7 +380,7 @@ def test_clipping_discrete_enforced(OptimizerClass):
     opt.search(simple_objective, n_iter=50)
 
     # Check all positions have valid discrete indices
-    for pos in opt.pos_new_list:
+    for pos in opt._pos_new_list:
         disc_vals = pos[opt._discrete_mask]
         assert all(disc_vals >= 0)
         assert all(disc_vals <= 7)  # n_values - 1

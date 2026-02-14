@@ -164,7 +164,7 @@ class PatternSearch(BaseOptimizer):
 
         return pos_clipped
 
-    def generate_pattern(self, current_position: np.ndarray) -> None:
+    def _generate_pattern(self, current_position: np.ndarray) -> None:
         """Generate pattern positions around the current position.
 
         Creates positions at +/- pattern_size * dim_size along each axis,
@@ -182,10 +182,10 @@ class PatternSearch(BaseOptimizer):
         n_pos_min = min(n_valid_pos, n_pattern_pos)
 
         # Check if best is in recent positions (convergence detection)
-        if n_pos_min > 0 and self.pos_best is not None:
+        if n_pos_min > 0 and self._pos_best is not None:
             recent_positions = self.positions_valid[-n_pos_min:]
             best_in_recent_pos = any(
-                _arrays_equal(np.array(self.pos_best), pos) for pos in recent_positions
+                _arrays_equal(np.array(self._pos_best), pos) for pos in recent_positions
             )
             if best_in_recent_pos:
                 self.pattern_size_tmp *= self.reduction
@@ -249,7 +249,7 @@ class PatternSearch(BaseOptimizer):
 
         return pos
 
-    def _finish_initialization(self) -> None:
+    def _on_finish_initialization(self) -> None:
         """Generate initial pattern around current position.
 
         Called by CoreOptimizer.finish_initialization() after all init
@@ -258,8 +258,8 @@ class PatternSearch(BaseOptimizer):
 
         Note: DO NOT set search_state here - CoreOptimizer handles that.
         """
-        if self.pos_current is not None:
-            self.generate_pattern(self.pos_current)
+        if self._pos_current is not None:
+            self._generate_pattern(self._pos_current)
 
     def _compute_next_pattern_position(self) -> None:
         """Compute the full next position based on pattern state.
@@ -281,8 +281,8 @@ class PatternSearch(BaseOptimizer):
         # Get next position from pattern
         if not self.pattern_pos_l:
             # Regenerate pattern if empty
-            if self.pos_current is not None:
-                self.generate_pattern(self.pos_current)
+            if self._pos_current is not None:
+                self._generate_pattern(self._pos_current)
             else:
                 self._next_position = self._generate_random_position()
                 self._next_position_computed = True
@@ -332,7 +332,7 @@ class PatternSearch(BaseOptimizer):
         self._compute_next_pattern_position()
         return self._next_position[self._discrete_mask]
 
-    def _evaluate(self, score_new: float) -> None:
+    def _on_evaluate(self, score_new: float) -> None:
         """Evaluate score and regenerate pattern when needed.
 
         After evaluating n_positions_ * 2 positions, regenerates the
@@ -350,8 +350,8 @@ class PatternSearch(BaseOptimizer):
         modZero = self.nth_trial % int(self.n_positions_ * 2) == 0
 
         if modZero or len(self.pattern_pos_l) == 0:
-            if self.search_state == "iter" and self.pos_current is not None:
-                self.generate_pattern(self.pos_current)
+            if self.search_state == "iter" and self._pos_current is not None:
+                self._generate_pattern(self._pos_current)
 
             # Find best among recent positions
             if self.positions_valid and self.scores_valid:
@@ -369,5 +369,5 @@ class PatternSearch(BaseOptimizer):
                     return
 
         # Standard tracking
-        self._update_current(self.pos_new, score_new)
-        self._update_best(self.pos_new, score_new)
+        self._update_current(self._pos_new, score_new)
+        self._update_best(self._pos_new, score_new)

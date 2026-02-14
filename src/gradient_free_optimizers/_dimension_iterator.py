@@ -195,7 +195,7 @@ class DimensionIteratorMixin:
             for idx, dim_idx in enumerate(masks.categorical):
                 new_pos[dim_idx] = new_categorical[idx]
 
-        return self.conv2pos_typed(array(new_pos))
+        return self._conv2pos_typed(array(new_pos))
 
     def _iterate_discrete_numerical_all(
         self,

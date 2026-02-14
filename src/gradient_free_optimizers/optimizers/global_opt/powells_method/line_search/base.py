@@ -175,7 +175,7 @@ class LineSearch(ABC):
         np.ndarray
             Valid position within search space bounds.
         """
-        return self.optimizer.conv2pos_typed(position)
+        return self.optimizer._conv2pos_typed(position)
 
     def _is_valid(self, position) -> bool:
         """

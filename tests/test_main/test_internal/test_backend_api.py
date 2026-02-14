@@ -57,17 +57,17 @@ def test_backend_api_0(Optimizer, search_space):
     n_inits = len(opt.init.init_positions_l)
 
     for _ in range(n_inits):
-        pos = opt.init_pos()
+        pos = opt._init_pos()
         value = conv.position2value(pos)
         para = conv.value2para(value)
         score = objective_function(para)
-        opt.evaluate(score)
+        opt._evaluate(score)
 
-    opt.finish_initialization()
+    opt._finish_initialization()
 
     for _ in range(20):
-        pos = opt.iterate()
+        pos = opt._iterate()
         value = conv.position2value(pos)
         para = conv.value2para(value)
         score = objective_function(para)
-        opt.evaluate(score)
+        opt._evaluate(score)

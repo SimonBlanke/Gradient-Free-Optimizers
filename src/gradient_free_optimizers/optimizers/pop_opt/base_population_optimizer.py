@@ -175,17 +175,17 @@ class BasePopulationOptimizer(CoreOptimizer):
         """Count total iterations across all optimizers."""
         nth_iter = 0
         for p in positioners:
-            nth_iter = nth_iter + len(p.pos_new_list)
+            nth_iter = nth_iter + len(p._pos_new_list)
         return nth_iter
 
-    def sort_pop_best_score(self):
+    def _sort_pop_best_score(self):
         """Sort population by current score (best first).
 
         Handles None scores by treating them as -infinity (worst).
         """
         scores_list = []
         for _p_ in self.optimizers:
-            scores_list.append(_p_.score_current)
+            scores_list.append(_p_._score_current)
 
         # Sort indices by score descending (pure Python)
         # Handle None scores by treating them as -infinity
@@ -203,7 +203,7 @@ class BasePopulationOptimizer(CoreOptimizer):
     # DO NOT override iterate() - that would bypass dimension-type-aware routing.
     # =========================================================================
 
-    def _evaluate(self, score_new):
+    def _on_evaluate(self, score_new):
         """Evaluate the current individual.
 
         Population-based optimizers typically delegate to the current
@@ -213,7 +213,7 @@ class BasePopulationOptimizer(CoreOptimizer):
             score_new: Score of the most recently evaluated position
         """
         raise NotImplementedError(
-            f"{self.__class__.__name__} must implement _evaluate()"
+            f"{self.__class__.__name__} must implement _on_evaluate()"
         )
 
     def _iterate_continuous_batch(self) -> "np.ndarray":
@@ -246,7 +246,7 @@ class BasePopulationOptimizer(CoreOptimizer):
             f"{self.__class__.__name__} must implement _iterate_discrete_batch()"
         )
 
-    def _finish_initialization(self):
+    def _on_finish_initialization(self):
         """Perform population-specific setup after init phase.
 
         Override in subclasses to perform algorithm-specific initialization

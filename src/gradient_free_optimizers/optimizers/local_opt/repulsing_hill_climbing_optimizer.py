@@ -146,7 +146,7 @@ class RepulsingHillClimbingOptimizer(HillClimbingOptimizer):
 
         return current + noise
 
-    def _evaluate(self, score_new):
+    def _on_evaluate(self, score_new):
         """Evaluate with adaptive step size adjustment.
 
         If the new score is worse than current, increase epsilon_mod
@@ -157,10 +157,10 @@ class RepulsingHillClimbingOptimizer(HillClimbingOptimizer):
             score_new: Score of the most recently evaluated position
         """
         # First, do the standard hill climbing evaluation
-        super()._evaluate(score_new)
+        super()._on_evaluate(score_new)
 
         # Then adjust epsilon_mod based on improvement
-        if score_new <= self.score_current:
+        if score_new <= self._score_current:
             # Worse score: increase step size to escape
             self.epsilon_mod = self.repulsion_factor
         else:

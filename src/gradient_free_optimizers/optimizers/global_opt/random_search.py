@@ -125,7 +125,7 @@ class RandomSearchOptimizer(BaseOptimizer):
         # randint is exclusive on high, so add 1
         return self._rng.integers(mins, maxs + 1)
 
-    def _evaluate(self, score_new):
+    def _on_evaluate(self, score_new):
         """Update best position if this score is better.
 
         Random search has no concept of "current" position since each
@@ -135,4 +135,4 @@ class RandomSearchOptimizer(BaseOptimizer):
             score_new: Score of the most recently evaluated position
         """
         # Simply update best if this is better
-        self._update_best(self.pos_new, score_new)
+        self._update_best(self._pos_new, score_new)

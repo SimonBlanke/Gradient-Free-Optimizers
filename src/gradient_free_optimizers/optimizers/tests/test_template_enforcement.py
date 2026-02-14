@@ -8,7 +8,7 @@ Tests for Template Method Pattern enforcement.
 These tests verify that:
 1. Incomplete optimizers cannot be instantiated (ABC enforcement)
 2. Template methods are actually called during iteration (mock verification)
-3. Subclasses don't bypass the template by overriding iterate()
+3. Subclasses don't bypass the template by overriding _iterate()
 """
 
 from unittest.mock import patch
@@ -33,7 +33,7 @@ class TestABCEnforcement:
         class IncompleteOptimizer(CoreOptimizer):
             """Missing all three batch methods."""
 
-            def _evaluate(self, score_new):
+            def _on_evaluate(self, score_new):
                 pass
 
         with pytest.raises(TypeError, match="abstract methods"):
@@ -45,7 +45,7 @@ class TestABCEnforcement:
         class MissingCategorical(CoreOptimizer):
             """Missing only _iterate_categorical_batch."""
 
-            def _evaluate(self, score_new):
+            def _on_evaluate(self, score_new):
                 pass
 
             def _iterate_continuous_batch(self):
@@ -65,7 +65,7 @@ class TestABCEnforcement:
         class CompleteOptimizer(CoreOptimizer):
             """Has all required methods."""
 
-            def _evaluate(self, score_new):
+            def _on_evaluate(self, score_new):
                 pass
 
             def _iterate_continuous_batch(self):
@@ -88,7 +88,7 @@ class TestABCEnforcement:
 
 
 class TestTemplateMethodCalls:
-    """Test that iterate() actually invokes the batch methods."""
+    """Test that _iterate() actually invokes the batch methods."""
 
     @pytest.fixture
     def mixed_search_space(self):
@@ -108,44 +108,44 @@ class TestTemplateMethodCalls:
         )
 
     def test_iterate_calls_continuous_batch(self, optimizer):
-        """Verify iterate() calls _iterate_continuous_batch for continuous dims."""
-        optimizer.pos_current = np.array([0.05, 1, 2])
+        """Verify _iterate() calls _iterate_continuous_batch for continuous dims."""
+        optimizer._pos_current = np.array([0.05, 1, 2])
 
         with patch.object(
             optimizer,
             "_iterate_continuous_batch",
             wraps=optimizer._iterate_continuous_batch,
         ) as mock:
-            optimizer.iterate()
+            optimizer._iterate()
             assert mock.call_count >= 1, "_iterate_continuous_batch was not called"
 
     def test_iterate_calls_categorical_batch(self, optimizer):
-        """Verify iterate() calls _iterate_categorical_batch for categorical dims."""
-        optimizer.pos_current = np.array([0.05, 1, 2])
+        """Verify _iterate() calls _iterate_categorical_batch for categorical dims."""
+        optimizer._pos_current = np.array([0.05, 1, 2])
 
         with patch.object(
             optimizer,
             "_iterate_categorical_batch",
             wraps=optimizer._iterate_categorical_batch,
         ) as mock:
-            optimizer.iterate()
+            optimizer._iterate()
             assert mock.call_count >= 1, "_iterate_categorical_batch was not called"
 
     def test_iterate_calls_discrete_batch(self, optimizer):
-        """Verify iterate() calls _iterate_discrete_batch for discrete dims."""
-        optimizer.pos_current = np.array([0.05, 1, 2])
+        """Verify _iterate() calls _iterate_discrete_batch for discrete dims."""
+        optimizer._pos_current = np.array([0.05, 1, 2])
 
         with patch.object(
             optimizer,
             "_iterate_discrete_batch",
             wraps=optimizer._iterate_discrete_batch,
         ) as mock:
-            optimizer.iterate()
+            optimizer._iterate()
             assert mock.call_count >= 1, "_iterate_discrete_batch was not called"
 
     def test_iterate_calls_all_batch_methods_for_mixed_space(self, optimizer):
         """Verify all three batch methods are called for a mixed search space."""
-        optimizer.pos_current = np.array([0.05, 1, 2])
+        optimizer._pos_current = np.array([0.05, 1, 2])
 
         with (
             patch.object(
@@ -164,7 +164,7 @@ class TestTemplateMethodCalls:
                 wraps=optimizer._iterate_discrete_batch,
             ) as mock_disc,
         ):
-            optimizer.iterate()
+            optimizer._iterate()
 
             assert mock_cont.call_count >= 1, "continuous batch not called"
             assert mock_cat.call_count >= 1, "categorical batch not called"
@@ -176,7 +176,7 @@ class TestTemplateMethodCalls:
             search_space={"x": (0.0, 10.0), "y": (0.0, 10.0)},
             random_state=42,
         )
-        opt.pos_current = np.array([5.0, 5.0])
+        opt._pos_current = np.array([5.0, 5.0])
 
         with (
             patch.object(
@@ -189,7 +189,7 @@ class TestTemplateMethodCalls:
                 opt, "_iterate_discrete_batch", wraps=opt._iterate_discrete_batch
             ) as mock_disc,
         ):
-            opt.iterate()
+            opt._iterate()
 
             assert mock_cont.call_count >= 1, "continuous batch not called"
             assert mock_cat.call_count == 0, "categorical batch should not be called"
@@ -242,20 +242,20 @@ except ImportError:
 
 
 class TestIterateNotOverridden:
-    """Ensure template-using optimizers don't override iterate()."""
+    """Ensure template-using optimizers don't override _iterate()."""
 
     @pytest.mark.parametrize("OptimizerClass", TEMPLATE_USING_OPTIMIZERS)
     def test_optimizer_uses_coreoptimizer_iterate(self, OptimizerClass):
-        """Template-using optimizers should inherit iterate() from CoreOptimizer.
+        """Template-using optimizers should inherit _iterate() from CoreOptimizer.
 
-        If an optimizer defines iterate() in its own __dict__, it's overriding
+        If an optimizer defines _iterate() in its own __dict__, it's overriding
         the template method, which violates the pattern.
         """
-        # Check if iterate is defined in the class's own __dict__ (not inherited)
-        if "iterate" in OptimizerClass.__dict__:
+        # Check if _iterate is defined in the class's own __dict__ (not inherited)
+        if "_iterate" in OptimizerClass.__dict__:
             pytest.fail(
-                f"{OptimizerClass.__name__} overrides iterate() in its own class. "
-                f"Template optimizers should inherit iterate() from CoreOptimizer."
+                f"{OptimizerClass.__name__} overrides _iterate() in its own class. "
+                f"Template optimizers should inherit _iterate() from CoreOptimizer."
             )
 
     @pytest.mark.parametrize("OptimizerClass", TEMPLATE_USING_OPTIMIZERS)

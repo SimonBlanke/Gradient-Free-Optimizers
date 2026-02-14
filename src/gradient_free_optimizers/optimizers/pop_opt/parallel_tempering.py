@@ -133,7 +133,7 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
         """
         for _p1_ in self.systems:
             # Skip if this system hasn't been evaluated yet
-            if _p1_.score_current is None:
+            if _p1_._score_current is None:
                 continue
 
             # Select a random partner (excluding self)
@@ -143,7 +143,7 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
 
             # Filter to systems that have been evaluated
             _systems_evaluated = [
-                s for s in _systems_temp if s.score_current is not None
+                s for s in _systems_temp if s._score_current is not None
             ]
             if not _systems_evaluated:
                 continue
@@ -172,14 +172,14 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
         -------
             Acceptance probability scaled to 0-100 range
         """
-        denom = _p1_.score_current + _p2_.score_current
+        denom = _p1_._score_current + _p2_._score_current
 
         if denom == 0:
             return 100
         elif np.isinf(abs(denom)):
             return 0
         else:
-            score_diff_norm = (_p1_.score_current - _p2_.score_current) / denom
+            score_diff_norm = (_p1_._score_current - _p2_._score_current) / denom
 
             temp = (1 / _p1_.temp) - (1 / _p2_.temp)
             exponent = score_diff_norm * temp
@@ -188,7 +188,7 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
             except OverflowError:
                 return math.inf
 
-    def _init_pos(self, position):
+    def _on_init_pos(self, position):
         """Assign initialization position to current system.
 
         Round-robins through the population, assigning each position
@@ -201,10 +201,10 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
         self.p_current = self.systems[nth_pop]
 
         # Track position on current system
-        self.p_current.pos_new = position.copy()
-        self.p_current.pos_current = position.copy()
+        self.p_current._pos_new = position.copy()
+        self.p_current._pos_current = position.copy()
 
-    def _evaluate_init(self, score_new):
+    def _on_evaluate_init(self, score_new):
         """Handle initialization phase evaluation for current system.
 
         Delegates to the current system for system-level tracking and
@@ -214,15 +214,15 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
             score_new: Score of the most recently evaluated init position
         """
         # Track on current system
-        self.p_current.score_new = score_new
+        self.p_current._score_new = score_new
 
         # Update system's best if this is better
-        if self.p_current.pos_best is None or score_new > self.p_current.score_best:
-            self.p_current.pos_best = self.p_current.pos_new.copy()
-            self.p_current.score_best = score_new
+        if self.p_current._pos_best is None or score_new > self.p_current._score_best:
+            self.p_current._pos_best = self.p_current._pos_new.copy()
+            self.p_current._score_best = score_new
 
         # Update system's current
-        self.p_current.score_current = score_new
+        self.p_current._score_current = score_new
 
     # =========================================================================
     # Template Method Implementation - NO iterate() override!
@@ -243,7 +243,7 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
 
         # Delegate iteration to the sub-optimizer
         # The sub-optimizer (SimulatedAnnealing) implements the template methods
-        self._current_new_pos = self.p_current.iterate()
+        self._current_new_pos = self.p_current._iterate()
 
         self._iteration_setup_done = True
 
@@ -286,7 +286,7 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
         self._setup_iteration()
         return self._current_new_pos[self._discrete_mask]
 
-    def _evaluate(self, score_new):
+    def _on_evaluate(self, score_new):
         """Evaluate with temperature swapping and delegation to sub-optimizer.
 
         Periodically performs temperature swaps between systems, then
@@ -309,17 +309,17 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
         # _setup_iteration(). Setting it again would double-count positions.
 
         # Delegate to current system's evaluate
-        self.p_current.evaluate(score_new)
+        self.p_current._evaluate(score_new)
 
         # Update parent's best tracking from all systems
         for system in self.systems:
-            if system.score_best is not None and system.pos_best is not None:
-                self._update_best(system.pos_best, system.score_best)
+            if system._score_best is not None and system._pos_best is not None:
+                self._update_best(system._pos_best, system._score_best)
 
         # Update current tracking from the active sub-optimizer
-        if self.p_current.pos_current is not None:
+        if self.p_current._pos_current is not None:
             self._update_current(
-                self.p_current.pos_current, self.p_current.score_current
+                self.p_current._pos_current, self.p_current._score_current
             )
 
         # Reset iteration setup for next iteration

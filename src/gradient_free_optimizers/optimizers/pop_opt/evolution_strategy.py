@@ -125,7 +125,7 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
         self._iteration_setup_done = False
         self._current_new_pos = None
 
-    def discrete_recombination(self, parent_pos_l, crossover_rates=None):
+    def _discrete_recombination(self, parent_pos_l, crossover_rates=None):
         """Combine parent positions using discrete recombination.
 
         For each dimension, randomly select from one of the parents.
@@ -178,7 +178,7 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
 
         if not available:
             # Fallback to mutation via individual's iterate
-            return self.p_current.iterate()
+            return self.p_current._iterate()
 
         rnd_int2 = random.choice(available)
 
@@ -186,27 +186,27 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
         p_worst = self.pop_sorted[-1]
 
         # Guard against None positions
-        if self.p_current.pos_current is None or p_sec.pos_current is None:
-            return self.p_current.iterate()
+        if self.p_current._pos_current is None or p_sec._pos_current is None:
+            return self.p_current._iterate()
 
         # Recombine the two parents
-        two_best_pos = [self.p_current.pos_current, p_sec.pos_current]
-        pos_new = self.discrete_recombination(two_best_pos)
+        two_best_pos = [self.p_current._pos_current, p_sec._pos_current]
+        pos_new = self._discrete_recombination(two_best_pos)
 
         # Assign to worst individual
         self.p_current = p_worst
-        p_worst.pos_new = pos_new  # Property setter auto-appends
+        p_worst._pos_new = pos_new  # Property setter auto-appends
 
         # Handle constraints
         if not self.conv.not_in_constraint(pos_new):
             pos_new = self.p_current.move_climb_typed(pos_new)
-            self.p_current.pos_new = pos_new
-            if self.p_current.pos_new_list:
-                self.p_current.pos_new_list[-1] = pos_new
+            self.p_current._pos_new = pos_new
+            if self.p_current._pos_new_list:
+                self.p_current._pos_new_list[-1] = pos_new
 
         return pos_new
 
-    def _init_pos(self, position) -> None:
+    def _on_init_pos(self, position) -> None:
         """Initialize current individual with the given position.
 
         Args:
@@ -217,10 +217,10 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
         self.p_current = self.individuals[nth_pop]
 
         # Track position on current individual
-        self.p_current.pos_new = position.copy()
-        self.p_current.pos_current = position.copy()
+        self.p_current._pos_new = position.copy()
+        self.p_current._pos_current = position.copy()
 
-    def _evaluate_init(self, score_new: float) -> None:
+    def _on_evaluate_init(self, score_new: float) -> None:
         """Evaluate during initialization phase.
 
         Delegates evaluation to the current individual for individual-level tracking.
@@ -229,15 +229,15 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
             score_new: Score of the most recently evaluated init position
         """
         # Track on current individual
-        self.p_current.score_new = score_new
+        self.p_current._score_new = score_new
 
         # Update individual's best if this is better
-        if self.p_current.pos_best is None or score_new > self.p_current.score_best:
-            self.p_current.pos_best = self.p_current.pos_new.copy()
-            self.p_current.score_best = score_new
+        if self.p_current._pos_best is None or score_new > self.p_current._score_best:
+            self.p_current._pos_best = self.p_current._pos_new.copy()
+            self.p_current._score_best = score_new
 
         # Update individual's current
-        self.p_current.score_current = score_new
+        self.p_current._score_current = score_new
 
     # =========================================================================
     # Template Method Implementation - NO iterate() override!
@@ -258,12 +258,12 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
         # Single individual: just mutate
         if self.n_ind == 1:
             self.p_current = self.individuals[0]
-            self._current_new_pos = self.p_current.iterate()
+            self._current_new_pos = self.p_current._iterate()
             self._iteration_setup_done = True
             return
 
         # Sort and select random individual
-        self.sort_pop_best_score()
+        self._sort_pop_best_score()
         self.rnd_int = random.randint(0, len(self.pop_sorted) - 1)
         self.p_current = self.pop_sorted[self.rnd_int]
 
@@ -271,17 +271,17 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
         total_rate = self.mutation_rate + self.crossover_rate
         rand = self._rng.uniform(0, total_rate)
 
-        pos_count_before = len(self.p_current.pos_new_list)
+        pos_count_before = len(self.p_current._pos_new_list)
 
         if rand <= self.mutation_rate:
             # Mutation: use individual's iterate (hill climbing with adaptive sigma)
-            pos_new = self.p_current.iterate()
+            pos_new = self.p_current._iterate()
 
             # Check constraints
             if not self.conv.not_in_constraint(pos_new):
                 # Restore and try random
-                while len(self.p_current.pos_new_list) > pos_count_before:
-                    self.p_current.pos_new_list.pop()
+                while len(self.p_current._pos_new_list) > pos_count_before:
+                    self.p_current._pos_new_list.pop()
 
                 max_tries = 100
                 for _ in range(max_tries):
@@ -289,7 +289,7 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
                     if self.conv.not_in_constraint(pos_new):
                         break
 
-                self.p_current.pos_new = pos_new  # Property setter auto-appends
+                self.p_current._pos_new = pos_new  # Property setter auto-appends
         else:
             # Recombination
             pos_new = self._cross()
@@ -336,7 +336,7 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
         self._setup_iteration()
         return self._current_new_pos[self._discrete_mask]
 
-    def _evaluate(self, score_new: float) -> None:
+    def _on_evaluate(self, score_new: float) -> None:
         """Evaluate current individual.
 
         Delegates to the individual's evaluate method which handles
@@ -350,11 +350,11 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
             Score of the most recently evaluated position.
         """
         # Delegate to current individual
-        self.p_current.evaluate(score_new)
+        self.p_current._evaluate(score_new)
 
         # Update global tracking
-        self._update_best(self.pos_new, score_new)
-        self._update_current(self.pos_new, score_new)
+        self._update_best(self._pos_new, score_new)
+        self._update_current(self._pos_new, score_new)
 
         # Reset iteration setup for next iteration
         self._iteration_setup_done = False

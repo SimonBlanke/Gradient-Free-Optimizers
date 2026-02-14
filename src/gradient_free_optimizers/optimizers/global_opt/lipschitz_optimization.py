@@ -224,7 +224,7 @@ class LipschitzOptimizer(SMBO):
         """
         lip_func = LipschitzFunction(self.pos_comb)
         upper_bound_l = lip_func.calculate(
-            self.X_sample, self.Y_sample, self.score_best
+            self.X_sample, self.Y_sample, self._score_best
         )
         # Flatten from (n, 1) to (n,) for SMBO template compatibility
         return upper_bound_l.flatten()

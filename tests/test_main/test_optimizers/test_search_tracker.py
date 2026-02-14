@@ -36,14 +36,14 @@ def test_search_tracker(Optimizer, n_iter):
     n_best_scores = 0
 
     for optimizer in opt.optimizers:
-        n_new_positions = n_new_positions + len(optimizer.pos_new_list)
-        n_new_scores = n_new_scores + len(optimizer.score_new_list)
+        n_new_positions = n_new_positions + len(optimizer._pos_new_list)
+        n_new_scores = n_new_scores + len(optimizer._score_new_list)
 
-        n_current_positions = n_current_positions + len(optimizer.pos_current_list)
-        n_current_scores = n_current_scores + len(optimizer.score_current_list)
+        n_current_positions = n_current_positions + len(optimizer._pos_current_list)
+        n_current_scores = n_current_scores + len(optimizer._score_current_list)
 
-        n_best_positions = n_best_positions + len(optimizer.pos_best_list)
-        n_best_scores = n_best_scores + len(optimizer.score_best_list)
+        n_best_positions = n_best_positions + len(optimizer._pos_best_list)
+        n_best_scores = n_best_scores + len(optimizer._score_best_list)
 
     assert n_new_positions == n_iter
     assert n_new_scores == n_iter

@@ -101,14 +101,14 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer):
         worse (negative) or better (positive) the new score is compared
         to the current score, normalized by their sum.
         """
-        denom = self.score_current + self.score_new
+        denom = self._score_current + self._score_new
 
         if denom == 0:
             return 1
         elif math.isinf(abs(denom)):
             return 0
         else:
-            return (self.score_new - self.score_current) / denom
+            return (self._score_new - self._score_current) / denom
 
     @property
     def _exponent(self) -> float:
@@ -135,7 +135,7 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer):
             exp_val = math.inf
         return self.p_accept * 2 / (1 + exp_val)
 
-    def _evaluate(self, score_new):
+    def _on_evaluate(self, score_new):
         """Evaluate with stochastic acceptance of worse solutions.
 
         If the new score is better than current, use standard hill climbing
@@ -148,11 +148,11 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer):
             score_new: Score of the most recently evaluated position
         """
         # Note: score_new is already stored via evaluate() -> _track_score()
-        # Access via self.score_new for property methods like _normalized_energy_state
+        # Access via self._score_new for property methods like _normalized_energy_state
 
         # If score is better or equal, use standard hill climbing logic
-        if score_new > self.score_current:
-            super()._evaluate(score_new)
+        if score_new > self._score_current:
+            super()._on_evaluate(score_new)
         else:
             # Score is worse - consider stochastic acceptance
             self.n_considered_transitions += 1
@@ -161,7 +161,7 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer):
             if self._rng.random() < p_accept:
                 # Accept the worse solution (this is what n_transitions counts)
                 self.n_transitions += 1
-                self._update_current(self.pos_new, score_new)
+                self._update_current(self._pos_new, score_new)
 
             # Always update best (in case this is somehow better than global best)
-            self._update_best(self.pos_new, score_new)
+            self._update_best(self._pos_new, score_new)

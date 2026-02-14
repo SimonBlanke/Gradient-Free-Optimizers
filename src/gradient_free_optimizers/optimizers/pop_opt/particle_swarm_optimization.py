@@ -131,7 +131,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         self._iteration_setup_done = False
         self._pso_new_pos = None
 
-    def _init_pos(self, position) -> None:
+    def _on_init_pos(self, position) -> None:
         """Initialize current particle with the given position.
 
         Sets up particle parameters (inertia, weights) and initializes
@@ -157,10 +157,10 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         self.p_current.velo = np.zeros(n_dims)
 
         # Track position on current particle
-        self.p_current.pos_new = position.copy()
-        self.p_current.pos_current = position.copy()
+        self.p_current._pos_new = position.copy()
+        self.p_current._pos_current = position.copy()
 
-    def _evaluate_init(self, score_new: float) -> None:
+    def _on_evaluate_init(self, score_new: float) -> None:
         """Evaluate during initialization phase.
 
         Delegates evaluation to the current particle for particle-level tracking.
@@ -169,15 +169,15 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
             score_new: Score of the most recently evaluated init position
         """
         # Track on current particle (this updates particle's best/current)
-        self.p_current.score_new = score_new
+        self.p_current._score_new = score_new
 
         # Update particle's best if this is better
-        if self.p_current.pos_best is None or score_new > self.p_current.score_best:
-            self.p_current.pos_best = self.p_current.pos_new.copy()
-            self.p_current.score_best = score_new
+        if self.p_current._pos_best is None or score_new > self.p_current._score_best:
+            self.p_current._pos_best = self.p_current._pos_new.copy()
+            self.p_current._score_best = score_new
 
         # Update particle's current
-        self.p_current.score_current = score_new
+        self.p_current._score_current = score_new
 
     # =========================================================================
     # Template Method Implementation - NO iterate() override!
@@ -197,8 +197,8 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         self.p_current = self.particles[self.nth_trial % len(self.particles)]
 
         # Update global best reference for this particle
-        self.sort_pop_best_score()
-        self.p_current.global_pos_best = self.pop_sorted[0].pos_best
+        self._sort_pop_best_score()
+        self.p_current.global_pos_best = self.pop_sorted[0]._pos_best
 
         # Compute full PSO position using velocity update
         self._pso_new_pos = self._compute_pso_position()
@@ -224,16 +224,16 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
 
         # Guard against None positions during early iterations
         if (
-            self.p_current.pos_current is None
-            or self.p_current.pos_best is None
+            self.p_current._pos_current is None
+            or self.p_current._pos_best is None
             or self.p_current.global_pos_best is None
         ):
             return self.p_current.init.move_random_typed()
 
         r1, r2 = random.random(), random.random()
 
-        pos_current = np.array(self.p_current.pos_current)
-        pos_best = np.array(self.p_current.pos_best)
+        pos_current = np.array(self.p_current._pos_current)
+        pos_best = np.array(self.p_current._pos_best)
         global_pos_best = np.array(self.p_current.global_pos_best)
 
         # Inertia term: maintain current direction
@@ -278,7 +278,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         self._setup_iteration()
 
         # Get current categorical indices
-        current = self.p_current.pos_current[self._categorical_mask]
+        current = self.p_current._pos_current[self._categorical_mask]
         velocity = self.p_current.velo[self._categorical_mask]
 
         new_cats = []
@@ -312,7 +312,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         self._setup_iteration()
         return self._pso_new_pos[self._discrete_mask]
 
-    def _evaluate(self, score_new: float) -> None:
+    def _on_evaluate(self, score_new: float) -> None:
         """Evaluate current particle and update its personal/global best.
 
         Delegates to the particle's evaluate method which handles
@@ -325,14 +325,14 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
             Score of the most recently evaluated position.
         """
         # Track position on particle (needed for personal best tracking)
-        self.p_current.pos_new = self.pos_new
+        self.p_current._pos_new = self._pos_new
 
         # Delegate to current particle's evaluate
-        self.p_current.evaluate(score_new)
+        self.p_current._evaluate(score_new)
 
         # Update global tracking
-        self._update_best(self.pos_new, score_new)
-        self._update_current(self.pos_new, score_new)
+        self._update_best(self._pos_new, score_new)
+        self._update_current(self._pos_new, score_new)
 
         # Reset iteration setup for next iteration
         self._iteration_setup_done = False

@@ -88,8 +88,8 @@ def plot_search_paths(
             if n_iter_tmp == 0:
                 continue
 
-            pos_list = np.array(opt_.pos_new_list)
-            score_list = np.array(opt_.score_new_list)
+            pos_list = np.array(opt_._pos_new_list)
+            score_list = np.array(opt_._score_new_list)
 
             # print("\n pos_list \n", pos_list, "\n")
             # print("\n score_list \n", score_list, "\n")

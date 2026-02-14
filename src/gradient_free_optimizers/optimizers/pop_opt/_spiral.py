@@ -106,7 +106,7 @@ class Spiral(HillClimbingOptimizer):
             new_val = pos[idx] + velo[idx]
             pos_new.append(new_val)
 
-        return self.conv2pos_typed(np.array(pos_new))
+        return self._conv2pos_typed(np.array(pos_new))
 
     def move_spiral(self, center_pos):
         """Move particle in spiral pattern toward center.
@@ -128,10 +128,10 @@ class Spiral(HillClimbingOptimizer):
             New position after spiral movement.
         """
         # Guard against None positions during early iterations
-        if center_pos is None or self.pos_current is None:
+        if center_pos is None or self._pos_current is None:
             # Fall back to random move during early iterations
             pos_new = self.init.move_random_typed()
-            self.pos_new = pos_new  # Property setter auto-appends
+            self._pos_new = pos_new  # Property setter auto-appends
             return pos_new
 
         # Update decay factor
@@ -155,7 +155,7 @@ class Spiral(HillClimbingOptimizer):
 
         # Compute rotated offset from center
         A = np.array(center_pos)
-        rot = rotation(len(center_pos), np.array(self.pos_current) - A)
+        rot = rotation(len(center_pos), np.array(self._pos_current) - A)
 
         # Combine rotation with decay
         B = step_rate * rot
@@ -166,14 +166,14 @@ class Spiral(HillClimbingOptimizer):
             n_zeros = [0] * len(self.conv.max_positions)
             pos_new = np.clip(new_pos, n_zeros, self.conv.max_positions).astype(int)
         else:
-            pos_new = self.conv2pos_typed(new_pos)
+            pos_new = self._conv2pos_typed(new_pos)
 
         # Track position (property setter auto-appends)
-        self.pos_new = pos_new
+        self._pos_new = pos_new
 
         return pos_new
 
-    def conv2pos_typed(self, pos):
+    def _conv2pos_typed(self, pos):
         """Convert position array to valid position with proper types.
 
         Clips values to bounds and ensures correct data types for each dimension.
@@ -198,13 +198,13 @@ class Spiral(HillClimbingOptimizer):
 
         return np.array(pos_new)
 
-    def _evaluate(self, score_new):
+    def _on_evaluate(self, score_new):
         """Evaluate and track scores."""
         # Update current position tracking
-        self.pos_current = self.pos_new.copy() if self.pos_new is not None else None
-        self.score_current = score_new
+        self._pos_current = self._pos_new.copy() if self._pos_new is not None else None
+        self._score_current = score_new
 
         # Update best if improved
-        if self.pos_best is None or score_new > self.score_best:
-            self.pos_best = self.pos_new.copy() if self.pos_new is not None else None
-            self.score_best = score_new
+        if self._pos_best is None or score_new > self._score_best:
+            self._pos_best = self._pos_new.copy() if self._pos_new is not None else None
+            self._score_best = score_new

@@ -135,7 +135,7 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
         self._iteration_setup_done = False
         self._ga_new_pos = None
 
-    def discrete_recombination(self, parent_pos_l, crossover_rates=None):
+    def _discrete_recombination(self, parent_pos_l, crossover_rates=None):
         """Combine parent positions using discrete recombination.
 
         For each dimension, randomly select from one of the parents.
@@ -171,7 +171,7 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
 
         return np.array(result)
 
-    def fittest_parents(self) -> list[Individual]:
+    def _fittest_parents(self) -> list[Individual]:
         """Select the fittest individuals as parents.
 
         Returns the top FITTEST_PARENTS_FRACTION of the population.
@@ -183,7 +183,7 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
         list[Individual]
             List of selected parent individuals.
         """
-        self.sort_pop_best_score()
+        self._sort_pop_best_score()
 
         n_fittest = max(1, int(len(self.pop_sorted) * FITTEST_PARENTS_FRACTION))
 
@@ -203,21 +203,21 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
         offspring via discrete recombination. Offspring are stored
         in offspring_l queue for later use.
         """
-        fittest_parents = self.fittest_parents()
+        _fittest_parents = self._fittest_parents()
 
         # Need at least n_parents to do crossover
-        if len(fittest_parents) < self.n_parents:
+        if len(_fittest_parents) < self.n_parents:
             return
 
-        selected_parents = random.sample(fittest_parents, self.n_parents)
+        selected_parents = random.sample(_fittest_parents, self.n_parents)
 
         for _ in range(self.offspring):
-            parent_pos_l = [parent.pos_current for parent in selected_parents]
+            parent_pos_l = [parent._pos_current for parent in selected_parents]
             # Skip if any parent has None position
             if any(pos is None for pos in parent_pos_l):
                 continue
 
-            offspring = self.discrete_recombination(parent_pos_l)
+            offspring = self._discrete_recombination(parent_pos_l)
             offspring = self._constraint_loop(offspring)
             self.offspring_l.append(offspring)
 
@@ -248,7 +248,7 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
     # Population Initialization Hooks
     # =========================================================================
 
-    def _init_pos(self, position) -> None:
+    def _on_init_pos(self, position) -> None:
         """Initialize current individual with the given position.
 
         Args:
@@ -259,10 +259,10 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
         self.p_current = self.individuals[nth_pop]
 
         # Track position on current individual
-        self.p_current.pos_new = position.copy()
-        self.p_current.pos_current = position.copy()
+        self.p_current._pos_new = position.copy()
+        self.p_current._pos_current = position.copy()
 
-    def _evaluate_init(self, score_new: float) -> None:
+    def _on_evaluate_init(self, score_new: float) -> None:
         """Evaluate during initialization phase.
 
         Delegates evaluation to the current individual for individual-level tracking.
@@ -271,15 +271,15 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
             score_new: Score of the most recently evaluated init position
         """
         # Track on current individual
-        self.p_current.score_new = score_new
+        self.p_current._score_new = score_new
 
         # Update individual's best if this is better
-        if self.p_current.pos_best is None or score_new > self.p_current.score_best:
-            self.p_current.pos_best = self.p_current.pos_new.copy()
-            self.p_current.score_best = score_new
+        if self.p_current._pos_best is None or score_new > self.p_current._score_best:
+            self.p_current._pos_best = self.p_current._pos_new.copy()
+            self.p_current._score_best = score_new
 
         # Update individual's current
-        self.p_current.score_current = score_new
+        self.p_current._score_current = score_new
 
     # =========================================================================
     # Template Method Implementation - NO iterate() override!
@@ -305,7 +305,7 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
             return
 
         # Select a random individual (weighted toward fitter ones)
-        self.sort_pop_best_score()
+        self._sort_pop_best_score()
         rnd_int = random.randint(0, len(self.pop_sorted) - 1)
         self.p_current = self.pop_sorted[rnd_int]
 
@@ -338,12 +338,12 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
             return self.p_current.init.move_random_typed()
 
         # Guard against None positions during early iterations
-        if self.p_current.pos_current is None:
+        if self.p_current._pos_current is None:
             return self.p_current.init.move_random_typed()
 
         # Use individual's typed iteration (calls _iterate_*_batch methods)
         # The Individual inherits from HillClimbingOptimizer which has these implemented
-        pos_new = self.p_current._iterate_typed(self.p_current.pos_current)
+        pos_new = self.p_current._iterate_typed(self.p_current._pos_current)
 
         # Check constraints - if violated, try to find a valid position
         if not self.conv.not_in_constraint(pos_new):
@@ -415,7 +415,7 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
         self._setup_iteration()
         return self._ga_new_pos[self._discrete_mask]
 
-    def _evaluate(self, score_new: float) -> None:
+    def _on_evaluate(self, score_new: float) -> None:
         """Evaluate current individual.
 
         Delegates to the individual's evaluate method which handles
@@ -428,14 +428,14 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
             Score of the most recently evaluated position.
         """
         # Track position on individual (needed for personal best tracking)
-        self.p_current.pos_new = self.pos_new
+        self.p_current._pos_new = self._pos_new
 
         # Delegate to current individual
-        self.p_current.evaluate(score_new)
+        self.p_current._evaluate(score_new)
 
         # Update global tracking
-        self._update_best(self.pos_new, score_new)
-        self._update_current(self.pos_new, score_new)
+        self._update_best(self._pos_new, score_new)
+        self._update_current(self._pos_new, score_new)
 
         # Reset iteration setup for next iteration
         self._iteration_setup_done = False

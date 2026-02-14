@@ -8,14 +8,14 @@ Sequential Model-Based Optimization (SMBO) base class.
 Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
 
 Template Method Pattern Compliance:
-    SMBO does NOT override public methods (iterate, evaluate, etc.).
+    SMBO does NOT override internal methods (_iterate, _evaluate, etc.).
     Instead, it implements the private template methods:
     - _iterate_*_batch(): return slices of surrogate-proposed position
-    - _evaluate(): handle Y_sample tracking and position removal
+    - _on_evaluate(): handle Y_sample tracking and position removal
 
     The surrogate model is trained once per iteration via _ensure_surrogate_trained(),
     which caches the proposed position. The batch methods return slices of this
-    cached position to work with CoreOptimizer.iterate()'s dimension-type routing.
+    cached position to work with CoreOptimizer._iterate()'s dimension-type routing.
 """
 
 from __future__ import annotations
@@ -28,6 +28,7 @@ from typing import TYPE_CHECKING, Any, Literal
 import numpy as np
 
 from ..base_optimizer import BaseOptimizer
+from ..core_optimizer import CoreOptimizer
 from .sampling import InitialSampler
 
 if TYPE_CHECKING:
@@ -59,7 +60,7 @@ class SMBO(BaseOptimizer):
     Template Method Compliance:
         This class follows the Template Method Pattern by implementing
         _iterate_*_batch() methods that return slices of a surrogate-proposed
-        position, rather than overriding the public iterate() method.
+        position, rather than overriding the internal _iterate() method.
 
     Parameters
     ----------
@@ -130,15 +131,15 @@ class SMBO(BaseOptimizer):
         self.sampler = InitialSampler(self.conv, max_sample_size)
 
         # Initialize training data
-        self.init_warm_start_smbo(warm_start_smbo)
+        self._init_warm_start_smbo(warm_start_smbo)
 
-        # Will be populated in finish_initialization
+        # Will be populated in _on_finish_initialization
         self.all_pos_comb = None
 
         # Cache for surrogate-proposed position (cleared after each iteration)
         self._cached_proposed_pos = None
 
-    def init_warm_start_smbo(self, search_data: pd.DataFrame | None) -> None:
+    def _init_warm_start_smbo(self, search_data: pd.DataFrame | None) -> None:
         """Initialize X_sample and Y_sample from previous optimization data.
 
         Filters out invalid values (NaN, inf) and values outside the search space.
@@ -182,51 +183,45 @@ class SMBO(BaseOptimizer):
     # =========================================================================
 
     @property
-    def pos_new(self):
+    def _pos_new(self):
         """Get the newest position."""
-        return self._pos_new
+        return CoreOptimizer._pos_new.fget(self)
 
-    @pos_new.setter
-    def pos_new(self, pos):
+    @_pos_new.setter
+    def _pos_new(self, pos):
         """Set new position with SMBO-specific tracking.
 
         - Clears the cached proposed position (for next iteration)
         - Appends to X_sample (for surrogate training)
-        - Performs standard position tracking
+        - Delegates standard tracking to parent
         """
         # Clear cache for next iteration
         self._cached_proposed_pos = None
         # Track in X_sample for surrogate training
         self.X_sample.append(pos)
-        # Standard tracking (parent behavior)
-        self.pos_new_list.append(pos)
-        self._pos_new = pos
+        # Delegate standard tracking to parent
+        CoreOptimizer._pos_new.fset(self, pos)
 
     @property
-    def score_new(self):
+    def _score_new(self):
         """Get the newest score."""
-        return self._score_new
+        return CoreOptimizer._score_new.fget(self)
 
-    @score_new.setter
-    def score_new(self, score):
+    @_score_new.setter
+    def _score_new(self, score):
         """Set new score with SMBO-specific tracking.
 
+        - Delegates standard tracking to parent
         - Appends to Y_sample for valid scores
         - Removes corresponding X_sample entry for invalid scores
-        - Performs standard score tracking
         """
-        # Standard tracking (parent behavior)
-        self.score_new_list.append(score)
-        self._score_new = score
-
-        # Track valid scores
+        # Delegate standard tracking to parent
+        CoreOptimizer._score_new.fset(self, score)
+        # SMBO-specific: track in Y_sample for surrogate training
         if not (_isinf(score) or _isnan(score)):
-            self.positions_valid.append(self._pos_new)
-            self.scores_valid.append(score)
-            # SMBO-specific: track in Y_sample for surrogate training
             self.Y_sample.append(score)
         else:
-            # SMBO-specific: remove X_sample entry for invalid scores
+            # Remove X_sample entry for invalid scores
             if len(self.X_sample) > len(self.Y_sample):
                 del self.X_sample[-1]
 
@@ -274,12 +269,13 @@ class SMBO(BaseOptimizer):
         mask = np.all(self.all_pos_comb == position, axis=1)
         self.all_pos_comb = self.all_pos_comb[np.invert(mask)]
 
-    # NOTE: init_pos() is NOT overridden - X_sample tracking happens via pos_new setter
+    # NOTE: _init_pos() is NOT overridden
+    # X_sample tracking happens via _pos_new setter
 
-    def _finish_initialization(self) -> None:
+    def _on_finish_initialization(self) -> None:
         """Generate candidate positions for surrogate model.
 
-        Called by CoreOptimizer.finish_initialization() after all init
+        Called by CoreOptimizer._finish_initialization() after all init
         positions have been evaluated. Generates the candidate position
         grid for the surrogate model to evaluate.
 
@@ -287,7 +283,7 @@ class SMBO(BaseOptimizer):
         """
         self.all_pos_comb = self._all_possible_pos()
 
-    # NOTE: iterate() is NOT overridden - uses CoreOptimizer.iterate() which calls
+    # NOTE: _iterate() is NOT overridden - uses CoreOptimizer._iterate() which calls
     # the _iterate_*_batch() methods below
 
     # =========================================================================
@@ -301,7 +297,7 @@ class SMBO(BaseOptimizer):
         the surrogate model once per iteration and caches the proposed position.
         Subsequent calls within the same iteration return immediately.
 
-        The cache is cleared by the pos_new setter when the position is finalized.
+        The cache is cleared by the _pos_new setter when the position is finalized.
         """
         if self._cached_proposed_pos is not None:
             return
@@ -374,28 +370,28 @@ class SMBO(BaseOptimizer):
             return self.all_pos_comb[idx]
         return self.init.move_random_typed()
 
-    # NOTE: evaluate() is NOT overridden - uses CoreOptimizer.evaluate()
-    # Y_sample tracking happens via score_new setter
+    # NOTE: _evaluate() is NOT overridden - uses CoreOptimizer._evaluate()
+    # Y_sample tracking happens via _score_new setter
 
-    # NOTE: evaluate_init() is NOT overridden - uses CoreOptimizer.evaluate_init()
-    # Y_sample tracking happens via score_new setter
+    # NOTE: _evaluate_init() is NOT overridden - uses CoreOptimizer._evaluate_init()
+    # Y_sample tracking happens via _score_new setter
 
-    def _evaluate(self, score_new: float) -> None:
+    def _on_evaluate(self, score_new: float) -> None:
         """SMBO-specific evaluation: update positions and handle replacement.
 
-        This template method is called by CoreOptimizer.evaluate() after
+        This template method is called by CoreOptimizer._evaluate() after
         common tracking. SMBO uses greedy updates (always moves to new position).
 
-        Note: Y_sample tracking is handled by the score_new property setter,
+        Note: Y_sample tracking is handled by the _score_new property setter,
         not here, to ensure it works for both init and iterate phases.
 
         Args:
             score_new: Score of the most recently evaluated position
         """
         # Update best and current (greedy - always accept new position)
-        self._update_best(self.pos_new, score_new)
-        self._update_current(self.pos_new, score_new)
+        self._update_best(self._pos_new, score_new)
+        self._update_current(self._pos_new, score_new)
 
         # Remove position from candidates if replacement=False
-        if not self.replacement and self.pos_new is not None:
-            self._remove_position(self.pos_new)
+        if not self.replacement and self._pos_new is not None:
+            self._remove_position(self._pos_new)

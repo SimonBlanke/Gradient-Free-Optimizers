@@ -35,11 +35,11 @@ class Search(TimesTracker, SearchStatistics):
     This class is designed as a mixin that combines with optimizer classes
     through multiple inheritance. It requires the optimizer to provide:
 
-    - ``init_pos()``: Generate initial positions
-    - ``iterate()``: Generate the next position to evaluate
-    - ``evaluate_init(score)``: Process initialization scores
-    - ``evaluate(score)``: Process iteration scores
-    - ``finish_initialization()``: Transition from init to iteration phase
+    - ``_init_pos()``: Generate initial positions
+    - ``_iterate()``: Generate the next position to evaluate
+    - ``_evaluate_init(score)``: Process initialization scores
+    - ``_evaluate(score)``: Process iteration scores
+    - ``_finish_initialization()``: Transition from init to iteration phase
     - ``conv``: Converter object for position/value/parameter transformations
 
     The search process follows this flow:
@@ -80,7 +80,7 @@ class Search(TimesTracker, SearchStatistics):
         self.pos_l = []
         self.random_seed = None
 
-        self.results_manager = None  # Initialized in init_search with converter
+        self.results_manager = None  # Initialized in _init_search with converter
         self._search_data_cache = None  # Lazy DataFrame cache
 
     @TimesTracker.eval_time
@@ -91,10 +91,10 @@ class Search(TimesTracker, SearchStatistics):
     def _initialization(self):
         self.best_score = self.p_bar.score_best
 
-        init_pos = self.init_pos()
+        init_pos = self._init_pos()
 
         score_new = self._evaluate_position(init_pos)
-        self.evaluate_init(score_new)
+        self._evaluate_init(score_new)
 
         self.pos_l.append(init_pos)
         self.score_l.append(score_new)
@@ -108,10 +108,10 @@ class Search(TimesTracker, SearchStatistics):
     def _iteration(self):
         self.best_score = self.p_bar.score_best
 
-        pos_new = self.iterate()
+        pos_new = self._iterate()
 
         score_new = self._evaluate_position(pos_new)
-        self.evaluate(score_new)
+        self._evaluate(score_new)
 
         self.pos_l.append(pos_new)
         self.score_l.append(score_new)
@@ -138,7 +138,7 @@ class Search(TimesTracker, SearchStatistics):
         optimum: Literal["maximum", "minimum"] = "maximum",
     ) -> None:
         self.optimum = optimum
-        self.init_search(
+        self._init_search(
             objective_function,
             n_iter,
             max_time,
@@ -150,7 +150,7 @@ class Search(TimesTracker, SearchStatistics):
         )
 
         for nth_trial in range(n_iter):
-            self.search_step(nth_trial)
+            self._search_step(nth_trial)
 
             # Update stopper with current state
             current_score = self.score_l[-1] if self.score_l else -math.inf
@@ -165,7 +165,7 @@ class Search(TimesTracker, SearchStatistics):
                     print(json.dumps(debug_info, indent=2))
                 break
 
-        self.finish_search()
+        self._finish_search()
 
     def _evaluate_position(self, pos: list[int]) -> float:
         result, params = self.adapter(pos)
@@ -176,7 +176,7 @@ class Search(TimesTracker, SearchStatistics):
         return result.score
 
     @SearchStatistics.init_stats
-    def init_search(
+    def _init_search(
         self,
         objective_function: Callable[[dict[str, Any]], float],
         n_iter: int,
@@ -238,7 +238,7 @@ class Search(TimesTracker, SearchStatistics):
 
         self.n_inits_norm = min((self.init.n_inits - self.n_init_total), self.n_iter)
 
-    def finish_search(self) -> None:
+    def _finish_search(self) -> None:
         # Don't construct DataFrame here - it's built lazily via search_data property
         # This avoids memory spike for high-dimensional search spaces
         self._search_data_cache = None
@@ -282,14 +282,14 @@ class Search(TimesTracker, SearchStatistics):
         """Allow direct assignment for backward compatibility."""
         self._search_data_cache = value
 
-    def search_step(self, nth_iter: int) -> None:
+    def _search_step(self, nth_iter: int) -> None:
         self.nth_iter = nth_iter
 
         if self.nth_iter < self.n_inits_norm:
             self._initialization()
 
         if self.nth_iter == self.n_init_search:
-            self.finish_initialization()
+            self._finish_initialization()
 
         if self.n_init_search <= self.nth_iter < self.n_iter:
             self._iteration()

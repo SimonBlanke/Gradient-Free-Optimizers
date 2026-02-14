@@ -1,8 +1,8 @@
 """Tests for Template Method Pattern compliance.
 
 These tests verify that optimizer classes follow the fundamental architecture rules:
-- PUBLIC methods must NOT be overridden by concrete optimizers
-- Only PRIVATE methods (_iterate_*_batch, _evaluate, etc.) should be implemented
+- Lifecycle methods must NOT be overridden by concrete optimizers
+- Only hook methods (_on_evaluate, _iterate_*_batch, etc.) should be implemented
 
 See DESIGN_EXTENDED_SEARCH_SPACE.md section 4.2.4 for the rules.
 """
@@ -78,27 +78,27 @@ ALL_OPTIMIZERS = [
 
 
 # =============================================================================
-# Public methods that must NOT be overridden
+# Lifecycle methods that must NOT be overridden
 # =============================================================================
 
-# These are the public methods defined in CoreOptimizer that orchestrate
+# These are the lifecycle methods defined in CoreOptimizer that orchestrate
 # the optimization process. They have a FIXED flow and must not be changed.
 #
-# Per DESIGN_EXTENDED_SEARCH_SPACE.md section 4.2.4, ALL public methods including
-# finish_initialization() must NOT be overridden. Algorithms needing setup logic
-# should override the _finish_initialization() HOOK instead.
+# Per DESIGN_EXTENDED_SEARCH_SPACE.md section 4.2.4, ALL lifecycle methods
+# must NOT be overridden. Algorithms needing setup logic should override
+# the _on_finish_initialization() HOOK instead.
 PUBLIC_METHODS_MUST_NOT_OVERRIDE = [
-    "iterate",
-    "evaluate",
-    "init_pos",
-    "evaluate_init",
-    "finish_initialization",
+    "_iterate",
+    "_evaluate",
+    "_init_pos",
+    "_evaluate_init",
+    "_finish_initialization",
 ]
 
 # Private hook methods that CAN be overridden to set up algorithm state
 # These are called by the public methods at appropriate times
 PRIVATE_HOOKS_MAY_OVERRIDE = [
-    "_finish_initialization",  # Called by finish_initialization() for algorithm setup
+    "_on_finish_initialization",  # Called by _finish_initialization()
 ]
 
 
@@ -134,18 +134,18 @@ def optimizer_id(opt_class):
 
 @pytest.mark.parametrize("optimizer_class", ALL_OPTIMIZERS, ids=optimizer_id)
 @pytest.mark.parametrize("method_name", PUBLIC_METHODS_MUST_NOT_OVERRIDE)
-def test_public_method_not_overridden(optimizer_class, method_name):
-    """Test that optimizer classes do not override public methods.
+def test_lifecycle_method_not_overridden(optimizer_class, method_name):
+    """Test that optimizer classes do not override lifecycle methods.
 
-    The Template Method Pattern requires that public methods (iterate, evaluate, etc.)
-    are defined in the base class (CoreOptimizer) and have a FIXED flow.
-    Concrete optimizer classes must NOT override these methods.
+    The Template Method Pattern requires that lifecycle methods (_iterate,
+    _evaluate, etc.) are defined in the base class (CoreOptimizer) and have
+    a FIXED flow. Concrete optimizer classes must NOT override these methods.
 
-    Instead, they should implement the PRIVATE template methods:
+    Instead, they should implement the hook methods:
     - _iterate_continuous_batch()
     - _iterate_categorical_batch()
     - _iterate_discrete_batch()
-    - _evaluate()
+    - _on_evaluate()
 
     If this test fails, the optimizer is violating the architecture rules.
     See DESIGN_EXTENDED_SEARCH_SPACE.md section 4.2.4 for details.
@@ -160,8 +160,8 @@ def test_public_method_not_overridden(optimizer_class, method_name):
             pytest.fail(
                 f"{optimizer_class.__name__} overrides '{method_name}()'. "
                 f"This violates the Template Method Pattern. "
-                f"Public methods must NOT be overridden - only private methods "
-                f"(_iterate_*_batch, _evaluate) should be implemented. "
+                f"Lifecycle methods must NOT be overridden - only hook methods "
+                f"(_iterate_*_batch, _on_evaluate) should be implemented. "
                 f"See DESIGN_EXTENDED_SEARCH_SPACE.md section 4.2.4."
             )
 
@@ -179,21 +179,21 @@ def test_inherits_from_core_optimizer(optimizer_class):
     )
 
 
-class TestPublicMethodsDefinedInCoreOptimizer:
-    """Verify that public methods are actually defined in CoreOptimizer."""
+class TestLifecycleMethodsDefinedInCoreOptimizer:
+    """Verify that lifecycle methods are actually defined in CoreOptimizer."""
 
     @pytest.mark.parametrize("method_name", PUBLIC_METHODS_MUST_NOT_OVERRIDE)
     def test_method_exists_in_core_optimizer(self, method_name):
-        """Test that each public method is defined in CoreOptimizer."""
+        """Test that each lifecycle method is defined in CoreOptimizer."""
         assert hasattr(CoreOptimizer, method_name), (
-            f"CoreOptimizer is missing public method '{method_name}()'. "
+            f"CoreOptimizer is missing lifecycle method '{method_name}()'. "
             f"This method should be defined in CoreOptimizer as part of the "
             f"Template Method Pattern."
         )
 
     @pytest.mark.parametrize("method_name", PUBLIC_METHODS_MUST_NOT_OVERRIDE)
     def test_method_is_callable(self, method_name):
-        """Test that each public method is callable."""
+        """Test that each lifecycle method is callable."""
         method = getattr(CoreOptimizer, method_name, None)
         assert callable(method), (
             f"CoreOptimizer.{method_name} is not callable. " f"It should be a method."
@@ -201,23 +201,23 @@ class TestPublicMethodsDefinedInCoreOptimizer:
 
 
 class TestTemplateMethodsExist:
-    """Verify that template methods (private) exist for overriding."""
+    """Verify that hook methods exist for overriding."""
 
     TEMPLATE_METHODS = [
         "_iterate_continuous_batch",
         "_iterate_categorical_batch",
         "_iterate_discrete_batch",
-        "_evaluate",
+        "_on_evaluate",
     ]
 
     @pytest.mark.parametrize("method_name", TEMPLATE_METHODS)
-    def test_template_method_exists_in_core_optimizer(self, method_name):
-        """Test that template methods are defined in CoreOptimizer.
+    def test_hook_method_exists_in_core_optimizer(self, method_name):
+        """Test that hook methods are defined in CoreOptimizer.
 
         These are the methods that concrete optimizers SHOULD override.
         """
         assert hasattr(CoreOptimizer, method_name), (
-            f"CoreOptimizer is missing template method '{method_name}()'. "
+            f"CoreOptimizer is missing hook method '{method_name}()'. "
             f"This method should be defined in CoreOptimizer for concrete "
             f"optimizers to override."
         )

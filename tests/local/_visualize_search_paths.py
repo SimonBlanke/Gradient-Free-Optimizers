@@ -69,8 +69,8 @@ def plot_search_path(optimizer_key):
     plt.set_cmap("jet")
 
     for n, opt_ in enumerate(optimizers):
-        pos_list = np.array(opt_.pos_new_list)
-        score_list = np.array(opt_.score_new_list)
+        pos_list = np.array(opt_._pos_new_list)
+        score_list = np.array(opt_._score_new_list)
 
         # print("\npos_list\n", pos_list, "\n", len(pos_list))
         # print("score_list\n", score_list, "\n", len(score_list))

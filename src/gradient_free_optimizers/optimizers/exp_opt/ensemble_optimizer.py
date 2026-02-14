@@ -126,7 +126,7 @@ class EnsembleOptimizer(SMBO):
         self.regr = EnsembleRegressor(estimators)
         self.xi = xi
 
-    def _finish_initialization(self) -> None:
+    def _on_finish_initialization(self) -> None:
         """Generate candidate positions for ensemble model.
 
         Called by CoreOptimizer.finish_initialization() after all init
@@ -156,7 +156,7 @@ class EnsembleOptimizer(SMBO):
         acqu_func = ExpectedImprovement(self.regr, self.pos_comb, self.xi)
         return acqu_func.calculate(self.X_sample, self.Y_sample)
 
-    def _evaluate(self, score_new: float) -> None:
+    def _on_evaluate(self, score_new: float) -> None:
         """Update best and current positions.
 
         Parameters
@@ -164,5 +164,5 @@ class EnsembleOptimizer(SMBO):
         score_new : float
             Score for the evaluated position.
         """
-        self._update_best(self.pos_new, score_new)
-        self._update_current(self.pos_new, score_new)
+        self._update_best(self._pos_new, score_new)
+        self._update_current(self._pos_new, score_new)

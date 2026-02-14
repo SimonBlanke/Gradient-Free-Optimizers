@@ -275,7 +275,7 @@ class DirectAlgorithm(BaseOptimizer):
         self.subspace_l: list[SubSpace] = []
         self.current_subspace: SubSpace | None = None
 
-    def _finish_initialization(self) -> None:
+    def _on_finish_initialization(self) -> None:
         """Initialize with the entire search space as one subspace."""
         subspace = SubSpace(
             self.conv.pos_space,
@@ -424,7 +424,7 @@ class DirectAlgorithm(BaseOptimizer):
             "See _generate_position() for the algorithm implementation."
         )
 
-    def _evaluate(self, score_new: float) -> None:
+    def _on_evaluate(self, score_new: float) -> None:
         """Update state after evaluating a position.
 
         For subspace centers, this updates the Lipschitz bound which is
@@ -443,5 +443,5 @@ class DirectAlgorithm(BaseOptimizer):
             self.current_subspace.compute_lipschitz_bound(score_new)
 
         # Update best and current position tracking
-        self._update_best(self.pos_new, score_new)
-        self._update_current(self.pos_new, score_new)
+        self._update_best(self._pos_new, score_new)
+        self._update_current(self._pos_new, score_new)

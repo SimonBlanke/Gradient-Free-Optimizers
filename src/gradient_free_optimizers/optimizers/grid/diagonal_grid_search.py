@@ -205,11 +205,11 @@ class DiagonalGridSearch(BaseOptimizer):
             "DiagonalGridSearch uses _generate_position() for grid traversal"
         )
 
-    def _evaluate(self, score_new):
+    def _on_evaluate(self, score_new):
         """Track best position using greedy evaluation.
 
         Grid search always moves to the next position (deterministic traversal),
         so acceptance is always True. We just track the best found so far.
         """
-        self._update_best(self.pos_new, score_new)
-        self._update_current(self.pos_new, score_new)
+        self._update_best(self._pos_new, score_new)
+        self._update_current(self._pos_new, score_new)

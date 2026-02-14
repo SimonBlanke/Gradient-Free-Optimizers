@@ -122,7 +122,7 @@ class SpiralOptimization(BasePopulationOptimizer):
         self._spiral_new_pos = None
         self._decay_factor = 3.0  # Initial scaling factor
 
-    def _init_pos(self, position) -> None:
+    def _on_init_pos(self, position) -> None:
         """Initialize current particle with the given position.
 
         Sets up particle decay rate and assigns the position.
@@ -136,10 +136,10 @@ class SpiralOptimization(BasePopulationOptimizer):
         self.p_current.decay_rate = self.decay_rate
 
         # Track position on current particle
-        self.p_current.pos_new = position.copy()
-        self.p_current.pos_current = position.copy()
+        self.p_current._pos_new = position.copy()
+        self.p_current._pos_current = position.copy()
 
-    def _evaluate_init(self, score_new: float) -> None:
+    def _on_evaluate_init(self, score_new: float) -> None:
         """Evaluate during initialization phase.
 
         Delegates evaluation to the current particle for particle-level tracking.
@@ -148,17 +148,17 @@ class SpiralOptimization(BasePopulationOptimizer):
             score_new: Score of the most recently evaluated init position
         """
         # Track on current particle
-        self.p_current.score_new = score_new
+        self.p_current._score_new = score_new
 
         # Update particle's best if this is better
-        if self.p_current.pos_best is None or score_new > self.p_current.score_best:
-            self.p_current.pos_best = self.p_current.pos_new.copy()
-            self.p_current.score_best = score_new
+        if self.p_current._pos_best is None or score_new > self.p_current._score_best:
+            self.p_current._pos_best = self.p_current._pos_new.copy()
+            self.p_current._score_best = score_new
 
         # Update particle's current
-        self.p_current.score_current = score_new
+        self.p_current._score_current = score_new
 
-    def _finish_initialization(self) -> None:
+    def _on_finish_initialization(self) -> None:
         """Set up initial center position from best particle.
 
         Called by CoreOptimizer.finish_initialization() after all init
@@ -167,9 +167,9 @@ class SpiralOptimization(BasePopulationOptimizer):
 
         Note: DO NOT set search_state here - CoreOptimizer handles that.
         """
-        self.sort_pop_best_score()
-        self.center_pos = self.pop_sorted[0].pos_current
-        self.center_score = self.pop_sorted[0].score_current
+        self._sort_pop_best_score()
+        self.center_pos = self.pop_sorted[0]._pos_current
+        self.center_score = self.pop_sorted[0]._score_current
 
     # =========================================================================
     # Template Method Implementation - NO iterate() override!
@@ -189,8 +189,8 @@ class SpiralOptimization(BasePopulationOptimizer):
         self.p_current = self.particles[self.nth_trial % len(self.particles)]
 
         # Update global best reference for this particle
-        self.sort_pop_best_score()
-        self.p_current.global_pos_best = self.pop_sorted[0].pos_current
+        self._sort_pop_best_score()
+        self.p_current.global_pos_best = self.pop_sorted[0]._pos_current
 
         # Compute full spiral position
         self._spiral_new_pos = self._compute_spiral_position()
@@ -213,7 +213,7 @@ class SpiralOptimization(BasePopulationOptimizer):
             return self.p_current.init.move_random_typed()
 
         # Guard against None positions during early iterations
-        if self.center_pos is None or self.p_current.pos_current is None:
+        if self.center_pos is None or self.p_current._pos_current is None:
             return self.p_current.init.move_random_typed()
 
         # Update decay factor
@@ -225,7 +225,7 @@ class SpiralOptimization(BasePopulationOptimizer):
 
         # Compute rotated offset from center
         center = np.array(self.center_pos)
-        current = np.array(self.p_current.pos_current)
+        current = np.array(self.p_current._pos_current)
         rot = rotation(len(center), current - center)
 
         # Combine rotation with decay
@@ -289,7 +289,7 @@ class SpiralOptimization(BasePopulationOptimizer):
         self._setup_iteration()
 
         # Get current categorical indices
-        current = self.p_current.pos_current[self._categorical_mask]
+        current = self.p_current._pos_current[self._categorical_mask]
 
         new_cats = []
         for i, cur_idx in enumerate(current):
@@ -323,7 +323,7 @@ class SpiralOptimization(BasePopulationOptimizer):
         self._setup_iteration()
         return self._spiral_new_pos[self._discrete_mask]
 
-    def _evaluate(self, score_new: float) -> None:
+    def _on_evaluate(self, score_new: float) -> None:
         """Evaluate current particle and update center if improved.
 
         Updates the spiral center to the best position found so far.
@@ -335,25 +335,25 @@ class SpiralOptimization(BasePopulationOptimizer):
             Score of the most recently evaluated position.
         """
         # Track position on particle
-        self.p_current.pos_new = self.pos_new
+        self.p_current._pos_new = self._pos_new
 
         # Update center if better position found
         if self.search_state == "iter":
-            self.sort_pop_best_score()
-            if self.pop_sorted[0].score_current is not None:
+            self._sort_pop_best_score()
+            if self.pop_sorted[0]._score_current is not None:
                 if (
                     self.center_score is None
-                    or self.pop_sorted[0].score_current > self.center_score
+                    or self.pop_sorted[0]._score_current > self.center_score
                 ):
-                    self.center_pos = self.pop_sorted[0].pos_current
-                    self.center_score = self.pop_sorted[0].score_current
+                    self.center_pos = self.pop_sorted[0]._pos_current
+                    self.center_score = self.pop_sorted[0]._score_current
 
         # Delegate to current particle's evaluate
-        self.p_current.evaluate(score_new)
+        self.p_current._evaluate(score_new)
 
         # Update global tracking
-        self._update_best(self.pos_new, score_new)
-        self._update_current(self.pos_new, score_new)
+        self._update_best(self._pos_new, score_new)
+        self._update_current(self._pos_new, score_new)
 
         # Reset iteration setup for next iteration
         self._iteration_setup_done = False

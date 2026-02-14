@@ -177,7 +177,7 @@ class Individual(HillClimbingOptimizer):
         # Use parent's implementation with mutated epsilon (sigma_new)
         return super()._iterate_discrete_batch()
 
-    def _evaluate(self, score_new):
+    def _on_evaluate(self, score_new):
         """Evaluate and update sigma based on success.
 
         If the mutation improved the score, adopt the new sigma.
@@ -189,7 +189,7 @@ class Individual(HillClimbingOptimizer):
             Score of the most recently evaluated position.
         """
         # Adopt new sigma only if mutation was successful
-        if self.score_current is not None and score_new > self.score_current:
+        if self._score_current is not None and score_new > self._score_current:
             self.sigma = self.sigma_new
 
         # Restore original epsilon if it was modified
@@ -202,10 +202,10 @@ class Individual(HillClimbingOptimizer):
         self._use_random_restart = False
 
         # Update current position and score
-        self._update_current(self.pos_new, score_new)
+        self._update_current(self._pos_new, score_new)
 
         # Update best if improved
-        self._update_best(self.pos_new, score_new)
+        self._update_best(self._pos_new, score_new)
 
     # =========================================================================
     # Helper methods for external use (e.g., by EvolutionStrategyOptimizer)
@@ -250,8 +250,11 @@ class Individual(HillClimbingOptimizer):
         new_pos = np.empty(n_dims, dtype=object)
 
         # Temporarily set _pos_current so template methods can access it
-        old_pos_current = getattr(self, "_pos_current", None)
-        self._pos_current = pos_current
+        # Bypass the property setter to avoid appending to _pos_current_list;
+        # backing field uses name mangling:
+        # __pos_current -> _CoreOptimizer__pos_current
+        old_pos_current = self._pos_current
+        self.__dict__["_CoreOptimizer__pos_current"] = pos_current
 
         # Also need to disable the lazy setup since we're calling directly
         old_setup_done = self._iteration_setup_done
@@ -293,8 +296,8 @@ class Individual(HillClimbingOptimizer):
                 ).astype(int)
                 new_pos[disc_mask] = disc_new
         finally:
-            # Restore original state
-            self._pos_current = old_pos_current
+            # Restore original state (bypass property setter)
+            self.__dict__["_CoreOptimizer__pos_current"] = old_pos_current
             self._iteration_setup_done = old_setup_done
             self._use_random_restart = old_use_random
 

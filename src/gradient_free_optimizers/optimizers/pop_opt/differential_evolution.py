@@ -117,7 +117,7 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
         self._iteration_setup_done = False
         self._de_new_pos = None
 
-    def mutation(self) -> np.ndarray:
+    def _mutation(self) -> np.ndarray:
         """Generate mutant vector using type-aware differential mutation.
 
         For continuous and discrete-numerical dimensions, uses standard DE
@@ -134,13 +134,13 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
         # Need at least 3 individuals for DE mutation
         if len(self.individuals) < 3:
             # Fallback: use current individual's position with noise
-            if self.p_current.pos_best is not None:
-                return self.p_current.move_climb_typed(self.p_current.pos_best)
+            if self.p_current._pos_best is not None:
+                return self.p_current.move_climb_typed(self.p_current._pos_best)
             return self.p_current.init.move_random_typed()
 
         # Select 3 distinct individuals
         ind_selected = random.sample(self.individuals, 3)
-        x_1, x_2, x_3 = (ind.pos_best for ind in ind_selected)
+        x_1, x_2, x_3 = (ind._pos_best for ind in ind_selected)
 
         # Guard against None positions
         if x_1 is None or x_2 is None or x_3 is None:
@@ -171,7 +171,7 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
 
         return np.array(mutant)
 
-    def discrete_recombination(self, parent_pos_l, crossover_rates=None):
+    def _discrete_recombination(self, parent_pos_l, crossover_rates=None):
         """Combine parent positions using discrete recombination.
 
         For each dimension, randomly select from one of the parents.
@@ -204,7 +204,7 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
 
         return np.array(result)
 
-    def conv2pos_typed(self, pos):
+    def _conv2pos_typed(self, pos):
         """Convert position to valid position with proper types.
 
         Clips values to bounds and ensures correct data types for each dimension.
@@ -259,7 +259,7 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
             position = self.p_current.move_climb_typed(position, epsilon_mod=0.3)
         return position
 
-    def _init_pos(self, position) -> None:
+    def _on_init_pos(self, position) -> None:
         """Initialize current individual with the given position.
 
         Args:
@@ -270,10 +270,10 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
         self.p_current = self.individuals[nth_pop]
 
         # Track position on current individual
-        self.p_current.pos_new = position.copy()
-        self.p_current.pos_current = position.copy()
+        self.p_current._pos_new = position.copy()
+        self.p_current._pos_current = position.copy()
 
-    def _evaluate_init(self, score_new: float) -> None:
+    def _on_evaluate_init(self, score_new: float) -> None:
         """Evaluate during initialization phase.
 
         Delegates evaluation to the current individual for individual-level tracking.
@@ -282,15 +282,15 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
             score_new: Score of the most recently evaluated init position
         """
         # Track on current individual
-        self.p_current.score_new = score_new
+        self.p_current._score_new = score_new
 
         # Update individual's best if this is better
-        if self.p_current.pos_best is None or score_new > self.p_current.score_best:
-            self.p_current.pos_best = self.p_current.pos_new.copy()
-            self.p_current.score_best = score_new
+        if self.p_current._pos_best is None or score_new > self.p_current._score_best:
+            self.p_current._pos_best = self.p_current._pos_new.copy()
+            self.p_current._score_best = score_new
 
         # Update individual's current
-        self.p_current.score_current = score_new
+        self.p_current._score_current = score_new
 
     # =========================================================================
     # Template Method Implementation - NO iterate() override!
@@ -308,7 +308,7 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
 
         # Select target individual (round-robin)
         self.p_current = self.individuals[self.nth_trial % len(self.individuals)]
-        target_vector = self.p_current.pos_current
+        target_vector = self.p_current._pos_current
 
         # Guard against None target
         if target_vector is None:
@@ -317,21 +317,21 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
             return
 
         # Generate mutant vector
-        mutant_vector = self.mutation()
+        mutant_vector = self._mutation()
 
         # Crossover: combine target and mutant
         crossover_rates = [1 - self.crossover_rate, self.crossover_rate]
-        pos_new = self.discrete_recombination(
+        pos_new = self._discrete_recombination(
             [target_vector, mutant_vector],
             crossover_rates,
         )
 
         # Convert to valid position (clip and round as needed)
-        pos_new = self.conv2pos_typed(pos_new)
+        pos_new = self._conv2pos_typed(pos_new)
 
         # Handle constraints
         pos_new = self._constraint_loop(pos_new)
-        pos_new = self.conv2pos_typed(pos_new)
+        pos_new = self._conv2pos_typed(pos_new)
 
         self._de_new_pos = pos_new
         self._iteration_setup_done = True
@@ -375,7 +375,7 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
         self._setup_iteration()
         return self._de_new_pos[self._discrete_mask]
 
-    def _evaluate(self, score_new: float) -> None:
+    def _on_evaluate(self, score_new: float) -> None:
         """Evaluate trial vector and perform selection.
 
         DE uses greedy selection: the trial vector replaces the target
@@ -388,15 +388,15 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
             Score of the trial vector.
         """
         # Track position on individual (needed for personal best tracking)
-        self.p_current.pos_new = self.pos_new
+        self.p_current._pos_new = self._pos_new
 
         # DE greedy selection is handled by individual's evaluate
         # which updates pos_current only if score improved
-        self.p_current.evaluate(score_new)
+        self.p_current._evaluate(score_new)
 
         # Update global tracking
-        self._update_best(self.pos_new, score_new)
-        self._update_current(self.pos_new, score_new)
+        self._update_best(self._pos_new, score_new)
+        self._update_current(self._pos_new, score_new)
 
         # Reset iteration setup for next iteration
         self._iteration_setup_done = False

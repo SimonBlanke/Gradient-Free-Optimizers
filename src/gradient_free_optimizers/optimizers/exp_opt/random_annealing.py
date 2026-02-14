@@ -150,14 +150,14 @@ class RandomAnnealingOptimizer(HillClimbingOptimizer):
 
         return current + noise
 
-    def _evaluate(self, score_new):
+    def _on_evaluate(self, score_new):
         """Greedy evaluation with temperature decay.
 
         Uses the same n_neighbours greedy selection as HillClimbing,
         then decreases temperature for next iteration.
         """
         # Use parent's greedy n_neighbours logic
-        super()._evaluate(score_new)
+        super()._on_evaluate(score_new)
 
         # Decay temperature for next iteration
         self.temp *= self.annealing_rate

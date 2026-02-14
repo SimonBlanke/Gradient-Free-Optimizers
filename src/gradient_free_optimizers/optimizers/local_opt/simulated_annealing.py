@@ -115,7 +115,7 @@ class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer):
         except OverflowError:
             return math.inf
 
-    def _evaluate(self, score_new):
+    def _on_evaluate(self, score_new):
         """Evaluate with Metropolis acceptance criterion and temperature decay.
 
         After the stochastic acceptance decision, the temperature is reduced
@@ -125,7 +125,7 @@ class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer):
             score_new: Score of the most recently evaluated position
         """
         # Use parent's stochastic acceptance logic
-        super()._evaluate(score_new)
+        super()._on_evaluate(score_new)
 
         # Decrease temperature (annealing schedule)
         self.temp *= self.annealing_rate

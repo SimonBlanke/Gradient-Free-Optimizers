@@ -195,7 +195,7 @@ class DownhillSimplexOptimizer(BaseOptimizer):
 
         return pos_clipped
 
-    def _finish_initialization(self) -> None:
+    def _on_finish_initialization(self) -> None:
         """Initialize the simplex from evaluated positions.
 
         This hook is called by CoreOptimizer.finish_initialization() after
@@ -319,7 +319,7 @@ class DownhillSimplexOptimizer(BaseOptimizer):
         self._compute_next_simplex_position()
         return self._next_position[self._discrete_mask]
 
-    def _evaluate(self, score_new: float) -> None:
+    def _on_evaluate(self, score_new: float) -> None:
         """Evaluate score and update simplex state machine.
 
         Parameters

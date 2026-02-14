@@ -127,7 +127,7 @@ class PowellsMethod(BaseOptimizer):
         self.direction_improvements = []
         self.converged = False
 
-    def conv2pos_typed(self, pos):
+    def _conv2pos_typed(self, pos):
         """Convert position to valid position with proper types."""
         pos_new = []
         dim_names = list(self.search_space.keys())
@@ -150,7 +150,7 @@ class PowellsMethod(BaseOptimizer):
 
         return np.array(pos_new)
 
-    def _finish_initialization(self):
+    def _on_finish_initialization(self):
         """Set up the direction matrix and state after initialization phase."""
         n_dims = len(self.search_space)
 
@@ -182,11 +182,11 @@ class PowellsMethod(BaseOptimizer):
 
     def _start_direction_search(self):
         """Initialize line search for the current direction."""
-        self.direction_start_score = self.score_current
+        self.direction_start_score = self._score_current
 
         direction = self.directions[self.current_direction_idx]
         self.line_searcher.start(
-            origin=self.pos_current.copy(),
+            origin=self._pos_current.copy(),
             direction=direction.direction,
             max_iters=self.iters_p_dim,
         )
@@ -207,7 +207,7 @@ class PowellsMethod(BaseOptimizer):
     def _start_new_cycle(self):
         """Start a new cycle through all directions."""
         self.cycle_start_pos = (
-            self.pos_current.copy() if self.pos_current is not None else None
+            self._pos_current.copy() if self._pos_current is not None else None
         )
         self.current_direction_idx = 0
         self.direction_improvements = []
@@ -224,7 +224,7 @@ class PowellsMethod(BaseOptimizer):
                 self.converged = True
                 return
 
-        displacement = np.array(self.pos_current) - np.array(self.cycle_start_pos)
+        displacement = np.array(self._pos_current) - np.array(self.cycle_start_pos)
         displacement_norm = np.linalg.norm(displacement)
 
         if displacement_norm > 1e-10 and self.direction_improvements:
@@ -332,7 +332,7 @@ class PowellsMethod(BaseOptimizer):
             "See _generate_position() for the algorithm implementation."
         )
 
-    def _evaluate(self, score_new: float) -> None:
+    def _on_evaluate(self, score_new: float) -> None:
         """
         Evaluate a new score and update tracking.
 
@@ -346,9 +346,9 @@ class PowellsMethod(BaseOptimizer):
         We only update the line searcher and global best here.
         """
         # Update line searcher with the result (only during iteration phase)
-        if self.line_searcher is not None and self.pos_new is not None:
-            self.line_searcher.update(self.pos_new, score_new)
+        if self.line_searcher is not None and self._pos_new is not None:
+            self.line_searcher.update(self._pos_new, score_new)
 
         # Only update global best tracking, NOT current position.
         # Current position updated in _finish_direction_search when line search done.
-        self._update_best(self.pos_new, score_new)
+        self._update_best(self._pos_new, score_new)
