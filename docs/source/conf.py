@@ -11,6 +11,8 @@ ON_READTHEDOCS = os.environ.get("READTHEDOCS") == "True"
 if not ON_READTHEDOCS:
     sys.path.insert(0, os.path.abspath("../../src"))
 
+sys.path.insert(0, os.path.abspath("_ext"))
+
 import gradient_free_optimizers  # noqa: E402
 
 # -- Project information -----------------------------------------------------
@@ -40,6 +42,7 @@ extensions = [
     "sphinx_design",
     "sphinx_issues",
     "sphinx.ext.doctest",
+    "params_toc",
 ]
 
 myst_enable_extensions = ["colon_fence"]
@@ -144,7 +147,7 @@ html_theme_options = {
     "navbar_center": ["navbar-nav"],
     "navbar_end": ["theme-switcher", "navbar-icon-links"],
     "show_nav_level": 1,
-    "show_toc_level": 2,
+    "show_toc_level": 3,
     "secondary_sidebar_items": ["page-toc", "sourcelink"],
 }
 
