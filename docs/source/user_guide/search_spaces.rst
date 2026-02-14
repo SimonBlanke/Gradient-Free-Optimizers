@@ -2,49 +2,143 @@
 Search Spaces
 =============
 
-Search spaces define what parameters the optimizer can explore. In GFO,
-search spaces are simple dictionaries mapping parameter names to NumPy
-arrays of possible values.
+Search spaces define what parameters the optimizer can explore. A search space
+is a Python dictionary mapping parameter names to their domains. The **type of
+each domain** is determined by the Python data structure you use:
 
 
-Basic Definition
-----------------
+.. grid:: 1
+   :gutter: 3
+
+   .. grid-item-card:: Continuous
+      :class-card: sd-border-primary gfo-compact
+
+      .. grid:: 2
+         :margin: 0
+         :padding: 0
+
+         .. grid-item::
+            :columns: 5
+
+            A **tuple** for continuous
+            ranges without discretization.
+
+         .. grid-item::
+            :columns: 7
+
+            .. code-block:: python
+
+               "learning_rate": (0.001, 1.0)
+
+   .. grid-item-card:: Discrete
+      :class-card: sd-border-success gfo-compact
+
+      .. grid:: 2
+         :margin: 0
+         :padding: 0
+
+         .. grid-item::
+            :columns: 5
+
+            A **NumPy array** of specific numeric
+            values to choose from.
+
+         .. grid-item::
+            :columns: 7
+
+            .. code-block:: python
+
+               "max_depth": np.arange(2, 21)
+
+   .. grid-item-card:: Categorical
+      :class-card: sd-border-info gfo-compact
+
+      .. grid:: 2
+         :margin: 0
+         :padding: 0
+
+         .. grid-item::
+            :columns: 5
+
+            A **Python list** of unordered choices
+            like strings or booleans.
+
+         .. grid-item::
+            :columns: 7
+
+            .. code-block:: python
+
+               "kernel": ["linear", "rbf", "poly"]
+
+
+Quick Example
+-------------
+
+All three types can coexist in a single search space:
 
 .. code-block:: python
 
     import numpy as np
+    from gradient_free_optimizers import BayesianOptimizer
 
     search_space = {
-        "parameter_name": np.array([value1, value2, value3, ...]),
+        "learning_rate": (0.0001, 0.1),           # continuous
+        "n_layers": np.arange(1, 6),              # discrete
+        "hidden_size": np.arange(32, 256, 32),    # discrete
+        "optimizer": ["adam", "sgd", "rmsprop"],   # categorical
+        "use_dropout": [True, False],              # categorical (boolean)
     }
 
-Each key is a parameter name (string), and each value is a NumPy array
-containing all possible values for that parameter.
+    opt = BayesianOptimizer(search_space)
+    opt.search(objective, n_iter=100)
 
 
 Continuous Parameters
 ---------------------
 
-For continuous parameters, use ``np.linspace`` or ``np.arange``:
+Use a **tuple** ``(min, max)`` to define a continuous dimension. The optimizer
+works directly with float values in this range and is not limited to a fixed
+grid of points:
 
 .. code-block:: python
 
     search_space = {
-        # 100 evenly spaced values from 0.001 to 1.0
-        "learning_rate": np.linspace(0.001, 1.0, 100),
-
-        # Values from 0 to 10 with step 0.1
-        "threshold": np.arange(0, 10, 0.1),
+        "learning_rate": (0.0001, 0.1),
+        "temperature": (0.1, 10.0),
+        "dropout_rate": (0.0, 0.5),
     }
 
-The **granularity** of your array determines how precisely the optimizer
-can tune the parameter.
+This is the right choice when you want the optimizer to explore the full
+continuous range. For parameters that span several orders of magnitude,
+consider using a discrete log-scale grid instead (see below).
 
 
-Log-Scale Parameters
---------------------
+Discrete Parameters
+-------------------
 
-Many hyperparameters (like learning rates) work better on a log scale:
+Use a **NumPy array** to define a grid of specific numeric values. The
+optimizer selects from exactly these values, and perturbation-based moves
+step through neighboring entries in the array.
+
+**Integer parameters** with ``np.arange``:
+
+.. code-block:: python
+
+    search_space = {
+        "n_estimators": np.arange(10, 210, 10),  # 10, 20, ..., 200
+        "max_depth": np.arange(2, 21),            # 2, 3, ..., 20
+    }
+
+**Fine-grained float grids** with ``np.linspace``:
+
+.. code-block:: python
+
+    search_space = {
+        # 200 evenly spaced values from 0.001 to 1.0
+        "threshold": np.linspace(0.001, 1.0, 200),
+    }
+
+**Log-scale grids** with ``np.logspace``:
 
 .. code-block:: python
 
@@ -52,82 +146,86 @@ Many hyperparameters (like learning rates) work better on a log scale:
         # 50 values from 0.0001 to 0.1, log-spaced
         "learning_rate": np.logspace(-4, -1, 50),
 
-        # From 1e-6 to 1e-1
+        # 40 values from 1e-6 to 1e-1
         "regularization": np.logspace(-6, -1, 40),
     }
 
+Log-scale grids are useful for parameters that vary over orders of magnitude.
+The array length controls the resolution: more values mean finer granularity.
 
-Discrete Integer Parameters
----------------------------
+.. note::
 
-For integer parameters, use ``np.arange``:
-
-.. code-block:: python
-
-    search_space = {
-        # Integers 10, 20, 30, ..., 200
-        "n_estimators": np.arange(10, 210, 10),
-
-        # Integers 2, 3, 4, ..., 20
-        "max_depth": np.arange(2, 21),
-    }
+    ``np.linspace`` and ``np.logspace`` create **discrete** grids, not
+    continuous ranges. For truly continuous parameters, use a tuple
+    ``(min, max)`` instead.
 
 
 Categorical Parameters
 ----------------------
 
-For categorical parameters, use arrays of strings:
+Use a **Python list** to define categorical choices. The optimizer treats these
+as unordered and uses swap-based moves (jumping to any category) rather than
+perturbation-based moves (stepping to neighbors):
 
 .. code-block:: python
 
     search_space = {
-        "optimizer": np.array(["adam", "sgd", "rmsprop", "adagrad"]),
-        "activation": np.array(["relu", "tanh", "sigmoid"]),
-        "kernel": np.array(["linear", "rbf", "poly"]),
+        "optimizer": ["adam", "sgd", "rmsprop", "adagrad"],
+        "activation": ["relu", "tanh", "sigmoid"],
+        "kernel": ["linear", "rbf", "poly"],
     }
 
-
-Boolean Parameters
-------------------
-
-Use arrays with True/False:
+**Booleans** are a special case of categorical:
 
 .. code-block:: python
 
     search_space = {
-        "use_bias": np.array([True, False]),
-        "normalize": np.array([True, False]),
+        "use_bias": [True, False],
+        "normalize": [True, False],
     }
 
 
 Mixed Search Spaces
 -------------------
 
-Combine different parameter types:
+All dimension types work together in a single search space. The optimizer
+handles each dimension according to its type internally:
 
 .. code-block:: python
 
+    import numpy as np
+    from gradient_free_optimizers import BayesianOptimizer
+    from sklearn.svm import SVC
+    from sklearn.model_selection import cross_val_score
+    from sklearn.datasets import load_iris
+
     search_space = {
-        # Continuous
-        "learning_rate": np.logspace(-4, -1, 30),
-
-        # Discrete
-        "n_layers": np.arange(1, 6),
-        "hidden_size": np.arange(32, 256, 32),
-
-        # Categorical
-        "optimizer": np.array(["adam", "sgd"]),
-        "activation": np.array(["relu", "tanh"]),
-
-        # Boolean
-        "use_dropout": np.array([True, False]),
+        "C": (0.01, 100.0),                        # continuous
+        "degree": np.arange(2, 6),                  # discrete
+        "kernel": ["linear", "rbf", "poly"],        # categorical
+        "shrinking": [True, False],                  # categorical (boolean)
     }
+
+    def objective(para):
+        X, y = load_iris(return_X_y=True)
+        clf = SVC(
+            C=para["C"],
+            degree=para["degree"],
+            kernel=para["kernel"],
+            shrinking=para["shrinking"],
+        )
+        return cross_val_score(clf, X, y, cv=3).mean()
+
+    opt = BayesianOptimizer(search_space)
+    opt.search(objective, n_iter=50)
 
 
 Search Space Size
 -----------------
 
-The total search space size is the product of all dimension sizes:
+For discrete and categorical dimensions the total search space size is
+the product of all dimension sizes. Continuous dimensions have no fixed
+size since they are not discretized.
 
 .. code-block:: python
 
@@ -147,14 +245,17 @@ Best Practices
 1. **Start coarse, refine later**: Begin with fewer values and increase
    granularity once you find promising regions.
 
-2. **Use appropriate scales**: Log-scale for parameters that vary over
-   orders of magnitude.
+2. **Use appropriate scales**: Log-scale grids (``np.logspace``) for
+   parameters that vary over orders of magnitude. Continuous tuples for
+   parameters where you want full-range exploration.
 
-3. **Consider dependencies**: If parameters interact, consider using
-   constraints to avoid invalid combinations.
+3. **Consider dependencies**: If parameters interact, use
+   :doc:`constraints <constraints>` to avoid invalid combinations.
 
-4. **Balance dimensions**: Very different dimension sizes can cause
-   some parameters to be under-explored.
+4. **Balance discrete dimensions**: Very different dimension sizes can
+   bias exploration. A dimension with 1000 values next to one with 2 values
+   means the optimizer spends disproportionate effort varying the larger
+   dimension while effectively ignoring the smaller one.
 
 .. code-block:: python
 
@@ -164,8 +265,8 @@ Best Practices
         "y": np.linspace(0, 1, 50),
     }
 
-    # May cause issues: imbalanced dimensions
+    # Problematic: the optimizer spends most moves varying x
     search_space = {
-        "x": np.linspace(0, 1, 1000),  # Very fine
-        "y": np.array([0, 1]),          # Very coarse
+        "x": np.linspace(0, 1, 1000),  # 1000 values
+        "y": np.array([0, 1]),          # 2 values
     }

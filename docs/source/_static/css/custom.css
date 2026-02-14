@@ -878,6 +878,36 @@ html[data-theme="dark"] .stat-value {
     }
 }
 
+/* -- Compact dimension cards (search spaces page) ------------------------- */
+
+.sd-card.gfo-compact .sd-card-body {
+    padding: 0.6rem 1rem !important;
+}
+
+.sd-card.gfo-compact .sd-card-title {
+    margin-bottom: 0.2rem !important;
+    font-size: 0.95rem;
+}
+
+.sd-card.gfo-compact .sd-row {
+    --sd-gutter-x: 0 !important;
+    --sd-gutter-y: 0 !important;
+    align-items: center;
+}
+
+.sd-card.gfo-compact .highlight {
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
+}
+
+.sd-card.gfo-compact .highlight pre {
+    padding: 0.5rem 0.75rem !important;
+}
+
+.sd-card.gfo-compact p {
+    margin-bottom: 0 !important;
+}
+
 /* -- sphinx-design overrides ----------------------------------------------- */
 
 .sd-card {
