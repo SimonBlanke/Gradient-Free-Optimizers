@@ -9,6 +9,38 @@ For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-02-14
+
+Major release introducing a new optimizer architecture based on the Template Method Pattern, extended search space support with continuous, categorical, and discrete dimension types, and vectorized operations for high-dimensional optimization.
+
+### Added
+- New optimizer module (`optimizers/`) using the Template Method Pattern with explicit hook methods (`_iterate_continuous_batch`, `_iterate_categorical_batch`, `_iterate_discrete_batch`)
+- Extended search space dimension types: continuous `(min, max)` tuples, categorical `["a", "b"]` lists, and discrete numerical NumPy arrays
+- `DimensionType` enum, `DimensionInfo` dataclass, and `DimensionMasks` for dimension-aware vectorized operations
+- Automatic vectorization for search spaces with 1000+ dimensions via `DimensionIteratorMixin`
+- `resolution` parameter for `GridSearchOptimizer` and `DirectAlgorithm` to handle continuous dimensions
+- Mixed-type distance metric (Gower-like) for the DIRECT algorithm across heterogeneous dimensions
+- Lazy search data construction in `ResultsManager` for reduced memory footprint during optimization
+- State management via property setters with automatic history tracking in `CoreOptimizer`
+- Extended search-space tests for all optimizers
+- Examples for mixed and large search spaces
+- Sphinx documentation site with landing page, logos, and navigation
+
+### Changed
+- All optimizers reimplemented to comply with the new Template Method architecture
+- Legacy optimizer implementations preserved in `optimizers_legacy/` (not part of public API)
+- SciPy restored as a core dependency
+- Wall clipping algorithm reworked
+- Optimizer initialization refactored (`finish_initialization`, `_generate_position` pattern)
+- Converter enhanced with dimension type analysis (`_analyze_dimension_types`)
+- Updated CI workflow configuration
+
+### Fixed
+- `finish_initialization` in Downhill Simplex and other optimizers
+- `_move_random` in sequential model-based optimizers
+- Init position and `evaluate_init` override issues in optimizer subclasses
+- Empty scores edge case in evaluation
+
 ## [1.9.0] - 2026-01-15
 
 Major release focusing on dependency reduction. scikit-learn and scipy are now optional dependencies with native Python implementations available for all core functionality.
