@@ -2,9 +2,14 @@
 Differential Evolution
 ======================
 
-Differential Evolution (DE) creates new candidate solutions by adding weighted
-differences between population members. This self-adaptive approach automatically
-scales search steps based on the current population distribution.
+Differential Evolution (DE) generates new candidate solutions by adding the
+weighted difference between two randomly selected population members to a third
+member. This produces a mutant vector whose step size and direction are derived
+from the current population distribution. The mutant is then mixed with the
+original target vector through a crossover operation, and the result replaces
+the target only if it achieves a better score. Because the difference vectors
+are computed from the population itself, the step sizes adapt automatically:
+they are large when the population is spread out and shrink as it converges.
 
 
 .. grid:: 2
@@ -26,6 +31,17 @@ scales search steps based on the current population distribution.
 
             **Multi-modal function**: Difference vectors help escape
             local optima.
+
+
+The self-adaptive step size is the key property that distinguishes DE from the
+other population-based optimizers in this library. PSO requires explicit
+velocity weights, ES requires a tuned mutation rate, and GA relies on a fixed
+crossover operator. DE derives both step direction and magnitude from the
+population, which makes it less sensitive to parameter settings. The default
+configuration (F=0.8, CR=0.9) works across a broad range of continuous problems
+without adjustment. DE is the preferred choice for real-valued optimization in
+this library when the problem has moderate to high dimensionality. It requires a
+minimum population size of 4 to form the necessary difference vectors.
 
 
 Algorithm

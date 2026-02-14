@@ -2,9 +2,13 @@
 Grid Search
 ===========
 
-Grid Search systematically evaluates positions on a regular grid across the
-search space. It guarantees complete coverage but suffers from the curse of
-dimensionality.
+Grid Search evaluates positions on a regular lattice spanning the search space,
+advancing through grid points in a fixed traversal order. The spacing between
+points is controlled by a ``step_size`` parameter, and two traversal patterns are
+available: diagonal and orthogonal. Given sufficient iterations, Grid Search
+visits every grid point and therefore guarantees finding the optimum among those
+points. The total number of evaluations scales as the product of grid points
+across all dimensions.
 
 
 .. grid:: 2
@@ -26,6 +30,16 @@ dimensionality.
 
             **Multi-modal function**: Guaranteed to find the global
             optimum if it's on the grid.
+
+
+Grid Search is deterministic and fully reproducible, which distinguishes it from
+stochastic methods like Random Search. However, it allocates equal resolution to
+every dimension regardless of that dimension's influence on the objective, which
+makes it inefficient when only a subset of parameters matters. The exponential
+growth in evaluations with dimensionality limits it to low-dimensional problems
+(typically fewer than 5 dimensions with coarse grids). Choose Grid Search over
+Random Search when complete, systematic coverage of a small discrete space is
+required and reproducibility without a random seed is a priority.
 
 
 Algorithm
@@ -52,7 +66,7 @@ GFO supports two traversal patterns:
 
 .. note::
 
-    **Key Insight:** Grid Search is the only algorithm that guarantees finding
+    Grid Search is the only algorithm that guarantees finding
     the global optimum (if it lies on a grid point) given enough iterations.
     However, it projects poorly to important dimensions: in a 5D space where
     only 2 dimensions matter, grid search wastes most evaluations on

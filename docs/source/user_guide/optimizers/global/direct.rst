@@ -2,9 +2,13 @@
 DIRECT Algorithm
 ================
 
-DIRECT (DIviding RECTangles) is a deterministic global optimization algorithm
-that recursively divides the search space into smaller regions, focusing on
-the most promising areas while ensuring global coverage.
+DIRECT (DIviding RECTangles) partitions the search space into hyperrectangles
+and recursively subdivides them. At each iteration, it evaluates the objective at
+the center of each rectangle and identifies "potentially optimal" rectangles:
+those that lie on the Pareto front of center-point value versus rectangle size.
+These selected rectangles are subdivided further, while others are left intact.
+This selection criterion means that both high-value small rectangles and large
+unexplored rectangles are refined simultaneously.
 
 
 .. grid:: 2
@@ -25,6 +29,19 @@ the most promising areas while ensuring global coverage.
             :alt: DIRECT on Ackley function
 
             **Multi-modal function**: Balanced exploration and exploitation.
+
+
+DIRECT is deterministic, requires no algorithm-specific hyperparameters, and is
+provably convergent to the global optimum given sufficient iterations. Unlike the
+Lipschitz Optimizer, which requires estimating a single Lipschitz constant, DIRECT
+implicitly considers all possible constant values through its Pareto-based selection
+criterion, making it more robust when the smoothness of the objective is unknown.
+The number of rectangles grows with each iteration and with dimensionality, which
+limits practical use to low and moderate dimensions. Choose DIRECT when you need
+deterministic global search with convergence guarantees and no tuning. Prefer
+the Lipschitz Optimizer when the objective is known to be smooth, because its
+single-constant bound can prune larger portions of the search space per
+iteration, reaching the optimum in fewer evaluations on such functions.
 
 
 Algorithm
@@ -49,7 +66,7 @@ This approach balances:
 
 .. note::
 
-    **Key Insight:** DIRECT's "potentially optimal" selection is the key to
+    DIRECT's "potentially optimal" selection is the key to
     its balance. A rectangle is potentially optimal if no other rectangle is
     both smaller and has a better center value. This Pareto criterion ensures
     that both small rectangles in good regions AND large unexplored rectangles

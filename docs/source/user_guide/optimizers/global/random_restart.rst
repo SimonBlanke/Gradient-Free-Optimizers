@@ -2,9 +2,13 @@
 Random Restart Hill Climbing
 ============================
 
-Random Restart Hill Climbing combines local search with global exploration by
-running Hill Climbing from multiple random starting points. When Hill Climbing
-converges, it restarts from a new random position.
+Random Restart Hill Climbing alternates between two phases: a local Hill Climbing
+phase that runs for ``n_iter_restart`` iterations, and a restart phase that jumps
+to a uniformly random position in the search space. During each Hill Climbing
+phase, the algorithm evaluates neighboring positions and moves greedily toward
+improvements. After the fixed number of local iterations, it discards the current
+position and begins a new Hill Climbing run from a fresh random starting point.
+The global best across all runs is retained.
 
 
 .. grid:: 2
@@ -29,6 +33,18 @@ converges, it restarts from a new random position.
             different basins of attraction.
 
 
+This algorithm extends Hill Climbing to multi-modal problems by sampling from
+multiple basins of attraction rather than converging to a single local optimum.
+Compared to Simulated Annealing, which uses a probabilistic acceptance schedule
+to escape local optima, Random Restart uses hard resets that provide a cleaner
+separation between exploration and exploitation. The ``n_iter_restart`` parameter
+directly controls this trade-off: short intervals sample more basins while long
+intervals allow deeper convergence within each basin. Choose Random Restart Hill
+Climbing when the search space contains well-separated local optima and when the
+cost per evaluation is low enough to tolerate the wasted iterations at the end of
+each restart cycle.
+
+
 Algorithm
 ---------
 
@@ -47,7 +63,7 @@ The algorithm alternates between:
 
 .. note::
 
-    **Key Insight:** Random Restart HC provides a hard boundary between
+    Random Restart HC provides a hard boundary between
     exploration and exploitation. Each restart is a completely independent
     local search, which means the algorithm naturally samples from multiple
     basins. The ``n_iter_restart`` parameter controls the balance: shorter

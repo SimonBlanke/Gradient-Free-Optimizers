@@ -2,9 +2,19 @@
 Ensemble Optimizer
 ==================
 
-The Ensemble Optimizer combines multiple surrogate models to create more robust
-predictions. By averaging predictions from different model types, it reduces
-the risk of any single model's weaknesses affecting the search.
+The Ensemble Optimizer trains multiple surrogate models (e.g., a Gaussian
+Process alongside one or more tree-based regressors) on the same set of
+observations and averages their predictions to score candidate positions.
+Disagreement among the constituent models serves as the uncertainty signal for
+the Expected Improvement acquisition function. This reduces sensitivity to
+surrogate model choice: a GP assumes smooth, stationary structure while a tree
+ensemble captures discontinuities and interactions, so their combination covers
+a wider range of objective function shapes than either model alone. The
+computational cost scales linearly in the number of estimators, with the
+slowest model dominating wall-clock time per iteration. The Ensemble Optimizer
+is suited to problems where the objective landscape is unknown and evaluation
+cost is high enough to justify the additional surrogate fitting overhead
+relative to :doc:`bayesian`, :doc:`tpe`, or :doc:`forest` individually.
 
 
 Algorithm
@@ -28,7 +38,7 @@ At each iteration:
 
 .. note::
 
-    **Key Insight:** The ensemble's uncertainty estimate comes from model
+    The ensemble's uncertainty estimate comes from model
     disagreement rather than a single model's internal uncertainty. When a GP
     and a Random Forest disagree about a region, that disagreement signals
     genuine uncertainty that neither model alone would capture. This

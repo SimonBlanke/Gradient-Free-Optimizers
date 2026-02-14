@@ -2,9 +2,13 @@
 Random Annealing
 ================
 
-Random Annealing uses an annealing approach but for **step size** rather than
-acceptance probability. It starts with large random steps for broad exploration
-and gradually decreases the step size for focused exploitation.
+Random Annealing applies an exponential decay schedule to the step size rather
+than to the acceptance probability. At each iteration, a neighbor is sampled
+within a radius proportional to ``epsilon * start_temp * annealing_rate^t``,
+where ``t`` is the current iteration. The algorithm only accepts the neighbor if
+it improves on the current position; worse solutions are never accepted. As the
+step size shrinks over iterations, the search transitions from broad spatial
+coverage to fine-grained local refinement around the current position.
 
 
 .. grid:: 2
@@ -29,6 +33,18 @@ and gradually decreases the step size for focused exploitation.
             followed by focused local search.
 
 
+The key difference from Simulated Annealing is the source of the
+exploration-to-exploitation transition. Simulated Annealing maintains a fixed step
+size but reduces the probability of accepting worse moves over time. Random
+Annealing keeps strictly greedy acceptance but shrinks the search radius, which
+makes its behavior more predictable and eliminates uphill moves entirely. The
+trade-off is that the algorithm depends on the early large-step phase to locate the
+correct basin; once the step size has decayed, it cannot escape a suboptimal region.
+Choose Random Annealing over Simulated Annealing when deterministic greedy behavior
+is preferred, and over Random Restart Hill Climbing when a smooth transition is
+preferred over hard resets.
+
+
 Algorithm
 ---------
 
@@ -43,7 +59,7 @@ solutions, Random Annealing keeps greedy acceptance but shrinks the search radiu
 
 .. note::
 
-    **Key Insight:** Random Annealing never accepts worse solutions (it's always
+    Random Annealing never accepts worse solutions (it's always
     greedy). Instead, it controls exploration through **step size decay**. This
     makes it more predictable than SA: early iterations explore broadly because
     steps are large, late iterations exploit because steps are small. The result

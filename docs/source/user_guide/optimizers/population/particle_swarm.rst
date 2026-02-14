@@ -2,9 +2,14 @@
 Particle Swarm Optimization
 ============================
 
-Particle Swarm Optimization (PSO) simulates a swarm of particles moving through
-the search space. Each particle is attracted toward its personal best position
-and the global best position, creating emergent intelligent search behavior.
+Particle Swarm Optimization (PSO) maintains a population of particles that move
+through the search space using velocity vectors. Each particle's velocity is
+updated at every iteration as a weighted sum of three components: its current
+momentum (inertia), the direction toward its own personal best position
+(cognitive term), and the direction toward the global best position found by any
+particle (social term). The resulting trajectory balances individual memory with
+collective information sharing, producing coordinated movement across the search
+space.
 
 
 .. grid:: 2
@@ -26,6 +31,17 @@ and the global best position, creating emergent intelligent search behavior.
 
             **Multi-modal function**: Swarm explores multiple regions
             before converging.
+
+
+Unlike the evolutionary algorithms in this library (Genetic Algorithm, Evolution
+Strategy, Differential Evolution), PSO does not use crossover, mutation, or
+selection operators. Its search is driven entirely by velocity updates, which
+makes it a good default choice for continuous optimization problems where the
+landscape is smooth or moderately multi-modal. PSO converges faster than
+evolutionary methods on unimodal and low-dimensional problems, but its reliance
+on a single global attractor can cause premature convergence on highly deceptive
+landscapes. For discrete or categorical search spaces, Genetic Algorithm is
+generally more appropriate.
 
 
 Algorithm
@@ -54,7 +70,7 @@ Then position is updated:
 
 .. note::
 
-    **Key Insight:** The three velocity components create a balance: **inertia**
+    The three velocity components create a balance: **inertia**
     preserves the current trajectory (momentum), **cognitive weight** pulls toward
     each particle's own discovery (independence), and **social weight** pulls
     toward the swarm's best (cooperation). The ratio between cognitive and social

@@ -2,9 +2,12 @@
 Powell's Method
 ===============
 
-Powell's Method optimizes each dimension sequentially, performing 1D optimization
-along each axis before moving to the next. This works particularly well for
-**separable functions** where dimensions are independent.
+Powell's Method decomposes a multidimensional optimization problem into a sequence
+of one-dimensional line searches along axis-aligned directions. It selects one
+dimension at a time, optimizes along that axis while holding all other parameters
+fixed, then moves to the next dimension. After cycling through all dimensions, it
+repeats. The implementation here uses fixed axis-aligned directions rather than
+the conjugate direction updates found in some variants.
 
 
 .. grid:: 2
@@ -29,6 +32,17 @@ along each axis before moving to the next. This works particularly well for
             diagonal optima.
 
 
+This coordinate-descent approach performs well on separable functions where each
+parameter's optimal value is independent of the others (e.g., ``f = g(x) + h(y)``).
+On non-separable functions with strong parameter interactions, convergence degrades
+because optimizing one axis at a time cannot follow diagonal paths through the
+search space. Compared to Pattern Search, which probes all directions
+simultaneously, Powell's Method evaluates fewer points per cycle but requires
+separability to be effective. It has no algorithm-specific hyperparameters. Choose
+Powell's Method when the objective is known or expected to be separable, and prefer
+Pattern Search or Downhill Simplex for coupled objectives.
+
+
 Algorithm
 ---------
 
@@ -48,7 +62,7 @@ At each iteration:
 
 .. note::
 
-    **Key Insight:** Powell's Method decomposes an n-dimensional problem into
+    Powell's Method decomposes an n-dimensional problem into
     n sequential 1D optimizations. This works well when dimensions are
     independent (separable functions like ``f = g(x) + h(y)``) but fails when
     dimensions interact (``f = (x + y)^2``), because the optimal value of one

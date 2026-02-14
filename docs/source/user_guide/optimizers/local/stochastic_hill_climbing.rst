@@ -2,8 +2,13 @@
 Stochastic Hill Climbing
 =========================
 
-Stochastic Hill Climbing extends standard Hill Climbing by adding a probability
-to accept worse solutions. This helps escape shallow local optima.
+Stochastic Hill Climbing extends Hill Climbing by accepting worse solutions with
+a fixed probability ``p_accept``. In each iteration, the algorithm generates
+neighboring candidates and evaluates them. If a candidate improves the current
+score, the move is accepted. If the candidate is worse, the algorithm accepts
+it with probability ``p_accept`` and rejects it otherwise. This constant
+acceptance rate allows the search to escape shallow local optima that would
+permanently trap a purely greedy strategy.
 
 
 .. grid:: 2
@@ -28,6 +33,17 @@ to accept worse solutions. This helps escape shallow local optima.
             Hill Climbing.
 
 
+Stochastic Hill Climbing sits between standard Hill Climbing and Simulated
+Annealing in terms of escape capability. Unlike Simulated Annealing, which
+decreases its acceptance probability over time via a cooling schedule, Stochastic
+Hill Climbing maintains a constant ``p_accept`` throughout the search. This means
+the algorithm never transitions from exploration to exploitation; it applies the
+same level of randomness from start to finish. Choose it over Hill Climbing when
+the objective landscape contains shallow local optima, and over Simulated
+Annealing when you want a single, fixed exploration rate without tuning a cooling
+schedule.
+
+
 Algorithm
 ---------
 
@@ -47,7 +63,7 @@ At each iteration:
 
 .. note::
 
-    **Key Insight:** Unlike Simulated Annealing where acceptance probability
+    Unlike Simulated Annealing where acceptance probability
     **decreases** over time via a temperature schedule, Stochastic Hill Climbing
     uses a **constant** acceptance probability throughout the entire search. This
     means it never fully transitions to pure exploitation, providing continuous

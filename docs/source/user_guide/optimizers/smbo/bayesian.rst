@@ -2,9 +2,14 @@
 Bayesian Optimization
 ====================
 
-Bayesian Optimization uses a Gaussian Process (GP) as a surrogate model to
-predict the objective function and guide the search toward promising regions.
-It's particularly effective for expensive objective functions.
+Bayesian Optimization fits a Gaussian Process (GP) surrogate model to all
+observed (position, score) pairs, producing both a mean prediction and a
+calibrated uncertainty estimate at every point in the search space. An
+acquisition function, Expected Improvement (EI), combines these two quantities
+to score candidate positions: points with high predicted value or high
+uncertainty receive high acquisition scores. The optimizer selects the
+candidate with the highest acquisition score, evaluates the true objective
+there, and retrains the GP on the expanded dataset.
 
 
 .. grid:: 2
@@ -25,6 +30,15 @@ It's particularly effective for expensive objective functions.
             :alt: Bayesian Optimization on Ackley function
 
             **Multi-modal function**: Balances exploration and exploitation.
+
+
+Among the SMBO optimizers in this library, Bayesian Optimization provides
+the highest-fidelity uncertainty estimates because the GP produces a full
+posterior distribution rather than a point estimate. This comes at the cost of
+O(n^3) scaling in the number of observations, which makes it practical for
+evaluation budgets up to a few hundred iterations. For larger budgets or search
+spaces with many discrete/categorical parameters, :doc:`forest` and :doc:`tpe`
+are more suitable alternatives.
 
 
 Algorithm
@@ -48,7 +62,7 @@ At each iteration:
 
 .. note::
 
-    **Key Insight:** Bayesian Optimization is fundamentally about making
+    Bayesian Optimization is fundamentally about making
     decisions under uncertainty. The GP surrogate provides not just a prediction
     but a full probability distribution at every point. The Expected Improvement
     acquisition function then naturally balances exploration (high uncertainty)

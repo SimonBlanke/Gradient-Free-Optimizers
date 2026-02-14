@@ -2,9 +2,14 @@
 Tree-structured Parzen Estimators (TPE)
 ======================================
 
-TPE is a sequential model-based optimization algorithm that models the objective
-function using kernel density estimation. It's particularly effective for
-hyperparameter optimization with categorical and conditional parameters.
+Tree-structured Parzen Estimators (TPE) model the search space by splitting
+observed configurations into two groups based on a quantile threshold: those
+with scores above the threshold ("good") and those below ("bad"). It then fits
+a separate kernel density estimator (KDE) to each group and scores candidate
+positions by the ratio l(x)/g(x), where l is the density under the good model
+and g the density under the bad model. Because the KDEs operate on each
+parameter dimension independently, TPE handles categorical and discrete
+parameters without requiring any special encoding.
 
 
 .. grid:: 2
@@ -28,6 +33,16 @@ hyperparameter optimization with categorical and conditional parameters.
             multiple basins.
 
 
+Compared to :doc:`bayesian`, TPE scales linearly in the number of observations
+rather than cubically, making it practical for larger evaluation budgets. Its
+per-dimension density modeling is a natural fit for search spaces that mix
+continuous, discrete, and categorical parameters. :doc:`forest` offers similar
+scaling properties but uses a direct function model rather than density
+separation; the choice between the two depends on whether per-dimension
+independence (TPE) or inter-parameter interaction modeling (Forest) is more
+important for the problem at hand.
+
+
 Algorithm
 ---------
 
@@ -47,7 +62,7 @@ Points are selected where the ratio is high (likely good, unlikely bad).
 
 .. note::
 
-    **Key Insight:** TPE inverts the modeling problem. Instead of modeling
+    TPE inverts the modeling problem. Instead of modeling
     ``P(score | parameters)`` like a GP, it models ``P(parameters | good)`` and
     ``P(parameters | bad)``. This inversion is what makes TPE naturally handle
     categorical and conditional parameters: kernel density estimation works on

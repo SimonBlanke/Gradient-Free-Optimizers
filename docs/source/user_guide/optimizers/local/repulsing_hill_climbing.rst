@@ -2,9 +2,14 @@
 Repulsing Hill Climbing
 ========================
 
-Repulsing Hill Climbing extends standard Hill Climbing by **increasing the step
-size** when the algorithm gets stuck. This allows it to "repulse" away from
-local optima or flat regions.
+Repulsing Hill Climbing extends Hill Climbing with an adaptive step size that
+grows when the algorithm stagnates. While making progress, it behaves identically
+to standard Hill Climbing, using a fixed ``epsilon`` step size. When no improving
+neighbor is found, the algorithm multiplies the current step size by a
+``repulsion_factor`` on each subsequent iteration. This growth
+continues until an improving position is reached, at which point the step size
+resets to its initial value. The result is an automatic alternation between
+fine-grained local search and large exploratory jumps.
 
 
 .. grid:: 2
@@ -26,6 +31,17 @@ local optima or flat regions.
 
             **Multi-modal function**: Increases step size to escape
             local optima.
+
+
+The escape mechanism here is deterministic and reactive, which distinguishes it
+from both Stochastic Hill Climbing (probabilistic acceptance of worse solutions)
+and Simulated Annealing (time-dependent acceptance schedule). Repulsing Hill
+Climbing does not accept worse solutions at all; instead, it increases its search
+radius until it finds a better position elsewhere. This makes it well suited for
+landscapes with flat plateaus or wide basins of attraction where small
+perturbations cannot escape the current region. Choose it when the search space
+topology is unknown and you want the optimizer to self-adapt its exploration
+radius without requiring manual parameter scheduling.
 
 
 Algorithm
@@ -55,7 +71,7 @@ At each iteration:
 
 .. note::
 
-    **Key Insight:** The step size grows **exponentially** when stuck
+    The step size grows **exponentially** when stuck
     (``epsilon * repulsion_factor^n``), which means the algorithm can very
     quickly escape even wide plateaus. But the instant an improvement is found,
     epsilon resets to its initial value for precise local search. This

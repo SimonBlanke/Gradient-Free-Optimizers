@@ -2,9 +2,13 @@
 Forest Optimizer
 ================
 
-Forest Optimizer uses tree-based ensemble models (Random Forest or Extra Trees)
-as surrogate models. It scales well to large search spaces and handles discrete
-parameters naturally.
+The Forest Optimizer uses a tree-based ensemble (Extra Trees, Random Forest,
+or Gradient Boosting) as its surrogate model. The ensemble is trained on all
+observed (position, score) pairs, and each candidate position is scored by
+computing Expected Improvement from the ensemble's mean prediction and
+variance. The variance is derived from disagreement among individual trees:
+regions where tree predictions diverge indicate high uncertainty, which
+drives exploration of under-sampled areas.
 
 
 .. grid:: 2
@@ -27,6 +31,15 @@ parameters naturally.
             **Multi-modal function**: Handles complex landscapes.
 
 
+With O(n log n) surrogate training cost, the Forest Optimizer scales to
+evaluation budgets that are impractical for :doc:`bayesian` (which is O(n^3)).
+Tree-based splits handle discrete and categorical parameters natively, without
+encoding. Unlike :doc:`tpe`, which models each parameter dimension
+independently, the Forest Optimizer captures inter-parameter interactions
+through its tree structure, making it a strong choice for search spaces where
+parameter dependencies matter.
+
+
 Algorithm
 ---------
 
@@ -40,7 +53,7 @@ Similar to Bayesian Optimization, but using tree ensembles:
 
 .. note::
 
-    **Key Insight:** Tree ensembles provide a practical "free" uncertainty
+    Tree ensembles provide a practical "free" uncertainty
     estimate: the variance across individual tree predictions. Each tree sees
     a different bootstrap sample, so regions with consistent data produce
     agreement (low variance), while sparse or conflicting regions produce

@@ -2,9 +2,12 @@
 Random Search
 =============
 
-Random Search is the simplest optimization algorithm: it samples random positions
-from the search space and tracks the best one found. Despite its simplicity, it's
-often surprisingly effective and serves as an important baseline.
+Random Search samples positions uniformly at random from the search space and
+retains the best result found across all iterations. Each candidate position is
+drawn independently, with no dependence on previously evaluated points. The
+algorithm maintains no model, performs no local refinement, and applies no
+selection pressure between iterations. It is a pure exploration strategy with
+zero exploitation.
 
 
 .. grid:: 2
@@ -26,6 +29,16 @@ often surprisingly effective and serves as an important baseline.
 
             **Multi-modal function**: No bias toward any region,
             samples the entire space.
+
+
+Random Search serves as the baseline against which all other optimizers in this
+library should be compared. Unlike Grid Search, it projects well onto important
+subspaces: in a high-dimensional problem where only a few parameters matter, random
+samples distribute their resolution across those dimensions rather than wasting
+evaluations on a fixed grid. It requires no algorithm-specific parameters and is
+trivially parallelizable since every evaluation is independent. Use Random Search
+when function evaluations are cheap and plentiful, when you need a reference
+baseline, or when you have no prior information about the objective landscape.
 
 
 Algorithm

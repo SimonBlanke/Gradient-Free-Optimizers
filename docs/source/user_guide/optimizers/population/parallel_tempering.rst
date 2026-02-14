@@ -2,10 +2,15 @@
 Parallel Tempering
 ===================
 
-Parallel Tempering (also known as Replica Exchange) runs multiple Simulated
-Annealing instances at different temperatures, occasionally swapping states
-between them. This allows efficient exploration at high temperatures and
-exploitation at low temperatures simultaneously.
+Parallel Tempering runs multiple Simulated Annealing instances (replicas)
+simultaneously, each operating at a different temperature. High-temperature
+replicas accept worse solutions frequently and explore broadly, while
+low-temperature replicas accept only improvements and exploit locally. At
+regular intervals, adjacent replicas attempt to swap their states based on a
+Metropolis-style acceptance criterion. This swap mechanism allows promising
+regions discovered by high-temperature replicas to be refined by
+low-temperature replicas, and allows stuck low-temperature replicas to escape
+through high-temperature exploration.
 
 
 .. grid:: 2
@@ -30,6 +35,18 @@ exploitation at low temperatures simultaneously.
             while cold replicas exploit locally.
 
 
+Parallel Tempering directly addresses the limitation of Simulated Annealing,
+which must choose a single temperature schedule that trades off exploration
+against exploitation over time. By maintaining replicas across the full
+temperature range simultaneously, Parallel Tempering provides both broad
+exploration and local refinement at every iteration. Among the population-based
+optimizers in this library, it is the natural upgrade path when Simulated
+Annealing gets stuck in local optima. It works well on multi-modal landscapes
+with distinct basins. The ``n_iter_swap`` parameter controls swap frequency:
+too-frequent swaps disrupt local convergence, while too-infrequent swaps reduce
+the benefit of the temperature ladder.
+
+
 Algorithm
 ---------
 
@@ -47,7 +64,7 @@ The algorithm maintains a population of simulated annealers:
 
 .. note::
 
-    **Key Insight:** The swap mechanism creates a "temperature ladder" that
+    The swap mechanism creates a "temperature ladder" that
     allows good solutions to migrate from high-temperature (exploratory) replicas
     down to low-temperature (exploitative) replicas. This gives the algorithm
     both global exploration AND local precision simultaneously, unlike single

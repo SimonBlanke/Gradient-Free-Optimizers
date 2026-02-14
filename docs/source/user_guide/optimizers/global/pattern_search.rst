@@ -2,9 +2,13 @@
 Pattern Search
 ==============
 
-Pattern Search explores using a structured geometric pattern around the current
-position. It's a deterministic, derivative-free optimization method that
-systematically probes directions without randomness.
+Pattern Search evaluates a set of ``n_positions`` points arranged in a symmetric
+pattern (typically axis-aligned) around the current position. If any pattern point
+improves on the current value, the algorithm moves to the best one. If no
+improvement is found, the pattern size is contracted by a ``reduction`` factor and
+the probing is repeated at finer resolution. This process is entirely
+deterministic: given the same starting point and parameters, it produces identical
+results.
 
 
 .. grid:: 2
@@ -27,6 +31,19 @@ systematically probes directions without randomness.
 
             **Multi-modal function**: May get stuck, but pattern
             shrinking helps escape.
+
+
+Pattern Search provides structured directional probing that Hill Climbing lacks.
+Where Hill Climbing samples neighbors randomly, Pattern Search tests each axis
+independently, yielding coordinate-wise gradient information without computing
+derivatives. This makes it well-suited to smooth, low-dimensional objectives where
+axis-aligned structure can be exploited. Compared to Powell's Method, which
+optimizes one dimension at a time sequentially, Pattern Search probes all
+directions simultaneously at each step. The contraction mechanism causes a
+monotonic transition from exploration to exploitation: once the pattern shrinks,
+it does not grow again. Choose Pattern Search for deterministic, reproducible
+optimization in low to moderate dimensions when the objective is smooth and
+evaluations are not too expensive.
 
 
 Algorithm
@@ -54,7 +71,7 @@ each dimension), providing directional information without gradients.
 
 .. note::
 
-    **Key Insight:** Pattern Search is completely **deterministic**. Given the
+    Pattern Search is completely **deterministic**. Given the
     same starting point and parameters, it always produces identical results.
     This makes it valuable for reproducible optimization and debugging. It's
     also the only algorithm in GFO that provides directional information

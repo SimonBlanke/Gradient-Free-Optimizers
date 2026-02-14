@@ -2,8 +2,13 @@
 Hill Climbing
 =============
 
-Hill Climbing is the simplest local search algorithm. It evaluates neighboring
-solutions and moves to the best one, repeating until no improvement is found.
+Hill Climbing is a greedy local search algorithm that iteratively moves to the
+best neighboring solution. In each iteration, it generates a set of candidate
+positions within a fixed step size (``epsilon``) of the current position,
+evaluates them, and moves to the candidate with the highest score. If no
+candidate improves upon the current score, the position remains unchanged. The
+algorithm terminates or stagnates when no improving neighbor can be found,
+meaning it has reached a local optimum.
 
 
 .. grid:: 2
@@ -28,6 +33,15 @@ solutions and moves to the best one, repeating until no improvement is found.
             optima depending on starting point.
 
 
+Hill Climbing serves as the base algorithm for the other local search optimizers
+in this library. Stochastic Hill Climbing, Repulsing Hill Climbing, and Simulated
+Annealing each extend it by adding a mechanism to escape local optima, which
+standard Hill Climbing lacks. Choose Hill Climbing when the objective function is
+unimodal or when you need to refine a solution that is already near the optimum.
+Its per-iteration cost is limited to evaluating ``n_neighbours`` candidates,
+making it the lowest-overhead option among the local search methods.
+
+
 Algorithm
 ---------
 
@@ -46,7 +60,7 @@ At each iteration:
 
 .. note::
 
-    **Key Insight:** Hill Climbing is a **greedy** algorithm. It always moves toward
+    Hill Climbing is a **greedy** algorithm. It always moves toward
     improvement and never accepts worse solutions. This makes it the fastest local
     search method but also the most vulnerable to local optima. Its simplicity makes
     it an ideal building block: most other local search algorithms are modifications

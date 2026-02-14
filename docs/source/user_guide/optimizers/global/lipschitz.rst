@@ -2,9 +2,13 @@
 Lipschitz Optimizer
 ===================
 
-The Lipschitz Optimizer uses **Lipschitz continuity bounds** to prune the search
-space. By assuming the objective function has a bounded rate of change, it can
-eliminate regions that cannot contain the optimum.
+The Lipschitz Optimizer exploits the Lipschitz continuity condition,
+``|f(x) - f(y)| <= L * ||x - y||``, to compute upper bounds on the objective
+value at unevaluated points. Given a set of already-evaluated positions, the
+algorithm estimates the Lipschitz constant L and uses it to derive an upper
+envelope over the search space. It then selects the candidate point with the
+highest upper bound for the next evaluation. Regions where the upper bound falls
+below the current best value are effectively pruned from consideration.
 
 
 .. grid:: 2
@@ -25,6 +29,18 @@ eliminate regions that cannot contain the optimum.
             :alt: Lipschitz Optimizer on Ackley function
 
             **Multi-modal function**: Bounds help prune unpromising regions.
+
+
+The Lipschitz Optimizer is the only algorithm in this library that provides
+mathematically provable bounds on the objective, rather than relying on heuristic
+search strategies. This comes at a cost: computing bounds requires comparing each
+candidate against all previously evaluated points, which introduces significant
+per-iteration overhead. The algorithm also assumes that the objective is Lipschitz
+continuous; performance degrades on discontinuous or highly noisy functions where
+the assumption is violated. Compared to DIRECT, which implicitly considers all
+possible Lipschitz constants, this optimizer works with a single estimated constant.
+Choose the Lipschitz Optimizer when function evaluations are expensive enough to
+justify the overhead and when the objective is known to be smooth.
 
 
 Algorithm
@@ -48,7 +64,7 @@ The algorithm:
 
 .. note::
 
-    **Key Insight:** The Lipschitz condition provides **mathematical bounds**
+    The Lipschitz condition provides **mathematical bounds**
     on possible function values. If a nearby evaluated point has value v, then
     any unevaluated point within distance d can have at most value v + L*d.
     This allows the algorithm to provably rule out regions that cannot contain

@@ -2,10 +2,14 @@
 Simulated Annealing
 ===================
 
-Simulated Annealing is inspired by the metallurgical process of annealing, where
-materials are heated and slowly cooled to reduce defects. The algorithm accepts
-worse solutions with a probability that **decreases over time**, allowing broad
-exploration initially and focused exploitation later.
+Simulated Annealing accepts worse solutions with a probability that decreases
+over time according to a temperature schedule. The acceptance probability for a
+candidate with score degradation ``delta`` is ``exp(delta / temperature)``, where
+the temperature starts at ``start_temp`` and decays by a factor of
+``annealing_rate`` each iteration. At high temperatures, the algorithm accepts
+nearly all moves, including substantially worse ones. As the temperature
+approaches zero, acceptance of worse solutions becomes negligible and the
+algorithm converges to greedy Hill Climbing behavior.
 
 
 .. grid:: 2
@@ -30,6 +34,18 @@ exploration initially and focused exploitation later.
             local optima early in the search.
 
 
+The temperature schedule creates a controlled transition from exploration to
+exploitation, which is the key distinction from the other local search methods in
+this library. Stochastic Hill Climbing offers a constant acceptance rate with no
+transition, while Repulsing Hill Climbing adapts its step size reactively.
+Simulated Annealing follows a predetermined schedule regardless of search
+progress. Choose it for multi-modal landscapes where early broad exploration is
+needed before converging to a specific region. The two schedule parameters
+(``start_temp`` and ``annealing_rate``) must be tuned relative to the iteration
+budget: slower cooling requires more iterations to converge but explores more of
+the search space.
+
+
 Algorithm
 ---------
 
@@ -46,7 +62,7 @@ approaches zero, and the algorithm behaves more like Hill Climbing.
 
 .. note::
 
-    **Key Insight:** The acceptance probability ``exp(delta / temperature)``
+    The acceptance probability ``exp(delta / temperature)``
     depends on both the quality difference and the current temperature. Early
     in the search, even large degradations are accepted frequently. Late in
     the search, only tiny degradations have any chance. This provides a smooth,

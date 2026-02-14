@@ -2,9 +2,15 @@
 Evolution Strategy
 ==================
 
-Evolution Strategy (ES) maintains a population of individuals that evolve
-through mutation and selection. Unlike Genetic Algorithm, ES typically focuses
-on continuous optimization and uses different selection mechanisms.
+Evolution Strategy (ES) maintains a population of parent solutions and produces
+offspring through mutation and optional crossover. In each generation, lambda
+offspring are created by randomly perturbing the parents, all offspring are
+evaluated, and the best mu individuals are selected to form the next parent
+population. ES supports two selection schemes: (mu, lambda) selects parents only
+from offspring, discarding all previous parents; (mu + lambda) selects from the
+combined pool of parents and offspring. The mutation rate and the
+offspring-to-parent ratio jointly control exploration intensity and selection
+pressure.
 
 
 .. grid:: 2
@@ -25,6 +31,18 @@ on continuous optimization and uses different selection mechanisms.
             :alt: ES on Ackley function
 
             **Multi-modal function**: Selection pressure guides search.
+
+
+ES differs from the Genetic Algorithm in this library by treating mutation as
+the primary operator and crossover as secondary. This makes ES more suitable for
+continuous, real-valued search spaces where small perturbations are meaningful.
+The (mu, lambda) scheme is useful for noisy objective functions because it
+forces re-evaluation each generation and prevents lucky outliers from persisting.
+The (mu + lambda) scheme is more conservative and appropriate when evaluations
+are deterministic. Compared to Differential Evolution, ES does not derive its
+step sizes from population differences, so it requires more careful tuning of
+mutation rate. ES is a good choice when you need explicit control over selection
+pressure through the offspring-to-parent ratio.
 
 
 Algorithm
@@ -52,7 +70,7 @@ ES can use different selection schemes:
 
 .. note::
 
-    **Key Insight:** The choice between (mu, lambda) and (mu + lambda) is
+    The choice between (mu, lambda) and (mu + lambda) is
     significant. (mu, lambda) allows the population to "forget" bad parents,
     which is useful in noisy environments where a previously good solution
     may have been lucky. (mu + lambda) is more conservative, preserving

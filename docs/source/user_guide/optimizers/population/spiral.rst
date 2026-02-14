@@ -2,9 +2,13 @@
 Spiral Optimization
 ===================
 
-Spiral Optimization moves particles in spiral trajectories toward the global
-best position. The spiral motion provides a balance between exploration
-(outer spiral) and exploitation (inner spiral converging to center).
+Spiral Optimization moves each particle along a spiral trajectory centered on
+the current global best position. At each iteration, a rotation matrix rotates
+the particle around the center while a decay factor reduces its distance from
+it. The combination of rotation and contraction produces a deterministic path
+that sweeps through the neighborhood of the best known solution. The decay rate
+controls how quickly the spiral tightens: values close to 1.0 produce wide,
+slow spirals while lower values contract rapidly.
 
 
 .. grid:: 2
@@ -29,6 +33,18 @@ best position. The spiral motion provides a balance between exploration
             the region around the best known position.
 
 
+Compared to PSO and the evolutionary algorithms in this library, Spiral
+Optimization has no stochastic component in its position updates. The particle
+trajectories are fully determined by the rotation matrix and decay factor, which
+makes the search behavior predictable and reproducible. This deterministic
+structure is effective when the global optimum lies within a broad basin of
+attraction, because the spiral systematically covers the surrounding region. On
+multi-modal landscapes with many isolated basins, PSO or Differential Evolution
+will typically perform better due to their stochastic exploration. Spiral
+Optimization has only one tuning parameter (``decay_rate``), making it the
+simplest population-based optimizer to configure in this library.
+
+
 Algorithm
 ---------
 
@@ -45,7 +61,7 @@ Each particle follows a spiral path toward the global best:
 
 .. note::
 
-    **Key Insight:** The spiral trajectory is a structured way to explore the
+    The spiral trajectory is a structured way to explore the
     neighborhood of the global best. Unlike PSO where particles can overshoot
     and oscillate, spiral particles follow a smooth, contracting path that
     naturally transitions from exploration (outer rings) to exploitation

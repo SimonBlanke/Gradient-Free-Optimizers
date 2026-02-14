@@ -2,10 +2,14 @@
 Downhill Simplex
 ================
 
-The Downhill Simplex algorithm (also known as the Nelder-Mead method) uses a
-geometric approach: it maintains a simplex (a shape with n+1 vertices in
-n-dimensional space) and transforms it through reflection, expansion,
-contraction, and shrinking operations to find the optimum.
+Downhill Simplex (Nelder-Mead) operates on a geometric structure rather than
+sampling from a neighborhood distribution. It maintains a simplex of n+1
+vertices in n-dimensional space (a triangle in 2D, a tetrahedron in 3D) and
+transforms it through four operations: reflection of the worst vertex through
+the centroid, expansion along the reflection direction, contraction toward the
+centroid, and shrinking the entire simplex toward the best vertex. The simplex
+reshapes itself at each iteration based on the objective values at its vertices,
+adapting its orientation and size to the local curvature of the function.
 
 
 .. grid:: 2
@@ -29,6 +33,17 @@ contraction, and shrinking operations to find the optimum.
             depending on initial simplex placement.
 
 
+Downhill Simplex is structurally different from the other local search algorithms
+in this library, which all generate candidates by sampling from a distribution
+around the current position. The geometric approach makes it effective on smooth,
+low-dimensional functions with curved valleys or ridges, where the simplex can
+align itself along the function's contours. Its performance degrades as
+dimensionality increases because the simplex requires n+1 vertices and the
+geometric operations become less informative in high-dimensional spaces. Choose it
+for problems with fewer than roughly 10 continuous dimensions where the objective
+function is smooth and deterministic.
+
+
 Algorithm
 ---------
 
@@ -49,7 +64,7 @@ the local curvature of the objective function.
 
 .. note::
 
-    **Key Insight:** The Downhill Simplex is the only algorithm in GFO that
+    The Downhill Simplex is the only algorithm in GFO that
     uses **geometric transformations** rather than random sampling. The simplex
     shape adapts to the local landscape: it elongates along valleys, contracts
     near optima, and can flip over ridges through reflection. This makes it

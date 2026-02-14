@@ -2,9 +2,14 @@
 Genetic Algorithm
 =================
 
-The Genetic Algorithm (GA) is inspired by biological evolution. A population
-of candidate solutions evolves through selection, crossover (recombination),
-and mutation, with fitter individuals more likely to pass on their "genes."
+The Genetic Algorithm (GA) evolves a population of candidate solutions through
+repeated application of selection, crossover (recombination), and mutation.
+In each generation, parents are selected with probability proportional to their
+fitness. Crossover combines parameters from two parents to produce offspring,
+while mutation randomly perturbs individual parameters. The offspring replace
+some or all of the current population, and the cycle repeats. The crossover
+operator is the central mechanism: it assembles new candidates from partial
+solutions distributed across different individuals in the population.
 
 
 .. grid:: 2
@@ -25,6 +30,17 @@ and mutation, with fitter individuals more likely to pass on their "genes."
             :alt: GA on Ackley function
 
             **Multi-modal function**: Diversity helps explore multiple basins.
+
+
+Among the evolutionary algorithms in this library, GA is distinguished by its
+reliance on crossover as the primary search operator. This makes it well suited
+for discrete and categorical search spaces where the optimal solution is a
+combination of favorable values spread across multiple candidates. Evolution
+Strategy and Differential Evolution, by contrast, are mutation-driven and
+designed for continuous parameters. GA is the preferred choice for feature
+selection, combinatorial problems, and mixed-type search spaces. On purely
+continuous landscapes, Differential Evolution or PSO will typically converge
+faster because their operators are tailored to real-valued search.
 
 
 Algorithm
@@ -50,7 +66,7 @@ Each generation:
 
 .. note::
 
-    **Key Insight:** GA's crossover operation is what distinguishes it from
+    GA's crossover operation is what distinguishes it from
     other evolutionary methods. By combining "genes" from two good parents,
     crossover can discover solutions that neither parent contained. This is
     particularly powerful for discrete/combinatorial problems where the optimal
