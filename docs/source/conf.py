@@ -143,6 +143,7 @@ html_theme_options = {
     "navbar_start": ["navbar-logo"],
     "navbar_center": ["navbar-nav"],
     "navbar_end": ["theme-switcher", "navbar-icon-links"],
+    "show_nav_level": 1,
     "show_toc_level": 2,
     "secondary_sidebar_items": ["page-toc", "sourcelink"],
 }

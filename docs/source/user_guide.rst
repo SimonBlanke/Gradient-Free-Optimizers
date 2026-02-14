@@ -210,4 +210,14 @@ GFO provides 22 optimization algorithms organized into four categories:
    user_guide/memory
    user_guide/stopping_conditions
    user_guide/search_interface
-   user_guide/optimizers/index
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+   :caption: Optimization Algorithms
+
+   Overview <user_guide/optimizers/index>
+   user_guide/optimizers/local/index
+   user_guide/optimizers/global/index
+   user_guide/optimizers/population/index
+   user_guide/optimizers/smbo/index
