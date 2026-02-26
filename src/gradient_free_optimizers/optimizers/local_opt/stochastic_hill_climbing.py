@@ -74,6 +74,7 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer):
         distribution="normal",
         n_neighbours=3,
         p_accept=0.5,
+        step_size=None,
     ):
         super().__init__(
             search_space=search_space,
@@ -85,6 +86,7 @@ class StochasticHillClimbingOptimizer(HillClimbingOptimizer):
             epsilon=epsilon,
             distribution=distribution,
             n_neighbours=n_neighbours,
+            step_size=step_size,
         )
         self.p_accept = p_accept
         self.temp = 1  # Constant temperature for stochastic hill climbing

@@ -71,6 +71,7 @@ class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer):
         distribution="normal",
         n_neighbours=3,
         n_iter_restart=10,
+        step_size=None,
     ):
         super().__init__(
             search_space=search_space,
@@ -82,6 +83,7 @@ class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer):
             epsilon=epsilon,
             distribution=distribution,
             n_neighbours=n_neighbours,
+            step_size=step_size,
         )
         self.n_iter_restart = n_iter_restart
 

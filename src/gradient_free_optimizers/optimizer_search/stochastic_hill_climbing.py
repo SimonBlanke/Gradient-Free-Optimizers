@@ -140,6 +140,11 @@ class StochasticHillClimbingOptimizer(_StochasticHillClimbingOptimizer, Search):
 
         Smaller values are better for fine-tuning near a known good solution.
         Larger values help escape local optima but may overshoot narrow peaks.
+
+    step_size : float or None, default=None
+        Absolute step size for neighbor generation; ignored if ``epsilon`` is
+        also specified. It is interpreted in the units of the search space
+        values and allows finer control on finely discretized grids.
     distribution : {"normal", "laplace", "gumbel", "logistic"}, default="normal"
         Probability distribution used to sample neighbor offsets. Each
         distribution produces different exploration patterns:
@@ -246,6 +251,7 @@ class StochasticHillClimbingOptimizer(_StochasticHillClimbingOptimizer, Search):
         distribution: Literal["normal", "laplace", "gumbel", "logistic"] = "normal",
         n_neighbours: int = 3,
         p_accept: float = 0.5,
+        step_size: float | None = None,
     ):
         if initialize is None:
             initialize = get_default_initialize()
@@ -263,4 +269,5 @@ class StochasticHillClimbingOptimizer(_StochasticHillClimbingOptimizer, Search):
             distribution=distribution,
             n_neighbours=n_neighbours,
             p_accept=p_accept,
+            step_size=step_size,
         )

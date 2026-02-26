@@ -78,6 +78,7 @@ class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer):
         n_neighbours=3,
         annealing_rate=0.97,
         start_temp=1,
+        step_size=None,
     ):
         super().__init__(
             search_space=search_space,
@@ -89,6 +90,7 @@ class SimulatedAnnealingOptimizer(StochasticHillClimbingOptimizer):
             epsilon=epsilon,
             distribution=distribution,
             n_neighbours=n_neighbours,
+            step_size=step_size,
             # Note: p_accept is not used in SA, we use pure Metropolis criterion
         )
         self.annealing_rate = annealing_rate
