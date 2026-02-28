@@ -26,10 +26,10 @@ Lightweight optimization with local, global, population-based and sequential tec
     <td align="right"><b>Documentation</b></td>
     <td align="center">▸</td>
     <td>
-      <a href="https://simonblanke.github.io/gradient-free-optimizers-documentation">Homepage</a> ·
-      <a href="https://simonblanke.github.io/gradient-free-optimizers-documentation/optimizers/">Optimizers</a> ·
-      <a href="https://simonblanke.github.io/gradient-free-optimizers-documentation/api/">API Reference</a> ·
-      <a href="https://simonblanke.github.io/gradient-free-optimizers-documentation/examples/">Examples</a>
+      <a href="https://gradient-free-optimizers.readthedocs.io/en/latest/">Homepage</a> ·
+      <a href="https://gradient-free-optimizers.readthedocs.io/en/latest/user_guide/optimizers/index.html">Optimizers</a> ·
+      <a href="https://gradient-free-optimizers.readthedocs.io/en/latest/api_reference.html">API Reference</a> ·
+      <a href="https://gradient-free-optimizers.readthedocs.io/en/latest/examples.html">Examples</a>
     </td>
   </tr>
   <tr>
@@ -91,25 +91,25 @@ pip install gradient-free-optimizers[full]      # All optional dependencies
 <table>
   <tr>
     <td width="33%">
-      <a href="https://simonblanke.github.io/gradient-free-optimizers-documentation/optimizers/"><b>21 Optimization Algorithms</b></a><br>
+      <a href="https://gradient-free-optimizers.readthedocs.io/en/latest/user_guide/optimizers/index.html"><b>21 Optimization Algorithms</b></a><br>
       <sub>Local, global, population-based, and sequential model-based optimizers. Switch algorithms with one line of code.</sub>
     </td>
     <td width="33%">
-      <a href="https://simonblanke.github.io/gradient-free-optimizers-documentation/api/"><b>Zero Configuration</b></a><br>
+      <a href="https://gradient-free-optimizers.readthedocs.io/en/latest/api_reference.html"><b>Zero Configuration</b></a><br>
       <sub>Sensible defaults for all parameters. Start optimizing immediately without tuning the optimizer itself.</sub>
     </td>
     <td width="33%">
-      <a href="https://simonblanke.github.io/gradient-free-optimizers-documentation/api/#memory"><b>Memory System</b></a><br>
+      <a href="https://gradient-free-optimizers.readthedocs.io/en/latest/user_guide/memory.html"><b>Memory System</b></a><br>
       <sub>Built-in caching prevents redundant evaluations. Critical for expensive objective functions like ML models.</sub>
     </td>
   </tr>
   <tr>
     <td width="33%">
-      <a href="https://simonblanke.github.io/gradient-free-optimizers-documentation/api/#search-space"><b>Discrete Search Spaces</b></a><br>
+      <a href="https://gradient-free-optimizers.readthedocs.io/en/latest/user_guide/search_spaces.html"><b>Discrete Search Spaces</b></a><br>
       <sub>Define parameter spaces with familiar NumPy syntax using arrays and ranges.</sub>
     </td>
     <td width="33%">
-      <a href="https://simonblanke.github.io/gradient-free-optimizers-documentation/api/#constraints"><b>Constraints Support</b></a><br>
+      <a href="https://gradient-free-optimizers.readthedocs.io/en/latest/user_guide/constraints.html"><b>Constraints Support</b></a><br>
       <sub>Define constraint functions to restrict the search space. Invalid regions are automatically avoided.</sub>
     </td>
     <td width="33%">
@@ -410,10 +410,10 @@ This library is part of a suite of optimization tools. For updates on these pack
 
 | Resource | Description |
 |----------|-------------|
-| [User Guide](https://simonblanke.github.io/gradient-free-optimizers-documentation) | Comprehensive tutorials and explanations |
-| [API Reference](https://simonblanke.github.io/gradient-free-optimizers-documentation/api/) | Complete API documentation |
-| [Optimizers](https://simonblanke.github.io/gradient-free-optimizers-documentation/optimizers/) | Detailed description of all 21 algorithms |
-| [Examples](https://simonblanke.github.io/gradient-free-optimizers-documentation/examples/) | Code examples for various use cases |
+| [User Guide](https://gradient-free-optimizers.readthedocs.io/en/latest/user_guide.html) | Comprehensive tutorials and explanations |
+| [API Reference](https://gradient-free-optimizers.readthedocs.io/en/latest/api_reference.html) | Complete API documentation |
+| [Optimizers](https://gradient-free-optimizers.readthedocs.io/en/latest/user_guide/optimizers/index.html) | Detailed description of all 21 algorithms |
+| [Examples](https://gradient-free-optimizers.readthedocs.io/en/latest/examples.html) | Code examples for various use cases |
 
 <br>
 
