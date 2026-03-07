@@ -10,9 +10,10 @@ import time
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Literal
 
+from ._data import SearchData, SearchTracker
 from ._memory import CachedObjectiveAdapter
 from ._objective_adapter import ObjectiveAdapter
-from ._print_info import print_info
+from ._print_info import print_info, print_summary
 from ._progress_bar import ProgressBarLVL0, ProgressBarLVL1
 from ._results_manager import ResultsManager
 from ._search_statistics import SearchStatistics
@@ -83,6 +84,9 @@ class Search(TimesTracker, SearchStatistics):
         self.results_manager = None  # Initialized in _init_search with converter
         self._search_data_cache = None  # Lazy DataFrame cache
 
+        self._tracker: SearchTracker | None = None
+        self._data: SearchData | None = None
+
     @TimesTracker.eval_time
     def _score(self, pos):
         return self.score(pos)
@@ -100,6 +104,7 @@ class Search(TimesTracker, SearchStatistics):
         self.score_l.append(score_new)
 
         self.p_bar.update(score_new, init_pos, self.nth_iter)
+        self._tracker.track(init_pos, score_new, self._last_metrics, is_init=True)
 
         self.n_init_total += 1
         self.n_init_search += 1
@@ -117,6 +122,7 @@ class Search(TimesTracker, SearchStatistics):
         self.score_l.append(score_new)
 
         self.p_bar.update(score_new, pos_new, self.nth_iter)
+        self._tracker.track(pos_new, score_new, self._last_metrics, is_init=False)
 
         self.n_iter_total += 1
         self.n_iter_search += 1
@@ -136,6 +142,7 @@ class Search(TimesTracker, SearchStatistics):
             "print_times",
         ],
         optimum: Literal["maximum", "minimum"] = "maximum",
+        summary=False,
     ) -> None:
         self.optimum = optimum
         self._init_search(
@@ -165,13 +172,14 @@ class Search(TimesTracker, SearchStatistics):
                     print(json.dumps(debug_info, indent=2))
                 break
 
-        self._finish_search()
+        self._finish_search(summary)
 
     def _evaluate_position(self, pos: list[int]) -> float:
         result, params = self.adapter(pos)
         # Store position instead of params dict for memory efficiency
         # Params are reconstructed lazily when search_data DataFrame is accessed
         self.results_manager.add(result, pos)
+        self._last_metrics = result.metrics if result.metrics else {}
         self._iter += 1
         return result.score
 
@@ -200,6 +208,12 @@ class Search(TimesTracker, SearchStatistics):
         self.verbosity = verbosity
 
         self._iter = 0
+        self._last_metrics: dict = {}
+
+        self._tracker = SearchTracker(self.conv)
+        self._tracker.optimizer_name = self.__class__.__name__
+        self._tracker.random_seed = self.random_seed
+        self._data = None
 
         # Initialize ResultsManager only if not already created
         # (preserves results across searches)
@@ -238,7 +252,7 @@ class Search(TimesTracker, SearchStatistics):
 
         self.n_inits_norm = min((self.init.n_inits - self.n_init_total), self.n_iter)
 
-    def _finish_search(self) -> None:
+    def _finish_search(self, summary) -> None:
         # Don't construct DataFrame here - it's built lazily via search_data property
         # This avoids memory spike for high-dimensional search spaces
         self._search_data_cache = None
@@ -264,6 +278,24 @@ class Search(TimesTracker, SearchStatistics):
             self.n_iter,
             self.random_seed,
         )
+
+        if summary:
+            print_summary(self.data)
+
+    @property
+    def data(self) -> SearchData:
+        """Access search data and computed metrics.
+
+        Available after calling ``search()``. Returns a
+        :class:`SearchData` object with properties like
+        ``best_score``, ``convergence_data``, ``overhead_pct``,
+        and a ``raw`` sub-accessor for internal tracking lists.
+        """
+        if self._tracker is None:
+            raise AttributeError("Search data not available. Call search() first.")
+        if self._data is None:
+            self._data = SearchData(self._tracker, self)
+        return self._data
 
     @property
     def search_data(self) -> pd.DataFrame:

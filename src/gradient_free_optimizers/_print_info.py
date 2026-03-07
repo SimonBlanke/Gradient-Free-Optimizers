@@ -2,6 +2,13 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from ._data.search_data import SearchData
+
 
 indent = "  "
 
@@ -119,3 +126,69 @@ def print_info(
 
     if "print_times" in verbosity:
         _print_times(eval_time, iter_time, n_iter)
+
+
+def _format_box(title: str, lines: list[str]) -> str:
+    """Format content lines into a Unicode box with a title."""
+    inner_width = max((len(line) for line in lines if line), default=0)
+    inner_width = max(inner_width + 2, len(title) + 5)
+
+    title_dashes = inner_width - len(title) - 3
+    top = f"┌─ {title} " + "─" * title_dashes + "┐"
+    bottom = "└" + "─" * inner_width + "┘"
+
+    result = [top]
+    for line in lines:
+        result.append(f"│{line.ljust(inner_width)}│")
+    result.append(bottom)
+    return "\n".join(result)
+
+
+def _format_para(para: dict) -> str:
+    """Format a parameter dict for display."""
+    if para is None:
+        return "None"
+    parts = [f"{k}: {v}" for k, v in para.items()]
+    return "{" + ", ".join(parts) + "}"
+
+
+def print_summary(data: SearchData) -> None:
+    """Print a formatted summary box of the search results."""
+    para_str = _format_para(data.best_para)
+
+    lines = [
+        "",
+        f"  Optimizer:        {data.optimizer_name}",
+        f"  Iterations:       {data.n_iter}"
+        f" ({data.n_init} init + {data.n_optimization} optimization)",
+        f"  Best score:       {data.best_score}"
+        f" (found at iteration {data.best_iteration})",
+        f"  Best parameters:  {para_str}",
+        "",
+        "  Timing:",
+        f"    Total:            {data.total_time:.3f}s",
+        f"    Avg eval:         {data.avg_eval_time:.4f}s",
+        f"    Optimizer overhead: {data.overhead_time:.3f}s"
+        f" ({data.overhead_pct:.1f}%)",
+        "",
+        "  Convergence:",
+        f"    Score improved {data.n_score_improvements} times",
+    ]
+
+    plateau_len, plateau_start, plateau_end = data.longest_plateau
+    if plateau_len > 1:
+        lines.append(
+            f"    Longest plateau:  {plateau_len} iterations"
+            f" (iter {plateau_start}-{plateau_end})"
+        )
+
+    if data.n_invalid > 0:
+        pct = data.n_invalid / data.n_iter * 100
+        lines.append("")
+        lines.append(
+            f"  Invalid evaluations: {data.n_invalid}/{data.n_iter}" f" ({pct:.1f}%)"
+        )
+
+    lines.append("")
+
+    print(_format_box("Search Summary", lines))
