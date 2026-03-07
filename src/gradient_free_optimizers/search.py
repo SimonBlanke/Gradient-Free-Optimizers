@@ -272,9 +272,11 @@ class Search(TimesTracker, SearchStatistics):
         """Access search data and computed metrics.
 
         Available after calling ``search()``. Returns a
-        :class:`DataAccessor` object with properties like
-        ``best_score``, ``convergence_data``, ``overhead_pct``,
-        and a ``raw`` sub-accessor for internal tracking lists.
+        :class:`~gradient_free_optimizers._data.data_accessor.DataAccessor`
+        object with properties like ``best_score``, ``convergence_data``,
+        ``overhead_pct``, and a
+        :class:`~gradient_free_optimizers._data.raw_data.RawData`
+        sub-accessor for internal tracking lists.
         """
         if self._tracker is None:
             raise AttributeError("Search data not available. Call search() first.")
