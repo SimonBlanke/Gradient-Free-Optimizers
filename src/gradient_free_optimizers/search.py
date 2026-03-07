@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import math
 import time
 from collections.abc import Callable
@@ -23,6 +24,34 @@ from ._times_tracker import TimesTracker
 
 if TYPE_CHECKING:
     import pandas as pd
+
+logger = logging.getLogger(__name__)
+
+
+def _wrap_with_catch(
+    objective_function: Callable,
+    catch: dict[type[Exception], int | float],
+) -> Callable:
+    """Wrap objective function to catch exceptions and return fallback scores."""
+    catch_types = tuple(catch.keys())
+
+    def wrapped(params):
+        try:
+            return objective_function(params)
+        except catch_types as e:
+            for exc_type, fallback_score in catch.items():
+                if isinstance(e, exc_type):
+                    logger.warning(
+                        "Caught %s in objective function: %s. "
+                        "Using fallback score: %s",
+                        type(e).__name__,
+                        e,
+                        fallback_score,
+                    )
+                    return fallback_score
+            raise
+
+    return wrapped
 
 
 class Search(TimesTracker, SearchStatistics):
@@ -140,6 +169,7 @@ class Search(TimesTracker, SearchStatistics):
         ],
         optimum: Literal["maximum", "minimum"] = "maximum",
         callbacks: list[Callable[[CallbackInfo], bool | None]] | None = None,
+        catch: dict[type[Exception], int | float] | None = None,
     ) -> None:
         """Run the optimization loop.
 
@@ -288,6 +318,24 @@ class Search(TimesTracker, SearchStatistics):
                 opt.search(objective, n_iter=100,
                            callbacks=[log_progress, stop_early])
 
+        catch : dict[type, float] or None, default=None
+            Error handling for the objective function. Maps exception
+            types to fallback scores. When the objective function raises
+            a caught exception, the optimizer records the fallback score
+            instead of crashing. Exception subclasses are matched via
+            ``isinstance``, so ``{Exception: ...}`` catches all.
+
+            The fallback score is in the user's original units (before
+            any negation from ``optimum="minimum"``). Use
+            ``float('nan')`` or ``float('inf')`` to mark positions as
+            invalid without inventing an artificial score.
+
+            Example::
+
+                catch = {ValueError: -1000, RuntimeError: float('nan')}
+
+                opt.search(objective, n_iter=100, catch=catch)
+
         Examples
         --------
         Basic usage with default settings:
@@ -321,6 +369,7 @@ class Search(TimesTracker, SearchStatistics):
             memory,
             memory_warm_start,
             verbosity,
+            catch,
         )
 
         for nth_trial in range(n_iter):
@@ -368,7 +417,11 @@ class Search(TimesTracker, SearchStatistics):
         memory: bool,
         memory_warm_start: pd.DataFrame | None,
         verbosity: list[str] | Literal[False],
+        catch: dict[type[Exception], int | float] | None = None,
     ) -> None:
+        if catch:
+            objective_function = _wrap_with_catch(objective_function, catch)
+
         if getattr(self, "optimum", "maximum") == "minimum":
             self.objective_function = lambda pos: -objective_function(pos)
         else:
