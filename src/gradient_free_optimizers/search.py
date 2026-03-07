@@ -5,13 +5,13 @@
 from __future__ import annotations
 
 import json
-import logging
 import math
 import time
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Literal
 
 from ._callback import CallbackInfo
+from ._catch import wrap_with_catch
 from ._data import DataAccessor, SearchTracker
 from ._memory import CachedObjectiveAdapter
 from ._objective_adapter import ObjectiveAdapter
@@ -24,34 +24,6 @@ from ._times_tracker import TimesTracker
 
 if TYPE_CHECKING:
     import pandas as pd
-
-logger = logging.getLogger(__name__)
-
-
-def _wrap_with_catch(
-    objective_function: Callable,
-    catch: dict[type[Exception], int | float],
-) -> Callable:
-    """Wrap objective function to catch exceptions and return fallback scores."""
-    catch_types = tuple(catch.keys())
-
-    def wrapped(params):
-        try:
-            return objective_function(params)
-        except catch_types as e:
-            for exc_type, fallback_score in catch.items():
-                if isinstance(e, exc_type):
-                    logger.warning(
-                        "Caught %s in objective function: %s. "
-                        "Using fallback score: %s",
-                        type(e).__name__,
-                        e,
-                        fallback_score,
-                    )
-                    return fallback_score
-            raise
-
-    return wrapped
 
 
 class Search(TimesTracker, SearchStatistics):
@@ -420,7 +392,7 @@ class Search(TimesTracker, SearchStatistics):
         catch: dict[type[Exception], int | float] | None = None,
     ) -> None:
         if catch:
-            objective_function = _wrap_with_catch(objective_function, catch)
+            objective_function = wrap_with_catch(objective_function, catch)
 
         if getattr(self, "optimum", "maximum") == "minimum":
             self.objective_function = lambda pos: -objective_function(pos)
