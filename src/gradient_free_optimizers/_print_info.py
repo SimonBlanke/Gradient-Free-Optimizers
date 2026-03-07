@@ -153,6 +153,15 @@ def _format_para_lines(para: dict, prefix: str = "    ") -> list[str]:
     return [f"{prefix}{n}:{' ' * (max_len - len(n))}  {para[n]}" for n in names]
 
 
+def _format_throughput(data: SearchData) -> str:
+    """Format throughput as iter/sec or sec/iter depending on speed."""
+    if data.total_time == 0:
+        return "too fast to measure"
+    if data.throughput >= 1:
+        return f"{data.throughput:.2f} iter/sec"
+    return f"{data.avg_iter_time:.2f} sec/iter"
+
+
 def print_summary(data: SearchData) -> None:
     """Print a formatted summary box of the search results."""
     tracker = data._tracker
@@ -161,9 +170,10 @@ def print_summary(data: SearchData) -> None:
         "",
         f"  Objective:  {tracker.objective_name}",
         f"  Optimizer:  {tracker.optimizer_name}",
+        f"  Seed:       {tracker.random_seed}",
         "",
-        f"  Best score: {data.best_score}"
-        f" (found at iteration {data.best_iteration})",
+        f"  Best score: {data.best_score}",
+        f"  Best iter:  {data.best_iteration}",
         "  Best parameters:",
     ]
     lines.extend(_format_para_lines(data.best_para))
@@ -188,11 +198,14 @@ def print_summary(data: SearchData) -> None:
 
     lines.append("")
     lines.append("  Timing:")
-    lines.append(f"    Total:              {data.total_time:.3f}s")
-    lines.append(f"    Avg eval:           {data.avg_eval_time:.4f}s")
     lines.append(
-        f"    Optimizer overhead: {data.overhead_time:.3f}s ({data.overhead_pct:.1f}%)"
+        f"    Evaluation time:    {data.eval_time:.3f}s ({data.eval_pct:.1f}%)"
     )
+    lines.append(
+        f"    Optimization time:  {data.overhead_time:.3f}s ({data.overhead_pct:.1f}%)"
+    )
+    lines.append(f"    Iteration time:     {data.total_time:.3f}s")
+    lines.append(f"    Throughput:         {_format_throughput(data)}")
 
     lines.append("")
 

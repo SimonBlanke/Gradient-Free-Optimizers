@@ -77,12 +77,34 @@ class SearchData:
         return (self.overhead_time / self.total_time) * 100
 
     @property
+    def eval_pct(self) -> float:
+        """Evaluation time as percentage of total time."""
+        if self.total_time == 0:
+            return 0.0
+        return (self.eval_time / self.total_time) * 100
+
+    @property
     def avg_eval_time(self) -> float:
         """Average time per objective function evaluation (seconds)."""
         times = self._optimizer.eval_times
         if not times:
             return 0.0
         return self.eval_time / len(times)
+
+    @property
+    def avg_iter_time(self) -> float:
+        """Average time per iteration including overhead (seconds)."""
+        times = self._optimizer.iter_times
+        if not times:
+            return 0.0
+        return self.total_time / len(times)
+
+    @property
+    def throughput(self) -> float:
+        """Iterations per second (0 if total_time is 0)."""
+        if self.total_time == 0:
+            return 0.0
+        return self.n_iter / self.total_time
 
     @property
     def n_score_improvements(self) -> int:
