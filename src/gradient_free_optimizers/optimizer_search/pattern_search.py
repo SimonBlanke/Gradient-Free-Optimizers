@@ -221,9 +221,9 @@ class PatternSearch(_PatternSearch, Search):
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,
-        n_positions=4,
-        pattern_size=0.25,
-        reduction=0.9,
+        n_positions: int = 4,
+        pattern_size: float = 0.25,
+        reduction: float = 0.9,
     ):
         if initialize is None:
             initialize = get_default_initialize()

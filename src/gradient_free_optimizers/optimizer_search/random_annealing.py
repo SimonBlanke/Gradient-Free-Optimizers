@@ -264,8 +264,8 @@ class RandomAnnealingOptimizer(_RandomAnnealingOptimizer, Search):
         epsilon: float = 0.03,
         distribution: Literal["normal", "laplace", "gumbel", "logistic"] = "normal",
         n_neighbours: int = 3,
-        annealing_rate=0.98,
-        start_temp=10,
+        annealing_rate: float = 0.98,
+        start_temp: float = 10,
     ):
         if initialize is None:
             initialize = get_default_initialize()

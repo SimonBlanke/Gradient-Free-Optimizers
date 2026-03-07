@@ -3,9 +3,12 @@
 # License: MIT License
 """Ensemble optimizer combining multiple surrogate model types."""
 
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 from .._init_utils import get_default_initialize, get_default_sampling
+
+if TYPE_CHECKING:
+    import pandas as pd
 from ..optimizers import EnsembleOptimizer as _EnsembleOptimizer
 from ..search import Search
 
@@ -212,7 +215,7 @@ class EnsembleOptimizer(_EnsembleOptimizer, Search):
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,
-        warm_start_smbo=None,
+        warm_start_smbo: "pd.DataFrame | None" = None,
         max_sample_size: int = 10000000,
         sampling: dict[Literal["random"], int] = None,
         replacement: bool = True,

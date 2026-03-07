@@ -3,9 +3,12 @@
 # License: MIT License
 """Forest optimizer using tree ensemble surrogate models."""
 
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 from .._init_utils import get_default_initialize, get_default_sampling
+
+if TYPE_CHECKING:
+    import pandas as pd
 from ..optimizers import ForestOptimizer as _ForestOptimizer
 from ..search import Search
 
@@ -253,13 +256,15 @@ class ForestOptimizer(_ForestOptimizer, Search):
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,
-        warm_start_smbo=None,
+        warm_start_smbo: "pd.DataFrame | None" = None,
         max_sample_size: int = 10000000,
         sampling: dict[Literal["random"], int] = None,
         replacement: bool = True,
-        tree_regressor="extra_tree",
-        tree_para={"n_estimators": 100},
-        xi=0.03,
+        tree_regressor: Literal[
+            "random_forest", "extra_tree", "gradient_boost"
+        ] = "extra_tree",
+        tree_para: dict[str, int] = {"n_estimators": 100},
+        xi: float = 0.03,
     ):
         if initialize is None:
             initialize = get_default_initialize()

@@ -242,11 +242,11 @@ class EvolutionStrategyOptimizer(_EvolutionStrategyOptimizer, Search):
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,
-        population=10,
-        offspring=20,
-        replace_parents=False,
-        mutation_rate=0.7,
-        crossover_rate=0.3,
+        population: int = 10,
+        offspring: int = 20,
+        replace_parents: bool = False,
+        mutation_rate: float = 0.7,
+        crossover_rate: float = 0.3,
     ):
         if initialize is None:
             initialize = get_default_initialize()

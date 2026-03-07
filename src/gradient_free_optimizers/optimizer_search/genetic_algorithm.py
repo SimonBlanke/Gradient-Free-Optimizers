@@ -249,12 +249,12 @@ class GeneticAlgorithmOptimizer(_GeneticAlgorithmOptimizer, Search):
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,
-        population=10,
-        offspring=10,
-        crossover="discrete-recombination",
-        n_parents=2,
-        mutation_rate=0.5,
-        crossover_rate=0.5,
+        population: int = 10,
+        offspring: int = 10,
+        crossover: str = "discrete-recombination",
+        n_parents: int = 2,
+        mutation_rate: float = 0.5,
+        crossover_rate: float = 0.5,
     ):
         if initialize is None:
             initialize = get_default_initialize()

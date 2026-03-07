@@ -236,9 +236,9 @@ class DifferentialEvolutionOptimizer(_DifferentialEvolutionOptimizer, Search):
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,
-        population=10,
-        mutation_rate=0.9,
-        crossover_rate=0.9,
+        population: int = 10,
+        mutation_rate: float = 0.9,
+        crossover_rate: float = 0.9,
     ):
         if initialize is None:
             initialize = get_default_initialize()
