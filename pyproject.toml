@@ -95,6 +95,9 @@ test = [
   "scikit-learn >=0.21, !=0.23.*",
 ]
 
+[project.scripts]
+gfo-help = "gradient_free_optimizers._cli_help:main"
+
 [project.urls]
 "Homepage" = "https://github.com/SimonBlanke/Gradient-Free-Optimizers"
 "Bug Reports" = "https://github.com/SimonBlanke/Gradient-Free-Optimizers/issues"
