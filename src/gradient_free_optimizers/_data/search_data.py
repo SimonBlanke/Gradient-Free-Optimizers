@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import math
+import statistics
 from typing import TYPE_CHECKING, Any
 
 from .raw_data import RawData
@@ -144,6 +145,49 @@ class SearchData:
     def n_invalid(self) -> int:
         """Number of evaluations that returned inf or nan."""
         return sum(1 for s in self._tracker._scores if math.isinf(s) or math.isnan(s))
+
+    @property
+    def score_min(self) -> float:
+        """Minimum score across all evaluations (excludes inf/nan)."""
+        valid = [
+            s for s in self._tracker._scores if not (math.isinf(s) or math.isnan(s))
+        ]
+        return min(valid) if valid else float("nan")
+
+    @property
+    def score_max(self) -> float:
+        """Maximum score across all evaluations (excludes inf/nan)."""
+        valid = [
+            s for s in self._tracker._scores if not (math.isinf(s) or math.isnan(s))
+        ]
+        return max(valid) if valid else float("nan")
+
+    @property
+    def score_mean(self) -> float:
+        """Mean score across all evaluations (excludes inf/nan)."""
+        valid = [
+            s for s in self._tracker._scores if not (math.isinf(s) or math.isnan(s))
+        ]
+        return statistics.mean(valid) if valid else float("nan")
+
+    @property
+    def score_std(self) -> float:
+        """Standard deviation of scores (excludes inf/nan)."""
+        valid = [
+            s for s in self._tracker._scores if not (math.isinf(s) or math.isnan(s))
+        ]
+        if len(valid) < 2:
+            return 0.0
+        return statistics.stdev(valid)
+
+    @property
+    def acceptance_rate(self) -> float:
+        """Fraction of proposed positions that were accepted (0.0 to 1.0)."""
+        n_proposed = len(self._optimizer._pos_new_list)
+        n_accepted = len(self._optimizer._pos_current_list)
+        if n_proposed == 0:
+            return 0.0
+        return n_accepted / n_proposed
 
     @property
     def convergence_data(self) -> list[float]:

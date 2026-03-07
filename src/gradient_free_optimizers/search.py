@@ -255,7 +255,7 @@ class Search(TimesTracker, SearchStatistics):
 
         self.n_inits_norm = min((self.init.n_inits - self.n_init_total), self.n_iter)
 
-    def _finish_search(self, summary) -> None:
+    def _finish_search(self, summary=False) -> None:
         # Don't construct DataFrame here - it's built lazily via search_data property
         # This avoids memory spike for high-dimensional search spaces
         self._search_data_cache = None

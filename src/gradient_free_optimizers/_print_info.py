@@ -128,10 +128,11 @@ def print_info(
         _print_times(eval_time, iter_time, n_iter)
 
 
-def _format_box(title: str, lines: list[str]) -> str:
+def _format_box(title: str, lines: list[str], inner_width: int | None = None) -> str:
     """Format content lines into a Unicode box with a title."""
-    inner_width = max((len(line) for line in lines if line), default=0)
-    inner_width = max(inner_width + 2, len(title) + 5)
+    if inner_width is None:
+        inner_width = max((len(line) for line in lines if line), default=0)
+        inner_width = max(inner_width + 2, len(title) + 5)
 
     title_dashes = inner_width - len(title) - 3
     top = f"┌─ {title} " + "─" * title_dashes + "┐"
@@ -139,7 +140,7 @@ def _format_box(title: str, lines: list[str]) -> str:
 
     result = [top]
     for line in lines:
-        result.append(f"│{line.ljust(inner_width)}│")
+        result.append(f"│{(line or '').ljust(inner_width)}│")
     result.append(bottom)
     return "\n".join(result)
 
@@ -153,13 +154,24 @@ def _format_throughput(data: SearchData) -> str:
     return f"{data.avg_iter_time:.2f} sec/iter"
 
 
+_SECTION_MARKER = "__section__"
+
+
+def _section(name: str):
+    """Create a section divider entry."""
+    return (_SECTION_MARKER, name)
+
+
 def _build_summary_entries(data: SearchData) -> list:
     """Build all summary entries as (prefix, label, value) triples.
 
     None = blank separator line.
     str = header line without value alignment.
+    tuple with _SECTION_MARKER = inline section divider.
     tuple = (prefix, label, value) for aligned output.
     """
+    import math
+
     tracker = data._tracker
     n = data.n_iter
     init_pct = data.n_init / n * 100 if n else 0
@@ -170,7 +182,7 @@ def _build_summary_entries(data: SearchData) -> list:
         ("  ", "Objective:", tracker.objective_name),
         ("  ", "Optimizer:", tracker.optimizer_name),
         ("  ", "Random state:", str(tracker.random_seed)),
-        None,
+        _section("Results"),
         ("  ", "Best score:", str(data.best_score)),
         ("  ", "Best iter:", str(data.best_iteration)),
     ]
@@ -181,15 +193,18 @@ def _build_summary_entries(data: SearchData) -> list:
         for k, v in para.items():
             entries.append(("    ", f"{k}:", str(v)))
 
-    entries.append(None)
-    entries.append(("  ", "Iterations:", str(n)))
-    entries.append(("    ", "Initialization:", f"{data.n_init} ({init_pct:.1f}%)"))
-    entries.append(("    ", "Optimization:", f"{data.n_optimization} ({opt_pct:.1f}%)"))
-    entries.append(("  ", "Improvements:", str(data.n_score_improvements)))
+    _section_search = [
+        _section("Search"),
+        ("  ", "Iterations:", str(n)),
+        ("    ", "Initialization:", f"{data.n_init} ({init_pct:.1f}%)"),
+        ("    ", "Optimization:", f"{data.n_optimization} ({opt_pct:.1f}%)"),
+        ("  ", "Improvements:", str(data.n_score_improvements)),
+        ("  ", "Acceptance rate:", f"{data.acceptance_rate:.1%}"),
+    ]
 
     plateau_len, plateau_start, plateau_end = data.longest_plateau
     if plateau_len > 1:
-        entries.append(
+        _section_search.append(
             (
                 "  ",
                 "Longest plateau:",
@@ -199,24 +214,39 @@ def _build_summary_entries(data: SearchData) -> list:
 
     if data.n_invalid > 0:
         pct = data.n_invalid / data.n_iter * 100
-        entries.append(
+        _section_search.append(
             ("  ", "Invalid evals:", f"{data.n_invalid}/{data.n_iter} ({pct:.1f}%)")
         )
 
-    entries.append(None)
-    entries.append(
-        ("  ", "Evaluation time:", f"{data.eval_time:.3f}s ({data.eval_pct:.1f}%)")
-    )
-    entries.append(
-        (
-            "  ",
-            "Optimization time:",
-            f"{data.overhead_time:.3f}s ({data.overhead_pct:.1f}%)",
+    entries.extend(_section_search)
+
+    _section_scores = [_section("Score Statistics")]
+    if not math.isnan(data.score_mean):
+        _section_scores.extend(
+            [
+                ("  ", "Min:", f"{data.score_min:.4g}"),
+                ("  ", "Max:", f"{data.score_max:.4g}"),
+                ("  ", "Mean:", f"{data.score_mean:.4g}"),
+                ("  ", "Std:", f"{data.score_std:.4g}"),
+            ]
         )
+
+    entries.extend(_section_scores)
+
+    entries.extend(
+        [
+            _section("Timing"),
+            ("  ", "Evaluation time:", f"{data.eval_time:.3f}s ({data.eval_pct:.1f}%)"),
+            (
+                "  ",
+                "Optimization time:",
+                f"{data.overhead_time:.3f}s ({data.overhead_pct:.1f}%)",
+            ),
+            ("  ", "Iteration time:", f"{data.total_time:.3f}s"),
+            ("  ", "Throughput:", _format_throughput(data)),
+            None,
+        ]
     )
-    entries.append(("  ", "Iteration time:", f"{data.total_time:.3f}s"))
-    entries.append(("  ", "Throughput:", _format_throughput(data)))
-    entries.append(None)
 
     return entries
 
@@ -228,7 +258,7 @@ def print_summary(data: SearchData) -> None:
     col = max(
         len(prefix) + len(label)
         for e in entries
-        if isinstance(e, tuple)
+        if isinstance(e, tuple) and len(e) == 3
         for prefix, label, _ in [e]
     )
 
@@ -236,6 +266,9 @@ def print_summary(data: SearchData) -> None:
     for e in entries:
         if e is None:
             lines.append("")
+        elif isinstance(e, tuple) and len(e) == 2 and e[0] == _SECTION_MARKER:
+            lines.append("")  # blank line before section title
+            lines.append(None)  # placeholder for divider
         elif isinstance(e, str):
             lines.append(e)
         else:
@@ -243,4 +276,21 @@ def print_summary(data: SearchData) -> None:
             padding = col - len(prefix) - len(label)
             lines.append(f"{prefix}{label}{' ' * padding}  {value}")
 
-    print(_format_box("Search Summary", lines))
+    content_width = max((len(line) for line in lines if line), default=0)
+    inner_width = max(content_width + 2, len("Search Summary") + 5)
+
+    line_idx = 0
+    for e in entries:
+        if e is None:
+            line_idx += 1
+        elif isinstance(e, tuple) and len(e) == 2 and e[0] == _SECTION_MARKER:
+            line_idx += 1  # skip the blank line
+            name = e[1]
+            prefix = f"  ── {name} "
+            remaining = inner_width - len(prefix) - 2
+            lines[line_idx] = prefix + "─" * max(remaining, 3)
+            line_idx += 1
+        else:
+            line_idx += 1
+
+    print(_format_box("Search Summary", lines, inner_width))
