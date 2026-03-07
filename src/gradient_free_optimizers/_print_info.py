@@ -4,25 +4,46 @@
 
 from __future__ import annotations
 
+import sys
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from ._data.data_accessor import DataAccessor
 
 
+def _stdout_supports_unicode() -> bool:
+    """Check whether stdout can encode Unicode box-drawing characters."""
+    encoding = getattr(sys.stdout, "encoding", None) or ""
+    try:
+        "┌─┐│└┘".encode(encoding)
+        return True
+    except (UnicodeEncodeError, LookupError):
+        return False
+
+
+_USE_UNICODE = _stdout_supports_unicode()
+
+_TL = "┌" if _USE_UNICODE else "+"
+_TR = "┐" if _USE_UNICODE else "+"
+_BL = "└" if _USE_UNICODE else "+"
+_BR = "┘" if _USE_UNICODE else "+"
+_H = "─" if _USE_UNICODE else "-"
+_V = "│" if _USE_UNICODE else "|"
+
+
 def _format_box(title: str, lines: list[str], inner_width: int | None = None) -> str:
-    """Format content lines into a Unicode box with a title."""
+    """Format content lines into a box with a title."""
     if inner_width is None:
         inner_width = max((len(line) for line in lines if line), default=0)
         inner_width = max(inner_width + 2, len(title) + 5)
 
     title_dashes = inner_width - len(title) - 3
-    top = f"┌─ {title} " + "─" * title_dashes + "┐"
-    bottom = "└" + "─" * inner_width + "┘"
+    top = f"{_TL}{_H} {title} " + _H * title_dashes + _TR
+    bottom = _BL + _H * inner_width + _BR
 
     result = [top]
     for line in lines:
-        result.append(f"│{(line or '').ljust(inner_width)}│")
+        result.append(f"{_V}{(line or '').ljust(inner_width)}{_V}")
     result.append(bottom)
     return "\n".join(result)
 
@@ -178,9 +199,9 @@ def print_summary(data: DataAccessor, sections: set[str]) -> None:
         elif isinstance(e, tuple) and len(e) == 2 and e[0] == _SECTION_MARKER:
             line_idx += 1  # skip the blank line
             name = e[1]
-            prefix = f"  ── {name} "
+            prefix = f"  {_H}{_H} {name} "
             remaining = inner_width - len(prefix) - 2
-            lines[line_idx] = prefix + "─" * max(remaining, 3)
+            lines[line_idx] = prefix + _H * max(remaining, 3)
             line_idx += 1
         else:
             line_idx += 1

@@ -250,10 +250,10 @@ class TestPrintSummary:
         opt = HillClimbingOptimizer(SEARCH_SPACE)
         opt.search(objective, n_iter=20, verbosity=ALL_PRINT_SECTIONS)
         out = capsys.readouterr().out
-        assert "── Results ─" in out
-        assert "── Search ─" in out
-        assert "── Score Statistics ─" in out
-        assert "── Timing ─" in out
+        assert " Results " in out
+        assert " Search " in out
+        assert " Score Statistics " in out
+        assert " Timing " in out
 
     def test_summary_search_metrics(self, capsys):
         opt = HillClimbingOptimizer(SEARCH_SPACE)
@@ -270,8 +270,8 @@ class TestPrintSummary:
         opt.search(objective, n_iter=20, verbosity=["print_results"])
         out = capsys.readouterr().out
         assert "Search Summary" in out
-        assert "── Results ─" in out
-        assert "── Timing ─" not in out
+        assert " Results " in out
+        assert " Timing " not in out
 
 
 class TestAcrossOptimizers:

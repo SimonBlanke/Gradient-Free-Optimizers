@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import sys
 
-from ._print_info import _format_box
+from ._print_info import _H, _format_box
 
 SUMMARY_REFERENCE: list[tuple[str, str, str]] = [
     ("", "General", ""),
@@ -50,7 +50,7 @@ def _build_help_lines() -> tuple[list[str], int]:
     for label, description, accessor in SUMMARY_REFERENCE:
         if not label:
             lines.append("")
-            lines.append(f"  ── {description} ")
+            lines.append(f"  {_H}{_H} {description} ")
             continue
 
         pad_label = label_col - len(label)
@@ -73,9 +73,9 @@ def _build_help_lines() -> tuple[list[str], int]:
     inner_width = max(content_width + 2, len("gfo-help") + 5)
 
     for i, line in enumerate(lines):
-        if line and line.lstrip().startswith("──"):
+        if line and line.lstrip().startswith(f"{_H}{_H}"):
             remaining = inner_width - len(line) - 2
-            lines[i] = line + "─" * max(remaining, 3)
+            lines[i] = line + _H * max(remaining, 3)
 
     return lines, inner_width
 
