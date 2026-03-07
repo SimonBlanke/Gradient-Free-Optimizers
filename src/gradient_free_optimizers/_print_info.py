@@ -144,15 +144,6 @@ def _format_box(title: str, lines: list[str]) -> str:
     return "\n".join(result)
 
 
-def _format_para_lines(para: dict, prefix: str = "    ") -> list[str]:
-    """Format parameters as aligned lines, one per parameter."""
-    if not para:
-        return [f"{prefix}None"]
-    names = list(para.keys())
-    max_len = max(len(n) for n in names)
-    return [f"{prefix}{n}:{' ' * (max_len - len(n))}  {para[n]}" for n in names]
-
-
 def _format_throughput(data: SearchData) -> str:
     """Format throughput as iter/sec or sec/iter depending on speed."""
     if data.total_time == 0:
@@ -162,54 +153,94 @@ def _format_throughput(data: SearchData) -> str:
     return f"{data.avg_iter_time:.2f} sec/iter"
 
 
-def print_summary(data: SearchData) -> None:
-    """Print a formatted summary box of the search results."""
+def _build_summary_entries(data: SearchData) -> list:
+    """Build all summary entries as (prefix, label, value) triples.
+
+    None = blank separator line.
+    str = header line without value alignment.
+    tuple = (prefix, label, value) for aligned output.
+    """
     tracker = data._tracker
-
-    lines = [
-        "",
-        f"  Objective:  {tracker.objective_name}",
-        f"  Optimizer:  {tracker.optimizer_name}",
-        f"  Seed:       {tracker.random_seed}",
-        "",
-        f"  Best score: {data.best_score}",
-        f"  Best iter:  {data.best_iteration}",
-        "  Best parameters:",
-    ]
-    lines.extend(_format_para_lines(data.best_para))
-
     n = data.n_iter
     init_pct = data.n_init / n * 100 if n else 0
     opt_pct = data.n_optimization / n * 100 if n else 0
 
-    lines.append("")
-    lines.append(f"  Iterations:      {n}")
-    lines.append(f"    Initialization:  {data.n_init} ({init_pct:.1f}%)")
-    lines.append(f"    Optimization:    {data.n_optimization} ({opt_pct:.1f}%)")
-    lines.append(f"  Improvements:    {data.n_score_improvements}")
+    entries = [
+        None,
+        ("  ", "Objective:", tracker.objective_name),
+        ("  ", "Optimizer:", tracker.optimizer_name),
+        ("  ", "Random state:", str(tracker.random_seed)),
+        None,
+        ("  ", "Best score:", str(data.best_score)),
+        ("  ", "Best iter:", str(data.best_iteration)),
+    ]
+
+    para = data.best_para
+    if para:
+        entries.append("  Best parameters:")
+        for k, v in para.items():
+            entries.append(("    ", f"{k}:", str(v)))
+
+    entries.append(None)
+    entries.append(("  ", "Iterations:", str(n)))
+    entries.append(("    ", "Initialization:", f"{data.n_init} ({init_pct:.1f}%)"))
+    entries.append(("    ", "Optimization:", f"{data.n_optimization} ({opt_pct:.1f}%)"))
+    entries.append(("  ", "Improvements:", str(data.n_score_improvements)))
 
     plateau_len, plateau_start, plateau_end = data.longest_plateau
     if plateau_len > 1:
-        lines.append(
-            f"  Longest plateau: {plateau_len} iterations"
-            f" (iter {plateau_start}-{plateau_end})"
+        entries.append(
+            (
+                "  ",
+                "Longest plateau:",
+                f"{plateau_len} iterations (iter {plateau_start}-{plateau_end})",
+            )
         )
 
     if data.n_invalid > 0:
         pct = data.n_invalid / data.n_iter * 100
-        lines.append(f"  Invalid evals:   {data.n_invalid}/{data.n_iter} ({pct:.1f}%)")
+        entries.append(
+            ("  ", "Invalid evals:", f"{data.n_invalid}/{data.n_iter} ({pct:.1f}%)")
+        )
 
-    lines.append("")
-    lines.append("  Timing:")
-    lines.append(
-        f"    Evaluation time:    {data.eval_time:.3f}s ({data.eval_pct:.1f}%)"
+    entries.append(None)
+    entries.append(
+        ("  ", "Evaluation time:", f"{data.eval_time:.3f}s ({data.eval_pct:.1f}%)")
     )
-    lines.append(
-        f"    Optimization time:  {data.overhead_time:.3f}s ({data.overhead_pct:.1f}%)"
+    entries.append(
+        (
+            "  ",
+            "Optimization time:",
+            f"{data.overhead_time:.3f}s ({data.overhead_pct:.1f}%)",
+        )
     )
-    lines.append(f"    Iteration time:     {data.total_time:.3f}s")
-    lines.append(f"    Throughput:         {_format_throughput(data)}")
+    entries.append(("  ", "Iteration time:", f"{data.total_time:.3f}s"))
+    entries.append(("  ", "Throughput:", _format_throughput(data)))
+    entries.append(None)
 
-    lines.append("")
+    return entries
+
+
+def print_summary(data: SearchData) -> None:
+    """Print a formatted summary box of the search results."""
+    entries = _build_summary_entries(data)
+
+    col = max(
+        len(prefix) + len(label)
+        for e in entries
+        if isinstance(e, tuple)
+        for prefix, label, _ in [e]
+    )
+
+    lines = []
+    for e in entries:
+        if e is None:
+            lines.append("")
+        elif isinstance(e, str):
+            lines.append(e)
+        else:
+            prefix, label, value = e
+            padding = col - len(prefix) - len(label)
+            lines.append(f"{prefix}{label}{' ' * padding}  {value}")
 
     print(_format_box("Search Summary", lines))
