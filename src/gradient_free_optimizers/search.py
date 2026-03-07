@@ -141,6 +141,175 @@ class Search(TimesTracker, SearchStatistics):
         optimum: Literal["maximum", "minimum"] = "maximum",
         callbacks: list[Callable[[CallbackInfo], bool | None]] | None = None,
     ) -> None:
+        """Run the optimization loop.
+
+        Evaluates ``objective_function`` up to ``n_iter`` times, searching
+        for the parameters that maximize (or minimize) the returned score.
+        The search proceeds in two phases: an **initialization** phase that
+        evaluates starting positions (controlled by the ``initialize``
+        constructor parameter), followed by an **iteration** phase where the
+        optimizer's strategy generates new candidate positions.
+
+        After the search finishes, results are available via
+        :attr:`best_para`, :attr:`best_score`, and :attr:`search_data`.
+
+        Parameters
+        ----------
+        objective_function : callable
+            The function to optimize. Must accept a single dictionary
+            mapping parameter names to values and return either:
+
+            - A ``float`` score, or
+            - A tuple ``(float, dict)`` where the second element contains
+              custom metrics (accessible via callbacks and ``search_data``).
+
+            Example::
+
+                def objective(params):
+                    return -(params["x"] ** 2 + params["y"] ** 2)
+
+                def objective_with_metrics(params):
+                    loss = params["x"] ** 2
+                    return -loss, {"loss": loss}
+
+        n_iter : int
+            Total number of iterations (including initialization).
+            Each iteration evaluates the objective function once (unless
+            a cached result is found when ``memory=True``).
+        max_time : float or None, default=None
+            Maximum wall-clock time in seconds. The search stops after
+            the current iteration if the elapsed time exceeds this limit.
+            ``None`` means no time limit.
+        max_score : float or None, default=None
+            Target score threshold. The search stops when the best score
+            found so far reaches or exceeds this value. When
+            ``optimum="minimum"``, this refers to the original (non-negated)
+            score.
+            ``None`` means no score limit.
+        early_stopping : dict or None, default=None
+            Configuration for stopping the search when progress stalls.
+            ``None`` disables early stopping. When provided, the dictionary
+            supports the following keys:
+
+            - ``"n_iter_no_change"`` (int, required): Stop if no improvement
+              is observed for this many consecutive iterations.
+            - ``"tol_abs"`` (float, optional): Minimum absolute improvement
+              required over the window to count as progress.
+            - ``"tol_rel"`` (float, optional): Minimum relative improvement
+              (in percent) required over the window to count as progress.
+
+            Example::
+
+                early_stopping = {"n_iter_no_change": 50}
+                early_stopping = {"n_iter_no_change": 30, "tol_abs": 0.001}
+
+        memory : bool, default=True
+            If ``True``, cache objective function evaluations in an
+            in-memory dictionary keyed by position. When the optimizer
+            revisits a previously evaluated position, the cached score is
+            returned without calling the objective function again. This
+            is especially useful for discrete search spaces where
+            revisits are common.
+        memory_warm_start : pd.DataFrame or None, default=None
+            A DataFrame from a previous search (typically obtained via
+            :attr:`search_data`) to pre-populate the evaluation cache.
+            The DataFrame must contain columns matching the search space
+            parameter names plus a ``"score"`` column. Requires
+            ``memory=True``.
+
+            Example::
+
+                opt1 = HillClimbingOptimizer(search_space)
+                opt1.search(objective, n_iter=50)
+
+                opt2 = HillClimbingOptimizer(search_space)
+                opt2.search(objective, n_iter=50,
+                            memory_warm_start=opt1.search_data)
+
+        verbosity : list[str] or False, default=\
+["progress_bar", "print_results", "print_times"]
+            Controls console output during and after the search.
+            Pass ``False`` or an empty list for silent operation.
+
+            Supported values:
+
+            - ``"progress_bar"``: Show a live ``tqdm`` progress bar during
+              the search.
+            - ``"print_results"``: Print best score and best parameters
+              after the search completes.
+            - ``"print_times"``: Print timing breakdown (evaluation time,
+              optimization overhead, throughput) after the search completes.
+            - ``"print_search_stats"``: Print search statistics including
+              iteration counts, acceptance rate, number of improvements,
+              and longest plateau.
+            - ``"print_statistics"``: Print score statistics (min, max,
+              mean, std) after the search completes.
+            - ``"debug_stop"``: Print detailed stopping condition debug
+              info when the search terminates early.
+
+        optimum : {"maximum", "minimum"}, default="maximum"
+            Whether to maximize or minimize the objective function.
+            When set to ``"minimum"``, the objective function's return
+            value is negated internally so that the optimizer always
+            maximizes. The reported ``best_score`` is in original
+            (non-negated) units.
+        callbacks : list[callable] or None, default=None
+            A list of callback functions invoked after each iteration.
+            Each callback receives a single argument ``info`` with the
+            following attributes:
+
+            - ``info.iteration`` (int): Current iteration index (0-based).
+            - ``info.score`` (float): Score from the current evaluation.
+            - ``info.params`` (dict): Parameters evaluated in this iteration.
+            - ``info.best_score`` (float): Best score found so far.
+            - ``info.best_para`` (dict): Parameters of the best score.
+            - ``info.n_iter`` (int): Total iterations planned.
+            - ``info.phase`` (str): ``"init"`` or ``"iter"``.
+            - ``info.elapsed_time`` (float): Seconds since search started.
+            - ``info.metrics`` (dict): Custom metrics from the objective
+              function (empty if the objective returns only a score).
+            - ``info.convergence`` (list[float]): Best score at each
+              iteration so far.
+
+            If any callback returns ``False``, the search stops
+            immediately. Any other return value (including ``None``) is
+            ignored and the search continues.
+
+            Example::
+
+                def log_progress(info):
+                    if info.iteration % 10 == 0:
+                        print(f"Iter {info.iteration}: best={info.best_score:.4f}")
+
+                def stop_early(info):
+                    if info.best_score > 0.99:
+                        return False  # stops the search
+
+                opt.search(objective, n_iter=100,
+                           callbacks=[log_progress, stop_early])
+
+        Examples
+        --------
+        Basic usage with default settings:
+
+        >>> import numpy as np
+        >>> from gradient_free_optimizers import HillClimbingOptimizer
+        >>> def objective(para):
+        ...     return -(para["x"] ** 2)
+        >>> search_space = {"x": np.linspace(-10, 10, 100)}
+        >>> opt = HillClimbingOptimizer(search_space)
+        >>> opt.search(objective, n_iter=30)
+
+        Using multiple stopping conditions:
+
+        >>> opt.search(
+        ...     objective,
+        ...     n_iter=1000,
+        ...     max_time=60,
+        ...     max_score=-0.01,
+        ...     early_stopping={"n_iter_no_change": 50},
+        ... )
+        """
         self.optimum = optimum
         self._callbacks = callbacks or []
         self._init_search(
