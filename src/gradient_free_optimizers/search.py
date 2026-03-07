@@ -10,6 +10,7 @@ import time
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Literal
 
+from ._callback import CallbackInfo
 from ._data import DataAccessor, SearchTracker
 from ._memory import CachedObjectiveAdapter
 from ._objective_adapter import ObjectiveAdapter
@@ -138,8 +139,10 @@ class Search(TimesTracker, SearchStatistics):
             "print_times",
         ],
         optimum: Literal["maximum", "minimum"] = "maximum",
+        callbacks: list[Callable[[CallbackInfo], bool | None]] | None = None,
     ) -> None:
         self.optimum = optimum
+        self._callbacks = callbacks or []
         self._init_search(
             objective_function,
             n_iter,
@@ -158,6 +161,11 @@ class Search(TimesTracker, SearchStatistics):
             current_score = self.score_l[-1] if self.score_l else -math.inf
             best_score = self.p_bar.score_best
             self.stopper.update(current_score, best_score, nth_trial)
+
+            if self._callbacks:
+                info = self._build_callback_info(nth_trial)
+                if self._run_callbacks(info) is False:
+                    break
 
             if self.stopper.should_stop():
                 # Log debugging information when stopping
@@ -300,6 +308,37 @@ class Search(TimesTracker, SearchStatistics):
     def search_data(self, value: pd.DataFrame) -> None:
         """Allow direct assignment for backward compatibility."""
         self._search_data_cache = value
+
+    def _build_callback_info(self, nth_iter: int) -> CallbackInfo:
+        pos = self.pos_l[-1]
+        value = self.conv.position2value(list(pos))
+        params = self.conv.value2para(value)
+
+        if self.p_bar.pos_best is not None:
+            best_value = self.conv.position2value(self.p_bar.pos_best)
+            best_para = self.conv.value2para(best_value)
+        else:
+            best_para = {}
+
+        return CallbackInfo(
+            iteration=nth_iter,
+            score=self.score_l[-1],
+            params=params,
+            best_score=self.p_bar.score_best,
+            best_para=best_para,
+            n_iter=self.n_iter,
+            phase="init" if nth_iter < self.n_inits_norm else "iter",
+            elapsed_time=time.time() - self.stopper.start_time,
+            metrics=self._last_metrics,
+            convergence=list(self._tracker.convergence),
+        )
+
+    def _run_callbacks(self, info: CallbackInfo) -> bool | None:
+        for callback in self._callbacks:
+            result = callback(info)
+            if result is False:
+                return False
+        return None
 
     def _search_step(self, nth_iter: int) -> None:
         self.nth_iter = nth_iter
