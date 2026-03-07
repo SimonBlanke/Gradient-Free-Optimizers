@@ -87,10 +87,6 @@ class Search(TimesTracker, SearchStatistics):
         self._tracker: SearchTracker | None = None
         self._data: SearchData | None = None
 
-    @TimesTracker.eval_time
-    def _score(self, pos):
-        return self.score(pos)
-
     @TimesTracker.iter_time
     def _initialization(self):
         self.best_score = self.p_bar.score_best
@@ -175,7 +171,9 @@ class Search(TimesTracker, SearchStatistics):
         self._finish_search(summary)
 
     def _evaluate_position(self, pos: list[int]) -> float:
+        t = time.time()
         result, params = self.adapter(pos)
+        self.eval_times.append(time.time() - t)
         # Store position instead of params dict for memory efficiency
         # Params are reconstructed lazily when search_data DataFrame is accessed
         self.results_manager.add(result, pos)
