@@ -153,7 +153,7 @@ After search completes:
     opt.best_para    # dict: Best parameters found
     opt.best_score   # float: Best score achieved
     opt.search_data  # DataFrame: All evaluations
-    opt.data         # SearchData: computed metrics and raw data
+    opt.data         # DataAccessor: computed metrics and raw data
 
 See :doc:`search_data` for the full ``opt.data`` reference and CLI summary
 documentation.

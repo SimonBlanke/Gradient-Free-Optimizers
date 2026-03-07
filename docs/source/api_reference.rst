@@ -170,9 +170,20 @@ Result Attributes
     optimizer.best_para    # dict: best parameters found
     optimizer.best_score   # float: best score achieved
     optimizer.search_data  # DataFrame: all evaluations
-    optimizer.data         # SearchData: computed metrics and raw data
+    optimizer.data         # DataAccessor: computed metrics and raw data
 
-See :doc:`user_guide/search_data` for the full ``opt.data`` reference.
+The ``data`` property returns a
+:class:`~gradient_free_optimizers._data.data_accessor.DataAccessor` with
+computed metrics and a ``raw`` sub-accessor for internal tracking lists.
+See :doc:`user_guide/search_data` for full documentation.
+
+.. autosummary::
+   :toctree: api_reference/generated/
+   :template: class.rst
+   :hidden:
+
+   gradient_free_optimizers._data.data_accessor.DataAccessor
+   gradient_free_optimizers._data.raw_data.RawData
 
 
 Initialization Options

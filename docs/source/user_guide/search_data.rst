@@ -27,8 +27,8 @@ Quick Start
 
     opt = HillClimbingOptimizer(search_space)
 
-    # Enable the CLI summary with summary=True
-    opt.search(objective, n_iter=50, summary=True)
+    # Default verbosity includes print_results and print_times
+    opt.search(objective, n_iter=50)
 
     # Access data programmatically
     print(opt.data.best_score)
@@ -80,21 +80,26 @@ This prints a formatted summary box to the terminal:
 Search Summary (CLI)
 --------------------
 
-Enable the summary by passing ``summary=True`` to ``search()``:
+The summary box is controlled by ``verbosity`` flags. The default
+``["progress_bar", "print_results", "print_times"]`` shows the Results and
+Timing sections. Add more flags to show additional sections:
 
 .. code-block:: python
 
-    opt.search(objective, n_iter=100, summary=True)
+    # Default: Results + Timing
+    opt.search(objective, n_iter=100)
 
-The summary works independently of ``verbosity``. You can combine both:
+    # All four sections
+    opt.search(objective, n_iter=100, verbosity=[
+        "progress_bar", "print_results", "print_times",
+        "print_search_stats", "print_statistics",
+    ])
 
-.. code-block:: python
+    # Summary only, no progress bar
+    opt.search(objective, n_iter=100, verbosity=["print_results", "print_times"])
 
-    # Summary + progress bar, no legacy print output
-    opt.search(objective, n_iter=100, verbosity=["progress_bar"], summary=True)
-
-    # Summary only, completely silent otherwise
-    opt.search(objective, n_iter=100, verbosity=False, summary=True)
+    # Completely silent
+    opt.search(objective, n_iter=100, verbosity=False)
 
 
 Summary Sections
@@ -154,7 +159,7 @@ and corresponding ``opt.data`` property names.
 -----------------------
 
 After calling ``search()``, the ``opt.data`` property returns a
-:class:`~gradient_free_optimizers._data.search_data.SearchData` object with
+:class:`~gradient_free_optimizers._data.data_accessor.DataAccessor` object with
 computed metrics. All properties are read-only.
 
 
