@@ -142,6 +142,14 @@ class SearchData:
         return (longest, start, end)
 
     @property
+    def last_improvement(self) -> int:
+        """Iteration index of the last score improvement (-1 if none)."""
+        impr = self._tracker.improvement_iterations
+        if not impr:
+            return -1
+        return impr[-1]
+
+    @property
     def n_invalid(self) -> int:
         """Number of evaluations that returned inf or nan."""
         return sum(1 for s in self._tracker._scores if math.isinf(s) or math.isnan(s))
@@ -181,13 +189,21 @@ class SearchData:
         return statistics.stdev(valid)
 
     @property
+    def n_accepted(self) -> int:
+        """Number of accepted (current) position changes."""
+        return len(self._optimizer._pos_current_list)
+
+    @property
+    def n_proposed(self) -> int:
+        """Number of proposed positions."""
+        return len(self._optimizer._pos_new_list)
+
+    @property
     def acceptance_rate(self) -> float:
         """Fraction of proposed positions that were accepted (0.0 to 1.0)."""
-        n_proposed = len(self._optimizer._pos_new_list)
-        n_accepted = len(self._optimizer._pos_current_list)
-        if n_proposed == 0:
+        if self.n_proposed == 0:
             return 0.0
-        return n_accepted / n_proposed
+        return self.n_accepted / self.n_proposed
 
     @property
     def convergence_data(self) -> list[float]:

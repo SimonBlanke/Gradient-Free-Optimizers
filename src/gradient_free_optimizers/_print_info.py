@@ -193,24 +193,28 @@ def _build_summary_entries(data: SearchData) -> list:
         for k, v in para.items():
             entries.append(("    ", f"{k}:", str(v)))
 
+    acc_pct = data.acceptance_rate * 100
     _section_search = [
         _section("Search"),
         ("  ", "Iterations:", str(n)),
         ("    ", "Initialization:", f"{data.n_init} ({init_pct:.1f}%)"),
         ("    ", "Optimization:", f"{data.n_optimization} ({opt_pct:.1f}%)"),
         ("  ", "Improvements:", str(data.n_score_improvements)),
-        ("  ", "Acceptance rate:", f"{data.acceptance_rate:.1%}"),
+        (
+            "  ",
+            "Accepted:",
+            f"{data.n_accepted}/{data.n_proposed} ({acc_pct:.1f}%)",
+        ),
     ]
 
-    plateau_len, plateau_start, plateau_end = data.longest_plateau
-    if plateau_len > 1:
+    if data.last_improvement >= 0:
         _section_search.append(
-            (
-                "  ",
-                "Longest plateau:",
-                f"{plateau_len} iterations (iter {plateau_start}-{plateau_end})",
-            )
+            ("  ", "Last improvement:", f"iter {data.last_improvement}")
         )
+
+    plateau_len = data.longest_plateau[0]
+    if plateau_len > 1:
+        _section_search.append(("  ", "Longest plateau:", f"{plateau_len} iterations"))
 
     if data.n_invalid > 0:
         pct = data.n_invalid / data.n_iter * 100
