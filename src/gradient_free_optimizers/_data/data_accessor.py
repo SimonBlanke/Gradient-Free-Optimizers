@@ -17,7 +17,7 @@ class DataAccessor:
     Provides derived metrics from SearchTracker (search-level data)
     and CoreOptimizer history lists (optimizer-level data).
 
-    Accessed via ``opt.data`` property after calling ``search()``.
+    Accessed via ``opt._data`` property after calling ``search()``.
     """
 
     def __init__(self, tracker: SearchTracker, optimizer: CoreOptimizer):

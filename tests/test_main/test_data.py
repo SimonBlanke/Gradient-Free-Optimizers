@@ -1,4 +1,4 @@
-"""Tests for the opt.data explainability interface."""
+"""Tests for the opt._data explainability interface."""
 
 import math
 
@@ -34,12 +34,12 @@ def hill_opt():
 
 class TestDataAvailability:
     def test_available_after_search(self, hill_opt):
-        assert hill_opt.data is not None
+        assert hill_opt._data is not None
 
     def test_not_available_before_search(self):
         opt = HillClimbingOptimizer(SEARCH_SPACE)
         with pytest.raises(AttributeError, match="Call search"):
-            _ = opt.data
+            _ = opt._data
 
     def test_search_data_backward_compat(self, hill_opt):
         sd = hill_opt.search_data
@@ -49,25 +49,25 @@ class TestDataAvailability:
     def test_data_reflects_latest_search(self):
         opt = HillClimbingOptimizer(SEARCH_SPACE)
         opt.search(objective, n_iter=10, verbosity=False)
-        assert opt.data.n_iter == 10
+        assert opt._data.n_iter == 10
 
         opt.search(objective, n_iter=20, verbosity=False)
-        assert opt.data.n_iter == 20
+        assert opt._data.n_iter == 20
 
 
 class TestIterationCounts:
     def test_total_equals_init_plus_optimization(self, hill_opt):
-        d = hill_opt.data
+        d = hill_opt._data
         assert d.n_iter == N_ITER
         assert d.n_init + d.n_optimization == d.n_iter
 
     def test_has_init_iterations(self, hill_opt):
-        assert hill_opt.data.n_init > 0
+        assert hill_opt._data.n_init > 0
 
     def test_single_iteration(self):
         opt = RandomSearchOptimizer(SEARCH_SPACE)
         opt.search(objective, n_iter=1, verbosity=False)
-        d = opt.data
+        d = opt._data
         assert d.n_iter == 1
         assert len(d.convergence_data) == 1
         assert len(d.results) == 1
@@ -75,60 +75,60 @@ class TestIterationCounts:
 
 class TestBestResults:
     def test_best_score(self, hill_opt):
-        d = hill_opt.data
+        d = hill_opt._data
         assert d.best_score <= 0
         assert d.best_score == hill_opt.best_score
 
     def test_best_para(self, hill_opt):
-        d = hill_opt.data
+        d = hill_opt._data
         assert isinstance(d.best_para, dict)
         assert "x" in d.best_para
         assert "y" in d.best_para
 
     def test_best_iteration_in_range(self, hill_opt):
-        assert 0 <= hill_opt.data.best_iteration < N_ITER
+        assert 0 <= hill_opt._data.best_iteration < N_ITER
 
 
 class TestTiming:
     def test_times_non_negative(self, hill_opt):
-        d = hill_opt.data
+        d = hill_opt._data
         assert d.total_time >= 0
         assert d.eval_time >= 0
         assert d.overhead_time >= 0
 
     def test_overhead_pct_in_range(self, hill_opt):
-        assert 0 <= hill_opt.data.overhead_pct <= 100
+        assert 0 <= hill_opt._data.overhead_pct <= 100
 
     def test_eval_pct_in_range(self, hill_opt):
-        assert 0 <= hill_opt.data.eval_pct <= 100
+        assert 0 <= hill_opt._data.eval_pct <= 100
 
     def test_avg_times(self, hill_opt):
-        d = hill_opt.data
+        d = hill_opt._data
         assert d.avg_eval_time >= 0
         assert d.avg_iter_time >= 0
 
     def test_throughput(self, hill_opt):
-        assert hill_opt.data.throughput >= 0
+        assert hill_opt._data.throughput >= 0
 
 
 class TestConvergence:
     def test_convergence_length(self, hill_opt):
-        assert len(hill_opt.data.convergence_data) == N_ITER
+        assert len(hill_opt._data.convergence_data) == N_ITER
 
     def test_convergence_monotonic(self, hill_opt):
-        conv = hill_opt.data.convergence_data
+        conv = hill_opt._data.convergence_data
         for i in range(1, len(conv)):
             assert conv[i] >= conv[i - 1]
 
     def test_score_improvements(self, hill_opt):
-        assert hill_opt.data.n_score_improvements >= 1
+        assert hill_opt._data.n_score_improvements >= 1
 
     def test_last_improvement(self, hill_opt):
-        d = hill_opt.data
+        d = hill_opt._data
         assert 0 <= d.last_improvement < N_ITER
 
     def test_longest_plateau(self, hill_opt):
-        length, start, end = hill_opt.data.longest_plateau
+        length, start, end = hill_opt._data.longest_plateau
         assert length >= 1
         assert start >= 0
         assert end < N_ITER
@@ -137,39 +137,39 @@ class TestConvergence:
 
 class TestAcceptance:
     def test_rate_in_range(self, hill_opt):
-        assert 0.0 <= hill_opt.data.acceptance_rate <= 1.0
+        assert 0.0 <= hill_opt._data.acceptance_rate <= 1.0
 
     def test_n_proposed(self, hill_opt):
-        assert hill_opt.data.n_proposed > 0
+        assert hill_opt._data.n_proposed > 0
 
     def test_n_accepted(self, hill_opt):
-        d = hill_opt.data
+        d = hill_opt._data
         assert d.n_accepted > 0
         assert d.n_accepted <= d.n_proposed
 
 
 class TestScoreStatistics:
     def test_min_max_order(self, hill_opt):
-        d = hill_opt.data
+        d = hill_opt._data
         assert d.score_min <= d.score_max
 
     def test_mean_in_range(self, hill_opt):
-        d = hill_opt.data
+        d = hill_opt._data
         assert d.score_min <= d.score_mean <= d.score_max
 
     def test_std_non_negative(self, hill_opt):
-        assert hill_opt.data.score_std >= 0
+        assert hill_opt._data.score_std >= 0
 
     def test_no_invalid(self, hill_opt):
-        assert hill_opt.data.n_invalid == 0
+        assert hill_opt._data.n_invalid == 0
 
 
 class TestResults:
     def test_results_length(self, hill_opt):
-        assert len(hill_opt.data.results) == N_ITER
+        assert len(hill_opt._data.results) == N_ITER
 
     def test_results_structure(self, hill_opt):
-        row = hill_opt.data.results[0]
+        row = hill_opt._data.results[0]
         assert isinstance(row, dict)
         assert "score" in row
         assert "x" in row
@@ -178,47 +178,47 @@ class TestResults:
 
 class TestRawData:
     def test_scores_proposed(self, hill_opt):
-        assert len(hill_opt.data.raw.scores_proposed) == N_ITER
+        assert len(hill_opt._data.raw.scores_proposed) == N_ITER
 
     def test_scores_accepted(self, hill_opt):
-        raw = hill_opt.data.raw
+        raw = hill_opt._data.raw
         assert 0 < len(raw.scores_accepted) <= N_ITER
 
     def test_scores_best(self, hill_opt):
-        assert len(hill_opt.data.raw.scores_best) > 0
+        assert len(hill_opt._data.raw.scores_best) > 0
 
     def test_positions_proposed(self, hill_opt):
-        positions = hill_opt.data.raw.positions_proposed
+        positions = hill_opt._data.raw.positions_proposed
         assert len(positions) == N_ITER
         assert isinstance(positions[0], dict)
         assert "x" in positions[0]
 
     def test_positions_accepted(self, hill_opt):
-        positions = hill_opt.data.raw.positions_accepted
+        positions = hill_opt._data.raw.positions_accepted
         assert len(positions) > 0
         assert isinstance(positions[0], dict)
 
     def test_eval_times(self, hill_opt):
-        raw = hill_opt.data.raw
+        raw = hill_opt._data.raw
         assert len(raw.eval_times) == N_ITER
         assert all(t >= 0 for t in raw.eval_times)
 
     def test_iter_times(self, hill_opt):
-        raw = hill_opt.data.raw
+        raw = hill_opt._data.raw
         assert len(raw.iter_times) == N_ITER
         assert all(t >= 0 for t in raw.iter_times)
 
     def test_convergence(self, hill_opt):
-        assert len(hill_opt.data.raw.convergence) == N_ITER
+        assert len(hill_opt._data.raw.convergence) == N_ITER
 
     def test_improvement_iterations_sorted(self, hill_opt):
-        iters = hill_opt.data.raw.improvement_iterations
+        iters = hill_opt._data.raw.improvement_iterations
         assert len(iters) > 0
         for i in range(1, len(iters)):
             assert iters[i] > iters[i - 1]
 
     def test_scores_all(self, hill_opt):
-        assert len(hill_opt.data.raw.scores_all) == N_ITER
+        assert len(hill_opt._data.raw.scores_all) == N_ITER
 
 
 ALL_PRINT_SECTIONS = [
@@ -280,7 +280,7 @@ class TestAcrossOptimizers:
         opt = Optimizer(SEARCH_SPACE)
         opt.search(objective, n_iter=20, verbosity=False)
 
-        d = opt.data
+        d = opt._data
         assert d.n_iter == 20
         assert d.n_init + d.n_optimization == 20
         assert len(d.convergence_data) == 20
@@ -296,7 +296,7 @@ class TestAcrossOptimizers:
         opt = Optimizer(SEARCH_SPACE)
         opt.search(objective, n_iter=20, verbosity=False)
 
-        raw = opt.data.raw
+        raw = opt._data.raw
         assert len(raw.scores_proposed) == 20
         assert len(raw.scores_all) == 20
         assert len(raw.iter_times) == 20

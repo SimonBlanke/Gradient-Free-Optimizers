@@ -85,7 +85,7 @@ class Search(TimesTracker, SearchStatistics):
         self._search_data_cache = None  # Lazy DataFrame cache
 
         self._tracker: SearchTracker | None = None
-        self._data: DataAccessor | None = None
+        self.__data: DataAccessor | None = None
 
     @TimesTracker.iter_time
     def _initialization(self):
@@ -213,7 +213,7 @@ class Search(TimesTracker, SearchStatistics):
             objective_function, "__name__", str(objective_function)
         )
         self._tracker.random_seed = self.random_seed
-        self._data = None
+        self.__data = None
 
         # Initialize ResultsManager only if not already created
         # (preserves results across searches)
@@ -265,11 +265,11 @@ class Search(TimesTracker, SearchStatistics):
 
         print_sections = {v for v in self.verbosity if v.startswith("print_")}
         if print_sections:
-            print_summary(self.data, print_sections)
+            print_summary(self._data, print_sections)
 
     @property
-    def data(self) -> DataAccessor:
-        """Access search data and computed metrics.
+    def _data(self) -> DataAccessor:
+        """Access search data and computed metrics (internal, may change).
 
         Available after calling ``search()``. Returns a
         :class:`~gradient_free_optimizers._data.data_accessor.DataAccessor`
@@ -280,9 +280,9 @@ class Search(TimesTracker, SearchStatistics):
         """
         if self._tracker is None:
             raise AttributeError("Search data not available. Call search() first.")
-        if self._data is None:
-            self._data = DataAccessor(self._tracker, self)
-        return self._data
+        if self.__data is None:
+            self.__data = DataAccessor(self._tracker, self)
+        return self.__data
 
     @property
     def search_data(self) -> pd.DataFrame:

@@ -57,7 +57,7 @@ def _build_help_lines() -> tuple[list[str], int]:
         pad_desc = desc_col - len(description)
 
         if accessor:
-            api = f"opt.data{accessor}"
+            api = f"opt._data{accessor}"
         else:
             api = ""
 
@@ -66,7 +66,7 @@ def _build_help_lines() -> tuple[list[str], int]:
     lines.append("")
     lines.append("  Verbosity flags:")
     lines.append("    print_results, print_search_stats, print_statistics, print_times")
-    lines.append("  API:  opt.data.<property>  |  opt.data.raw.<property>")
+    lines.append("  API:  opt._data.<property>  |  opt._data.raw.<property>")
     lines.append("")
 
     content_width = max((len(line) for line in lines if line), default=0)
@@ -90,7 +90,7 @@ def main() -> None:
     """Entry point for the gfo-help CLI tool."""
     if len(sys.argv) > 1 and sys.argv[1] in ("-h", "--help"):
         print("Usage: gfo-help")
-        print("Show reference for search summary metrics and opt.data properties.")
+        print("Show reference for search summary metrics and opt._data properties.")
         return
     print_help()
 
