@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     from .search_tracker import SearchTracker
 
 
-class SearchData:
+class DataAccessor:
     """Read-only view on search results with computed metrics.
 
     Provides derived metrics from SearchTracker (search-level data)

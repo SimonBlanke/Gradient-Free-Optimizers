@@ -10,7 +10,7 @@ import time
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Literal
 
-from ._data import SearchData, SearchTracker
+from ._data import DataAccessor, SearchTracker
 from ._memory import CachedObjectiveAdapter
 from ._objective_adapter import ObjectiveAdapter
 from ._print_info import print_info, print_summary
@@ -85,7 +85,7 @@ class Search(TimesTracker, SearchStatistics):
         self._search_data_cache = None  # Lazy DataFrame cache
 
         self._tracker: SearchTracker | None = None
-        self._data: SearchData | None = None
+        self._data: DataAccessor | None = None
 
     @TimesTracker.iter_time
     def _initialization(self):
@@ -284,18 +284,18 @@ class Search(TimesTracker, SearchStatistics):
             print_summary(self.data)
 
     @property
-    def data(self) -> SearchData:
+    def data(self) -> DataAccessor:
         """Access search data and computed metrics.
 
         Available after calling ``search()``. Returns a
-        :class:`SearchData` object with properties like
+        :class:`DataAccessor` object with properties like
         ``best_score``, ``convergence_data``, ``overhead_pct``,
         and a ``raw`` sub-accessor for internal tracking lists.
         """
         if self._tracker is None:
             raise AttributeError("Search data not available. Call search() first.")
         if self._data is None:
-            self._data = SearchData(self._tracker, self)
+            self._data = DataAccessor(self._tracker, self)
         return self._data
 
     @property

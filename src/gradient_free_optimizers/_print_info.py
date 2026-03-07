@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from ._data.search_data import SearchData
+    from ._data.data_accessor import DataAccessor
 
 
 indent = "  "
@@ -145,7 +145,7 @@ def _format_box(title: str, lines: list[str], inner_width: int | None = None) ->
     return "\n".join(result)
 
 
-def _format_throughput(data: SearchData) -> str:
+def _format_throughput(data: DataAccessor) -> str:
     """Format throughput as iter/sec or sec/iter depending on speed."""
     if data.total_time == 0:
         return "too fast to measure"
@@ -162,7 +162,7 @@ def _section(name: str):
     return (_SECTION_MARKER, name)
 
 
-def _build_summary_entries(data: SearchData) -> list:
+def _build_summary_entries(data: DataAccessor) -> list:
     """Build all summary entries as (prefix, label, value) triples.
 
     None = blank separator line.
@@ -255,7 +255,7 @@ def _build_summary_entries(data: SearchData) -> list:
     return entries
 
 
-def print_summary(data: SearchData) -> None:
+def print_summary(data: DataAccessor) -> None:
     """Print a formatted summary box of the search results."""
     entries = _build_summary_entries(data)
 
