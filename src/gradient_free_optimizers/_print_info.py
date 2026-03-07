@@ -178,11 +178,14 @@ def print_summary(data: SearchData) -> None:
     ]
     lines.extend(_format_para_lines(data.best_para))
 
+    n = data.n_iter
+    init_pct = data.n_init / n * 100 if n else 0
+    opt_pct = data.n_optimization / n * 100 if n else 0
+
     lines.append("")
-    lines.append(
-        f"  Iterations:      {data.n_iter}"
-        f" ({data.n_init} init + {data.n_optimization} optimization)"
-    )
+    lines.append(f"  Iterations:      {n}")
+    lines.append(f"    Initialization:  {data.n_init} ({init_pct:.1f}%)")
+    lines.append(f"    Optimization:    {data.n_optimization} ({opt_pct:.1f}%)")
     lines.append(f"  Improvements:    {data.n_score_improvements}")
 
     plateau_len, plateau_start, plateau_end = data.longest_plateau
