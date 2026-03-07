@@ -25,11 +25,6 @@ class SearchData:
         self._raw: RawData | None = None
 
     @property
-    def optimizer_name(self) -> str:
-        """Name of the optimizer class."""
-        return self._tracker.optimizer_name
-
-    @property
     def n_iter(self) -> int:
         """Total number of iterations executed (init + optimization)."""
         return self._tracker.n_total

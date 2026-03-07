@@ -212,6 +212,9 @@ class Search(TimesTracker, SearchStatistics):
 
         self._tracker = SearchTracker(self.conv)
         self._tracker.optimizer_name = self.__class__.__name__
+        self._tracker.objective_name = getattr(
+            objective_function, "__name__", str(objective_function)
+        )
         self._tracker.random_seed = self.random_seed
         self._data = None
 

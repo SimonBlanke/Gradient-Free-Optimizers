@@ -31,6 +31,7 @@ class SearchTracker:
         self.n_iter: int = 0
 
         self.optimizer_name: str = ""
+        self.objective_name: str = ""
         self.random_seed: int | None = None
 
     def track(

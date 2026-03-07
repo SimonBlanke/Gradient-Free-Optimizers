@@ -144,50 +144,55 @@ def _format_box(title: str, lines: list[str]) -> str:
     return "\n".join(result)
 
 
-def _format_para(para: dict) -> str:
-    """Format a parameter dict for display."""
-    if para is None:
-        return "None"
-    parts = [f"{k}: {v}" for k, v in para.items()]
-    return "{" + ", ".join(parts) + "}"
+def _format_para_lines(para: dict, prefix: str = "    ") -> list[str]:
+    """Format parameters as aligned lines, one per parameter."""
+    if not para:
+        return [f"{prefix}None"]
+    names = list(para.keys())
+    max_len = max(len(n) for n in names)
+    return [f"{prefix}{n}:{' ' * (max_len - len(n))}  {para[n]}" for n in names]
 
 
 def print_summary(data: SearchData) -> None:
     """Print a formatted summary box of the search results."""
-    para_str = _format_para(data.best_para)
+    tracker = data._tracker
 
     lines = [
         "",
-        f"  Optimizer:        {data.optimizer_name}",
-        f"  Iterations:       {data.n_iter}"
-        f" ({data.n_init} init + {data.n_optimization} optimization)",
-        f"  Best score:       {data.best_score}"
+        f"  Objective:  {tracker.objective_name}",
+        f"  Optimizer:  {tracker.optimizer_name}",
+        "",
+        f"  Best score: {data.best_score}"
         f" (found at iteration {data.best_iteration})",
-        f"  Best parameters:  {para_str}",
-        "",
-        "  Timing:",
-        f"    Total:            {data.total_time:.3f}s",
-        f"    Avg eval:         {data.avg_eval_time:.4f}s",
-        f"    Optimizer overhead: {data.overhead_time:.3f}s"
-        f" ({data.overhead_pct:.1f}%)",
-        "",
-        "  Convergence:",
-        f"    Score improved {data.n_score_improvements} times",
+        "  Best parameters:",
     ]
+    lines.extend(_format_para_lines(data.best_para))
+
+    lines.append("")
+    lines.append(
+        f"  Iterations:      {data.n_iter}"
+        f" ({data.n_init} init + {data.n_optimization} optimization)"
+    )
+    lines.append(f"  Improvements:    {data.n_score_improvements}")
 
     plateau_len, plateau_start, plateau_end = data.longest_plateau
     if plateau_len > 1:
         lines.append(
-            f"    Longest plateau:  {plateau_len} iterations"
+            f"  Longest plateau: {plateau_len} iterations"
             f" (iter {plateau_start}-{plateau_end})"
         )
 
     if data.n_invalid > 0:
         pct = data.n_invalid / data.n_iter * 100
-        lines.append("")
-        lines.append(
-            f"  Invalid evaluations: {data.n_invalid}/{data.n_iter}" f" ({pct:.1f}%)"
-        )
+        lines.append(f"  Invalid evals:   {data.n_invalid}/{data.n_iter} ({pct:.1f}%)")
+
+    lines.append("")
+    lines.append("  Timing:")
+    lines.append(f"    Total:              {data.total_time:.3f}s")
+    lines.append(f"    Avg eval:           {data.avg_eval_time:.4f}s")
+    lines.append(
+        f"    Optimizer overhead: {data.overhead_time:.3f}s ({data.overhead_pct:.1f}%)"
+    )
 
     lines.append("")
 
