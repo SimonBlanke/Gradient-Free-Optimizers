@@ -170,6 +170,9 @@ Result Attributes
     optimizer.best_para    # dict: best parameters found
     optimizer.best_score   # float: best score achieved
     optimizer.search_data  # DataFrame: all evaluations
+    optimizer.data         # SearchData: computed metrics and raw data
+
+See :doc:`user_guide/search_data` for the full ``opt.data`` reference.
 
 
 Initialization Options

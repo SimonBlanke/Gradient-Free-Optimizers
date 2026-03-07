@@ -149,6 +149,13 @@ Guide Sections
       Using the simple ``.search()``
       method.
 
+   .. grid-item-card:: Search Data & Summary
+      :link: user_guide/search_data
+      :link-type: doc
+
+      Understand results with ``opt.data``
+      and the CLI summary.
+
 ----
 
 Algorithms
@@ -212,6 +219,7 @@ GFO provides 22 optimization algorithms organized into four categories:
    user_guide/memory
    user_guide/stopping_conditions
    user_guide/search_interface
+   user_guide/search_data
 
 .. toctree::
    :maxdepth: 2
