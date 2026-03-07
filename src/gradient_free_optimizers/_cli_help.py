@@ -64,8 +64,9 @@ def _build_help_lines() -> tuple[list[str], int]:
         lines.append(f"  {label}{' ' * pad_label}{description}{' ' * pad_desc}{api}")
 
     lines.append("")
-    lines.append("  Usage:  opt.search(..., summary=True)")
-    lines.append("  API:    opt.data.<property>  |  opt.data.raw.<property>")
+    lines.append("  Verbosity flags:")
+    lines.append("    print_results, print_search_stats, print_statistics, print_times")
+    lines.append("  API:  opt.data.<property>  |  opt.data.raw.<property>")
     lines.append("")
 
     content_width = max((len(line) for line in lines if line), default=0)

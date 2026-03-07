@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, Any, Literal
 from ._data import DataAccessor, SearchTracker
 from ._memory import CachedObjectiveAdapter
 from ._objective_adapter import ObjectiveAdapter
-from ._print_info import print_info, print_summary
+from ._print_info import print_summary
 from ._progress_bar import ProgressBarLVL0, ProgressBarLVL1
 from ._results_manager import ResultsManager
 from ._search_statistics import SearchStatistics
@@ -138,7 +138,6 @@ class Search(TimesTracker, SearchStatistics):
             "print_times",
         ],
         optimum: Literal["maximum", "minimum"] = "maximum",
-        summary=False,
     ) -> None:
         self.optimum = optimum
         self._init_search(
@@ -168,7 +167,7 @@ class Search(TimesTracker, SearchStatistics):
                     print(json.dumps(debug_info, indent=2))
                 break
 
-        self._finish_search(summary)
+        self._finish_search()
 
     def _evaluate_position(self, pos: list[int]) -> float:
         t = time.time()
@@ -253,7 +252,7 @@ class Search(TimesTracker, SearchStatistics):
 
         self.n_inits_norm = min((self.init.n_inits - self.n_init_total), self.n_iter)
 
-    def _finish_search(self, summary=False) -> None:
+    def _finish_search(self) -> None:
         # Don't construct DataFrame here - it's built lazily via search_data property
         # This avoids memory spike for high-dimensional search spaces
         self._search_data_cache = None
@@ -261,27 +260,12 @@ class Search(TimesTracker, SearchStatistics):
         self.best_score = self.p_bar.score_best
         self.best_value = self.conv.position2value(self.p_bar.pos_best)
         self.best_para = self.conv.value2para(self.best_value)
-        """
-        if self.memory not in [False, None]:
-            self.memory_dict = self.mem.memory_dict
-        else:
-            self.memory_dict = {}
-        """
+
         self.p_bar.close()
 
-        print_info(
-            self.verbosity,
-            self.objective_function,
-            self.best_score,
-            self.best_para,
-            self.eval_times,
-            self.iter_times,
-            self.n_iter,
-            self.random_seed,
-        )
-
-        if summary:
-            print_summary(self.data)
+        print_sections = {v for v in self.verbosity if v.startswith("print_")}
+        if print_sections:
+            print_summary(self.data, print_sections)
 
     @property
     def data(self) -> DataAccessor:

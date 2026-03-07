@@ -221,10 +221,18 @@ class TestRawData:
         assert len(hill_opt.data.raw.scores_all) == N_ITER
 
 
+ALL_PRINT_SECTIONS = [
+    "print_results",
+    "print_search_stats",
+    "print_statistics",
+    "print_times",
+]
+
+
 class TestPrintSummary:
     def test_summary_box(self, capsys):
         opt = HillClimbingOptimizer(SEARCH_SPACE)
-        opt.search(objective, n_iter=20, verbosity=False, summary=True)
+        opt.search(objective, n_iter=20, verbosity=ALL_PRINT_SECTIONS)
         out = capsys.readouterr().out
         assert "Search Summary" in out
         assert "HillClimbingOptimizer" in out
@@ -232,7 +240,7 @@ class TestPrintSummary:
 
     def test_summary_parameters(self, capsys):
         opt = HillClimbingOptimizer(SEARCH_SPACE)
-        opt.search(objective, n_iter=20, verbosity=False, summary=True)
+        opt.search(objective, n_iter=20, verbosity=ALL_PRINT_SECTIONS)
         out = capsys.readouterr().out
         assert "Best parameters:" in out
         assert "x:" in out
@@ -240,7 +248,7 @@ class TestPrintSummary:
 
     def test_summary_sections(self, capsys):
         opt = HillClimbingOptimizer(SEARCH_SPACE)
-        opt.search(objective, n_iter=20, verbosity=False, summary=True)
+        opt.search(objective, n_iter=20, verbosity=ALL_PRINT_SECTIONS)
         out = capsys.readouterr().out
         assert "── Results ─" in out
         assert "── Search ─" in out
@@ -249,7 +257,7 @@ class TestPrintSummary:
 
     def test_summary_search_metrics(self, capsys):
         opt = HillClimbingOptimizer(SEARCH_SPACE)
-        opt.search(objective, n_iter=20, verbosity=False, summary=True)
+        opt.search(objective, n_iter=20, verbosity=ALL_PRINT_SECTIONS)
         out = capsys.readouterr().out
         assert "Accepted:" in out
         assert "Last improvement:" in out
@@ -257,11 +265,13 @@ class TestPrintSummary:
         assert "Max:" in out
         assert "Throughput:" in out
 
-    def test_summary_with_other_verbosity(self, capsys):
+    def test_summary_subset_verbosity(self, capsys):
         opt = HillClimbingOptimizer(SEARCH_SPACE)
-        opt.search(objective, n_iter=20, verbosity=["print_results"], summary=True)
+        opt.search(objective, n_iter=20, verbosity=["print_results"])
         out = capsys.readouterr().out
         assert "Search Summary" in out
+        assert "── Results ─" in out
+        assert "── Timing ─" not in out
 
 
 class TestAcrossOptimizers:
@@ -295,7 +305,7 @@ class TestAcrossOptimizers:
     @pytest.mark.parametrize(*optimizers_representative)
     def test_summary_output(self, Optimizer, capsys):
         opt = Optimizer(SEARCH_SPACE)
-        opt.search(objective, n_iter=20, verbosity=False, summary=True)
+        opt.search(objective, n_iter=20, verbosity=ALL_PRINT_SECTIONS)
         out = capsys.readouterr().out
         assert "Search Summary" in out
         assert Optimizer.__name__ in out
