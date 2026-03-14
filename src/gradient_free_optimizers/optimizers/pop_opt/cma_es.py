@@ -18,6 +18,48 @@ if TYPE_CHECKING:
 
 
 class CMAESOptimizer(BasePopulationOptimizer):
+    """CMA-ES (Covariance Matrix Adaptation Evolution Strategy).
+
+    CMA-ES adapts a multivariate normal distribution to the fitness
+    landscape by learning the full covariance structure. It samples
+    lambda candidate solutions per generation, evaluates them, selects
+    the mu best, and updates the distribution parameters (mean, covariance
+    matrix, step size) using evolution paths.
+
+    All dimensions are internally normalized to [0, 1] so the initial
+    covariance matrix (identity) treats all dimensions equally. For
+    discrete and categorical dimensions, sampled float values are rounded
+    to the nearest valid index by the framework's clipping layer.
+
+    Parameters
+    ----------
+    search_space : dict
+        Dictionary mapping parameter names to search dimension definitions.
+    initialize : dict, optional
+        Strategy for generating initial positions.
+    constraints : list, optional
+        List of constraint functions.
+    random_state : int, optional
+        Seed for random number generation.
+    rand_rest_p : float, default=0
+        Probability of random restart.
+    nth_process : int, optional
+        Process index for parallel optimization.
+    population : int or None, default=None
+        Number of samples per generation (lambda in CMA-ES notation).
+        If None, uses the standard heuristic: 4 + floor(3 * ln(n)).
+    mu : int or None, default=None
+        Number of parents selected from each generation.
+        If None, uses population // 2.
+    sigma : float, default=0.3
+        Initial step size as a fraction of the normalized search space.
+        Controls how far from the mean new samples are drawn initially.
+    ipop_restart : bool, default=False
+        Enable IPOP (Increasing Population) restart strategy.
+        When stagnation is detected, doubles the population size and
+        restarts from a random position while keeping the best solution.
+    """
+
     name = "CMA-ES"
     _name_ = "cma_es"
     __name__ = "CMAESOptimizer"
