@@ -167,3 +167,48 @@ class CMAESOptimizer(BasePopulationOptimizer):
         # Expected length of N(0, I) vector
         self._chi_n = np.sqrt(n) * (1 - 1 / (4 * n) + 1 / (21 * n**2))
 
+    def _eigendecomposition(self):
+        """Decompose C = B * D^2 * B^T for sampling and invsqrtC.
+
+        Also enforces symmetry and positive-definiteness, and resets
+        C if the condition number becomes too large.
+        """
+        self._C = np.triu(self._C) + np.triu(self._C, 1).T
+
+        D_sq, B = np.linalg.eigh(self._C)
+        D_sq = np.maximum(D_sq, 1e-20)
+
+        # Reset if condition number is dangerously large
+        if D_sq.max() / D_sq.min() > 1e14:
+            self._C = np.eye(self._n)
+            D_sq = np.ones(self._n)
+            B = np.eye(self._n)
+
+        self._D = np.sqrt(D_sq)
+        self._B = B
+        self._invsqrtC = B @ np.diag(1.0 / self._D) @ B.T
+
+    def _sample_generation(self):
+        """Sample lambda candidates from N(mean, sigma^2 * C)."""
+        self._generation_samples = []
+        self._generation_scores = []
+        self._sample_idx = 0
+
+        for _ in range(self._lambda):
+            z = self._rng.standard_normal(self._n)
+            sample = self._mean + self._cma_sigma * (self._B @ (self._D * z))
+            self._generation_samples.append(sample)
+
+    def _on_finish_initialization(self):
+        """Initialize CMA-ES mean from best init position, then sample."""
+        if self._pos_best is not None:
+            self._mean = self._normalize(self._pos_best.copy())
+        else:
+            self._mean = np.full(self._n, 0.5)
+
+        self._cma_sigma = self._initial_sigma
+        self._C = np.eye(self._n)
+        self._p_sigma = np.zeros(self._n)
+        self._p_c = np.zeros(self._n)
+        self._eigendecomposition()
+        self._sample_generation()
