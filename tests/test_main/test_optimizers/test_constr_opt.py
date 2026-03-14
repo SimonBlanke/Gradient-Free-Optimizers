@@ -101,3 +101,67 @@ def test_constraint_tracking_consistency(Optimizer):
     assert n_current <= n_new
     assert n_best == n_best_scores
     assert n_best <= n_new
+
+
+@pytest.mark.parametrize(*optimizers)
+def test_constraint_categorical(Optimizer):
+    search_space = {
+        "algo": ["adam", "sgd", "rmsprop", "adagrad"],
+        "lr": np.arange(0.001, 0.1, 0.001),
+    }
+    opt = Optimizer(
+        search_space,
+        constraints=[lambda p: p["algo"] in ["adam", "sgd"]],
+        random_state=42,
+    )
+    opt.search(lambda p: -p["lr"], n_iter=30, verbosity=False)
+
+    values = opt.search_data["algo"].values
+    assert all(v in ["adam", "sgd"] for v in values)
+
+
+@pytest.mark.parametrize(*optimizers)
+def test_constraint_mixed_dimensions(Optimizer):
+    """Continuous tuple + discrete array + categorical list."""
+    search_space = {
+        "x": np.arange(-10, 10, 1),
+        "y": (-5.0, 5.0),
+        "mode": ["fast", "slow", "medium"],
+    }
+    opt = Optimizer(
+        search_space,
+        constraints=[lambda p: p["x"] > 0, lambda p: p["y"] > 0],
+        random_state=42,
+    )
+    opt.search(
+        lambda p: -(p["x"] ** 2 + p["y"] ** 2),
+        n_iter=50,
+        verbosity=False,
+    )
+
+    data = opt.search_data
+    assert np.all(data["x"].values > 0)
+    assert np.all(data["y"].values > 0)
+
+
+@pytest.mark.parametrize(*optimizers)
+def test_constraint_cross_parameter(Optimizer):
+    """Single constraint referencing multiple parameters."""
+    search_space = {
+        "x1": np.arange(-10, 10, 1),
+        "x2": np.arange(-10, 10, 1),
+    }
+    opt = Optimizer(
+        search_space,
+        constraints=[lambda p: p["x1"] + p["x2"] > 0],
+        random_state=42,
+    )
+    opt.search(
+        lambda p: -(p["x1"] ** 2 + p["x2"] ** 2),
+        n_iter=50,
+        verbosity=False,
+    )
+
+    data = opt.search_data
+    sums = data["x1"].values + data["x2"].values
+    assert np.all(sums > 0)
