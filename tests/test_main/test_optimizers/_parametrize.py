@@ -1,5 +1,6 @@
 from gradient_free_optimizers import (
     BayesianOptimizer,
+    CMAESOptimizer,
     DifferentialEvolutionOptimizer,
     DirectAlgorithm,
     DownhillSimplexOptimizer,
@@ -50,6 +51,7 @@ optimizers_PopBased = (
         (GeneticAlgorithmOptimizer),
         (EvolutionStrategyOptimizer),
         (DifferentialEvolutionOptimizer),
+        (CMAESOptimizer),
     ],
 )
 
@@ -72,6 +74,7 @@ optimizers_noSBOM = (
         (GeneticAlgorithmOptimizer),
         (EvolutionStrategyOptimizer),
         (DifferentialEvolutionOptimizer),
+        (CMAESOptimizer),
         (DownhillSimplexOptimizer),
     ],
 )
@@ -99,6 +102,7 @@ optimizers_local = (
         (GeneticAlgorithmOptimizer),
         (EvolutionStrategyOptimizer),
         (DifferentialEvolutionOptimizer),
+        (CMAESOptimizer),
         (DownhillSimplexOptimizer),
     ],
 )
@@ -125,6 +129,7 @@ optimizers = (
         (GeneticAlgorithmOptimizer),
         (EvolutionStrategyOptimizer),
         (DifferentialEvolutionOptimizer),
+        (CMAESOptimizer),
         (LipschitzOptimizer),
         (BayesianOptimizer),
         (TreeStructuredParzenEstimators),
@@ -154,6 +159,7 @@ optimizers_2 = (
         (GeneticAlgorithmOptimizer),
         (EvolutionStrategyOptimizer),
         (DifferentialEvolutionOptimizer),
+        (CMAESOptimizer),
         (LipschitzOptimizer),
         (BayesianOptimizer),
         (TreeStructuredParzenEstimators),
@@ -179,6 +185,7 @@ optimizers_non_deterministic = (
         (ParticleSwarmOptimizer),
         (SpiralOptimization),
         (EvolutionStrategyOptimizer),
+        (CMAESOptimizer),
         (LipschitzOptimizer),
         (BayesianOptimizer),
         (TreeStructuredParzenEstimators),
@@ -205,6 +212,7 @@ optimizers_non_smbo = (
         (ParticleSwarmOptimizer),
         (SpiralOptimization),
         (EvolutionStrategyOptimizer),
+        (CMAESOptimizer),
     ],
 )
 

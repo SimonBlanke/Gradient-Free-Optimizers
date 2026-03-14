@@ -24,6 +24,7 @@ slow = pytest.mark.slow
 
 from gradient_free_optimizers import (
     BayesianOptimizer,
+    CMAESOptimizer,
     DifferentialEvolutionOptimizer,
     DirectAlgorithm,
     DownhillSimplexOptimizer,
@@ -71,6 +72,7 @@ ALL_OPTIMIZERS = [
     GeneticAlgorithmOptimizer,
     EvolutionStrategyOptimizer,
     DifferentialEvolutionOptimizer,
+    CMAESOptimizer,
     BayesianOptimizer,
     TreeStructuredParzenEstimators,
     ForestOptimizer,
@@ -84,6 +86,7 @@ POPULATION_OPTIMIZERS = {
     GeneticAlgorithmOptimizer,
     EvolutionStrategyOptimizer,
     DifferentialEvolutionOptimizer,
+    CMAESOptimizer,
 }
 
 # SMBO optimizers are computationally expensive (train models each iteration)
