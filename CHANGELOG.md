@@ -9,6 +9,24 @@ For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke
 
 ## [Unreleased]
 
+## [1.11.0] - 2026-03-14
+
+### Added
+- `CMAESOptimizer` implementing the CMA-ES (Covariance Matrix Adaptation Evolution Strategy) algorithm with `population`, `mu`, `sigma`, and `ipop_restart` parameters
+- `callbacks` parameter in `search()` accepting a list of functions that receive a frozen `CallbackInfo` dataclass per iteration; returning `False` stops the search early
+- `catch` parameter in `search()` mapping exception types to fallback scores for graceful error handling during objective function evaluation
+- (private) Data accessor (`opt._data`) providing 34+ computed metrics including timing breakdowns, convergence data, search statistics, and score distributions
+- Search summary printing via new verbosity options: `"print_results"`, `"print_search_stats"`, `"print_statistics"`, `"print_times"`
+- `gfo-help` CLI command showing available metrics and API accessor paths
+- `py.typed` marker file for PEP 561 type checker support
+- Type annotations across the package
+
+### Changed
+- Docs: parameter entries added to right-side page TOC, landing page and styling updated
+
+### Fixed
+- Unicode encoding in search summary on Windows terminals (falls back to ASCII box-drawing)
+
 ## [1.10.1] - 2026-02-19
 
 ### Fixed
