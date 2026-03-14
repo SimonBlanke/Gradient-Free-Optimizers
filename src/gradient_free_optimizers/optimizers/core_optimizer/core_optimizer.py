@@ -429,15 +429,19 @@ class CoreOptimizer(ABC):
         -------
             New position as numpy array
         """
-        # Retry loop for constraint satisfaction
         max_retries = 100
-        for _ in range(max_retries):
-            clipped_pos = self._generate_position()
+        clipped_pos = self._generate_position()
 
-            # Check constraints
-            if self.conv.not_in_constraint(clipped_pos):
-                break
-        # If max retries exceeded, use the last generated position anyway
+        if not self.conv.not_in_constraint(clipped_pos):
+            for _ in range(max_retries):
+                clipped_pos = self._generate_position()
+                if self.conv.not_in_constraint(clipped_pos):
+                    break
+            else:
+                for _ in range(max_retries):
+                    clipped_pos = self._clip_position(self.init.move_random_typed())
+                    if self.conv.not_in_constraint(clipped_pos):
+                        break
 
         # Track as new position (property setter auto-appends)
         self._pos_new = clipped_pos
