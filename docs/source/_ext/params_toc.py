@@ -1,14 +1,17 @@
-"""Sphinx extension: add class constructor parameters to the page TOC.
+"""Sphinx extension: add parameter entries to the page TOC.
 
-Numpydoc renders constructor parameters as definition lists inside a
-field-list entry ("Parameters: ...").  These are invisible to Sphinx's
-built-in TOC collector, which only recognises section nodes and
+Numpydoc renders parameters as definition lists inside a field-list
+entry ("Parameters: ...").  These are invisible to Sphinx's built-in
+TOC collector, which only recognises section nodes and
 ``desc_signature`` nodes.
 
 This extension runs *after* ``TocTreeCollector`` (priority 900 > 500),
 adds anchor ids to every parameter ``<dt>`` in the doctree, and injects
 matching entries into ``env.tocs[docname]`` so the page-toc sidebar
 picks them up.
+
+Handles both class constructors (grouped under a "Parameters" heading)
+and methods (parameters nested directly under the method entry).
 """
 
 from __future__ import annotations
@@ -20,8 +23,8 @@ from sphinx.application import Sphinx
 # -- helpers -----------------------------------------------------------------
 
 
-def _get_class_id(desc_node: nodes.Element) -> str | None:
-    """Return the primary anchor id from a class's ``desc_signature``."""
+def _get_obj_id(desc_node: nodes.Element) -> str | None:
+    """Return the primary anchor id from a ``desc_signature``."""
     for sig in desc_node.traverse(addnodes.desc_signature):
         ids = sig.get("ids", [])
         if ids:
@@ -31,9 +34,9 @@ def _get_class_id(desc_node: nodes.Element) -> str | None:
 
 def _collect_parameters(
     desc_node: nodes.Element,
-    class_id: str,
+    obj_id: str,
 ) -> tuple[str, list[tuple[str, str]]] | None:
-    """Walk a class desc node and extract numpydoc parameter entries.
+    """Walk a desc node and extract numpydoc parameter entries.
 
     Returns ``(parameters_field_anchor, [(param_name, param_anchor), ...])``
     or ``None`` when there is no Parameters field.
@@ -45,8 +48,7 @@ def _collect_parameters(
             if field.children[0].astext().strip() != "Parameters":
                 continue
 
-            # anchor for the "Parameters" heading itself
-            section_id = f"{class_id}-parameters"
+            section_id = f"{obj_id}-parameters"
             field["ids"].append(section_id)
 
             params: list[tuple[str, str]] = []
@@ -59,7 +61,7 @@ def _collect_parameters(
                     for child in term.children:
                         if isinstance(child, nodes.strong):
                             name = child.astext()
-                            pid = f"{class_id}-p-{name}"
+                            pid = f"{obj_id}-p-{name}"
                             term["ids"].append(pid)
                             params.append((name, pid))
                             break
@@ -118,19 +120,22 @@ def _process_doctree(app: Sphinx, doctree: nodes.document) -> None:
         return
 
     # Phase 1 -- collect parameters and add anchor ids to the doctree
-    class_params: dict[str, tuple[str, list[tuple[str, str]]]] = {}
+    # key: anchor id, value: (objtype, section_id, params)
+    collected: dict[str, tuple[str, str, list[tuple[str, str]]]] = {}
 
     for desc_node in doctree.traverse(addnodes.desc):
-        if desc_node.get("objtype") != "class":
+        objtype = desc_node.get("objtype")
+        if objtype not in ("class", "method"):
             continue
-        class_id = _get_class_id(desc_node)
-        if not class_id:
+        obj_id = _get_obj_id(desc_node)
+        if not obj_id:
             continue
-        result = _collect_parameters(desc_node, class_id)
+        result = _collect_parameters(desc_node, obj_id)
         if result:
-            class_params[class_id] = result
+            section_id, params = result
+            collected[obj_id] = (objtype, section_id, params)
 
-    if not class_params:
+    if not collected:
         return
 
     # Phase 2 -- patch env.tocs so the page-toc sidebar shows them
@@ -146,35 +151,42 @@ def _process_doctree(app: Sphinx, doctree: nodes.document) -> None:
             if not isinstance(ref, nodes.reference):
                 continue
             anchor = ref.get("anchorname", "").lstrip("#")
-            if anchor not in class_params:
+            if anchor not in collected:
                 continue
 
-            section_id, params = class_params[anchor]
+            objtype, section_id, params = collected[anchor]
 
-            # locate (or create) the nested bullet list for this class
-            nested = None
-            for child in list_item.children:
-                if isinstance(child, nodes.bullet_list):
-                    nested = child
-                    break
-            if nested is None:
-                nested = nodes.bullet_list()
-                list_item.append(nested)
+            if objtype == "class":
+                # locate (or create) the nested bullet list
+                nested = None
+                for child in list_item.children:
+                    if isinstance(child, nodes.bullet_list):
+                        nested = child
+                        break
+                if nested is None:
+                    nested = nodes.bullet_list()
+                    list_item.append(nested)
 
-            # "Parameters" group entry with individual params nested below
-            group_item = _make_toc_item(
-                "Parameters",
-                docname,
-                section_id,
-                code=False,
-            )
-            param_list = nodes.bullet_list()
-            for pname, pid in params:
-                param_list.append(_make_toc_item(pname, docname, pid, code=True))
-            group_item.append(param_list)
+                # "Parameters" group with individual params nested below
+                group_item = _make_toc_item(
+                    "Parameters",
+                    docname,
+                    section_id,
+                    code=False,
+                )
+                param_list = nodes.bullet_list()
+                for pname, pid in params:
+                    param_list.append(_make_toc_item(pname, docname, pid, code=True))
+                group_item.append(param_list)
+                nested.insert(0, group_item)
 
-            # insert before existing methods / attributes
-            nested.insert(0, group_item)
+            elif objtype == "method":
+                # nest params directly under the method entry
+                param_list = nodes.bullet_list()
+                for pname, pid in params:
+                    param_list.append(_make_toc_item(pname, docname, pid, code=True))
+                list_item.append(param_list)
+
             break
 
 
