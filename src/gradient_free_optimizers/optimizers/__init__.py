@@ -50,6 +50,7 @@ from .local_opt import (
 # Population-based optimizers
 from .pop_opt import (
     BasePopulationOptimizer,
+    CMAESOptimizer,
     DifferentialEvolutionOptimizer,
     EvolutionStrategyOptimizer,
     GeneticAlgorithmOptimizer,
@@ -85,6 +86,7 @@ __all__ = [
     "LipschitzOptimizer",
     # Population
     "BasePopulationOptimizer",
+    "CMAESOptimizer",
     "ParticleSwarmOptimizer",
     "DifferentialEvolutionOptimizer",
     "GeneticAlgorithmOptimizer",

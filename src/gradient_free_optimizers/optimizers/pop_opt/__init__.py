@@ -6,6 +6,7 @@ from ._individual import Individual
 from ._particle import Particle
 from ._spiral import Spiral
 from .base_population_optimizer import BasePopulationOptimizer
+from .cma_es import CMAESOptimizer
 from .differential_evolution import DifferentialEvolutionOptimizer
 from .evolution_strategy import EvolutionStrategyOptimizer
 from .genetic_algorithm import GeneticAlgorithmOptimizer
@@ -15,6 +16,7 @@ from .spiral_optimization import SpiralOptimization
 
 __all__ = [
     "BasePopulationOptimizer",
+    "CMAESOptimizer",
     "ParticleSwarmOptimizer",
     "DifferentialEvolutionOptimizer",
     "GeneticAlgorithmOptimizer",

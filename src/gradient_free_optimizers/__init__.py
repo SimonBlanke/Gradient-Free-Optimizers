@@ -9,6 +9,7 @@ __license__ = "MIT"
 
 from .optimizer_search import (
     BayesianOptimizer,
+    CMAESOptimizer,
     DifferentialEvolutionOptimizer,
     DirectAlgorithm,
     DownhillSimplexOptimizer,
@@ -45,6 +46,7 @@ __all__ = [
     "PatternSearch",
     "LipschitzOptimizer",
     "DirectAlgorithm",
+    "CMAESOptimizer",
     "RandomAnnealingOptimizer",
     "ParallelTemperingOptimizer",
     "ParticleSwarmOptimizer",
