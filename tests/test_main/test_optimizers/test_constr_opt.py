@@ -1,125 +1,103 @@
-"""Tests for constrained optimization with constraint functions."""
+"""Tests for constrained optimization."""
 
 import numpy as np
 import pytest
 
-from ._parametrize import optimizers_representative
+from ._parametrize import optimizers
 
 
-@pytest.mark.parametrize(*optimizers_representative)
-def test_constr_opt_0(Optimizer):
-    def objective_function(para):
-        score = -para["x1"] * para["x1"]
-        return score
+@pytest.mark.parametrize(*optimizers)
+def test_constraint_single(Optimizer):
+    search_space = {"x1": np.arange(-10, 10, 1)}
+    opt = Optimizer(
+        search_space,
+        constraints=[lambda p: p["x1"] > -5],
+        random_state=42,
+    )
+    opt.search(lambda p: -(p["x1"] ** 2), n_iter=30, verbosity=False)
 
-    search_space = {
-        "x1": np.arange(-15, 15, 1),
-    }
-
-    def constraint_1(para):
-        return para["x1"] > -5
-
-    constraints_list = [constraint_1]
-
-    opt = Optimizer(search_space, constraints=constraints_list)
-    opt.search(objective_function, n_iter=20)
-
-    search_data = opt.search_data
-    x0_values = search_data["x1"].values
-
-    print("\n search_data \n", search_data, "\n")
-
-    assert np.all(x0_values > -5)
+    values = opt.search_data["x1"].values
+    assert np.all(values > -5)
 
 
-@pytest.mark.parametrize(*optimizers_representative)
-def test_constr_opt_1(Optimizer):
-    def objective_function(para):
-        score = -(para["x1"] * para["x1"] + para["x2"] * para["x2"])
-        return score
+@pytest.mark.parametrize(*optimizers)
+def test_constraint_multiple(Optimizer):
+    search_space = {"x1": np.arange(-10, 10, 0.5)}
+    opt = Optimizer(
+        search_space,
+        constraints=[lambda p: p["x1"] > -3, lambda p: p["x1"] < 3],
+        random_state=42,
+    )
+    opt.search(lambda p: -(p["x1"] ** 2), n_iter=30, verbosity=False)
 
+    values = opt.search_data["x1"].values
+    assert np.all(values > -3)
+    assert np.all(values < 3)
+
+
+@pytest.mark.parametrize(*optimizers)
+def test_constraint_2d(Optimizer):
     search_space = {
         "x1": np.arange(-10, 10, 1),
         "x2": np.arange(-10, 10, 1),
     }
+    opt = Optimizer(
+        search_space,
+        constraints=[lambda p: p["x1"] > 0, lambda p: p["x2"] > 0],
+        random_state=42,
+    )
+    opt.search(
+        lambda p: -(p["x1"] ** 2 + p["x2"] ** 2),
+        n_iter=50,
+        verbosity=False,
+    )
 
-    def constraint_1(para):
-        return para["x1"] > -5
-
-    constraints_list = [constraint_1]
-
-    opt = Optimizer(search_space, constraints=constraints_list)
-    opt.search(objective_function, n_iter=30)
-
-    search_data = opt.search_data
-    x0_values = search_data["x1"].values
-
-    print("\n search_data \n", search_data, "\n")
-
-    assert np.all(x0_values > -5)
+    data = opt.search_data
+    assert np.all(data["x1"].values > 0)
+    assert np.all(data["x2"].values > 0)
 
 
-@pytest.mark.parametrize(*optimizers_representative)
-def test_constr_opt_2(Optimizer):
+@pytest.mark.parametrize(*optimizers)
+def test_constraint_adversarial(Optimizer):
+    """Optimum at x1=-80 is in the excluded region (x1 <= 50)."""
+    search_space = {"x1": np.arange(-100, 100, 1)}
+    opt = Optimizer(
+        search_space,
+        constraints=[lambda p: p["x1"] > 50],
+        random_state=42,
+    )
+    opt.search(
+        lambda p: -abs(p["x1"] - (-80)),
+        n_iter=100,
+        verbosity=False,
+    )
+
+    values = opt.search_data["x1"].values
+    assert np.all(values > 50)
+
+
+@pytest.mark.parametrize(*optimizers)
+def test_constraint_tracking_consistency(Optimizer):
     n_iter = 30
+    search_space = {"x1": np.arange(-10, 10, 0.1)}
 
-    def objective_function(para):
-        score = -para["x1"] * para["x1"]
-        return score
+    opt = Optimizer(
+        search_space,
+        constraints=[lambda p: p["x1"] > -5, lambda p: p["x1"] < 5],
+        random_state=42,
+    )
+    opt.search(lambda p: -(p["x1"] ** 2), n_iter=n_iter, verbosity=False)
 
-    search_space = {
-        "x1": np.arange(-10, 10, 0.1),
-    }
+    n_new = sum(len(o._pos_new_list) for o in opt.optimizers)
+    n_new_scores = sum(len(o._score_new_list) for o in opt.optimizers)
+    n_current = sum(len(o._pos_current_list) for o in opt.optimizers)
+    n_current_scores = sum(len(o._score_current_list) for o in opt.optimizers)
+    n_best = sum(len(o._pos_best_list) for o in opt.optimizers)
+    n_best_scores = sum(len(o._score_best_list) for o in opt.optimizers)
 
-    def constraint_1(para):
-        return para["x1"] > -5
-
-    def constraint_2(para):
-        return para["x1"] < 5
-
-    constraints_list = [constraint_1, constraint_2]
-
-    opt = Optimizer(search_space, constraints=constraints_list)
-    opt.search(objective_function, n_iter=n_iter)
-
-    search_data = opt.search_data
-    x0_values = search_data["x1"].values
-
-    print("\n search_data \n", search_data, "\n")
-
-    assert np.all(x0_values > -5)
-    assert np.all(x0_values < 5)
-
-    n_new_positions = 0
-    n_new_scores = 0
-
-    n_current_positions = 0
-    n_current_scores = 0
-
-    n_best_positions = 0
-    n_best_scores = 0
-
-    for optimizer in opt.optimizers:
-        n_new_positions = n_new_positions + len(optimizer._pos_new_list)
-        n_new_scores = n_new_scores + len(optimizer._score_new_list)
-
-        n_current_positions = n_current_positions + len(optimizer._pos_current_list)
-        n_current_scores = n_current_scores + len(optimizer._score_current_list)
-
-        n_best_positions = n_best_positions + len(optimizer._pos_best_list)
-        n_best_scores = n_best_scores + len(optimizer._score_best_list)
-
-        print("\n  optimizer", optimizer)
-        print("  n_new_positions", optimizer._pos_new_list)
-        print("  n_new_scores", optimizer._score_new_list)
-
-    assert n_new_positions == n_iter
-    assert n_new_scores == n_iter
-
-    assert n_current_positions == n_current_scores
-    assert n_current_positions <= n_new_positions
-
-    assert n_best_positions == n_best_scores
-    assert n_best_positions <= n_new_positions
-
-    assert n_new_positions == n_new_scores
+    assert n_new == n_iter
+    assert n_new == n_new_scores
+    assert n_current == n_current_scores
+    assert n_current <= n_new
+    assert n_best == n_best_scores
+    assert n_best <= n_new
