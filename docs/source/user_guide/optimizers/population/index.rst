@@ -28,6 +28,8 @@ Overview
       - Population of hill climbers with occasional mixing.
     * - :doc:`differential_evolution`
       - Creates new solutions from weighted differences.
+    * - :doc:`cma_es`
+      - Adapts a full covariance matrix to learn landscape structure.
 
 
 When to Use Population-Based
@@ -120,6 +122,10 @@ Algorithm Comparison
       - Difference vectors
       - Non-linear continuous
       - Self-adaptive steps
+    * - CMA-ES
+      - Covariance matrix
+      - Correlated continuous
+      - Full covariance adaptation
 
 
 Conceptual Comparison
@@ -217,3 +223,4 @@ Algorithms
     genetic_algorithm
     evolution_strategy
     differential_evolution
+    cma_es

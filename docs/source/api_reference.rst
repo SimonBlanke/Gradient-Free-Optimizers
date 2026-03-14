@@ -11,7 +11,7 @@ Complete API documentation for all optimizers and their methods.
 Overview
 ========
 
-All 22 optimizers in Gradient-Free-Optimizers share a common interface,
+All 23 optimizers in Gradient-Free-Optimizers share a common interface,
 making it easy to switch between algorithms without changing your code.
 
 .. code-block:: python
@@ -82,6 +82,7 @@ Optimizer Categories
       - :class:`~gradient_free_optimizers.GeneticAlgorithmOptimizer`
       - :class:`~gradient_free_optimizers.EvolutionStrategyOptimizer`
       - :class:`~gradient_free_optimizers.DifferentialEvolutionOptimizer`
+      - :class:`~gradient_free_optimizers.CMAESOptimizer`
 
    .. grid-item-card:: Sequential Model-Based
       :class-card: sd-border-start sd-border-warning
@@ -118,6 +119,7 @@ Optimizers
     gradient_free_optimizers.GeneticAlgorithmOptimizer
     gradient_free_optimizers.EvolutionStrategyOptimizer
     gradient_free_optimizers.DifferentialEvolutionOptimizer
+    gradient_free_optimizers.CMAESOptimizer
     gradient_free_optimizers.BayesianOptimizer
     gradient_free_optimizers.TreeStructuredParzenEstimators
     gradient_free_optimizers.ForestOptimizer
