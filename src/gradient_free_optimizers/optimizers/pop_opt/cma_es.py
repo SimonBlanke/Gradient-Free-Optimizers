@@ -281,3 +281,128 @@ class CMAESOptimizer(BasePopulationOptimizer):
         """Return discrete portion of the current CMA-ES sample."""
         self._setup_iteration()
         return self._current_denorm_pos[self._discrete_mask]
+
+    def _on_evaluate(self, score_new: float) -> None:
+        """Collect score and trigger CMA update when generation is complete.
+
+        After lambda evaluations, performs the full CMA-ES parameter
+        update (mean, evolution paths, covariance matrix, step size)
+        and samples the next generation.
+
+        Parameters
+        ----------
+        score_new : float
+            Score of the most recently evaluated position.
+        """
+        self._generation_scores.append(score_new)
+        self._sample_idx += 1
+
+        self._update_best(self._pos_new, score_new)
+        self._update_current(self._pos_new, score_new)
+
+        self._iteration_setup_done = False
+        self._current_denorm_pos = None
+
+        if self._sample_idx >= self._lambda:
+            self._update_cma()
+            self._generation_count += 1
+
+            if self.ipop_restart:
+                self._check_restart()
+
+            self._sample_generation()
+
+    def _update_cma(self):
+        """Full CMA-ES parameter update after one generation.
+
+        Steps:
+        1. Rank samples by score (descending, since we maximize)
+        2. Compute weighted mean from mu best samples
+        3. Update cumulation paths (p_sigma, p_c)
+        4. Update covariance matrix C (rank-one + rank-mu)
+        5. Update step size sigma via CSA
+        6. Re-decompose C for next generation's sampling
+        """
+        n = self._n
+        old_mean = self._mean.copy()
+
+        # 1. Rank by score (descending)
+        indices = np.argsort(self._generation_scores)[::-1]
+
+        # 2. Weighted mean of mu best samples
+        self._mean = np.zeros(n)
+        for i in range(self._mu):
+            self._mean += self._weights[i] * self._generation_samples[indices[i]]
+
+        # Weighted step in normalized space
+        y_w = (self._mean - old_mean) / self._cma_sigma
+
+        # 3a. Evolution path for step-size control (CSA)
+        self._p_sigma = (1 - self._c_sigma) * self._p_sigma + np.sqrt(
+            self._c_sigma * (2 - self._c_sigma) * self._mu_eff
+        ) * (self._invsqrtC @ y_w)
+
+        # h_sigma: stall indicator for p_c update
+        p_sigma_norm = np.linalg.norm(self._p_sigma)
+        gen_factor = 1 - (1 - self._c_sigma) ** (2 * (self._generation_count + 1))
+        threshold = (1.4 + 2 / (n + 1)) * self._chi_n * np.sqrt(gen_factor)
+        h_sigma = 1.0 if p_sigma_norm < threshold else 0.0
+
+        # 3b. Evolution path for rank-one update
+        self._p_c = (1 - self._c_c) * self._p_c + h_sigma * np.sqrt(
+            self._c_c * (2 - self._c_c) * self._mu_eff
+        ) * y_w
+
+        # 4. Covariance matrix update
+        delta_h = (1 - h_sigma) * self._c_c * (2 - self._c_c)
+
+        rank_one = np.outer(self._p_c, self._p_c)
+
+        rank_mu = np.zeros((n, n))
+        for i in range(self._mu):
+            y_i = (self._generation_samples[indices[i]] - old_mean) / self._cma_sigma
+            rank_mu += self._weights[i] * np.outer(y_i, y_i)
+
+        self._C = (
+            (1 + self._c_1 * delta_h - self._c_1 - self._c_mu_cov) * self._C
+            + self._c_1 * rank_one
+            + self._c_mu_cov * rank_mu
+        )
+
+        # 5. Step-size update
+        self._cma_sigma *= np.exp(
+            (self._c_sigma / self._d_sigma) * (p_sigma_norm / self._chi_n - 1)
+        )
+        self._cma_sigma = np.clip(self._cma_sigma, 1e-20, 10.0)
+
+        # 6. Eigendecomposition for next generation
+        self._eigendecomposition()
+
+    def _check_restart(self):
+        """Check for stagnation and trigger IPOP restart if needed.
+
+        Doubles the population size on restart while resetting the
+        distribution to a random mean with identity covariance.
+        """
+        if self._score_best > self._best_score_at_restart:
+            self._gens_without_improvement = 0
+            self._best_score_at_restart = self._score_best
+        else:
+            self._gens_without_improvement += 1
+
+        stag_threshold = 10 + int(30 * self._n / max(self._lambda, 1))
+
+        if self._gens_without_improvement >= stag_threshold:
+            self._lambda = min(self._lambda * 2, 2048)
+            self._mu = max(1, self._lambda // 2)
+            self._compute_strategy_params()
+
+            self._mean = self._rng.uniform(0, 1, self._n)
+            self._cma_sigma = self._initial_sigma
+            self._C = np.eye(self._n)
+            self._p_sigma = np.zeros(self._n)
+            self._p_c = np.zeros(self._n)
+            self._eigendecomposition()
+
+            self._gens_without_improvement = 0
+            self._generation_count = 0
