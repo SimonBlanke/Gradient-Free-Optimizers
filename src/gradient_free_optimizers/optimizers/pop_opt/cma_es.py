@@ -123,3 +123,11 @@ class CMAESOptimizer(BasePopulationOptimizer):
 
         self._dim_scales[self._dim_scales == 0] = 1.0
 
+    def _normalize(self, pos):
+        """Map position from original space to [0, 1]^n."""
+        return (pos - self._dim_offsets) / self._dim_scales
+
+    def _denormalize(self, norm_pos):
+        """Map position from [0, 1]^n back to original space."""
+        return norm_pos * self._dim_scales + self._dim_offsets
+
