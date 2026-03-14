@@ -24,4 +24,9 @@ if TYPE_CHECKING:
 
 
 class CMAESOptimizer(BasePopulationOptimizer):
-    pass
+    name = "CMA-ES"
+    _name_ = "cma_es"
+    __name__ = "CMAESOptimizer"
+
+    optimizer_type = "population"
+    computationally_expensive = False
