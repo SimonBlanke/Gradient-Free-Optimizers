@@ -3,6 +3,7 @@
 # License: MIT License
 
 from .bayesian_optimization import BayesianOptimizer
+from .cma_es import CMAESOptimizer
 from .differential_evolution import DifferentialEvolutionOptimizer
 from .direct_algorithm import DirectAlgorithm
 from .downhill_simplex import DownhillSimplexOptimizer
@@ -26,6 +27,7 @@ from .stochastic_hill_climbing import StochasticHillClimbingOptimizer
 from .tree_structured_parzen_estimators import TreeStructuredParzenEstimators
 
 __all__ = [
+    "CMAESOptimizer",
     "HillClimbingOptimizer",
     "StochasticHillClimbingOptimizer",
     "RepulsingHillClimbingOptimizer",
