@@ -19,10 +19,6 @@ import pytest
 from ..core_optimizer import CoreOptimizer
 from ..local_opt import HillClimbingOptimizer
 
-# =============================================================================
-# PHASE 1: ABC ENFORCEMENT TESTS
-# =============================================================================
-
 
 class TestABCEnforcement:
     """Test that incomplete optimizer implementations fail at instantiation."""
@@ -80,11 +76,6 @@ class TestABCEnforcement:
         # Should not raise
         opt = CompleteOptimizer({"x": np.array([1, 2, 3])})
         assert opt is not None
-
-
-# =============================================================================
-# PHASE 2: MOCK-BASED CALL VERIFICATION TESTS
-# =============================================================================
 
 
 class TestTemplateMethodCalls:
@@ -194,11 +185,6 @@ class TestTemplateMethodCalls:
             assert mock_cont.call_count >= 1, "continuous batch not called"
             assert mock_cat.call_count == 0, "categorical batch should not be called"
             assert mock_disc.call_count == 0, "discrete batch should not be called"
-
-
-# =============================================================================
-# PHASE 3: BYPASS PREVENTION TESTS
-# =============================================================================
 
 
 # Collect all optimizer classes that use the template pattern

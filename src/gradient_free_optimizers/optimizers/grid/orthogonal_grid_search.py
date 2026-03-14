@@ -2,16 +2,9 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Orthogonal Grid Search.
+"""Orthogonal Grid Search.
 
-Supports: DISCRETE_NUMERICAL, CATEGORICAL
 Uses sequential nested loop traversal (dimension by dimension).
-
-Template Method Pattern Compliance:
-    - Does NOT override iterate() - keeps public interface intact
-    - Overrides _generate_position() for grid-specific position generation
-    - Constraint handling via iterate()'s retry loop naturally advances grid
 """
 
 import numpy as np
@@ -142,13 +135,6 @@ class OrthogonalGridSearch(BaseOptimizer):
 
         # Clip to valid bounds (handles edge cases)
         return self._clip_position(pos)
-
-    # =========================================================================
-    # Template Method Stubs (not used - _generate_position bypasses them)
-    # =========================================================================
-    # These methods are required by the interface but are not called because
-    # _generate_position() is overridden. Grid search generates the full
-    # position at once, not by dimension type.
 
     def _iterate_continuous_batch(self) -> np.ndarray:
         """Not used - grid search generates full position via _generate_position."""

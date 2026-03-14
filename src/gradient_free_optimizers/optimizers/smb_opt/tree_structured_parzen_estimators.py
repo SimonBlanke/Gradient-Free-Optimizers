@@ -2,11 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Tree-structured Parzen Estimators (TPE).
-
-Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
-"""
+"""Tree-structured Parzen Estimators (TPE)."""
 
 from __future__ import annotations
 

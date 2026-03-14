@@ -2,19 +2,11 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-DIRECT (DIviding RECTangles) Algorithm.
-
-Supports: CONTINUOUS (auto-discretized), CATEGORICAL, DISCRETE_NUMERICAL
-Uses Gower-like distance for mixed dimension types.
+"""DIRECT (DIviding RECTangles) Algorithm.
 
 Continuous dimensions are automatically discretized using the `resolution`
 parameter. This enables systematic rectangle subdivision while maintaining
 the algorithm's Lipschitz-based selection properties.
-
-Note: DIRECT is NOT a surrogate-model-based optimizer. It uses systematic
-subspace division with Lipschitz bounds, not model training. Therefore it
-inherits directly from CoreOptimizer, not from SMBO.
 """
 
 from __future__ import annotations

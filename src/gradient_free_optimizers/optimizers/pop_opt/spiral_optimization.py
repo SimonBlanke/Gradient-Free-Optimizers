@@ -2,16 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Spiral Optimization Algorithm.
-
-Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
-
-Template Method Pattern Compliance:
-    - Does NOT override iterate() - uses CoreOptimizer's orchestration
-    - Implements _iterate_*_batch() for dimension-type-aware spiral movement
-    - Overrides init_pos()/evaluate_init() for population management (acceptable)
-"""
+"""Spiral Optimization Algorithm."""
 
 from __future__ import annotations
 
@@ -170,10 +161,6 @@ class SpiralOptimization(BasePopulationOptimizer):
         self._sort_pop_best_score()
         self.center_pos = self.pop_sorted[0]._pos_current
         self.center_score = self.pop_sorted[0]._score_current
-
-    # =========================================================================
-    # Template Method Implementation - NO iterate() override!
-    # =========================================================================
 
     def _setup_iteration(self) -> None:
         """Set up current iteration by selecting particle and computing spiral position.

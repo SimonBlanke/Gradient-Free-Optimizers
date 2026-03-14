@@ -2,12 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Random Annealing Optimizer.
-
-Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
-(inherits iteration methods from HillClimbingOptimizer)
-"""
+"""Random Annealing Optimizer."""
 
 import numpy as np
 

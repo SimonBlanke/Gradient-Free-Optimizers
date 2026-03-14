@@ -2,21 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Sequential Model-Based Optimization (SMBO) base class.
-
-Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
-
-Template Method Pattern Compliance:
-    SMBO does NOT override internal methods (_iterate, _evaluate, etc.).
-    Instead, it implements the private template methods:
-    - _iterate_*_batch(): return slices of surrogate-proposed position
-    - _on_evaluate(): handle Y_sample tracking and position removal
-
-    The surrogate model is trained once per iteration via _ensure_surrogate_trained(),
-    which caches the proposed position. The batch methods return slices of this
-    cached position to work with CoreOptimizer._iterate()'s dimension-type routing.
-"""
+"""Sequential Model-Based Optimization (SMBO) base class."""
 
 from __future__ import annotations
 
@@ -56,11 +42,6 @@ class SMBO(BaseOptimizer):
     SMBO algorithms build a surrogate model of the objective function
     and use an acquisition function to select the next point to evaluate.
     The surrogate model is trained on evaluated positions and their scores.
-
-    Template Method Compliance:
-        This class follows the Template Method Pattern by implementing
-        _iterate_*_batch() methods that return slices of a surrogate-proposed
-        position, rather than overriding the internal _iterate() method.
 
     Parameters
     ----------
@@ -178,10 +159,6 @@ class SMBO(BaseOptimizer):
             self.X_sample = []
             self.Y_sample = []
 
-    # =========================================================================
-    # Property overrides for SMBO-specific X_sample/Y_sample tracking
-    # =========================================================================
-
     @property
     def _pos_new(self):
         """Get the newest position."""
@@ -285,10 +262,6 @@ class SMBO(BaseOptimizer):
 
     # NOTE: _iterate() is NOT overridden - uses CoreOptimizer._iterate() which calls
     # the _iterate_*_batch() methods below
-
-    # =========================================================================
-    # Template Method Implementations for SMBO
-    # =========================================================================
 
     def _ensure_surrogate_trained(self) -> None:
         """Train surrogate and cache proposed position if not already done.

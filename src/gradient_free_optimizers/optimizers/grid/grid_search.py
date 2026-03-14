@@ -2,18 +2,10 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Grid Search Optimizer.
-
-Supports: DISCRETE_NUMERICAL, CATEGORICAL, CONTINUOUS (auto-discretized)
+"""Grid Search Optimizer.
 
 Continuous dimensions are automatically discretized using the `resolution`
 parameter, which specifies how many grid points to create.
-
-Template Method Pattern Compliance:
-    - Does NOT override iterate() - keeps public interface intact
-    - Overrides _generate_position() for grid-specific position generation
-    - Constraint handling via iterate()'s retry loop naturally advances grid
 """
 
 from functools import reduce
@@ -136,10 +128,6 @@ class GridSearchOptimizer(BaseOptimizer):
         self._dim_sizes = self.conv.dim_sizes
         self._search_space_size = self.conv.search_space_size
 
-    # =========================================================================
-    # Diagonal Traversal
-    # =========================================================================
-
     def _get_diagonal_direction(self):
         """Generate a prime number to serve as direction in search space.
 
@@ -191,10 +179,6 @@ class GridSearchOptimizer(BaseOptimizer):
 
         return np.array(new_pos)
 
-    # =========================================================================
-    # Orthogonal Traversal
-    # =========================================================================
-
     def _compute_orthogonal_position(self):
         """Convert current grid counter to position using orthogonal traversal.
 
@@ -217,10 +201,6 @@ class GridSearchOptimizer(BaseOptimizer):
             remainder = remainder // dim_size
 
         return np.array(new_pos)
-
-    # =========================================================================
-    # Template Method Override
-    # =========================================================================
 
     def _generate_position(self):
         """Generate next grid position based on configured direction.
@@ -249,10 +229,6 @@ class GridSearchOptimizer(BaseOptimizer):
 
         # Clip to valid bounds (handles edge cases)
         return self._clip_position(pos)
-
-    # =========================================================================
-    # Template Method Stubs (not used - _generate_position bypasses them)
-    # =========================================================================
 
     def _iterate_continuous_batch(self) -> "np.ndarray":
         """Not used - grid search generates full position via _generate_position."""

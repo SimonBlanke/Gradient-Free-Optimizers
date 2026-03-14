@@ -2,11 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Random Search Optimizer.
-
-Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
-"""
+"""Random Search Optimizer."""
 
 import numpy as np
 

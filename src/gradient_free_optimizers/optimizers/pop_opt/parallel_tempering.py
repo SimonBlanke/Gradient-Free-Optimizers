@@ -2,17 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Parallel Tempering (Replica Exchange) Optimizer.
-
-Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
-(via SimulatedAnnealingOptimizer sub-instances)
-
-Template Method Pattern Compliance:
-    - Does NOT override iterate() - uses CoreOptimizer's orchestration
-    - Implements _iterate_*_batch() for dimension-type-aware position generation
-    - Overrides init_pos()/evaluate_init() for population management (acceptable)
-"""
+"""Parallel Tempering (Replica Exchange) Optimizer."""
 
 import copy
 import math
@@ -223,10 +213,6 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
 
         # Update system's current
         self.p_current._score_current = score_new
-
-    # =========================================================================
-    # Template Method Implementation - NO iterate() override!
-    # =========================================================================
 
     def _setup_iteration(self):
         """Set up current iteration by selecting system and getting its position.

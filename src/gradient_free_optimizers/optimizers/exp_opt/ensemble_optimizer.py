@@ -2,10 +2,8 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Ensemble Optimizer.
+"""Ensemble Optimizer.
 
-Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
 Combines multiple surrogate models for robust predictions.
 """
 

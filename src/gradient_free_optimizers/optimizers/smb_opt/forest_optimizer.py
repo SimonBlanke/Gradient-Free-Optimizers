@@ -2,11 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Forest (Tree Ensemble) Optimizer.
-
-Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
-"""
+"""Forest (Tree Ensemble) Optimizer."""
 
 from __future__ import annotations
 

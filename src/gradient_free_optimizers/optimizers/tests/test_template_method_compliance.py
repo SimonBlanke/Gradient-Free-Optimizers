@@ -34,6 +34,7 @@ from ..local_opt import (
     StochasticHillClimbingOptimizer,
 )
 from ..pop_opt import (
+    CMAESOptimizer,
     DifferentialEvolutionOptimizer,
     EvolutionStrategyOptimizer,
     GeneticAlgorithmOptimizer,
@@ -46,10 +47,6 @@ from ..smb_opt import (
     ForestOptimizer,
     TreeStructuredParzenEstimators,
 )
-
-# =============================================================================
-# All backend optimizer classes to test
-# =============================================================================
 
 ALL_OPTIMIZERS = [
     HillClimbingOptimizer,
@@ -71,15 +68,12 @@ ALL_OPTIMIZERS = [
     GeneticAlgorithmOptimizer,
     EvolutionStrategyOptimizer,
     DifferentialEvolutionOptimizer,
+    CMAESOptimizer,
     BayesianOptimizer,
     ForestOptimizer,
     TreeStructuredParzenEstimators,
 ]
 
-
-# =============================================================================
-# Lifecycle methods that must NOT be overridden
-# =============================================================================
 
 # These are the lifecycle methods defined in CoreOptimizer that orchestrate
 # the optimization process. They have a FIXED flow and must not be changed.
@@ -120,11 +114,6 @@ def _get_method_defining_class(cls, method_name: str):
         if method_name in klass.__dict__:
             return klass
     return None
-
-
-# =============================================================================
-# Tests
-# =============================================================================
 
 
 def optimizer_id(opt_class):

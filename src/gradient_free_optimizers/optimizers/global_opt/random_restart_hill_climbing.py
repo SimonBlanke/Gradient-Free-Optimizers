@@ -2,12 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Random Restart Hill Climbing Optimizer.
-
-Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
-(inherits iteration methods from HillClimbingOptimizer)
-"""
+"""Random Restart Hill Climbing Optimizer."""
 
 import numpy as np
 

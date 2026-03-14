@@ -2,16 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Genetic Algorithm (GA) Optimizer.
-
-Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
-
-Template Method Pattern Compliance:
-    - Does NOT override iterate() - uses CoreOptimizer's orchestration
-    - Implements _iterate_*_batch() for dimension-type-aware GA operations
-    - Overrides init_pos()/evaluate_init() for population management (acceptable)
-"""
+"""Genetic Algorithm (GA) Optimizer."""
 
 from __future__ import annotations
 
@@ -244,10 +235,6 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
             position = self.p_current.move_climb_typed(position, epsilon_mod=0.3)
         return position
 
-    # =========================================================================
-    # Population Initialization Hooks
-    # =========================================================================
-
     def _on_init_pos(self, position) -> None:
         """Initialize current individual with the given position.
 
@@ -280,10 +267,6 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
 
         # Update individual's current
         self.p_current._score_current = score_new
-
-    # =========================================================================
-    # Template Method Implementation - NO iterate() override!
-    # =========================================================================
 
     def _setup_iteration(self) -> None:
         """Set up current iteration by selecting individual and computing position.

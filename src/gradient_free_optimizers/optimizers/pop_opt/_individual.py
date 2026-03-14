@@ -2,17 +2,11 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Individual class for Evolutionary Algorithms.
+"""Individual class for Evolutionary Algorithms.
 
 An Individual extends HillClimbingOptimizer to add self-adaptive mutation
 step sizes (sigma). Used by Genetic Algorithm, Evolution Strategy, and
 Differential Evolution.
-
-Template Method Pattern Compliance:
-    - Does NOT override iterate() - uses CoreOptimizer's orchestration
-    - Overrides _iterate_*_batch() for self-adaptive sigma mutation
-    - Uses lazy setup pattern to mutate sigma once per iteration
 """
 
 import math
@@ -69,10 +63,6 @@ class Individual(HillClimbingOptimizer):
         self._iteration_setup_done = False
         self._use_random_restart = False
         self._original_epsilon = None
-
-    # =========================================================================
-    # Template Method Implementation - NO iterate() override!
-    # =========================================================================
 
     def _setup_iteration(self):
         """Set up current iteration by mutating sigma.
@@ -206,10 +196,6 @@ class Individual(HillClimbingOptimizer):
 
         # Update best if improved
         self._update_best(self._pos_new, score_new)
-
-    # =========================================================================
-    # Helper methods for external use (e.g., by EvolutionStrategyOptimizer)
-    # =========================================================================
 
     def move_climb_typed(self, pos, epsilon_mod=1.0):
         """Move using hill climbing with optional epsilon modifier.

@@ -2,12 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Repulsing Hill Climbing Optimizer.
-
-Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
-(inherits iteration methods from HillClimbingOptimizer)
-"""
+"""Repulsing Hill Climbing Optimizer."""
 
 import numpy as np
 

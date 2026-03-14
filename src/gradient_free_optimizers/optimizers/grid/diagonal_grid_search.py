@@ -2,16 +2,9 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Diagonal Grid Search.
+"""Diagonal Grid Search.
 
-Supports: DISCRETE_NUMERICAL, CATEGORICAL
 Uses number theory (prime generators) to traverse the search space diagonally.
-
-Template Method Pattern Compliance:
-    - Does NOT override iterate() - keeps public interface intact
-    - Overrides _generate_position() for grid-specific position generation
-    - Constraint handling via iterate()'s retry loop naturally advances grid
 """
 
 from functools import reduce
@@ -179,13 +172,6 @@ class DiagonalGridSearch(BaseOptimizer):
 
         # Clip to valid bounds (handles edge cases)
         return self._clip_position(pos)
-
-    # =========================================================================
-    # Template Method Stubs (not used - _generate_position bypasses them)
-    # =========================================================================
-    # These methods are required by the interface but are not called because
-    # _generate_position() is overridden. Grid search generates the full
-    # position at once, not by dimension type.
 
     def _iterate_continuous_batch(self) -> np.ndarray:
         """Not used - grid search generates full position via _generate_position."""

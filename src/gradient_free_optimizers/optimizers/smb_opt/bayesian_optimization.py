@@ -2,11 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Bayesian Optimization with Gaussian Process.
-
-Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
-"""
+"""Bayesian Optimization with Gaussian Process."""
 
 from __future__ import annotations
 

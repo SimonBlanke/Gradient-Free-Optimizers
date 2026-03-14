@@ -197,12 +197,6 @@ class BasePopulationOptimizer(CoreOptimizer):
 
         self.pop_sorted = [self.optimizers[i] for i in idx_sorted_ind]
 
-    # =========================================================================
-    # Template Method Pattern: Population optimizers inherit iterate() from
-    # CoreOptimizer and implement the _iterate_*_batch() methods.
-    # DO NOT override iterate() - that would bypass dimension-type-aware routing.
-    # =========================================================================
-
     def _on_evaluate(self, score_new):
         """Evaluate the current individual.
 

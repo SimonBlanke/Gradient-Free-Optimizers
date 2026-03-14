@@ -2,12 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Stochastic Hill Climbing Optimizer.
-
-Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
-(inherits iteration methods from HillClimbingOptimizer)
-"""
+"""Stochastic Hill Climbing Optimizer."""
 
 import math
 

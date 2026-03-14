@@ -2,16 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Particle Swarm Optimization (PSO).
-
-Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
-
-Template Method Pattern Compliance:
-    - Does NOT override iterate() - uses CoreOptimizer's orchestration
-    - Implements _iterate_*_batch() for dimension-type-aware PSO movement
-    - Overrides init_pos()/evaluate_init() for population management (acceptable)
-"""
+"""Particle Swarm Optimization (PSO)."""
 
 from __future__ import annotations
 
@@ -178,10 +169,6 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
 
         # Update particle's current
         self.p_current._score_current = score_new
-
-    # =========================================================================
-    # Template Method Implementation - NO iterate() override!
-    # =========================================================================
 
     def _setup_iteration(self) -> None:
         """Set up current iteration by selecting particle and computing velocity.

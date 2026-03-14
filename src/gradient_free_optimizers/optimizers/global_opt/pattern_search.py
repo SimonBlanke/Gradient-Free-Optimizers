@@ -2,15 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Pattern Search (Hooke-Jeeves) Optimizer.
-
-Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
-
-This optimizer uses the "State vor iterate()" pattern:
-- Computes the full next position BEFORE _iterate_*_batch() methods are called
-- The _iterate_*_batch() methods just extract the appropriate dimension components
-"""
+"""Pattern Search (Hooke-Jeeves) Optimizer."""
 
 from __future__ import annotations
 

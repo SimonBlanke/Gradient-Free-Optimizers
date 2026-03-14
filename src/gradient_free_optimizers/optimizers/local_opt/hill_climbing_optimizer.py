@@ -2,11 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Hill Climbing Optimizer with dimension-type-aware iteration.
-
-Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
-"""
+"""Hill Climbing Optimizer with dimension-type-aware iteration."""
 
 import numpy as np
 

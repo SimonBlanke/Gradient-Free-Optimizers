@@ -2,16 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Differential Evolution (DE) Optimizer.
-
-Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
-
-Template Method Pattern Compliance:
-    - Does NOT override iterate() - uses CoreOptimizer's orchestration
-    - Implements _iterate_*_batch() for dimension-type-aware DE operations
-    - Overrides init_pos()/evaluate_init() for population management (acceptable)
-"""
+"""Differential Evolution (DE) Optimizer."""
 
 from __future__ import annotations
 
@@ -291,10 +282,6 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
 
         # Update individual's current
         self.p_current._score_current = score_new
-
-    # =========================================================================
-    # Template Method Implementation - NO iterate() override!
-    # =========================================================================
 
     def _setup_iteration(self) -> None:
         """Set up current iteration by selecting individual and computing position.

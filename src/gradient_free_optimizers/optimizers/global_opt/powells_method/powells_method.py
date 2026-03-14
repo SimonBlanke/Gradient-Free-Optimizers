@@ -2,12 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Powell's Conjugate Direction Method.
-
-Supports: CONTINUOUS, DISCRETE_NUMERICAL
-Note: Categorical dimensions have limited support.
-"""
+"""Powell's Conjugate Direction Method."""
 
 from __future__ import annotations
 

@@ -2,11 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
-"""
-Lipschitz Optimization.
-
-Supports: CONTINUOUS, CATEGORICAL, DISCRETE_NUMERICAL
-"""
+"""Lipschitz Optimization."""
 
 from __future__ import annotations
 
@@ -191,12 +187,6 @@ class LipschitzOptimizer(SMBO):
             sampling=sampling,
             replacement=replacement,
         )
-
-    # =========================================================================
-    # SMBO Template Methods
-    # =========================================================================
-    # Note: finish_initialization() and iterate() are inherited from SMBO.
-    # LipschitzOptimizer only implements the algorithm-specific methods.
 
     def _training(self) -> None:
         """Prepare candidate positions for Lipschitz bound computation.
