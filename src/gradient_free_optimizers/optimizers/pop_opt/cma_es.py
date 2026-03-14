@@ -212,3 +212,30 @@ class CMAESOptimizer(BasePopulationOptimizer):
         self._p_c = np.zeros(self._n)
         self._eigendecomposition()
         self._sample_generation()
+
+    def _setup_iteration(self):
+        """Denormalize the next pre-sampled position for batch extraction.
+
+        Called lazily by the first _iterate_*_batch() method.
+        """
+        if self._iteration_setup_done:
+            return
+
+        sample = self._generation_samples[self._sample_idx]
+        self._current_denorm_pos = self._denormalize(sample)
+        self._iteration_setup_done = True
+
+    def _iterate_continuous_batch(self) -> np.ndarray:
+        """Return continuous portion of the current CMA-ES sample."""
+        self._setup_iteration()
+        return self._current_denorm_pos[self._continuous_mask]
+
+    def _iterate_categorical_batch(self) -> np.ndarray:
+        """Return categorical portion of the current CMA-ES sample."""
+        self._setup_iteration()
+        return self._current_denorm_pos[self._categorical_mask]
+
+    def _iterate_discrete_batch(self) -> np.ndarray:
+        """Return discrete portion of the current CMA-ES sample."""
+        self._setup_iteration()
+        return self._current_denorm_pos[self._discrete_mask]
