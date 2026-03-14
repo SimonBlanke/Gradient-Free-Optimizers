@@ -131,3 +131,39 @@ class CMAESOptimizer(BasePopulationOptimizer):
         """Map position from [0, 1]^n back to original space."""
         return norm_pos * self._dim_scales + self._dim_offsets
 
+    def _compute_strategy_params(self):
+        """Compute CMA-ES strategy parameters from n, lambda, mu.
+
+        These follow Hansen & Ostermeier (2001) with the standard
+        default parameter settings from the CMA-ES tutorial.
+        """
+        n = self._n
+        mu = self._mu
+
+        if n == 0 or mu == 0:
+            return
+
+        # Recombination weights (log-proportional, normalized)
+        raw_w = np.log(mu + 0.5) - np.log(np.arange(1, mu + 1))
+        self._weights = raw_w / raw_w.sum()
+        self._mu_eff = 1.0 / np.sum(self._weights**2)
+
+        mu_eff = self._mu_eff
+
+        # Step-size control (CSA)
+        self._c_sigma = (mu_eff + 2) / (n + mu_eff + 5)
+        self._d_sigma = (
+            1 + 2 * max(0, np.sqrt((mu_eff - 1) / (n + 1)) - 1) + self._c_sigma
+        )
+
+        # Covariance matrix adaptation
+        self._c_c = (4 + mu_eff / n) / (n + 4 + 2 * mu_eff / n)
+        self._c_1 = 2 / ((n + 1.3) ** 2 + mu_eff)
+        self._c_mu_cov = min(
+            1 - self._c_1,
+            2 * (mu_eff - 2 + 1 / mu_eff) / ((n + 2) ** 2 + mu_eff),
+        )
+
+        # Expected length of N(0, I) vector
+        self._chi_n = np.sqrt(n) * (1 - 1 / (4 * n) + 1 / (21 * n**2))
+
