@@ -9,6 +9,15 @@ For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke
 
 ## [Unreleased]
 
+## [1.11.1] - 2026-03-15
+
+### Fixed
+- Constraint retry loop now falls back to random positions when the optimizer's own `_generate_position` repeatedly violates constraints, preventing the search from silently proceeding with invalid positions
+
+### Tests
+- Expanded constraint tests from representative subset to all optimizers
+- Added constraint tests for categorical dimensions, mixed search spaces (continuous + discrete + categorical), cross-parameter constraints, and adversarial scenarios where the optimum lies inside the excluded region
+
 ## [1.11.0] - 2026-03-14
 
 ### Added
