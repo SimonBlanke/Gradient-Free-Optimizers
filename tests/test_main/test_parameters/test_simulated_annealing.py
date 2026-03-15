@@ -182,3 +182,23 @@ def test_annealing_rate_0():
 
     assert n_transitions_0 in [0, 1]
     assert n_transitions_1 < n_transitions_100
+
+
+def test_step_size_parameter():
+    # ensure wrapper accepts step_size and converts epsilon
+    space = {"x": (0, 10), "y": (0, 20)}
+    opt = SimulatedAnnealingOptimizer(space, step_size=2)
+    assert hasattr(opt, "step_size") and opt.step_size == 2
+    # epsilon_cont should be computed accordingly
+    assert np.allclose(opt.epsilon_cont, np.array([0.2, 0.1]))
+
+
+def test_step_size_conversion():
+    # verify epsilon_cont/disc for step_size
+    space_disc = {"x": np.arange(0, 5, 1)}
+    opt = SimulatedAnnealingOptimizer(space_disc, step_size=2)
+    expected = np.array([2 / (len(space_disc["x"]) - 1)])
+    assert np.allclose(opt.epsilon_disc, expected)
+    space_cont = {"x": (0, 5)}
+    opt2 = SimulatedAnnealingOptimizer(space_cont, step_size=2)
+    assert np.allclose(opt2.epsilon_cont, np.array([0.4]))

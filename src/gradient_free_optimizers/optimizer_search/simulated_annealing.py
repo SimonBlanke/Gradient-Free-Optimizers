@@ -146,6 +146,13 @@ class SimulatedAnnealingOptimizer(_SimulatedAnnealingOptimizer, Search):
 
         Smaller values are better for fine-tuning near a known good solution.
         Larger values help escape local optima but may overshoot narrow peaks.
+
+    step_size : float or None, default=None
+        Absolute step size for neighbor generation.  Overrides ``epsilon`` if
+        both are provided. Works in the same way as the parameter of the
+        parent HillClimbingOptimizer: step magnitude is fixed across all
+        continuous dimensions and affords precise control on finely
+        discretized grids.
     distribution : {"normal", "laplace", "gumbel", "logistic"}, default="normal"
         Probability distribution used to sample neighbor offsets. Each
         distribution produces different exploration patterns:
@@ -269,6 +276,7 @@ class SimulatedAnnealingOptimizer(_SimulatedAnnealingOptimizer, Search):
         n_neighbours: int = 3,
         annealing_rate: float = 0.97,
         start_temp: float = 1,
+        step_size: float | None = None,
     ):
         if initialize is None:
             initialize = get_default_initialize()
@@ -287,4 +295,5 @@ class SimulatedAnnealingOptimizer(_SimulatedAnnealingOptimizer, Search):
             n_neighbours=n_neighbours,
             annealing_rate=annealing_rate,
             start_temp=start_temp,
+            step_size=step_size,
         )

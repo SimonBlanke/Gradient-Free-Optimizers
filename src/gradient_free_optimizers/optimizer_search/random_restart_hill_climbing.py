@@ -147,6 +147,14 @@ class RandomRestartHillClimbingOptimizer(_RandomRestartHillClimbingOptimizer, Se
         Smaller values are better for fine-tuning near a known good solution.
         Larger values help escape local optima but may overshoot narrow peaks.
 
+    step_size : float or None, default=None
+        Absolute step size for generating neighbors. This parameter behaves
+        identically to the one in :class:`~gradient_free_optimizers.optimizer_search.hill_climbing.HillClimbingOptimizer`.
+        When ``step_size`` is given, ``epsilon`` is ignored. Providing a
+        small step size is particularly helpful when using fine-grained
+        search spaces, because it allows the optimizer to make very small
+        moves that are comparable to the grid spacing.
+
     distribution : {"normal", "laplace", "gumbel", "logistic"}, default="normal"
         Probability distribution used to sample neighbor offsets. Each
         distribution produces different exploration patterns:
@@ -254,6 +262,7 @@ class RandomRestartHillClimbingOptimizer(_RandomRestartHillClimbingOptimizer, Se
         distribution: Literal["normal", "laplace", "gumbel", "logistic"] = "normal",
         n_neighbours: int = 3,
         n_iter_restart: int = 10,
+        step_size: float | None = None,
     ):
         if initialize is None:
             initialize = get_default_initialize()
@@ -271,4 +280,5 @@ class RandomRestartHillClimbingOptimizer(_RandomRestartHillClimbingOptimizer, Se
             distribution=distribution,
             n_neighbours=n_neighbours,
             n_iter_restart=n_iter_restart,
+            step_size=step_size,
         )

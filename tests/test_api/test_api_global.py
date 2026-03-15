@@ -202,6 +202,11 @@ class TestRandomRestartHillClimbingOptimizerAPI:
         opt = RandomRestartHillClimbingOptimizer(SEARCH_SPACE, n_iter_restart=5)
         opt.search(objective, n_iter=1, verbosity=False)
 
+    def test_step_size_parameter(self):
+        """Test step_size parameter exists and accepts float (inherited from HC)."""
+        opt = RandomRestartHillClimbingOptimizer(SEARCH_SPACE, step_size=0.5)
+        opt.search(objective, n_iter=1, verbosity=False)
+
     def test_all_parameters_explicit(self):
         """Test all parameters can be set explicitly."""
         opt = RandomRestartHillClimbingOptimizer(

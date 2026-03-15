@@ -138,6 +138,15 @@ class HillClimbingOptimizer(_HillClimbingOptimizer, Search):
 
         Smaller values are better for fine-tuning near a known good solution.
         Larger values help escape local optima but may overshoot narrow peaks.
+
+    step_size : float or None, default=None
+        Absolute step size for neighbor generation. When provided,
+        ``epsilon`` is ignored and the optimizer uses an identical
+        absolute jump magnitude in all continuous dimensions. This is
+        particularly useful for fine grids where a small fractional
+        epsilon would still correspond to a large move in value space.
+        Decreasing ``step_size`` therefore allows the optimizer to converge
+        with finer precision.
     distribution : {"normal", "laplace", "gumbel", "logistic"}, default="normal"
         Probability distribution used to sample neighbor offsets. Each
         distribution produces different exploration patterns:
@@ -228,6 +237,7 @@ class HillClimbingOptimizer(_HillClimbingOptimizer, Search):
         epsilon: float = 0.03,
         distribution: Literal["normal", "laplace", "gumbel", "logistic"] = "normal",
         n_neighbours: int = 3,
+        step_size: float | None = None,
     ):
         if initialize is None:
             initialize = get_default_initialize()
@@ -244,4 +254,5 @@ class HillClimbingOptimizer(_HillClimbingOptimizer, Search):
             epsilon=epsilon,
             distribution=distribution,
             n_neighbours=n_neighbours,
+            step_size=step_size,
         )

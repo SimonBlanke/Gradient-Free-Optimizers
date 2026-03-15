@@ -71,6 +71,7 @@ class HillClimbingOptimizer(BaseOptimizer):
         epsilon=0.03,
         distribution="normal",
         n_neighbours=3,
+        step_size=None,
     ):
         super().__init__(
             search_space=search_space,
@@ -80,7 +81,36 @@ class HillClimbingOptimizer(BaseOptimizer):
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
         )
-        self.epsilon = epsilon
+        # step_size takes precedence over epsilon if provided
+        self.step_size = step_size
+        if step_size is not None:
+            # compute per-dimension epsilon values so that noise sigma becomes
+            # approximately equal to the requested absolute step size.  We
+            # handle continuous and discrete dimensions separately since they
+            # use different scaling formulas.
+            # Note: __init__ of CoreOptimizer has already filled in the
+            # dimension masks and bounds.
+            if self._continuous_mask is not None and self._continuous_mask.any():
+                ranges = self._continuous_bounds[:, 1] - self._continuous_bounds[:, 0]
+                # avoid division by zero for degenerate dims
+                eps_vals = np.where(ranges > 0, step_size / ranges, 0)
+                # store epsilon array to be used when sampling continuous noise
+                self.epsilon_cont = eps_vals
+            else:
+                self.epsilon_cont = None
+            if self._discrete_mask is not None and self._discrete_mask.any():
+                max_pos = self._discrete_bounds[:, 1]
+                eps_vals = np.where(max_pos > 0, step_size / max_pos, 0)
+                self.epsilon_disc = eps_vals
+            else:
+                self.epsilon_disc = None
+            # keep self.epsilon for compatibility but it will not be used
+            self.epsilon = epsilon
+        else:
+            # normal behaviour using relative epsilon
+            self.epsilon = epsilon
+            self.epsilon_cont = None
+            self.epsilon_disc = None
         self.distribution = distribution
         self.n_neighbours = n_neighbours
 
@@ -117,8 +147,14 @@ class HillClimbingOptimizer(BaseOptimizer):
         # Calculate range for each dimension
         ranges = bounds[:, 1] - bounds[:, 0]
 
-        # Scale sigma by range and epsilon
-        sigmas = ranges * self.epsilon
+        # Determine sigma for each dimension.  If a fixed absolute
+        # ``step_size`` was provided we precomputed per-dimension epsilon
+        # values such that ``ranges * eps = step_size``; otherwise fall back
+        # to the original relative ``epsilon`` behaviour.
+        if getattr(self, "step_size", None) is not None and self.epsilon_cont is not None:
+            sigmas = ranges * self.epsilon_cont
+        else:
+            sigmas = ranges * self.epsilon
 
         # Generate noise using the configured distribution
         noise_fn = self._DISTRIBUTIONS[self.distribution]
@@ -178,7 +214,10 @@ class HillClimbingOptimizer(BaseOptimizer):
 
         # Use max position to scale sigma (similar to continuous)
         max_positions = bounds[:, 1]
-        sigmas = max_positions * self.epsilon
+        if getattr(self, "step_size", None) is not None and self.epsilon_disc is not None:
+            sigmas = max_positions * self.epsilon_disc
+        else:
+            sigmas = max_positions * self.epsilon
 
         # Prevent zero sigma for single-value dimensions
         sigmas = np.maximum(sigmas, 1e-10)
