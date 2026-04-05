@@ -136,6 +136,7 @@ class Search(TimesTracker, SearchStatistics):
 
         # Check storage for cached results (preserving original order)
         scores = [None] * n_positions
+        metrics_list = [{}] * n_positions
         uncached_indices = []
 
         if self._storage is not None:
@@ -143,6 +144,7 @@ class Search(TimesTracker, SearchStatistics):
                 cached = self._storage.get(tuple(pos))
                 if cached is not None:
                     scores[i] = cached.score
+                    metrics_list[i] = cached.metrics
                 else:
                     uncached_indices.append(i)
         else:
@@ -156,16 +158,17 @@ class Search(TimesTracker, SearchStatistics):
                 params_batch.append(self.conv.value2para(value))
 
             t_start = time.time()
-            new_scores = self._distributed_func(params_batch)
+            raw_results = self._distributed_func(params_batch)
             eval_time = time.time() - t_start
 
-            if self.optimum == "minimum":
-                new_scores = [-s for s in new_scores]
-
-            for idx, score in zip(uncached_indices, new_scores):
+            for idx, raw in zip(uncached_indices, raw_results):
+                score, metrics = self._unpack_result(raw)
+                if self.optimum == "minimum":
+                    score = -score
                 scores[idx] = score
+                metrics_list[idx] = metrics
                 if self._storage is not None:
-                    self._storage.put(tuple(positions[idx]), Result(score, {}))
+                    self._storage.put(tuple(positions[idx]), Result(score, metrics))
 
             per_eval_time = eval_time / len(uncached_indices)
         else:
@@ -179,25 +182,50 @@ class Search(TimesTracker, SearchStatistics):
         uncached_set = set(uncached_indices)
         for i, (pos, score) in enumerate(zip(positions, scores)):
             et = per_eval_time if i in uncached_set else 0
-            self._track_evaluation(pos, score, et, per_iter_time)
+            self._track_evaluation(
+                pos, score, et, per_iter_time, metrics=metrics_list[i]
+            )
 
-    def _track_evaluation(self, pos, score, eval_time=0, iter_time=0):
+    @staticmethod
+    def _unpack_result(raw):
+        """Separate a worker return value into score and metrics.
+
+        Objective functions may return a plain float or a (float, dict) tuple.
+        The backends pass through whatever the function returns, so we unpack
+        here at the boundary between worker results and the search loop.
+        """
+        if isinstance(raw, tuple):
+            return raw[0], raw[1]
+        return raw, {}
+
+    def _track_evaluation(self, pos, score, eval_time=0, iter_time=0, metrics=None):
         """Record a single evaluation result across all tracking systems."""
+        if metrics is None:
+            metrics = {}
         self.eval_times.append(eval_time)
         self.iter_times.append(iter_time)
-        self.results_manager.add(Result(score, {}), pos)
+        self.results_manager.add(Result(score, metrics), pos)
         self.pos_l.append(pos)
         self.score_l.append(score)
         self.p_bar.update(score, pos, self.nth_iter)
-        self._tracker.track(pos, score, {}, is_init=False)
+        self._last_metrics = metrics
+        self._tracker.track(pos, score, metrics, is_init=False)
+        # Feed each evaluation to the stopper so early_stopping counts
+        # individual evaluations, not batches
+        self.stopper.update(score, self.p_bar.score_best, self._iter)
         self.n_iter_total += 1
         self.n_iter_search += 1
         self._iter += 1
 
     def _check_stop(self, n_evaluated):
         """Check stopping conditions and run callbacks. Returns True if should stop."""
-        current_score = self.score_l[-1] if self.score_l else -math.inf
-        self.stopper.update(current_score, self.p_bar.score_best, n_evaluated - 1)
+        # In serial mode, the stopper needs per-evaluation updates here.
+        # In distributed mode, _track_evaluation already updated the stopper
+        # for each evaluation in the batch, giving correct granularity for
+        # early_stopping counters.
+        if not self._is_distributed:
+            current_score = self.score_l[-1] if self.score_l else -math.inf
+            self.stopper.update(current_score, self.p_bar.score_best, n_evaluated - 1)
 
         if self.stopper.should_stop():
             if "debug_stop" in self.verbosity:
@@ -248,7 +276,7 @@ class Search(TimesTracker, SearchStatistics):
                 cached = self._storage.get(tuple(pos))
                 if cached is not None:
                     self._evaluate_batch([pos], [cached.score])
-                    self._track_evaluation(pos, cached.score)
+                    self._track_evaluation(pos, cached.score, metrics=cached.metrics)
                     n_evaluated += 1
                     return 1
 
@@ -267,19 +295,20 @@ class Search(TimesTracker, SearchStatistics):
         # Process results as they arrive
         while pending and n_evaluated < n_iter:
             t_iter = time.time()
-            completed, score = backend._wait_any(list(pending.keys()))
+            completed, raw = backend._wait_any(list(pending.keys()))
             pos = pending.pop(completed)
 
+            score, metrics = self._unpack_result(raw)
             if self.optimum == "minimum":
                 score = -score
 
             if self._storage is not None:
-                self._storage.put(tuple(pos), Result(score, {}))
+                self._storage.put(tuple(pos), Result(score, metrics))
 
             self.nth_iter = n_evaluated
             self._evaluate_batch([pos], [score])
             iter_time = time.time() - t_iter
-            self._track_evaluation(pos, score, iter_time, iter_time)
+            self._track_evaluation(pos, score, iter_time, iter_time, metrics=metrics)
             n_evaluated += 1
 
             if self._check_stop(n_evaluated):
@@ -315,6 +344,7 @@ class Search(TimesTracker, SearchStatistics):
 
             # Check storage cache (same logic as sync _iteration_batch)
             scores = [None] * n_positions
+            metrics_list = [{}] * n_positions
             uncached_indices = []
 
             if self._storage is not None:
@@ -322,6 +352,7 @@ class Search(TimesTracker, SearchStatistics):
                     cached = self._storage.get(tuple(pos))
                     if cached is not None:
                         scores[i] = cached.score
+                        metrics_list[i] = cached.metrics
                     else:
                         uncached_indices.append(i)
             else:
@@ -339,15 +370,17 @@ class Search(TimesTracker, SearchStatistics):
                 # Collect all results (async within batch)
                 t_start = time.time()
                 while futures:
-                    completed, score = backend._wait_any(list(futures.keys()))
+                    completed, raw = backend._wait_any(list(futures.keys()))
                     idx = futures.pop(completed)
 
+                    score, metrics = self._unpack_result(raw)
                     if self.optimum == "minimum":
                         score = -score
 
                     scores[idx] = score
+                    metrics_list[idx] = metrics
                     if self._storage is not None:
-                        self._storage.put(tuple(positions[idx]), Result(score, {}))
+                        self._storage.put(tuple(positions[idx]), Result(score, metrics))
 
                 per_eval_time = (time.time() - t_start) / len(uncached_indices)
             else:
@@ -361,7 +394,9 @@ class Search(TimesTracker, SearchStatistics):
             uncached_set = set(uncached_indices)
             for i, (pos, score) in enumerate(zip(positions, scores)):
                 et = per_eval_time if i in uncached_set else 0
-                self._track_evaluation(pos, score, et, per_iter_time)
+                self._track_evaluation(
+                    pos, score, et, per_iter_time, metrics=metrics_list[i]
+                )
 
             n_evaluated += n_positions
 
@@ -681,27 +716,9 @@ class Search(TimesTracker, SearchStatistics):
             # Extract original function for single-point use during init
             objective_function = objective_function._gfo_original_func
 
-            # The objective may return (score, metrics) tuples, but the
-            # distributed batch interface only passes scores between
-            # workers and the search loop. Normalize here so all
-            # distributed paths (sync batch, true-async, batch-async)
-            # receive plain floats.
-            _raw_distributed = self._original_func
-
-            def _normalize_return(params):
-                out = _raw_distributed(params)
-                if isinstance(out, tuple):
-                    return out[0]
-                return out
-
-            self._original_func = _normalize_return
-
             if catch:
                 self._original_func = wrap_with_catch(self._original_func, catch)
-
-            # Rebuild the wrapper so the sync batch path also uses the
-            # normalized (and optionally catch-wrapped) function
-            self._distributed_func = self._backend.distribute(self._original_func)
+                self._distributed_func = self._backend.distribute(self._original_func)
         else:
             self._batch_size = None
             self._backend = None

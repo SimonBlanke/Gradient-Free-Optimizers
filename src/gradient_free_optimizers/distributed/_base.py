@@ -65,13 +65,13 @@ class BaseDistribution(ABC):
         self.n_workers = n_workers
 
     @abstractmethod
-    def _distribute(self, func, params_batch: list[dict]) -> list[float]:
+    def _distribute(self, func, params_batch: list[dict]) -> list:
         """Evaluate func(params) for each params dict in the batch.
 
         This is the only method subclasses need to implement for
         synchronous (batch) evaluation. It receives the original
         (unwrapped) objective function and a list of parameter
-        dictionaries, and must return a list of scores in the same order.
+        dictionaries, and must return a list of results in the same order.
 
         The function follows GFO's convention: ``func(params_dict)`` where
         params_dict is a single dictionary, not keyword arguments.
@@ -79,14 +79,17 @@ class BaseDistribution(ABC):
         Parameters
         ----------
         func : callable
-            The original objective function with signature f(dict) -> float.
+            The original objective function with signature
+            f(dict) -> float or f(dict) -> (float, dict).
         params_batch : list[dict]
             Parameter dictionaries to evaluate.
 
         Returns
         -------
-        list[float]
-            Scores in the same order as params_batch.
+        list[float | tuple[float, dict]]
+            Results in the same order as params_batch. Each element is
+            either a plain score or a (score, metrics) tuple, matching
+            whatever the objective function returns.
         """
         ...
 
@@ -119,7 +122,7 @@ class BaseDistribution(ABC):
 
         Only required for async backends (``_is_async = True``).
         Blocks until at least one future from the collection is ready,
-        then returns both the future object and its result value.
+        then returns both the future object and its raw result.
 
         Parameters
         ----------
@@ -128,8 +131,9 @@ class BaseDistribution(ABC):
 
         Returns
         -------
-        tuple of (future, float)
-            The completed future object and its result (score).
+        tuple of (future, float | tuple[float, dict])
+            The completed future object and the objective function's
+            return value (a plain score or a (score, metrics) tuple).
             The future is returned so the caller can identify which
             submission completed (e.g., to look up the associated position).
         """
@@ -142,18 +146,20 @@ class BaseDistribution(ABC):
         """Decorator that wraps a single-point objective for batch evaluation.
 
         The decorated function accepts a list of parameter dicts and returns
-        a list of scores. It also carries metadata attributes that the
+        a list of results. It also carries metadata attributes that the
         optimizer's search loop uses to detect and configure batch mode.
 
         Parameters
         ----------
         func : callable
-            Objective function with signature f(params_dict) -> float.
+            Objective function with signature
+            f(params_dict) -> float or f(params_dict) -> (float, dict).
 
         Returns
         -------
         callable
-            Wrapped function with signature f(list[dict]) -> list[float].
+            Wrapped function with signature
+            f(list[dict]) -> list[float | tuple[float, dict]].
         """
 
         def wrapper(params_batch):
