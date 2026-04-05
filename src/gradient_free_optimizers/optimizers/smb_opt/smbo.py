@@ -368,3 +368,24 @@ class SMBO(BaseOptimizer):
         # Remove position from candidates if replacement=False
         if not self.replacement and self._pos_new is not None:
             self._remove_position(self._pos_new)
+
+    def _iterate_batch(self, n):
+        """Train surrogate once and select n positions with highest acquisition."""
+        try:
+            self._training()
+            exp_imp = self._expected_improvement()
+            index_sorted = list(exp_imp.argsort()[::-1])
+            positions = []
+            for i in range(min(n, len(index_sorted))):
+                positions.append(self.pos_comb[index_sorted[i]])
+            while len(positions) < n:
+                positions.append(self._move_random())
+            return [self._clip_position(pos) for pos in positions]
+        except (ValueError, np.linalg.LinAlgError):
+            return [self._clip_position(self._move_random()) for _ in range(n)]
+
+    def _evaluate_batch(self, positions, scores):
+        """Process batch results through the standard evaluate chain."""
+        for pos, score in zip(positions, scores):
+            self._pos_new = pos
+            self._evaluate(score)

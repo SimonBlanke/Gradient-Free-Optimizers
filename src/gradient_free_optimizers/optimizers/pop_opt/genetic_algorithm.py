@@ -423,3 +423,23 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
         # Reset iteration setup for next iteration
         self._iteration_setup_done = False
         self._ga_new_pos = None
+
+    def _iterate_batch(self, n):
+        """Generate n positions via independent mutation/crossover operations."""
+        positions = []
+        self._batch_individual_refs = []
+        for _ in range(n):
+            self._iteration_setup_done = False
+            self._setup_iteration()
+            positions.append(self._clip_position(self._ga_new_pos))
+            self._batch_individual_refs.append(self.p_current)
+            self._iteration_setup_done = False
+            self._ga_new_pos = None
+        return positions
+
+    def _evaluate_batch(self, positions, scores):
+        """Process batch results, restoring the correct individual for each."""
+        for i, (pos, score) in enumerate(zip(positions, scores)):
+            self.p_current = self._batch_individual_refs[i]
+            self._pos_new = pos
+            self._evaluate(score)

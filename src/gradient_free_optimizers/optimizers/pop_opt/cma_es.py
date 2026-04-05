@@ -406,3 +406,45 @@ class CMAESOptimizer(BasePopulationOptimizer):
 
             self._gens_without_improvement = 0
             self._generation_count = 0
+
+    def _iterate_batch(self, n):
+        """Generate n positions from the current CMA-ES generation.
+
+        Only returns actual CMA-ES samples for positions that fit within
+        the current generation. Overflow positions are filled with random
+        samples to avoid contaminating the next generation's CMA update
+        with scores from unrelated positions.
+        """
+        remaining_in_generation = self._lambda - self._sample_idx
+        self._batch_n_from_generation = min(n, remaining_in_generation)
+
+        positions = []
+        for i in range(self._batch_n_from_generation):
+            sample = self._generation_samples[self._sample_idx + i]
+            pos = self._denormalize(sample)
+            positions.append(self._clip_position(pos))
+
+        for _ in range(n - self._batch_n_from_generation):
+            positions.append(self._clip_position(self.init.move_random_typed()))
+
+        return positions
+
+    def _evaluate_batch(self, positions, scores):
+        """Process batch results, keeping CMA-ES samples separate from overflow.
+
+        CMA-ES updates (mean, covariance, step size) depend on scores
+        matching their corresponding generation samples exactly. Overflow
+        positions (random fill beyond the generation boundary) must not
+        enter _on_evaluate, as that would insert foreign scores into
+        _generation_scores and corrupt the next CMA update.
+        """
+        n_cma = self._batch_n_from_generation
+
+        for pos, score in zip(positions[:n_cma], scores[:n_cma]):
+            self._pos_new = pos
+            self._evaluate(score)
+
+        for pos, score in zip(positions[n_cma:], scores[n_cma:]):
+            self._pos_new = pos
+            self._track_score(score)
+            self._update_best(pos, score)

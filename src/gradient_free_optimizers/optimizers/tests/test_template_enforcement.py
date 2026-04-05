@@ -73,6 +73,14 @@ class TestABCEnforcement:
             def _iterate_discrete_batch(self):
                 return np.array([1])
 
+            def _iterate_batch(self, n):
+                return [self._generate_position() for _ in range(n)]
+
+            def _evaluate_batch(self, positions, scores):
+                for pos, score in zip(positions, scores):
+                    self._pos_new = pos
+                    self._evaluate(score)
+
         # Should not raise
         opt = CompleteOptimizer({"x": np.array([1, 2, 3])})
         assert opt is not None

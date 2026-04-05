@@ -197,6 +197,8 @@ class TestTemplateMethodsExist:
         "_iterate_categorical_batch",
         "_iterate_discrete_batch",
         "_on_evaluate",
+        "_iterate_batch",
+        "_evaluate_batch",
     ]
 
     @pytest.mark.parametrize("method_name", TEMPLATE_METHODS)

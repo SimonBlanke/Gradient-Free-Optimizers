@@ -586,6 +586,52 @@ class CoreOptimizer(ABC):
         """
         ...
 
+    @abstractmethod
+    def _iterate_batch(self, n: int) -> list:
+        """Generate n positions for parallel evaluation.
+
+        Each optimizer must provide an implementation that returns n candidate
+        positions. For algorithms that naturally produce batches (e.g. population
+        optimizers cycling through members, or SMBO selecting diverse acquisition
+        points), the override should leverage that structure. For local search
+        algorithms, calling _generate_position() n times is typical.
+
+        This method must NOT trigger the _pos_new property setter, as that
+        would pollute tracking lists before evaluation. Positions are tracked
+        later when _evaluate_batch processes the results.
+
+        Parameters
+        ----------
+        n : int
+            Number of positions to generate.
+
+        Returns
+        -------
+        list[np.ndarray]
+            List of n candidate positions.
+        """
+        ...
+
+    @abstractmethod
+    def _evaluate_batch(self, positions: list, scores: list) -> None:
+        """Process a batch of evaluated positions and their scores.
+
+        Each optimizer must provide an implementation that feeds the batch
+        results back into the optimizer's state. For most optimizers this
+        means sequentially setting _pos_new and calling _evaluate() for each
+        position/score pair. Population optimizers need to restore the correct
+        sub-optimizer (e.g. particle, individual) before each _evaluate() call.
+
+        Parameters
+        ----------
+        positions : list[np.ndarray]
+            The positions that were evaluated (same order as returned
+            by _iterate_batch).
+        scores : list[float]
+            The corresponding scores from parallel evaluation.
+        """
+        ...
+
     def _evaluate(self, score_new):
         """Orchestrate evaluation: track score, delegate to algorithm-specific logic.
 

@@ -388,3 +388,33 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
         # Reset iteration setup for next iteration
         self._iteration_setup_done = False
         self._de_new_pos = None
+
+    def _iterate_batch(self, n):
+        """Generate n positions by cycling through individuals with DE mutation."""
+        positions = []
+        self._batch_individual_indices = []
+        for i in range(n):
+            idx = (self.nth_trial + i) % len(self.individuals)
+            self._batch_individual_indices.append(idx)
+            self.p_current = self.individuals[idx]
+            target_vector = self.p_current._pos_current
+            if target_vector is None:
+                pos = self.p_current.init.move_random_typed()
+            else:
+                mutant_vector = self._mutation()
+                crossover_rates = [1 - self.crossover_rate, self.crossover_rate]
+                pos = self._discrete_recombination(
+                    [target_vector, mutant_vector], crossover_rates
+                )
+                pos = self._conv2pos_typed(pos)
+                pos = self._constraint_loop(pos)
+                pos = self._conv2pos_typed(pos)
+            positions.append(self._clip_position(pos))
+        return positions
+
+    def _evaluate_batch(self, positions, scores):
+        """Process batch results, restoring the correct individual for each."""
+        for i, (pos, score) in enumerate(zip(positions, scores)):
+            self.p_current = self.individuals[self._batch_individual_indices[i]]
+            self._pos_new = pos
+            self._evaluate(score)

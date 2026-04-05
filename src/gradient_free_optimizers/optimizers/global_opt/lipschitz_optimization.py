@@ -218,3 +218,24 @@ class LipschitzOptimizer(SMBO):
         )
         # Flatten from (n, 1) to (n,) for SMBO template compatibility
         return upper_bound_l.flatten()
+
+    def _iterate_batch(self, n):
+        """Compute Lipschitz bounds and select n positions with highest potential."""
+        try:
+            self._training()
+            exp_imp = self._expected_improvement()
+            index_sorted = list(exp_imp.argsort()[::-1])
+            positions = []
+            for i in range(min(n, len(index_sorted))):
+                positions.append(self.pos_comb[index_sorted[i]])
+            while len(positions) < n:
+                positions.append(self._move_random())
+            return [self._clip_position(pos) for pos in positions]
+        except (ValueError, np.linalg.LinAlgError):
+            return [self._clip_position(self._move_random()) for _ in range(n)]
+
+    def _evaluate_batch(self, positions, scores):
+        """Process batch results through the standard evaluate chain."""
+        for pos, score in zip(positions, scores):
+            self._pos_new = pos
+            self._evaluate(score)

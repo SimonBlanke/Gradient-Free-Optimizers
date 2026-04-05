@@ -311,3 +311,22 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
         # Reset iteration setup for next iteration
         self._iteration_setup_done = False
         self._current_new_pos = None
+
+    def _iterate_batch(self, n):
+        """Generate n positions by cycling through tempering systems."""
+        positions = []
+        self._batch_system_indices = []
+        for i in range(n):
+            idx = (self.nth_trial + i) % len(self.systems)
+            self._batch_system_indices.append(idx)
+            self.p_current = self.systems[idx]
+            pos = self.p_current._iterate()
+            positions.append(self._clip_position(pos))
+        return positions
+
+    def _evaluate_batch(self, positions, scores):
+        """Process batch results, restoring the correct system for each."""
+        for i, (pos, score) in enumerate(zip(positions, scores)):
+            self.p_current = self.systems[self._batch_system_indices[i]]
+            self._pos_new = pos
+            self._evaluate(score)

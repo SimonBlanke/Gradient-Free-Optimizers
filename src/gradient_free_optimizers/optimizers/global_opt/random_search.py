@@ -132,3 +132,13 @@ class RandomSearchOptimizer(BaseOptimizer):
         """
         # Simply update best if this is better
         self._update_best(self._pos_new, score_new)
+
+    def _iterate_batch(self, n):
+        """Generate n independent random positions."""
+        return [self._generate_position() for _ in range(n)]
+
+    def _evaluate_batch(self, positions, scores):
+        """Process batch results through the standard evaluate chain."""
+        for pos, score in zip(positions, scores):
+            self._pos_new = pos
+            self._evaluate(score)

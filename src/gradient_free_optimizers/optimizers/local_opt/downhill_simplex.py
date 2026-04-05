@@ -393,3 +393,19 @@ class DownhillSimplexOptimizer(BaseOptimizer):
         # Update best position tracking
         self._update_best(self._pos_new, score_new)
         self._update_current(self._pos_new, score_new)
+
+    def _iterate_batch(self, n):
+        """Generate one simplex position plus random exploration positions."""
+        positions = [self._generate_position()]
+        for _ in range(n - 1):
+            positions.append(self._clip_position(self._generate_random_position()))
+        return positions
+
+    def _evaluate_batch(self, positions, scores):
+        """Process the simplex position through evaluate, track the rest."""
+        self._pos_new = positions[0]
+        self._evaluate(scores[0])
+        for pos, score in zip(positions[1:], scores[1:]):
+            self._pos_new = pos
+            self._track_score(score)
+            self._update_best(pos, score)

@@ -345,3 +345,37 @@ class SpiralOptimization(BasePopulationOptimizer):
         # Reset iteration setup for next iteration
         self._iteration_setup_done = False
         self._spiral_new_pos = None
+
+    def _iterate_batch(self, n):
+        """Generate n positions by cycling through spiral particles.
+
+        The decay factor is applied once per batch rather than once per
+        position. Otherwise a batch of size n would decay the spiral
+        n times, contracting it much faster than in serial mode.
+        """
+        self._sort_pop_best_score()
+        positions = []
+        self._batch_particle_indices = []
+
+        saved_decay = self._decay_factor
+        for i in range(n):
+            idx = (self.nth_trial + i) % len(self.particles)
+            self._batch_particle_indices.append(idx)
+            self.p_current = self.particles[idx]
+            self.p_current.global_pos_best = self.pop_sorted[0]._pos_current
+            # Use the same decay factor for all positions in this batch
+            self._decay_factor = saved_decay
+            pos = self._compute_spiral_position()
+            positions.append(self._clip_position(pos))
+
+        # Apply decay exactly once for the entire batch
+        self._decay_factor = saved_decay * self.decay_rate
+
+        return positions
+
+    def _evaluate_batch(self, positions, scores):
+        """Process batch results, restoring the correct particle for each."""
+        for i, (pos, score) in enumerate(zip(positions, scores)):
+            self.p_current = self.particles[self._batch_particle_indices[i]]
+            self._pos_new = pos
+            self._evaluate(score)

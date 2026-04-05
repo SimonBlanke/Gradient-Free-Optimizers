@@ -161,3 +161,13 @@ class RepulsingHillClimbingOptimizer(HillClimbingOptimizer):
         else:
             # Better score: reset to normal step size
             self.epsilon_mod = 1
+
+    def _iterate_batch(self, n):
+        """Generate n positions via independent perturbations from current position."""
+        return [self._generate_position() for _ in range(n)]
+
+    def _evaluate_batch(self, positions, scores):
+        """Process batch results through the standard evaluate chain."""
+        for pos, score in zip(positions, scores):
+            self._pos_new = pos
+            self._evaluate(score)

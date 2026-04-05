@@ -347,3 +347,19 @@ class PowellsMethod(BaseOptimizer):
         # Only update global best tracking, NOT current position.
         # Current position updated in _finish_direction_search when line search done.
         self._update_best(self._pos_new, score_new)
+
+    def _iterate_batch(self, n):
+        """Generate one line search position plus random exploration positions."""
+        positions = [self._generate_position()]
+        for _ in range(n - 1):
+            positions.append(self._clip_position(self.init.move_random_typed()))
+        return positions
+
+    def _evaluate_batch(self, positions, scores):
+        """Process the line search position through evaluate, track the rest."""
+        self._pos_new = positions[0]
+        self._evaluate(scores[0])
+        for pos, score in zip(positions[1:], scores[1:]):
+            self._pos_new = pos
+            self._track_score(score)
+            self._update_best(pos, score)
