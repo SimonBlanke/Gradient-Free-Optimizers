@@ -220,3 +220,20 @@ Control output during search:
     verbosity = ["progress_bar"]      # Progress bar only
     verbosity = ["print_results"]     # Print final results
     verbosity = ["progress_bar", "print_results"]  # Both (default)
+
+
+Distributed Evaluation
+----------------------
+
+Backends for parallel objective function evaluation.
+
+.. code-block:: python
+
+    from gradient_free_optimizers.distributed import Multiprocessing, BaseDistribution
+
+.. autosummary::
+    :toctree: api_reference/generated/
+    :template: class.rst
+
+    gradient_free_optimizers.distributed.BaseDistribution
+    gradient_free_optimizers.distributed.Multiprocessing
