@@ -71,7 +71,8 @@ class SQLiteStorage(BaseStorage):
         self._conn.commit()
 
     def _key_to_str(self, key: tuple) -> str:
-        return json.dumps(key)
+        # Convert numpy integers to Python ints for JSON serialization
+        return json.dumps([int(k) for k in key])
 
     def _str_to_key(self, s: str) -> tuple:
         return tuple(json.loads(s))

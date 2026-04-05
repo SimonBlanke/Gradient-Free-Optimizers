@@ -7,7 +7,6 @@ from __future__ import annotations
 import json
 import math
 import time
-import warnings
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -682,13 +681,27 @@ class Search(TimesTracker, SearchStatistics):
             # Extract original function for single-point use during init
             objective_function = objective_function._gfo_original_func
 
+            # The objective may return (score, metrics) tuples, but the
+            # distributed batch interface only passes scores between
+            # workers and the search loop. Normalize here so all
+            # distributed paths (sync batch, true-async, batch-async)
+            # receive plain floats.
+            _raw_distributed = self._original_func
+
+            def _normalize_return(params):
+                out = _raw_distributed(params)
+                if isinstance(out, tuple):
+                    return out[0]
+                return out
+
+            self._original_func = _normalize_return
+
             if catch:
-                warnings.warn(
-                    "catch parameter is not yet supported with distributed "
-                    "evaluation. Ignoring catch for this search.",
-                    stacklevel=3,
-                )
-                catch = None
+                self._original_func = wrap_with_catch(self._original_func, catch)
+
+            # Rebuild the wrapper so the sync batch path also uses the
+            # normalized (and optionally catch-wrapped) function
+            self._distributed_func = self._backend.distribute(self._original_func)
         else:
             self._batch_size = None
             self._backend = None
@@ -697,7 +710,15 @@ class Search(TimesTracker, SearchStatistics):
             objective_function = wrap_with_catch(objective_function, catch)
 
         if getattr(self, "optimum", "maximum") == "minimum":
-            self.objective_function = lambda pos: -objective_function(pos)
+            _obj = objective_function
+
+            def _negate(params):
+                out = _obj(params)
+                if isinstance(out, tuple):
+                    return -out[0], out[1]
+                return -out
+
+            self.objective_function = _negate
         else:
             self.objective_function = objective_function
         self.n_iter = n_iter
