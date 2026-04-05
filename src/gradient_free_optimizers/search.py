@@ -17,7 +17,7 @@ from ._memory import CachedObjectiveAdapter
 from ._objective_adapter import ObjectiveAdapter
 from ._print_info import print_summary
 from ._progress_bar import ProgressBarLVL0, ProgressBarLVL1
-from ._result import Result
+from ._result import Result, unpack_objective_result
 from ._results_manager import ResultsManager
 from ._search_statistics import SearchStatistics
 from ._stopping_conditions import OptimizationStopper
@@ -190,13 +190,10 @@ class Search(TimesTracker, SearchStatistics):
     def _unpack_result(raw):
         """Separate a worker return value into score and metrics.
 
-        Objective functions may return a plain float or a (float, dict) tuple.
-        The backends pass through whatever the function returns, so we unpack
-        here at the boundary between worker results and the search loop.
+        Delegates to the centralized unpack_objective_result() which handles
+        ObjectiveResult, (float, dict) tuples, and plain floats.
         """
-        if isinstance(raw, tuple):
-            return raw[0], raw[1]
-        return raw, {}
+        return unpack_objective_result(raw)
 
     def _track_evaluation(self, pos, score, eval_time=0, iter_time=0, metrics=None):
         """Record a single evaluation result across all tracking systems."""
@@ -737,9 +734,8 @@ class Search(TimesTracker, SearchStatistics):
 
             def _negate(params):
                 out = _obj(params)
-                if isinstance(out, tuple):
-                    return -out[0], out[1]
-                return -out
+                score, metrics = unpack_objective_result(out)
+                return (-score, metrics)
 
             self.objective_function = _negate
         else:

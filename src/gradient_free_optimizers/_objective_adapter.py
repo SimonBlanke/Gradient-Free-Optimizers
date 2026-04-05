@@ -1,8 +1,8 @@
-from ._result import Result
+from ._result import Result, unpack_objective_result
 
 
 class ObjectiveAdapter:
-    """Maps *pos* → (score, metrics, params)."""
+    """Maps *pos* → (Result, params)."""
 
     def __init__(self, conv, objective):
         self._conv = conv
@@ -13,11 +13,7 @@ class ObjectiveAdapter:
         params = self._conv.value2para(self._conv.position2value(pos))
         out = self._objective(params)
 
-        if isinstance(out, tuple):
-            score, metrics = out
-        else:
-            score, metrics = float(out), {}
-
+        score, metrics = unpack_objective_result(out)
         result = Result(score, metrics)
 
         return result, params
