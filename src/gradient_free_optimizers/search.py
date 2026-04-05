@@ -314,8 +314,14 @@ class Search(TimesTracker, SearchStatistics):
             if self._check_stop(n_evaluated):
                 break
 
-            # Refill the freed worker slot
-            _submit_one()
+            # Refill the freed worker slot. Cache hits consume iterations
+            # without adding futures, so keep trying until a future is
+            # queued or there's nothing left to submit.
+            while n_evaluated < n_iter:
+                if _submit_one() == 0:
+                    break
+                if self._check_stop(n_evaluated):
+                    break
 
     def _run_batch_async(self, n_iter, nth_trial):
         """Batch-async iteration for stateful optimizers.
