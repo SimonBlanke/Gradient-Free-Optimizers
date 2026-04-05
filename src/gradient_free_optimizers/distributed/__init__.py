@@ -19,8 +19,9 @@ for async support).
 """
 
 from ._base import BaseDistribution
+from ._dask import Dask
 from ._joblib import Joblib
 from ._multiprocessing import Multiprocessing
 from ._ray import Ray
 
-__all__ = ["BaseDistribution", "Joblib", "Multiprocessing", "Ray"]
+__all__ = ["BaseDistribution", "Dask", "Joblib", "Multiprocessing", "Ray"]
