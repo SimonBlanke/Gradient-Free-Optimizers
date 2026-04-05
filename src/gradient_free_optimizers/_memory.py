@@ -10,19 +10,31 @@ from typing import Any
 import pandas as pd
 
 from ._objective_adapter import ObjectiveAdapter
+from .storage import BaseStorage, MemoryStorage
 
 
 class CachedObjectiveAdapter(ObjectiveAdapter):
-    def __init__(self, conv, objective):
+    def __init__(self, conv, objective, storage: BaseStorage | None = None):
         super().__init__(conv, objective)
 
-        self.memory_dict = {}
-        # Note: memory_dict_new was removed - it duplicated memory_dict
-        # and was never read
+        self._storage: BaseStorage = storage if storage is not None else MemoryStorage()
+
+    @property
+    def memory_dict(self):
+        """Backward-compatible access to the underlying storage.
+
+        Returns the raw dict for MemoryStorage backends. For other backends,
+        returns the storage object itself (supports ``in`` and ``[]``
+        operations via the BaseStorage interface, but is not a true dict).
+        """
+        if isinstance(self._storage, MemoryStorage):
+            return self._storage._data
+        return self._storage
 
     def memory(self, warm_start: pd.DataFrame, memory: Any = None):
+        # DictProxy from multiprocessing.Manager: wrap it in MemoryStorage
         if isinstance(memory, DictProxy):
-            self.memory_dict = memory
+            self._storage = MemoryStorage(data=memory)
 
         if warm_start is None:
             return
@@ -37,16 +49,18 @@ class CachedObjectiveAdapter(ObjectiveAdapter):
             logging.warning("Optimization will continue without memory warm start")
             return
 
-        self.memory_dict.update(self._conv.dataframe2memory_dict(warm_start))
+        warm_dict = self._conv.dataframe2memory_dict(warm_start)
+        if warm_dict:
+            self._storage.update(warm_dict)
 
     def __call__(self, pos):
         pos_t = tuple(pos)
 
-        if pos_t in self.memory_dict:
+        if self._storage.contains(pos_t):
             params = self._conv.value2para(self._conv.position2value(pos))
 
-            return self.memory_dict[pos_t], params
+            return self._storage.get(pos_t), params
         else:
             result, params = self._call_objective(pos)
-            self.memory_dict[pos_t] = result
+            self._storage.put(pos_t, result)
             return result, params

@@ -23,6 +23,7 @@ from ._results_manager import ResultsManager
 from ._search_statistics import SearchStatistics
 from ._stopping_conditions import OptimizationStopper
 from ._times_tracker import TimesTracker
+from .storage import BaseStorage
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -131,28 +132,49 @@ class Search(TimesTracker, SearchStatistics):
         self.best_score = self.p_bar.score_best
 
         positions = self._iterate_batch(batch_size)
+        n_positions = len(positions)
 
-        # Convert positions to param dicts for the distributed function
-        params_batch = []
-        for pos in positions:
-            value = self.conv.position2value(pos)
-            params = self.conv.value2para(value)
-            params_batch.append(params)
+        # Check storage for cached results (preserving original order)
+        scores = [None] * n_positions
+        uncached_indices = []
 
-        # Parallel evaluation via the distributed backend
-        t_start = time.time()
-        scores = self._distributed_func(params_batch)
-        eval_time = time.time() - t_start
+        if self._storage is not None:
+            for i, pos in enumerate(positions):
+                cached = self._storage.get(tuple(pos))
+                if cached is not None:
+                    scores[i] = cached.score
+                else:
+                    uncached_indices.append(i)
+        else:
+            uncached_indices = list(range(n_positions))
 
-        # Negate scores when minimizing (distributed func returns original scale)
-        if self.optimum == "minimum":
-            scores = [-s for s in scores]
+        # Dispatch only uncached positions to workers
+        if uncached_indices:
+            params_batch = []
+            for i in uncached_indices:
+                value = self.conv.position2value(positions[i])
+                params_batch.append(self.conv.value2para(value))
 
-        # Feed results into the optimizer's state
+            t_start = time.time()
+            new_scores = self._distributed_func(params_batch)
+            eval_time = time.time() - t_start
+
+            if self.optimum == "minimum":
+                new_scores = [-s for s in new_scores]
+
+            for idx, score in zip(uncached_indices, new_scores):
+                scores[idx] = score
+                if self._storage is not None:
+                    self._storage.put(tuple(positions[idx]), Result(score, {}))
+
+            per_eval_time = eval_time / len(uncached_indices)
+        else:
+            per_eval_time = 0
+
+        # Feed results into the optimizer's state (order preserved)
         self._evaluate_batch(positions, scores)
 
         # Bookkeeping: same tracking as _iteration() does per position
-        per_eval_time = eval_time / len(scores) if scores else 0
         for pos, score in zip(positions, scores):
             self.eval_times.append(per_eval_time)
             self.results_manager.add(Result(score, {}), pos)
@@ -171,7 +193,7 @@ class Search(TimesTracker, SearchStatistics):
         max_time: float | None = None,
         max_score: float | None = None,
         early_stopping: dict[str, Any] | None = None,
-        memory: bool = True,
+        memory: bool | BaseStorage = True,
         memory_warm_start: pd.DataFrame | None = None,
         verbosity: list[str] | Literal[False] = [
             "progress_bar",
@@ -244,13 +266,23 @@ class Search(TimesTracker, SearchStatistics):
                 early_stopping = {"n_iter_no_change": 50}
                 early_stopping = {"n_iter_no_change": 30, "tol_abs": 0.001}
 
-        memory : bool, default=True
-            If ``True``, cache objective function evaluations in an
-            in-memory dictionary keyed by position. When the optimizer
-            revisits a previously evaluated position, the cached score is
-            returned without calling the objective function again. This
-            is especially useful for discrete search spaces where
-            revisits are common.
+        memory : bool or BaseStorage, default=True
+            Controls evaluation caching. When ``True``, uses an in-memory
+            dictionary (equivalent to ``MemoryStorage()``). When ``False``,
+            disables caching entirely. A
+            :class:`~gradient_free_optimizers.storage.BaseStorage` instance
+            enables custom storage backends::
+
+                from gradient_free_optimizers.storage import SQLiteStorage
+                opt.search(objective, memory=SQLiteStorage("results.db"))
+
+            ``SQLiteStorage`` persists results to disk, enabling crash
+            recovery and cache reuse across runs. Works with distributed
+            evaluation (positions are checked against the cache before
+            being dispatched to workers).
+
+            In-memory caching is especially useful for discrete search
+            spaces where revisits are common.
         memory_warm_start : pd.DataFrame or None, default=None
             A DataFrame from a previous search (typically obtained via
             :attr:`search_data`) to pre-populate the evaluation cache.
@@ -459,7 +491,7 @@ class Search(TimesTracker, SearchStatistics):
         max_time: float | None,
         max_score: float | None,
         early_stopping: dict[str, Any] | None,
-        memory: bool,
+        memory: bool | BaseStorage,
         memory_warm_start: pd.DataFrame | None,
         verbosity: list[str] | Literal[False],
         catch: dict[type[Exception], int | float] | None = None,
@@ -479,14 +511,6 @@ class Search(TimesTracker, SearchStatistics):
                     stacklevel=3,
                 )
                 catch = None
-
-            if memory not in [False, None]:
-                warnings.warn(
-                    "Memory caching is not supported with distributed "
-                    "evaluation. Disabling memory for this search.",
-                    stacklevel=3,
-                )
-                memory = False
         else:
             self._batch_size = None
 
@@ -545,10 +569,18 @@ class Search(TimesTracker, SearchStatistics):
                 self.nth_process, self.n_iter, self.objective_function
             )
 
-        if self.memory not in [False, None]:
+        if isinstance(memory, BaseStorage):
+            self.adapter = CachedObjectiveAdapter(
+                self.conv, self.objective_function, storage=memory
+            )
+            self.adapter.memory(memory_warm_start)
+            self._storage = self.adapter._storage
+        elif memory not in [False, None]:
             self.adapter = CachedObjectiveAdapter(self.conv, self.objective_function)
             self.adapter.memory(memory_warm_start, memory)
+            self._storage = self.adapter._storage
         else:
+            self._storage = None
             self.adapter = ObjectiveAdapter(self.conv, self.objective_function)
 
         self.n_inits_norm = min((self.init.n_inits - self.n_init_total), self.n_iter)
