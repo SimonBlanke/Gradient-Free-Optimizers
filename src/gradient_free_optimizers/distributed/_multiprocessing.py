@@ -1,8 +1,10 @@
 """Multiprocessing backend for distributed evaluation.
 
-Uses a module-level variable to pass the objective function to worker
-processes, avoiding pickling issues. Only the parameter dicts (plain
-dicts of floats/strings) are serialized over the pool's pipe.
+On platforms with ``fork`` (Linux, older macOS), uses a module-level
+variable to pass the objective function to workers via shared memory,
+avoiding pickling entirely. On ``spawn`` platforms (Windows, macOS
+3.14+), the function is pickled alongside each parameter dict using
+``starmap``, which requires it to be importable at module level.
 """
 
 from __future__ import annotations
@@ -12,13 +14,18 @@ import multiprocessing
 from ._base import BaseDistribution
 
 # Shared between parent and forked workers via copy-on-write memory.
-# Set by _distribute() before pool.map, cleared after.
+# Only used with the fork context.
 _worker_func = None
 
 
 def _eval_single(params):
-    """Evaluate a single parameter dict in a worker process."""
+    """Worker entry point for fork context."""
     return _worker_func(params)
+
+
+def _eval_with_func(func, params):
+    """Worker entry point for spawn context (func is pickled per call)."""
+    return func(params)
 
 
 class Multiprocessing(BaseDistribution):
@@ -44,9 +51,10 @@ class Multiprocessing(BaseDistribution):
 
     Notes
     -----
-    Uses the ``fork`` multiprocessing context on Linux/macOS so that
-    the objective function does not need to be picklable. On systems
-    where ``fork`` is unavailable the function must be defined at module
+    Prefers the ``fork`` context (Linux/macOS) so the objective function
+    is inherited by workers without pickling. Falls back to the platform
+    default (``spawn`` on Windows, macOS 3.14+) where ``fork`` is
+    unavailable. With ``spawn``, the objective must be defined at module
     level (not a lambda or closure).
     """
 
@@ -56,20 +64,29 @@ class Multiprocessing(BaseDistribution):
 
             n_workers = os.cpu_count() or 1
         super().__init__(n_workers)
+        self._mp_context = self._select_context()
+        self._use_fork = self._mp_context.get_start_method() == "fork"
+
+    @staticmethod
+    def _select_context():
+        available = multiprocessing.get_all_start_methods()
+        if "fork" in available:
+            return multiprocessing.get_context("fork")
+        return multiprocessing.get_context()
 
     def _distribute(self, func, params_batch):
-        """Evaluate objective in parallel using multiprocessing.Pool.
-
-        The function is stored in a module-level variable and inherited
-        by forked workers, so only the params dicts travel through the
-        serialization pipe.
-        """
         global _worker_func
-        _worker_func = func
-        try:
-            ctx = multiprocessing.get_context("fork")
-            with ctx.Pool(self.n_workers) as pool:
-                scores = pool.map(_eval_single, params_batch)
-        finally:
+
+        if self._use_fork:
+            # Set before Pool creation so forked workers inherit it
+            _worker_func = func
+            with self._mp_context.Pool(self.n_workers) as pool:
+                results = pool.map(_eval_single, params_batch)
             _worker_func = None
-        return scores
+        else:
+            with self._mp_context.Pool(self.n_workers) as pool:
+                results = pool.starmap(
+                    _eval_with_func,
+                    [(func, p) for p in params_batch],
+                )
+        return results
