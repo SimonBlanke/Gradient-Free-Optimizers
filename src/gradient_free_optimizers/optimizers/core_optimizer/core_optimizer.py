@@ -140,6 +140,8 @@ class CoreOptimizer(ABC):
     _name_ = "core_optimizer"
     __name__ = "CoreOptimizer"
 
+    _supports_async = True
+
     def __init__(
         self,
         search_space,

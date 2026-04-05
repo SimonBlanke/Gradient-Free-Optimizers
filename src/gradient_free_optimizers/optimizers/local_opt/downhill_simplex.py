@@ -103,6 +103,7 @@ class DownhillSimplexOptimizer(BaseOptimizer):
 
     optimizer_type = "local"
     computationally_expensive = False
+    _supports_async = False
 
     def __init__(
         self,

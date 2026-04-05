@@ -74,6 +74,7 @@ class PowellsMethod(BaseOptimizer):
 
     optimizer_type = "global"
     computationally_expensive = False
+    _supports_async = False
 
     def __init__(
         self,

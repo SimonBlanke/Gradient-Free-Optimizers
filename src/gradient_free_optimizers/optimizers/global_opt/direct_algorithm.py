@@ -233,6 +233,7 @@ class DirectAlgorithm(BaseOptimizer):
 
     optimizer_type = "sequential"
     computationally_expensive = True
+    _supports_async = False
 
     def __init__(
         self,
