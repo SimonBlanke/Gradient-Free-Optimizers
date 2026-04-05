@@ -2,7 +2,8 @@
 
 Provides the Template Method Pattern for distribution strategies.
 Subclasses implement _distribute() to define how objective function
-evaluations are spread across workers.
+evaluations are spread across workers. Async-capable backends
+additionally implement _submit() and _wait_any().
 """
 
 from __future__ import annotations
@@ -17,6 +18,11 @@ class BaseDistribution(ABC):
     Use the .distribute decorator on an objective function to enable
     parallel batch evaluation during optimization.
 
+    For async-capable backends, also implement _submit() and _wait_any()
+    and set ``_is_async = True``. Async backends enable true asynchronous
+    evaluation where results are processed as they arrive, keeping all
+    workers busy at all times.
+
     Parameters
     ----------
     n_workers : int
@@ -24,7 +30,7 @@ class BaseDistribution(ABC):
 
     Examples
     --------
-    Creating a custom backend::
+    Creating a custom sync backend::
 
         class MyBackend(BaseDistribution):
             def _distribute(self, func, params_batch):
@@ -33,7 +39,25 @@ class BaseDistribution(ABC):
         @MyBackend(n_workers=4).distribute
         def objective(x, y):
             return -(x**2 + y**2)
+
+    Creating a custom async backend::
+
+        class MyAsyncBackend(BaseDistribution):
+            _is_async = True
+
+            def _distribute(self, func, params_batch):
+                futures = [self._submit(func, p) for p in params_batch]
+                return [self._get_result(f) for f in futures]
+
+            def _submit(self, func, params):
+                return my_remote_submit(func, params)
+
+            def _wait_any(self, futures):
+                done = my_wait_for_any(futures)
+                return done, self._get_result(done)
     """
+
+    _is_async = False
 
     def __init__(self, n_workers: int):
         if n_workers < 1:
@@ -42,17 +66,15 @@ class BaseDistribution(ABC):
 
     @abstractmethod
     def _distribute(self, func, params_batch: list[dict]) -> list[float]:
-        """Evaluate func(**params) for each params dict in the batch.
+        """Evaluate func(params) for each params dict in the batch.
 
-        This is the only method subclasses need to implement. It receives
-        the original (unwrapped) objective function and a list of parameter
+        This is the only method subclasses need to implement for
+        synchronous (batch) evaluation. It receives the original
+        (unwrapped) objective function and a list of parameter
         dictionaries, and must return a list of scores in the same order.
 
         The function follows GFO's convention: ``func(params_dict)`` where
         params_dict is a single dictionary, not keyword arguments.
-
-        If an evaluation fails, raise the exception. Error handling
-        is done by the search loop via its ``catch`` parameter.
 
         Parameters
         ----------
@@ -68,6 +90,54 @@ class BaseDistribution(ABC):
         """
         ...
 
+    def _submit(self, func, params: dict):
+        """Submit a single evaluation asynchronously.
+
+        Only required for async backends (``_is_async = True``).
+        Returns a backend-specific future object that can be passed
+        to :meth:`_wait_any`.
+
+        Parameters
+        ----------
+        func : callable
+            The original objective function.
+        params : dict
+            Single parameter dictionary to evaluate.
+
+        Returns
+        -------
+        future
+            A backend-specific future/handle object.
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__} does not support async evaluation. "
+            f"Set _is_async = True and implement _submit() and _wait_any()."
+        )
+
+    def _wait_any(self, futures) -> tuple:
+        """Wait for any submitted future to complete.
+
+        Only required for async backends (``_is_async = True``).
+        Blocks until at least one future from the collection is ready,
+        then returns both the future object and its result value.
+
+        Parameters
+        ----------
+        futures : iterable
+            Collection of future objects from :meth:`_submit`.
+
+        Returns
+        -------
+        tuple of (future, float)
+            The completed future object and its result (score).
+            The future is returned so the caller can identify which
+            submission completed (e.g., to look up the associated position).
+        """
+        raise NotImplementedError(
+            f"{type(self).__name__} does not support async evaluation. "
+            f"Set _is_async = True and implement _submit() and _wait_any()."
+        )
+
     def distribute(self, func):
         """Decorator that wraps a single-point objective for batch evaluation.
 
@@ -78,7 +148,7 @@ class BaseDistribution(ABC):
         Parameters
         ----------
         func : callable
-            Objective function with signature f(**params) -> float.
+            Objective function with signature f(params_dict) -> float.
 
         Returns
         -------
@@ -91,9 +161,10 @@ class BaseDistribution(ABC):
 
         wrapper.__name__ = getattr(func, "__name__", "objective")
 
-        # Metadata for search.py to detect batch mode
+        # Metadata for search.py to detect and configure distribution
         wrapper._gfo_distributed = True
         wrapper._gfo_batch_size = self.n_workers
         wrapper._gfo_original_func = func
+        wrapper._gfo_backend = self
 
         return wrapper
