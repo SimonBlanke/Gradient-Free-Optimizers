@@ -7,6 +7,7 @@ from __future__ import annotations
 import json
 import math
 import time
+import warnings
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -17,6 +18,7 @@ from ._memory import CachedObjectiveAdapter
 from ._objective_adapter import ObjectiveAdapter
 from ._print_info import print_summary
 from ._progress_bar import ProgressBarLVL0, ProgressBarLVL1
+from ._result import Result
 from ._results_manager import ResultsManager
 from ._search_statistics import SearchStatistics
 from ._stopping_conditions import OptimizationStopper
@@ -124,6 +126,43 @@ class Search(TimesTracker, SearchStatistics):
 
         self.n_iter_total += 1
         self.n_iter_search += 1
+
+    def _iteration_batch(self, batch_size):
+        self.best_score = self.p_bar.score_best
+
+        positions = self._iterate_batch(batch_size)
+
+        # Convert positions to param dicts for the distributed function
+        params_batch = []
+        for pos in positions:
+            value = self.conv.position2value(pos)
+            params = self.conv.value2para(value)
+            params_batch.append(params)
+
+        # Parallel evaluation via the distributed backend
+        t_start = time.time()
+        scores = self._distributed_func(params_batch)
+        eval_time = time.time() - t_start
+
+        # Negate scores when minimizing (distributed func returns original scale)
+        if self.optimum == "minimum":
+            scores = [-s for s in scores]
+
+        # Feed results into the optimizer's state
+        self._evaluate_batch(positions, scores)
+
+        # Bookkeeping: same tracking as _iteration() does per position
+        per_eval_time = eval_time / len(scores) if scores else 0
+        for pos, score in zip(positions, scores):
+            self.eval_times.append(per_eval_time)
+            self.results_manager.add(Result(score, {}), pos)
+            self.pos_l.append(pos)
+            self.score_l.append(score)
+            self.p_bar.update(score, pos, self.nth_iter)
+            self._tracker.track(pos, score, {}, is_init=False)
+            self.n_iter_total += 1
+            self.n_iter_search += 1
+            self._iter += 1
 
     def search(
         self,
@@ -344,21 +383,55 @@ class Search(TimesTracker, SearchStatistics):
             catch,
         )
 
-        for nth_trial in range(n_iter):
+        nth_trial = 0
+
+        # Initialization phase (always serial, even in distributed mode)
+        while nth_trial < self.n_inits_norm and nth_trial < n_iter:
             self._search_step(nth_trial)
 
-            # Update stopper with current state
             current_score = self.score_l[-1] if self.score_l else -math.inf
-            best_score = self.p_bar.score_best
-            self.stopper.update(current_score, best_score, nth_trial)
+            self.stopper.update(current_score, self.p_bar.score_best, nth_trial)
 
             if self._callbacks:
                 info = self._build_callback_info(nth_trial)
                 if self._run_callbacks(info) is False:
+                    nth_trial = n_iter
                     break
-
             if self.stopper.should_stop():
-                # Log debugging information when stopping
+                if "debug_stop" in self.verbosity:
+                    debug_info = self.stopper.get_debug_info()
+                    print("\nStopping condition debug info:")
+                    print(json.dumps(debug_info, indent=2))
+                nth_trial = n_iter
+                break
+
+            nth_trial += 1
+
+        # Transition from init to iteration phase
+        if nth_trial < n_iter and nth_trial == self.n_init_search:
+            self._finish_initialization()
+
+        # Iteration phase
+        while nth_trial < n_iter:
+            self.nth_iter = nth_trial
+
+            if self._is_distributed:
+                remaining = n_iter - nth_trial
+                batch = min(self._batch_size, remaining)
+                self._iteration_batch(batch)
+                nth_trial += batch
+            else:
+                self._iteration()
+                nth_trial += 1
+
+            current_score = self.score_l[-1] if self.score_l else -math.inf
+            self.stopper.update(current_score, self.p_bar.score_best, nth_trial - 1)
+
+            if self._callbacks:
+                info = self._build_callback_info(nth_trial - 1)
+                if self._run_callbacks(info) is False:
+                    break
+            if self.stopper.should_stop():
                 if "debug_stop" in self.verbosity:
                     debug_info = self.stopper.get_debug_info()
                     print("\nStopping condition debug info:")
@@ -391,6 +464,32 @@ class Search(TimesTracker, SearchStatistics):
         verbosity: list[str] | Literal[False],
         catch: dict[type[Exception], int | float] | None = None,
     ) -> None:
+        # Detect distributed decorator before any wrapping
+        self._is_distributed = getattr(objective_function, "_gfo_distributed", False)
+        if self._is_distributed:
+            self._batch_size = objective_function._gfo_batch_size
+            self._distributed_func = objective_function
+            # Extract original function for single-point use during init
+            objective_function = objective_function._gfo_original_func
+
+            if catch:
+                warnings.warn(
+                    "catch parameter is not yet supported with distributed "
+                    "evaluation. Ignoring catch for this search.",
+                    stacklevel=3,
+                )
+                catch = None
+
+            if memory not in [False, None]:
+                warnings.warn(
+                    "Memory caching is not supported with distributed "
+                    "evaluation. Disabling memory for this search.",
+                    stacklevel=3,
+                )
+                memory = False
+        else:
+            self._batch_size = None
+
         if catch:
             objective_function = wrap_with_catch(objective_function, catch)
 
