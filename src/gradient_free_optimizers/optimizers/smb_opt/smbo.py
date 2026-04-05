@@ -369,15 +369,51 @@ class SMBO(BaseOptimizer):
         if not self.replacement and self._pos_new is not None:
             self._remove_position(self._pos_new)
 
+    def _select_diverse_batch(self, exp_imp, n):
+        """Select n diverse positions from the acquisition landscape.
+
+        For n=1, returns the single best acquisition position. For n>1,
+        clusters the top candidates via MiniBatchKMeans and picks the
+        highest-acquisition position from each cluster. This prevents
+        batch positions from clumping around a single acquisition peak,
+        which would waste parallel evaluations on near-duplicate positions.
+        """
+        n_candidates = len(exp_imp)
+
+        if n <= 1 or n_candidates <= n:
+            top_indices = list(exp_imp.argsort()[::-1][:n])
+            return [self.pos_comb[i] for i in top_indices]
+
+        k = min(max(10 * n, 50), n_candidates)
+        top_k_indices = exp_imp.argsort()[::-1][:k]
+        top_k_positions = np.array([self.pos_comb[i] for i in top_k_indices])
+        top_k_ei = exp_imp[top_k_indices]
+
+        if k < 2 * n:
+            return [self.pos_comb[i] for i in top_k_indices[:n]]
+
+        from sklearn.cluster import MiniBatchKMeans
+
+        n_clusters = min(n, k)
+        kmeans = MiniBatchKMeans(n_clusters=n_clusters, n_init=3, random_state=0)
+        labels = kmeans.fit_predict(top_k_positions)
+
+        selected = []
+        for cluster_id in range(n_clusters):
+            mask = labels == cluster_id
+            cluster_ei = top_k_ei[mask]
+            cluster_pos = top_k_positions[mask]
+            best_in_cluster = cluster_ei.argmax()
+            selected.append(cluster_pos[best_in_cluster])
+
+        return selected
+
     def _iterate_batch(self, n):
-        """Train surrogate once and select n positions with highest acquisition."""
+        """Train surrogate once and select n diverse positions."""
         try:
             self._training()
             exp_imp = self._expected_improvement()
-            index_sorted = list(exp_imp.argsort()[::-1])
-            positions = []
-            for i in range(min(n, len(index_sorted))):
-                positions.append(self.pos_comb[index_sorted[i]])
+            positions = self._select_diverse_batch(exp_imp, n)
             while len(positions) < n:
                 positions.append(self._move_random())
             return [self._clip_position(pos) for pos in positions]

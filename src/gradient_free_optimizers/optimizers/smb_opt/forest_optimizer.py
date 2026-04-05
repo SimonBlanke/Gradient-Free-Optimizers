@@ -164,14 +164,11 @@ class ForestOptimizer(SMBO):
         self.regr.fit(X_sample, Y_sample)
 
     def _iterate_batch(self, n):
-        """Train tree ensemble once and select n positions with highest acquisition."""
+        """Train tree ensemble once and select n diverse positions."""
         try:
             self._training()
             exp_imp = self._expected_improvement()
-            index_sorted = list(exp_imp.argsort()[::-1])
-            positions = []
-            for i in range(min(n, len(index_sorted))):
-                positions.append(self.pos_comb[index_sorted[i]])
+            positions = self._select_diverse_batch(exp_imp, n)
             while len(positions) < n:
                 positions.append(self._move_random())
             return [self._clip_position(pos) for pos in positions]
