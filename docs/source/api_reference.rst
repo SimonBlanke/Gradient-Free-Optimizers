@@ -11,7 +11,7 @@ Complete API documentation for all optimizers and their methods.
 Overview
 ========
 
-All 23 optimizers in Gradient-Free-Optimizers share a common interface,
+All 26 optimizers in Gradient-Free-Optimizers share a common interface,
 making it easy to switch between algorithms without changing your code.
 
 .. code-block:: python
@@ -83,6 +83,9 @@ Optimizer Categories
       - :class:`~gradient_free_optimizers.EvolutionStrategyOptimizer`
       - :class:`~gradient_free_optimizers.DifferentialEvolutionOptimizer`
       - :class:`~gradient_free_optimizers.CMAESOptimizer`
+      - :class:`~gradient_free_optimizers.NSGA2Optimizer`
+      - :class:`~gradient_free_optimizers.MOEADOptimizer`
+      - :class:`~gradient_free_optimizers.SMSEMOAOptimizer`
 
    .. grid-item-card:: Sequential Model-Based
       :class-card: sd-border-start sd-border-warning
@@ -120,6 +123,9 @@ Optimizers
     gradient_free_optimizers.EvolutionStrategyOptimizer
     gradient_free_optimizers.DifferentialEvolutionOptimizer
     gradient_free_optimizers.CMAESOptimizer
+    gradient_free_optimizers.NSGA2Optimizer
+    gradient_free_optimizers.MOEADOptimizer
+    gradient_free_optimizers.SMSEMOAOptimizer
     gradient_free_optimizers.BayesianOptimizer
     gradient_free_optimizers.TreeStructuredParzenEstimators
     gradient_free_optimizers.ForestOptimizer
@@ -220,27 +226,6 @@ Control output during search:
     verbosity = ["progress_bar"]      # Progress bar only
     verbosity = ["print_results"]     # Print final results
     verbosity = ["progress_bar", "print_results"]  # Both (default)
-
-
-Distributed Evaluation
-----------------------
-
-Backends for parallel objective function evaluation. Sync backends evaluate
-full batches, async backends process results as they arrive.
-
-.. code-block:: python
-
-    from gradient_free_optimizers.distributed import Joblib, Ray, Dask
-
-.. autosummary::
-    :toctree: api_reference/generated/
-    :template: class.rst
-
-    gradient_free_optimizers.distributed.BaseDistribution
-    gradient_free_optimizers.distributed.Multiprocessing
-    gradient_free_optimizers.distributed.Joblib
-    gradient_free_optimizers.distributed.Ray
-    gradient_free_optimizers.distributed.Dask
 
 
 Evaluation Storage

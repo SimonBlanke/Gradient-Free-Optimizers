@@ -65,10 +65,23 @@ class SQLiteStorage(BaseStorage):
             """CREATE TABLE IF NOT EXISTS evaluations (
                 position_key TEXT PRIMARY KEY,
                 score REAL NOT NULL,
-                metrics TEXT NOT NULL DEFAULT '{}'
+                metrics TEXT NOT NULL DEFAULT '{}',
+                objectives TEXT DEFAULT NULL
             )"""
         )
         self._conn.commit()
+        self._migrate_schema()
+
+    def _migrate_schema(self):
+        """Add columns introduced after the initial schema."""
+        columns = {
+            row[1] for row in self._conn.execute("PRAGMA table_info(evaluations)")
+        }
+        if "objectives" not in columns:
+            self._conn.execute(
+                "ALTER TABLE evaluations ADD COLUMN objectives TEXT DEFAULT NULL"
+            )
+            self._conn.commit()
 
     def _key_to_str(self, key: tuple) -> str:
         # Convert numpy integers to Python ints for JSON serialization
@@ -81,21 +94,24 @@ class SQLiteStorage(BaseStorage):
         from .._result import Result
 
         row = self._conn.execute(
-            "SELECT score, metrics FROM evaluations WHERE position_key = ?",
+            "SELECT score, metrics, objectives FROM evaluations "
+            "WHERE position_key = ?",
             (self._key_to_str(key),),
         ).fetchone()
         if row is None:
             return None
-        return Result(score=row[0], metrics=json.loads(row[1]))
+        objectives = json.loads(row[2]) if row[2] else None
+        return Result(score=row[0], metrics=json.loads(row[1]), objectives=objectives)
 
     def put(self, key: tuple, result: Result) -> None:
         self._conn.execute(
-            "INSERT OR REPLACE INTO evaluations (position_key, score, metrics) "
-            "VALUES (?, ?, ?)",
+            "INSERT OR REPLACE INTO evaluations "
+            "(position_key, score, metrics, objectives) VALUES (?, ?, ?, ?)",
             (
                 self._key_to_str(key),
                 result.score,
                 json.dumps(result.metrics) if result.metrics else "{}",
+                json.dumps(result.objectives) if result.objectives else None,
             ),
         )
         self._conn.commit()
@@ -120,16 +136,21 @@ class SQLiteStorage(BaseStorage):
         from .._result import Result
 
         cursor = self._conn.execute(
-            "SELECT position_key, score, metrics FROM evaluations"
+            "SELECT position_key, score, metrics, objectives FROM evaluations"
         )
         while True:
             rows = cursor.fetchmany(1000)
             if not rows:
                 break
-            for pos_str, score, metrics_str in rows:
+            for pos_str, score, metrics_str, objectives_str in rows:
+                objectives = json.loads(objectives_str) if objectives_str else None
                 yield (
                     self._str_to_key(pos_str),
-                    Result(score=score, metrics=json.loads(metrics_str)),
+                    Result(
+                        score=score,
+                        metrics=json.loads(metrics_str),
+                        objectives=objectives,
+                    ),
                 )
 
     def update(self, mapping: dict) -> None:
@@ -137,12 +158,13 @@ class SQLiteStorage(BaseStorage):
         with self._conn:
             self._conn.executemany(
                 "INSERT OR REPLACE INTO evaluations "
-                "(position_key, score, metrics) VALUES (?, ?, ?)",
+                "(position_key, score, metrics, objectives) VALUES (?, ?, ?, ?)",
                 [
                     (
                         self._key_to_str(key),
                         result.score,
                         json.dumps(result.metrics) if result.metrics else "{}",
+                        json.dumps(result.objectives) if result.objectives else None,
                     )
                     for key, result in mapping.items()
                 ],

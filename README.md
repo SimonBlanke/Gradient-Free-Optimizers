@@ -52,7 +52,7 @@ Lightweight optimization with local, global, population-based and sequential tec
   <img src="./docs/gifs/3d_optimizer_animation.gif" width="240" align="right" alt="Bayesian Optimization on Ackley Function">
 </a>
 
-**Gradient-Free-Optimizers** is a Python library for gradient-free optimization of black-box functions. It provides a unified interface to 21 optimization algorithms, from simple hill climbing to Bayesian optimization, all operating on discrete numerical search spaces defined via NumPy arrays.
+**Gradient-Free-Optimizers** is a Python library for gradient-free optimization of black-box functions. It provides a unified interface to 25 optimization algorithms, from simple hill climbing to Bayesian optimization and multi-objective methods like NSGA-II, MOEA/D, and SMS-EMOA, all operating on discrete numerical, continuous, and categorical search spaces.
 
 Designed for hyperparameter tuning, simulation optimization, and any scenario where gradients are unavailable or impractical. The library prioritizes simplicity: define your objective function, specify the search space, and run. It serves as the optimization backend for [Hyperactive](https://github.com/SimonBlanke/Hyperactive) but can also be used standalone.
 

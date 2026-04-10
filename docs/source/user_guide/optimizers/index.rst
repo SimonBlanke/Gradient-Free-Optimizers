@@ -2,7 +2,7 @@
 Optimization Algorithms
 ======================
 
-Gradient-Free-Optimizers provides 22 optimization algorithms organized into
+Gradient-Free-Optimizers provides 25 optimization algorithms organized into
 four categories based on their search strategy. Each algorithm has unique
 characteristics that make it suitable for different types of problems.
 
@@ -74,6 +74,15 @@ Algorithm Overview
     * - :doc:`Differential Evolution <population/differential_evolution>`
       - Population
       - Continuous non-linear optimization
+    * - :doc:`NSGA-II <population/nsga2>`
+      - Population
+      - Multi-objective optimization (2-3 objectives)
+    * - :doc:`MOEA/D <population/moead>`
+      - Population
+      - Multi-objective optimization with uniform front coverage
+    * - :doc:`SMS-EMOA <population/sms_emoa>`
+      - Population
+      - Multi-objective optimization with hypervolume selection
     * - :doc:`Bayesian Optimization <smbo/bayesian>`
       - SMBO
       - Expensive functions with continuous parameters
@@ -122,7 +131,8 @@ Categories
         regions. Natural parallelism and diverse exploration.
 
         **Algorithms:** Particle Swarm, Spiral, Parallel Tempering, Genetic
-        Algorithm, Evolution Strategy, Differential Evolution
+        Algorithm, Evolution Strategy, Differential Evolution, NSGA-II, MOEA/D,
+        SMS-EMOA
 
     .. grid-item-card:: Sequential Model-Based
         :link: smbo/index

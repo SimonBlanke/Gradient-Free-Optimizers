@@ -30,6 +30,12 @@ Overview
       - Creates new solutions from weighted differences.
     * - :doc:`cma_es`
       - Adapts a full covariance matrix to learn landscape structure.
+    * - :doc:`nsga2`
+      - Multi-objective optimizer using non-dominated sorting and crowding distance.
+    * - :doc:`moead`
+      - Multi-objective optimizer decomposing into scalar subproblems via weight vectors.
+    * - :doc:`sms_emoa`
+      - Multi-objective optimizer using hypervolume contribution for selection.
 
 
 When to Use Population-Based
@@ -126,6 +132,18 @@ Algorithm Comparison
       - Covariance matrix
       - Correlated continuous
       - Full covariance adaptation
+    * - NSGA-II
+      - Pareto ranking
+      - Multi-objective (2-3 obj.)
+      - Non-dominated sorting + crowding
+    * - MOEA/D
+      - Neighbor decomposition
+      - Multi-objective (2+ obj.)
+      - Tchebycheff scalarization
+    * - SMS-EMOA
+      - Hypervolume contribution
+      - Multi-objective (2-3 obj.)
+      - Steady-state + S-metric
 
 
 Conceptual Comparison
@@ -224,3 +242,6 @@ Algorithms
     evolution_strategy
     differential_evolution
     cma_es
+    nsga2
+    moead
+    sms_emoa

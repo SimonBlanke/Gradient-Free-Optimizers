@@ -17,7 +17,7 @@
     <div class="stats-strip">
         <a href="get_started/algorithms.html" class="stat-item">
             <div class="stat-front">
-                <div class="stat-value">22</div>
+                <div class="stat-value">25</div>
                 <div class="stat-label">Algorithms</div>
             </div>
             <div class="stat-hover">
@@ -76,7 +76,7 @@ Not every optimization problem has gradients. Machine learning hyperparameter tu
 simulation optimization, feature selection, and black-box optimization all require
 algorithms that can navigate parameter spaces without derivative information.
 
-**Gradient-Free-Optimizers** provides a unified interface to 22 optimization algorithms,
+**Gradient-Free-Optimizers** provides a unified interface to 25 optimization algorithms,
 from simple hill climbing to sophisticated Bayesian optimization, all designed for
 discrete, continuous, and mixed search spaces.
 
@@ -114,10 +114,10 @@ Algorithm Categories
         :link-type: doc
         :class-card: sd-border-start sd-border-primary
 
-        **6 Algorithms** using collective intelligence
+        **9 Algorithms** using collective intelligence
 
         Particle Swarm, Genetic Algorithm, Evolution Strategy,
-        Differential Evolution, and more. Multiple agents work together
+        Differential Evolution, NSGA-II, MOEA/D, SMS-EMOA, and more. Multiple agents work together
         to find optimal solutions.
 
     .. grid-item-card:: Sequential Model-Based
@@ -316,7 +316,7 @@ for Python.
         Perfect when you need fine-grained control over the
         optimization process.
 
-        - 22 algorithms
+        - 25 algorithms
         - NumPy-based search spaces
         - Constraint support
 
@@ -375,7 +375,7 @@ Documentation
         :link-type: doc
         :text-align: center
 
-        All 22 optimization algorithms explained
+        All 25 optimization algorithms explained
 
     .. grid-item-card:: Examples
         :link: examples

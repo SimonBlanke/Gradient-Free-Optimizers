@@ -21,6 +21,7 @@ class SearchTracker:
         self._positions: list[tuple[int, ...]] = []
         self._scores: list[float] = []
         self._metrics: list[dict[str, Any]] = []
+        self._objectives: list[list[float] | None] = []
 
         self._best_score: float = -math.inf
         self._best_iteration: int = -1
@@ -40,11 +41,13 @@ class SearchTracker:
         score: float,
         metrics: dict[str, Any],
         is_init: bool,
+        objectives: list[float] | None = None,
     ) -> None:
         """Record one evaluation. Called once per iteration from Search."""
         self._positions.append(tuple(position))
         self._scores.append(score)
         self._metrics.append(metrics)
+        self._objectives.append(objectives)
 
         if is_init:
             self.n_init += 1
@@ -73,8 +76,14 @@ class SearchTracker:
     def results_as_dicts(self) -> list[dict[str, Any]]:
         """All results as list of dicts (pandas-free)."""
         rows = []
-        for pos, score, metrics in zip(self._positions, self._scores, self._metrics):
+        for pos, score, metrics, objectives in zip(
+            self._positions, self._scores, self._metrics, self._objectives
+        ):
             value = self._converter.position2value(list(pos))
             params = self._converter.value2para(value)
-            rows.append({"score": score, **metrics, **params})
+            row: dict[str, Any] = {"score": score, **metrics, **params}
+            if objectives is not None:
+                for i, obj_val in enumerate(objectives):
+                    row[f"objective_{i}"] = obj_val
+            rows.append(row)
         return rows

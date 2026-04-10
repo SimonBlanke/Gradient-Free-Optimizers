@@ -13,6 +13,8 @@ from .genetic_algorithm import GeneticAlgorithmOptimizer
 from .grid_search import GridSearchOptimizer
 from .hill_climbing import HillClimbingOptimizer
 from .lipschitz_optimizer import LipschitzOptimizer
+from .moead import MOEADOptimizer
+from .nsga2 import NSGA2Optimizer
 from .parallel_tempering import ParallelTemperingOptimizer
 from .particle_swarm_optimization import ParticleSwarmOptimizer
 from .pattern_search import PatternSearch
@@ -22,6 +24,7 @@ from .random_restart_hill_climbing import RandomRestartHillClimbingOptimizer
 from .random_search import RandomSearchOptimizer
 from .repulsing_hill_climbing import RepulsingHillClimbingOptimizer
 from .simulated_annealing import SimulatedAnnealingOptimizer
+from .sms_emoa import SMSEMOAOptimizer
 from .spiral_optimization import SpiralOptimization
 from .stochastic_hill_climbing import StochasticHillClimbingOptimizer
 from .tree_structured_parzen_estimators import TreeStructuredParzenEstimators
@@ -50,4 +53,7 @@ __all__ = [
     "BayesianOptimizer",
     "TreeStructuredParzenEstimators",
     "ForestOptimizer",
+    "NSGA2Optimizer",
+    "MOEADOptimizer",
+    "SMSEMOAOptimizer",
 ]

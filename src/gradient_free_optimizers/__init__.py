@@ -7,6 +7,8 @@ import importlib.metadata
 __version__ = importlib.metadata.version("gradient-free-optimizers")
 __license__ = "MIT"
 
+from ._fitness_mapper import FitnessMapper, ScalarIdentity, WeightedSum
+from ._result import ObjectiveResult
 from .optimizer_search import (
     BayesianOptimizer,
     CMAESOptimizer,
@@ -19,6 +21,8 @@ from .optimizer_search import (
     GridSearchOptimizer,
     HillClimbingOptimizer,
     LipschitzOptimizer,
+    MOEADOptimizer,
+    NSGA2Optimizer,
     ParallelTemperingOptimizer,
     ParticleSwarmOptimizer,
     PatternSearch,
@@ -28,12 +32,20 @@ from .optimizer_search import (
     RandomSearchOptimizer,
     RepulsingHillClimbingOptimizer,
     SimulatedAnnealingOptimizer,
+    SMSEMOAOptimizer,
     SpiralOptimization,
     StochasticHillClimbingOptimizer,
     TreeStructuredParzenEstimators,
 )
 
 __all__ = [
+    "ObjectiveResult",
+    "FitnessMapper",
+    "ScalarIdentity",
+    "WeightedSum",
+    "NSGA2Optimizer",
+    "MOEADOptimizer",
+    "SMSEMOAOptimizer",
     "HillClimbingOptimizer",
     "StochasticHillClimbingOptimizer",
     "RepulsingHillClimbingOptimizer",

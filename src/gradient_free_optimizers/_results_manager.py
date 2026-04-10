@@ -22,6 +22,7 @@ class ResultsManager:
         self._positions: list[tuple[int, ...]] = []
         self._scores: list[float] = []
         self._metrics: list[dict[str, Any]] = []
+        self._objectives: list[list[float] | None] = []
 
     def add(self, result, position) -> None:
         """Add a result with its position (not params dict).
@@ -29,14 +30,14 @@ class ResultsManager:
         Parameters
         ----------
         result : Result
-            The result object containing score and metrics.
+            The result object containing score, metrics, and objectives.
         position : array-like
             The position indices (will be converted to tuple for storage).
         """
-        # Store position as tuple (immutable, hashable, smaller than dict)
         self._positions.append(tuple(position))
         self._scores.append(result.score)
         self._metrics.append(result.metrics if result.metrics else {})
+        self._objectives.append(result.objectives)
 
     @property
     def dataframe(self) -> pd.DataFrame:
@@ -49,18 +50,19 @@ class ResultsManager:
             return pd.DataFrame()
 
         if self._converter is None:
-            # Fallback: return just scores if no converter available
             return pd.DataFrame({"score": self._scores})
 
-        # Build rows lazily
         rows = []
-        for pos, score, metrics in zip(self._positions, self._scores, self._metrics):
-            # Reconstruct params from position
+        for pos, score, metrics, objectives in zip(
+            self._positions, self._scores, self._metrics, self._objectives
+        ):
             value = self._converter.position2value(list(pos))
             params = self._converter.value2para(value)
 
-            # Build row: score first, then metrics, then params
-            row = {"score": score, **metrics, **params}
+            row: dict[str, Any] = {"score": score, **metrics, **params}
+            if objectives is not None:
+                for i, obj_val in enumerate(objectives):
+                    row[f"objective_{i}"] = obj_val
             rows.append(row)
 
         return pd.DataFrame(rows)

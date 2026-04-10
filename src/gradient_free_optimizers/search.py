@@ -13,11 +13,17 @@ from typing import TYPE_CHECKING, Any, Literal
 from ._callback import CallbackInfo
 from ._catch import wrap_with_catch
 from ._data import DataAccessor, SearchTracker
+from ._fitness_mapper import FitnessMapper, ScalarIdentity, WeightedSum
 from ._memory import CachedObjectiveAdapter
 from ._objective_adapter import ObjectiveAdapter
 from ._print_info import print_summary
 from ._progress_bar import ProgressBarLVL0, ProgressBarLVL1
-from ._result import Result, unpack_objective_result
+from ._result import (
+    Result,
+    negate_objectives,
+    objectives_as_list,
+    unpack_objective_result,
+)
 from ._results_manager import ResultsManager
 from ._search_statistics import SearchStatistics
 from ._stopping_conditions import OptimizationStopper
@@ -90,6 +96,9 @@ class Search(TimesTracker, SearchStatistics):
 
         self._tracker: SearchTracker | None = None
         self.__data: DataAccessor | None = None
+        self._n_objectives: int = 1
+        self._fitness_mapper: FitnessMapper = ScalarIdentity()
+        self._last_objectives: list[float] | None = None
 
     @TimesTracker.iter_time
     def _initialization(self):
@@ -104,7 +113,13 @@ class Search(TimesTracker, SearchStatistics):
         self.score_l.append(score_new)
 
         self.p_bar.update(score_new, init_pos, self.nth_iter)
-        self._tracker.track(init_pos, score_new, self._last_metrics, is_init=True)
+        self._tracker.track(
+            init_pos,
+            score_new,
+            self._last_metrics,
+            is_init=True,
+            objectives=self._last_objectives,
+        )
 
         self.n_init_total += 1
         self.n_init_search += 1
@@ -122,7 +137,13 @@ class Search(TimesTracker, SearchStatistics):
         self.score_l.append(score_new)
 
         self.p_bar.update(score_new, pos_new, self.nth_iter)
-        self._tracker.track(pos_new, score_new, self._last_metrics, is_init=False)
+        self._tracker.track(
+            pos_new,
+            score_new,
+            self._last_metrics,
+            is_init=False,
+            objectives=self._last_objectives,
+        )
 
         self.n_iter_total += 1
         self.n_iter_search += 1
@@ -134,9 +155,9 @@ class Search(TimesTracker, SearchStatistics):
         positions = self._iterate_batch(batch_size)
         n_positions = len(positions)
 
-        # Check storage for cached results (preserving original order)
         scores = [None] * n_positions
         metrics_list = [{}] * n_positions
+        objectives_list = [None] * n_positions
         uncached_indices = []
 
         if self._storage is not None:
@@ -145,12 +166,12 @@ class Search(TimesTracker, SearchStatistics):
                 if cached is not None:
                     scores[i] = cached.score
                     metrics_list[i] = cached.metrics
+                    objectives_list[i] = cached.objectives
                 else:
                     uncached_indices.append(i)
         else:
             uncached_indices = list(range(n_positions))
 
-        # Dispatch only uncached positions to workers
         if uncached_indices:
             params_batch = []
             for i in uncached_indices:
@@ -162,19 +183,20 @@ class Search(TimesTracker, SearchStatistics):
             eval_time = time.time() - t_start
 
             for idx, raw in zip(uncached_indices, raw_results):
-                score, metrics = self._unpack_result(raw)
-                if self.optimum == "minimum":
-                    score = -score
-                scores[idx] = score
+                fitness, obj_list, metrics = self._process_raw_result(raw)
+                scores[idx] = fitness
                 metrics_list[idx] = metrics
+                objectives_list[idx] = obj_list
                 if self._storage is not None:
-                    self._storage.put(tuple(positions[idx]), Result(score, metrics))
+                    self._storage.put(
+                        tuple(positions[idx]),
+                        Result(fitness, metrics, obj_list),
+                    )
 
             per_eval_time = eval_time / len(uncached_indices)
         else:
             per_eval_time = 0
 
-        # Feed results into the optimizer's state (order preserved)
         self._evaluate_batch(positions, scores)
 
         per_iter_time = (time.time() - t_batch_start) / n_positions
@@ -183,32 +205,60 @@ class Search(TimesTracker, SearchStatistics):
         for i, (pos, score) in enumerate(zip(positions, scores)):
             et = per_eval_time if i in uncached_set else 0
             self._track_evaluation(
-                pos, score, et, per_iter_time, metrics=metrics_list[i]
+                pos,
+                score,
+                et,
+                per_iter_time,
+                metrics=metrics_list[i],
+                objectives=objectives_list[i],
             )
 
-    @staticmethod
-    def _unpack_result(raw):
-        """Separate a worker return value into score and metrics.
+    def _process_raw_result(self, raw):
+        """Unpack a worker result, negate if minimizing, compute fitness.
 
-        Delegates to the centralized unpack_objective_result() which handles
-        ObjectiveResult, (float, dict) tuples, and plain floats.
+        Consolidates the unpack / negate / fitness-map steps that
+        previously were scattered across _iteration_batch, _run_true_async,
+        and _run_batch_async.
+
+        Returns
+        -------
+        tuple[float, list[float] | None, dict]
+            (fitness, objectives_list, metrics)
         """
-        return unpack_objective_result(raw)
+        objectives, metrics = unpack_objective_result(raw)
+        if self.optimum == "minimum":
+            objectives = negate_objectives(objectives)
+        fitness = self._fitness_mapper(objectives)
+        obj_list = objectives_as_list(objectives, self._n_objectives)
+        return fitness, obj_list, metrics
 
-    def _track_evaluation(self, pos, score, eval_time=0, iter_time=0, metrics=None):
+    def _track_evaluation(
+        self,
+        pos,
+        score,
+        eval_time=0,
+        iter_time=0,
+        metrics=None,
+        objectives=None,
+    ):
         """Record a single evaluation result across all tracking systems."""
         if metrics is None:
             metrics = {}
         self.eval_times.append(eval_time)
         self.iter_times.append(iter_time)
-        self.results_manager.add(Result(score, metrics), pos)
+        self.results_manager.add(Result(score, metrics, objectives), pos)
         self.pos_l.append(pos)
         self.score_l.append(score)
         self.p_bar.update(score, pos, self.nth_iter)
         self._last_metrics = metrics
-        self._tracker.track(pos, score, metrics, is_init=False)
-        # Feed each evaluation to the stopper so early_stopping counts
-        # individual evaluations, not batches
+        self._last_objectives = objectives
+        self._tracker.track(
+            pos,
+            score,
+            metrics,
+            is_init=False,
+            objectives=objectives,
+        )
         self.stopper.update(score, self.p_bar.score_best, self._iter)
         self.n_iter_total += 1
         self.n_iter_search += 1
@@ -273,7 +323,12 @@ class Search(TimesTracker, SearchStatistics):
                 cached = self._storage.get(tuple(pos))
                 if cached is not None:
                     self._evaluate_batch([pos], [cached.score])
-                    self._track_evaluation(pos, cached.score, metrics=cached.metrics)
+                    self._track_evaluation(
+                        pos,
+                        cached.score,
+                        metrics=cached.metrics,
+                        objectives=cached.objectives,
+                    )
                     n_evaluated += 1
                     return 1
 
@@ -295,17 +350,25 @@ class Search(TimesTracker, SearchStatistics):
             completed, raw = backend._wait_any(list(pending.keys()))
             pos = pending.pop(completed)
 
-            score, metrics = self._unpack_result(raw)
-            if self.optimum == "minimum":
-                score = -score
+            fitness, obj_list, metrics = self._process_raw_result(raw)
 
             if self._storage is not None:
-                self._storage.put(tuple(pos), Result(score, metrics))
+                self._storage.put(
+                    tuple(pos),
+                    Result(fitness, metrics, obj_list),
+                )
 
             self.nth_iter = n_evaluated
-            self._evaluate_batch([pos], [score])
+            self._evaluate_batch([pos], [fitness])
             iter_time = time.time() - t_iter
-            self._track_evaluation(pos, score, iter_time, iter_time, metrics=metrics)
+            self._track_evaluation(
+                pos,
+                fitness,
+                iter_time,
+                iter_time,
+                metrics=metrics,
+                objectives=obj_list,
+            )
             n_evaluated += 1
 
             if self._check_stop(n_evaluated):
@@ -345,9 +408,9 @@ class Search(TimesTracker, SearchStatistics):
             positions = self._iterate_batch(batch_size)
             n_positions = len(positions)
 
-            # Check storage cache (same logic as sync _iteration_batch)
             scores = [None] * n_positions
             metrics_list = [{}] * n_positions
+            objectives_list = [None] * n_positions
             uncached_indices = []
 
             if self._storage is not None:
@@ -356,12 +419,12 @@ class Search(TimesTracker, SearchStatistics):
                     if cached is not None:
                         scores[i] = cached.score
                         metrics_list[i] = cached.metrics
+                        objectives_list[i] = cached.objectives
                     else:
                         uncached_indices.append(i)
             else:
                 uncached_indices = list(range(n_positions))
 
-            # Submit uncached positions as async futures
             if uncached_indices:
                 futures = {}
                 for i in uncached_indices:
@@ -370,26 +433,26 @@ class Search(TimesTracker, SearchStatistics):
                     future = backend._submit(original_func, params)
                     futures[future] = i
 
-                # Collect all results (async within batch)
                 t_start = time.time()
                 while futures:
                     completed, raw = backend._wait_any(list(futures.keys()))
                     idx = futures.pop(completed)
 
-                    score, metrics = self._unpack_result(raw)
-                    if self.optimum == "minimum":
-                        score = -score
+                    fitness, obj_list, metrics = self._process_raw_result(raw)
 
-                    scores[idx] = score
+                    scores[idx] = fitness
                     metrics_list[idx] = metrics
+                    objectives_list[idx] = obj_list
                     if self._storage is not None:
-                        self._storage.put(tuple(positions[idx]), Result(score, metrics))
+                        self._storage.put(
+                            tuple(positions[idx]),
+                            Result(fitness, metrics, obj_list),
+                        )
 
                 per_eval_time = (time.time() - t_start) / len(uncached_indices)
             else:
                 per_eval_time = 0
 
-            # Feed complete batch to optimizer (order preserved)
             self._evaluate_batch(positions, scores)
 
             per_iter_time = (time.time() - t_batch_start) / n_positions
@@ -398,7 +461,12 @@ class Search(TimesTracker, SearchStatistics):
             for i, (pos, score) in enumerate(zip(positions, scores)):
                 et = per_eval_time if i in uncached_set else 0
                 self._track_evaluation(
-                    pos, score, et, per_iter_time, metrics=metrics_list[i]
+                    pos,
+                    score,
+                    et,
+                    per_iter_time,
+                    metrics=metrics_list[i],
+                    objectives=objectives_list[i],
                 )
 
             n_evaluated += n_positions
@@ -423,6 +491,8 @@ class Search(TimesTracker, SearchStatistics):
         optimum: Literal["maximum", "minimum"] = "maximum",
         callbacks: list[Callable[[CallbackInfo], bool | None]] | None = None,
         catch: dict[type[Exception], int | float] | None = None,
+        n_objectives: int = 1,
+        fitness_mapper: FitnessMapper | None = None,
     ) -> None:
         """Run the optimization loop.
 
@@ -623,6 +693,14 @@ class Search(TimesTracker, SearchStatistics):
         """
         self.optimum = optimum
         self._callbacks = callbacks or []
+        self._n_objectives = n_objectives
+        if fitness_mapper is not None:
+            self._fitness_mapper = fitness_mapper
+        elif n_objectives > 1:
+            self._fitness_mapper = WeightedSum(n_objectives=n_objectives)
+        else:
+            self._fitness_mapper = ScalarIdentity()
+
         self._init_search(
             objective_function,
             n_iter,
@@ -689,10 +767,9 @@ class Search(TimesTracker, SearchStatistics):
         t = time.time()
         result, params = self.adapter(pos)
         self.eval_times.append(time.time() - t)
-        # Store position instead of params dict for memory efficiency
-        # Params are reconstructed lazily when search_data DataFrame is accessed
         self.results_manager.add(result, pos)
         self._last_metrics = result.metrics if result.metrics else {}
+        self._last_objectives = result.objectives
         self._iter += 1
         return result.score
 
@@ -734,8 +811,8 @@ class Search(TimesTracker, SearchStatistics):
 
             def _negate(params):
                 out = _obj(params)
-                score, metrics = unpack_objective_result(out)
-                return (-score, metrics)
+                objectives, metrics = unpack_objective_result(out)
+                return (negate_objectives(objectives), metrics)
 
             self.objective_function = _negate
         else:
@@ -788,19 +865,35 @@ class Search(TimesTracker, SearchStatistics):
                 self.nth_process, self.n_iter, self.objective_function
             )
 
+        _fm = self._fitness_mapper
+        _no = self._n_objectives
         if isinstance(memory, BaseStorage):
             self.adapter = CachedObjectiveAdapter(
-                self.conv, self.objective_function, storage=memory
+                self.conv,
+                self.objective_function,
+                storage=memory,
+                fitness_mapper=_fm,
+                n_objectives=_no,
             )
             self.adapter.memory(memory_warm_start)
             self._storage = self.adapter._storage
         elif memory not in [False, None]:
-            self.adapter = CachedObjectiveAdapter(self.conv, self.objective_function)
+            self.adapter = CachedObjectiveAdapter(
+                self.conv,
+                self.objective_function,
+                fitness_mapper=_fm,
+                n_objectives=_no,
+            )
             self.adapter.memory(memory_warm_start, memory)
             self._storage = self.adapter._storage
         else:
             self._storage = None
-            self.adapter = ObjectiveAdapter(self.conv, self.objective_function)
+            self.adapter = ObjectiveAdapter(
+                self.conv,
+                self.objective_function,
+                fitness_mapper=_fm,
+                n_objectives=_no,
+            )
 
         self.n_inits_norm = min((self.init.n_inits - self.n_init_total), self.n_iter)
 
@@ -853,6 +946,45 @@ class Search(TimesTracker, SearchStatistics):
         """Allow direct assignment for backward compatibility."""
         self._search_data_cache = value
 
+    @property
+    def pareto_front(self) -> pd.DataFrame:
+        """Non-dominated solutions from a multi-objective search.
+
+        Computes the Pareto front from stored objective vectors. Only
+        meaningful when ``n_objectives > 1`` was passed to ``search()``.
+        Returns a subset of ``search_data`` containing only the rows
+        that are not dominated by any other evaluated solution.
+
+        Raises ``ValueError`` if no objectives were tracked (single-
+        objective search or search not yet run).
+        """
+        data = self.search_data
+        obj_cols = [c for c in data.columns if c.startswith("objective_")]
+        if not obj_cols:
+            raise ValueError(
+                "No objective columns found. Use n_objectives > 1 in search()."
+            )
+
+        obj_values = data[obj_cols].values
+        n = len(obj_values)
+        is_dominated = [False] * n
+
+        for i in range(n):
+            if is_dominated[i]:
+                continue
+            for j in range(n):
+                if i == j or is_dominated[j]:
+                    continue
+                # j dominates i if j is >= in all objectives and > in at least one
+                if all(obj_values[j] >= obj_values[i]) and any(
+                    obj_values[j] > obj_values[i]
+                ):
+                    is_dominated[i] = True
+                    break
+
+        mask = [not d for d in is_dominated]
+        return data.loc[mask].reset_index(drop=True)
+
     def _build_callback_info(self, nth_iter: int) -> CallbackInfo:
         pos = self.pos_l[-1]
         value = self.conv.position2value(list(pos))
@@ -875,6 +1007,7 @@ class Search(TimesTracker, SearchStatistics):
             elapsed_time=time.time() - self.stopper.start_time,
             metrics=self._last_metrics,
             convergence=list(self._tracker.convergence),
+            objectives=self._last_objectives,
         )
 
     def _run_callbacks(self, info: CallbackInfo) -> bool | None:

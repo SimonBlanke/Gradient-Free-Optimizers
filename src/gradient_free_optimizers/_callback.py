@@ -36,6 +36,9 @@ class CallbackInfo:
         the objective returns only a score).
     convergence : list[float]
         Best score at each iteration so far (read-only copy).
+    objectives : list[float] or None
+        Raw objective values for multi-objective optimization.
+        ``None`` when running single-objective (``n_objectives=1``).
     """
 
     iteration: int
@@ -48,3 +51,4 @@ class CallbackInfo:
     elapsed_time: float
     metrics: dict[str, Any]
     convergence: list[float]
+    objectives: list[float] | None = None

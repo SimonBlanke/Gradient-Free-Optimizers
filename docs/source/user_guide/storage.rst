@@ -82,29 +82,6 @@ SQLiteStorage is designed for single-machine use. It should not be placed on
 network filesystems (NFS, SMB) where SQLite's file locking is unreliable.
 
 
-Distributed + Storage
----------------------
-
-Storage backends work with :doc:`distributed evaluation <distributed>`.
-Before dispatching positions to workers, the search loop checks the cache
-and only sends uncached positions. This reduces redundant work across
-batches and enables crash recovery for distributed runs:
-
-.. code-block:: python
-
-    from gradient_free_optimizers import BayesianOptimizer
-    from gradient_free_optimizers.distributed import Joblib
-    from gradient_free_optimizers.storage import SQLiteStorage
-
-    @Joblib(n_workers=4).distribute
-    def model(para):
-        return expensive_training(para)
-
-    storage = SQLiteStorage("distributed_results.db")
-    opt = BayesianOptimizer(search_space)
-    opt.search(model, n_iter=100, memory=storage)
-
-
 Custom Backends
 ---------------
 

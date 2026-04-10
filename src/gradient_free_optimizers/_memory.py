@@ -14,8 +14,15 @@ from .storage import BaseStorage, MemoryStorage
 
 
 class CachedObjectiveAdapter(ObjectiveAdapter):
-    def __init__(self, conv, objective, storage: BaseStorage | None = None):
-        super().__init__(conv, objective)
+    def __init__(
+        self,
+        conv,
+        objective,
+        storage: BaseStorage | None = None,
+        fitness_mapper=None,
+        n_objectives=1,
+    ):
+        super().__init__(conv, objective, fitness_mapper, n_objectives)
 
         self._storage: BaseStorage = storage if storage is not None else MemoryStorage()
 
