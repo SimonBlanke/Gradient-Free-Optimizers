@@ -13,11 +13,12 @@ from typing import TYPE_CHECKING, Any, Literal
 from ._callback import CallbackInfo
 from ._catch import wrap_with_catch
 from ._data import DataAccessor, SearchTracker
+from ._distributed_search import DistributedSearch
 from ._memory import CachedObjectiveAdapter
 from ._objective_adapter import ObjectiveAdapter
 from ._print_info import print_summary
 from ._progress_bar import ProgressBarLVL0, ProgressBarLVL1
-from ._result import Result, unpack_objective_result
+from ._result import unpack_objective_result
 from ._results_manager import ResultsManager
 from ._search_statistics import SearchStatistics
 from ._stopping_conditions import OptimizationStopper
@@ -28,7 +29,7 @@ if TYPE_CHECKING:
     import pandas as pd
 
 
-class Search(TimesTracker, SearchStatistics):
+class Search(DistributedSearch, TimesTracker, SearchStatistics):
     """
     High-level interface for running optimization searches.
 
@@ -126,285 +127,6 @@ class Search(TimesTracker, SearchStatistics):
 
         self.n_iter_total += 1
         self.n_iter_search += 1
-
-    def _iteration_batch(self, batch_size):
-        t_batch_start = time.time()
-        self.best_score = self.p_bar.score_best
-
-        positions = self._iterate_batch(batch_size)
-        n_positions = len(positions)
-
-        # Check storage for cached results (preserving original order)
-        scores = [None] * n_positions
-        metrics_list = [{}] * n_positions
-        uncached_indices = []
-
-        if self._storage is not None:
-            for i, pos in enumerate(positions):
-                cached = self._storage.get(tuple(pos))
-                if cached is not None:
-                    scores[i] = cached.score
-                    metrics_list[i] = cached.metrics
-                else:
-                    uncached_indices.append(i)
-        else:
-            uncached_indices = list(range(n_positions))
-
-        # Dispatch only uncached positions to workers
-        if uncached_indices:
-            params_batch = []
-            for i in uncached_indices:
-                value = self.conv.position2value(positions[i])
-                params_batch.append(self.conv.value2para(value))
-
-            t_start = time.time()
-            raw_results = self._distributed_func(params_batch)
-            eval_time = time.time() - t_start
-
-            for idx, raw in zip(uncached_indices, raw_results):
-                score, metrics = self._unpack_result(raw)
-                if self.optimum == "minimum":
-                    score = -score
-                scores[idx] = score
-                metrics_list[idx] = metrics
-                if self._storage is not None:
-                    self._storage.put(tuple(positions[idx]), Result(score, metrics))
-
-            per_eval_time = eval_time / len(uncached_indices)
-        else:
-            per_eval_time = 0
-
-        # Feed results into the optimizer's state (order preserved)
-        self._evaluate_batch(positions, scores)
-
-        per_iter_time = (time.time() - t_batch_start) / n_positions
-
-        uncached_set = set(uncached_indices)
-        for i, (pos, score) in enumerate(zip(positions, scores)):
-            et = per_eval_time if i in uncached_set else 0
-            self._track_evaluation(
-                pos, score, et, per_iter_time, metrics=metrics_list[i]
-            )
-
-    @staticmethod
-    def _unpack_result(raw):
-        """Separate a worker return value into score and metrics.
-
-        Delegates to the centralized unpack_objective_result() which handles
-        ObjectiveResult, (float, dict) tuples, and plain floats.
-        """
-        return unpack_objective_result(raw)
-
-    def _track_evaluation(self, pos, score, eval_time=0, iter_time=0, metrics=None):
-        """Record a single evaluation result across all tracking systems."""
-        if metrics is None:
-            metrics = {}
-        self.eval_times.append(eval_time)
-        self.iter_times.append(iter_time)
-        self.results_manager.add(Result(score, metrics), pos)
-        self.pos_l.append(pos)
-        self.score_l.append(score)
-        self.p_bar.update(score, pos, self.nth_iter)
-        self._last_metrics = metrics
-        self._tracker.track(pos, score, metrics, is_init=False)
-        # Feed each evaluation to the stopper so early_stopping counts
-        # individual evaluations, not batches
-        self.stopper.update(score, self.p_bar.score_best, self._iter)
-        self.n_iter_total += 1
-        self.n_iter_search += 1
-        self._iter += 1
-
-    def _check_stop(self, n_evaluated):
-        """Check stopping conditions and run callbacks. Returns True if should stop."""
-        # In serial mode, the stopper needs per-evaluation updates here.
-        # In distributed mode, _track_evaluation already updated the stopper
-        # for each evaluation in the batch, giving correct granularity for
-        # early_stopping counters.
-        if not self._is_distributed:
-            current_score = self.score_l[-1] if self.score_l else -math.inf
-            self.stopper.update(current_score, self.p_bar.score_best, n_evaluated - 1)
-
-        if self.stopper.should_stop():
-            if "debug_stop" in self.verbosity:
-                debug_info = self.stopper.get_debug_info()
-                print("\nStopping condition debug info:")
-                print(json.dumps(debug_info, indent=2))
-            return True
-        if self._callbacks:
-            info = self._build_callback_info(n_evaluated - 1)
-            if self._run_callbacks(info) is False:
-                return True
-        return False
-
-    def _run_async_loop(self, n_iter, nth_trial):
-        """Dispatch to true-async or batch-async based on optimizer capability."""
-        if getattr(self, "_supports_async", True):
-            self._run_true_async(n_iter, nth_trial)
-        else:
-            self._run_batch_async(n_iter, nth_trial)
-
-    def _run_true_async(self, n_iter, nth_trial):
-        """Async iteration: results processed individually as workers complete.
-
-        Each completed evaluation immediately triggers a new position proposal,
-        keeping all workers busy. The optimizer updates its state after every
-        single result, giving it the most up-to-date information for each
-        subsequent proposal.
-        """
-        backend = self._backend
-        original_func = self._original_func
-        pending = {}
-        n_evaluated = nth_trial
-
-        def _submit_one():
-            """Generate one position, check cache, submit if needed.
-
-            Returns the number of evaluations completed (0 or 1 for cache hit).
-            """
-            nonlocal n_evaluated
-            if n_evaluated + len(pending) >= n_iter:
-                return 0
-
-            self.nth_iter = n_evaluated + len(pending)
-            self.best_score = self.p_bar.score_best
-            pos = self._iterate_batch(1)[0]
-
-            if self._storage is not None:
-                cached = self._storage.get(tuple(pos))
-                if cached is not None:
-                    self._evaluate_batch([pos], [cached.score])
-                    self._track_evaluation(pos, cached.score, metrics=cached.metrics)
-                    n_evaluated += 1
-                    return 1
-
-            value = self.conv.position2value(pos)
-            params = self.conv.value2para(value)
-            future = backend._submit(original_func, params)
-            pending[future] = pos
-            return 0
-
-        # Fill initial worker slots
-        for _ in range(self._batch_size):
-            _submit_one()
-            if n_evaluated >= n_iter:
-                break
-
-        # Process results as they arrive
-        while pending and n_evaluated < n_iter:
-            t_iter = time.time()
-            completed, raw = backend._wait_any(list(pending.keys()))
-            pos = pending.pop(completed)
-
-            score, metrics = self._unpack_result(raw)
-            if self.optimum == "minimum":
-                score = -score
-
-            if self._storage is not None:
-                self._storage.put(tuple(pos), Result(score, metrics))
-
-            self.nth_iter = n_evaluated
-            self._evaluate_batch([pos], [score])
-            iter_time = time.time() - t_iter
-            self._track_evaluation(pos, score, iter_time, iter_time, metrics=metrics)
-            n_evaluated += 1
-
-            if self._check_stop(n_evaluated):
-                break
-
-            # Refill the freed worker slot. Cache hits consume iterations
-            # without adding futures, so keep trying until a future is
-            # queued or there's nothing left to submit.
-            while n_evaluated < n_iter:
-                if _submit_one() == 0:
-                    break
-                if self._check_stop(n_evaluated):
-                    break
-
-    def _run_batch_async(self, n_iter, nth_trial):
-        """Batch-async iteration for stateful optimizers.
-
-        Positions are generated as a complete batch via _iterate_batch(n),
-        submitted to workers asynchronously, but results are collected for
-        the entire batch before calling _evaluate_batch. This preserves
-        the batch contract that stateful optimizers (Simplex, Powell's,
-        DIRECT) depend on, while still benefiting from async worker
-        scheduling within each batch.
-        """
-        backend = self._backend
-        original_func = self._original_func
-        n_evaluated = nth_trial
-
-        while n_evaluated < n_iter:
-            t_batch_start = time.time()
-            self.nth_iter = n_evaluated
-            self.best_score = self.p_bar.score_best
-
-            remaining = n_iter - n_evaluated
-            batch_size = min(self._batch_size, remaining)
-
-            positions = self._iterate_batch(batch_size)
-            n_positions = len(positions)
-
-            # Check storage cache (same logic as sync _iteration_batch)
-            scores = [None] * n_positions
-            metrics_list = [{}] * n_positions
-            uncached_indices = []
-
-            if self._storage is not None:
-                for i, pos in enumerate(positions):
-                    cached = self._storage.get(tuple(pos))
-                    if cached is not None:
-                        scores[i] = cached.score
-                        metrics_list[i] = cached.metrics
-                    else:
-                        uncached_indices.append(i)
-            else:
-                uncached_indices = list(range(n_positions))
-
-            # Submit uncached positions as async futures
-            if uncached_indices:
-                futures = {}
-                for i in uncached_indices:
-                    value = self.conv.position2value(positions[i])
-                    params = self.conv.value2para(value)
-                    future = backend._submit(original_func, params)
-                    futures[future] = i
-
-                # Collect all results (async within batch)
-                t_start = time.time()
-                while futures:
-                    completed, raw = backend._wait_any(list(futures.keys()))
-                    idx = futures.pop(completed)
-
-                    score, metrics = self._unpack_result(raw)
-                    if self.optimum == "minimum":
-                        score = -score
-
-                    scores[idx] = score
-                    metrics_list[idx] = metrics
-                    if self._storage is not None:
-                        self._storage.put(tuple(positions[idx]), Result(score, metrics))
-
-                per_eval_time = (time.time() - t_start) / len(uncached_indices)
-            else:
-                per_eval_time = 0
-
-            # Feed complete batch to optimizer (order preserved)
-            self._evaluate_batch(positions, scores)
-
-            per_iter_time = (time.time() - t_batch_start) / n_positions
-
-            uncached_set = set(uncached_indices)
-            for i, (pos, score) in enumerate(zip(positions, scores)):
-                et = per_eval_time if i in uncached_set else 0
-                self._track_evaluation(
-                    pos, score, et, per_iter_time, metrics=metrics_list[i]
-                )
-
-            n_evaluated += n_positions
-
-            if self._check_stop(n_evaluated):
-                break
 
     def search(
         self,
@@ -663,22 +385,13 @@ class Search(TimesTracker, SearchStatistics):
         if nth_trial < n_iter and nth_trial == self.n_init_search:
             self._finish_initialization()
 
-        # Iteration phase: async backends get their own loop,
-        # sync backends use the original batch/serial loop
-        if self._is_distributed and self._backend._is_async and nth_trial < n_iter:
-            self._run_async_loop(n_iter, nth_trial)
+        if self._is_distributed and nth_trial < n_iter:
+            self._run_distributed(n_iter, nth_trial)
         else:
             while nth_trial < n_iter:
                 self.nth_iter = nth_trial
-
-                if self._is_distributed:
-                    remaining = n_iter - nth_trial
-                    batch = min(self._batch_size, remaining)
-                    self._iteration_batch(batch)
-                    nth_trial += batch
-                else:
-                    self._iteration()
-                    nth_trial += 1
+                self._iteration()
+                nth_trial += 1
 
                 if self._check_stop(nth_trial):
                     break
@@ -709,22 +422,7 @@ class Search(TimesTracker, SearchStatistics):
         verbosity: list[str] | Literal[False],
         catch: dict[type[Exception], int | float] | None = None,
     ) -> None:
-        # Detect distributed decorator before any wrapping
-        self._is_distributed = getattr(objective_function, "_gfo_distributed", False)
-        if self._is_distributed:
-            self._batch_size = objective_function._gfo_batch_size
-            self._distributed_func = objective_function
-            self._backend = objective_function._gfo_backend
-            self._original_func = objective_function._gfo_original_func
-            # Extract original function for single-point use during init
-            objective_function = objective_function._gfo_original_func
-
-            if catch:
-                self._original_func = wrap_with_catch(self._original_func, catch)
-                self._distributed_func = self._backend.distribute(self._original_func)
-        else:
-            self._batch_size = None
-            self._backend = None
+        objective_function = self._init_distributed(objective_function, catch)
 
         if catch:
             objective_function = wrap_with_catch(objective_function, catch)
