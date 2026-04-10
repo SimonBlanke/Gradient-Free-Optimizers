@@ -16,7 +16,7 @@ Usage::
     for _ in range(100):
         params = opt.ask()
         score = my_function(params)
-        opt.tell(params, score)
+        opt.tell(score)
 
     print(opt.best_para, opt.best_score)
 """

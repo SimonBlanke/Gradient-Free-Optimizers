@@ -20,8 +20,6 @@ from __future__ import annotations
 
 import math
 
-import numpy as np
-
 
 class AskTell:
     """Mixin that provides ask/tell methods on top of CoreOptimizer.
@@ -41,7 +39,7 @@ class AskTell:
         for _ in range(100):
             params = opt.ask()
             score = my_function(params)
-            opt.tell(params, score)
+            opt.tell(score)
 
         print(opt.best_para, opt.best_score)
     """
@@ -91,36 +89,24 @@ class AskTell:
         self._pending_ask = True
         return params
 
-    def tell(self, params: dict, score: float) -> None:
-        """Report the evaluation result for the most recently asked parameters.
+    def tell(self, score: float) -> None:
+        """Report the evaluation result for the most recently asked position.
 
         Parameters
         ----------
-        params : dict
-            The parameter dictionary returned by the preceding ask() call.
-            Must match exactly; passing different params raises ValueError.
         score : float
-            The objective function value for those parameters. The optimizer
-            always maximizes, so higher is better. For minimization problems,
-            negate the score before passing it here.
+            The objective function value for the parameters returned by the
+            preceding ask(). The optimizer always maximizes, so higher is
+            better. For minimization problems, negate the score before
+            passing it here.
 
         Raises
         ------
         RuntimeError
             If called without a preceding ask().
-        ValueError
-            If params does not match the preceding ask() result.
         """
         if not self._pending_ask:
             raise RuntimeError("tell() called without a preceding ask().")
-
-        value = self.conv.para2value(params)
-        pos = self.conv.value2position(value)
-        if not np.array_equal(pos, self._pos_new):
-            raise ValueError(
-                "params passed to tell() do not match the params returned "
-                "by the preceding ask(). You must pass back the exact dict."
-            )
 
         if self.search_state == "init":
             self._evaluate_init(score)
