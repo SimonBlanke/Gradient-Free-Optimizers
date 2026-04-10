@@ -149,13 +149,6 @@ Guide Sections
       Using the simple ``.search()``
       method.
 
-   .. grid-item-card:: Distributed Evaluation
-      :link: user_guide/distributed
-      :link-type: doc
-
-      Parallel evaluation across
-      multiple workers.
-
    .. grid-item-card:: Evaluation Storage
       :link: user_guide/storage
       :link-type: doc
@@ -226,7 +219,6 @@ GFO provides 22 optimization algorithms organized into four categories:
    user_guide/memory
    user_guide/stopping_conditions
    user_guide/search_interface
-   user_guide/distributed
    user_guide/storage
 
 .. toctree::

@@ -14,7 +14,7 @@ from gradient_free_optimizers import (
     PowellsMethod,
     RandomSearchOptimizer,
 )
-from gradient_free_optimizers.distributed import (
+from gradient_free_optimizers._distributed import (
     BaseDistribution,
     Joblib,
     Multiprocessing,

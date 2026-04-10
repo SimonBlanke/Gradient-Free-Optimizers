@@ -37,7 +37,7 @@ class Dask(BaseDistribution):
     --------
     Local cluster (created automatically)::
 
-        from gradient_free_optimizers.distributed import Dask
+        from gradient_free_optimizers._distributed import Dask
 
         @Dask(n_workers=4).distribute
         def objective(para):

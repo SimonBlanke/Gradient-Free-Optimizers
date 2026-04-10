@@ -40,7 +40,7 @@ class Multiprocessing(BaseDistribution):
     --------
     ::
 
-        from gradient_free_optimizers.distributed import Multiprocessing
+        from gradient_free_optimizers._distributed import Multiprocessing
 
         @Multiprocessing(n_workers=4).distribute
         def objective(para):

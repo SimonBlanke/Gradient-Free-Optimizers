@@ -37,7 +37,7 @@ class Ray(BaseDistribution):
     --------
     Local usage::
 
-        from gradient_free_optimizers.distributed import Ray
+        from gradient_free_optimizers._distributed import Ray
 
         @Ray(n_workers=4).distribute
         def objective(para):

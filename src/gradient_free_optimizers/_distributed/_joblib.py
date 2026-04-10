@@ -33,7 +33,7 @@ class Joblib(BaseDistribution):
     --------
     ::
 
-        from gradient_free_optimizers.distributed import Joblib
+        from gradient_free_optimizers._distributed import Joblib
 
         @Joblib(n_workers=4).distribute
         def objective(para):
