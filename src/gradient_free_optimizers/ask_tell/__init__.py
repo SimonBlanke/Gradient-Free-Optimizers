@@ -6,17 +6,24 @@
 Ask/tell interface for Gradient-Free-Optimizers.
 
 Provides the same optimizer algorithms as the top-level package, but with
-a step-by-step ask/tell interface instead of the managed search() loop.
+a batch-capable ask/tell interface instead of the managed search() loop.
 
 Usage::
 
     from gradient_free_optimizers.ask_tell import HillClimbingOptimizer
 
-    opt = HillClimbingOptimizer(search_space)
-    for _ in range(100):
-        params = opt.ask()
-        score = my_function(params)
-        opt.tell(score)
+    opt = HillClimbingOptimizer(
+        search_space,
+        initial_evaluations=[
+            ({"x": 0.5, "y": 1.0}, 0.8),
+            ({"x": -3.0, "y": 0.0}, 0.2),
+        ],
+    )
+
+    for _ in range(25):
+        params_list = opt.ask(n=4)
+        scores = [my_function(p) for p in params_list]
+        opt.tell(scores)
 
     print(opt.best_para, opt.best_score)
 """
