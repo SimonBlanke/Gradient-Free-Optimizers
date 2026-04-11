@@ -19,7 +19,7 @@ from gradient_free_optimizers._distributed import (
     Joblib,
     Multiprocessing,
 )
-from gradient_free_optimizers.storage import MemoryStorage
+from gradient_free_optimizers._storage import MemoryStorage
 
 search_space = {"x": np.linspace(-10, 10, 100), "y": np.linspace(-10, 10, 100)}
 tiny_space = {"x": np.linspace(0, 1, 10)}

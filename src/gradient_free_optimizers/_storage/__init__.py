@@ -3,7 +3,7 @@
 Storage backends control where objective function evaluation results are
 persisted. They can be passed to the ``memory`` parameter of ``search()``::
 
-    from gradient_free_optimizers.storage import SQLiteStorage
+    from gradient_free_optimizers._storage import SQLiteStorage
 
     storage = SQLiteStorage("results.db")
     opt.search(objective, n_iter=100, memory=storage)

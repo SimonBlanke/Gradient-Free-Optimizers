@@ -22,8 +22,8 @@ from ._result import unpack_objective_result
 from ._results_manager import ResultsManager
 from ._search_statistics import SearchStatistics
 from ._stopping_conditions import OptimizationStopper
+from ._storage import BaseStorage
 from ._times_tracker import TimesTracker
-from .storage import BaseStorage
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -212,10 +212,10 @@ class Search(DistributedSearch, TimesTracker, SearchStatistics):
             Controls evaluation caching. When ``True``, uses an in-memory
             dictionary (equivalent to ``MemoryStorage()``). When ``False``,
             disables caching entirely. A
-            :class:`~gradient_free_optimizers.storage.BaseStorage` instance
+            :class:`~gradient_free_optimizers._storage.BaseStorage` instance
             enables custom storage backends::
 
-                from gradient_free_optimizers.storage import SQLiteStorage
+                from gradient_free_optimizers._storage import SQLiteStorage
                 opt.search(objective, memory=SQLiteStorage("results.db"))
 
             ``SQLiteStorage`` persists results to disk, enabling crash

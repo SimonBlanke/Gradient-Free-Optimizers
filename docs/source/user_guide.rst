@@ -149,13 +149,6 @@ Guide Sections
       Using the simple ``.search()``
       method.
 
-   .. grid-item-card:: Evaluation Storage
-      :link: user_guide/storage
-      :link-type: doc
-
-      Persistent caching and crash
-      recovery with pluggable backends.
-
 ----
 
 Algorithms
@@ -219,7 +212,6 @@ GFO provides 22 optimization algorithms organized into four categories:
    user_guide/memory
    user_guide/stopping_conditions
    user_guide/search_interface
-   user_guide/storage
 
 .. toctree::
    :maxdepth: 2

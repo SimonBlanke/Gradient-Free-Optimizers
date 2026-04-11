@@ -10,7 +10,7 @@ from typing import Any
 import pandas as pd
 
 from ._objective_adapter import ObjectiveAdapter
-from .storage import BaseStorage, MemoryStorage
+from ._storage import BaseStorage, MemoryStorage
 
 
 class CachedObjectiveAdapter(ObjectiveAdapter):

@@ -191,27 +191,6 @@ failed evaluation:
     opt.search(flaky_model, n_iter=100, catch={ValueError: -1000.0})
 
 
-Storage Integration
--------------------
-
-Distributed evaluation works with :doc:`storage backends <storage>`. Positions
-are checked against the cache before being dispatched to workers, and new
-results are stored after evaluation. This avoids redundant computations and
-enables crash recovery:
-
-.. code-block:: python
-
-    from gradient_free_optimizers.distributed import Joblib
-    from gradient_free_optimizers.storage import SQLiteStorage
-
-    @Joblib(n_workers=4).distribute
-    def model(para):
-        return expensive_training(para)
-
-    storage = SQLiteStorage("results.db")
-    opt.search(model, n_iter=100, memory=storage)
-
-
 Custom Backends
 ---------------
 

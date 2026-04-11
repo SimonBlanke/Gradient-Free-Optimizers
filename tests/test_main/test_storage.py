@@ -8,7 +8,7 @@ import pytest
 
 from gradient_free_optimizers import HillClimbingOptimizer, RandomSearchOptimizer
 from gradient_free_optimizers._result import Result
-from gradient_free_optimizers.storage import BaseStorage, MemoryStorage, SQLiteStorage
+from gradient_free_optimizers._storage import BaseStorage, MemoryStorage, SQLiteStorage
 
 search_space = {"x": np.linspace(-10, 10, 100)}
 
