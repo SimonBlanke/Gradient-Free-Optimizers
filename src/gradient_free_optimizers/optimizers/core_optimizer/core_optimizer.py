@@ -147,6 +147,7 @@ class CoreOptimizer(ABC):
         search_space,
         initialize=None,
         constraints=None,
+        conditions=None,
         random_state=None,
         rand_rest_p=0,
         nth_process=None,
@@ -159,6 +160,7 @@ class CoreOptimizer(ABC):
         self.search_space = search_space
         self.initialize = initialize
         self.constraints = constraints
+        self.conditions = conditions
         self.random_state = random_state
         self.rand_rest_p = rand_rest_p
         self.nth_process = nth_process
@@ -167,7 +169,11 @@ class CoreOptimizer(ABC):
         self.random_seed = set_random_seed(nth_process, random_state)
 
         # Initialize Converter and Initializer for Search compatibility
-        self.conv = Converter(search_space, constraints if constraints else [])
+        self.conv = Converter(
+            search_space,
+            constraints if constraints else [],
+            conditions if conditions else [],
+        )
         self.init = Initializer(self.conv, initialize if initialize else {"random": 1})
 
         # Dimension masks - to be initialized during setup
@@ -819,3 +825,31 @@ class CoreOptimizer(ABC):
     def best_value(self, value):
         """Set the best value explicitly."""
         self._best_value = value
+
+    def set_conditions(self, conditions):
+        """Add condition functions (immediate, for Ask/Tell usage).
+
+        Each function receives a full parameter dict and returns a
+        ``dict[str, bool]`` indicating which parameters are active.
+        Appended to existing conditions (additive).
+
+        Parameters
+        ----------
+        conditions : list[callable]
+            Condition functions to add.
+        """
+        self.conv.conditions.extend(conditions)
+
+    def set_constraints(self, constraints):
+        """Add constraint functions (immediate, for Ask/Tell usage).
+
+        Each function receives a parameter dict and returns ``True``
+        if the constraint is satisfied. Appended to existing constraints
+        (additive).
+
+        Parameters
+        ----------
+        constraints : list[callable]
+            Constraint functions to add.
+        """
+        self.conv.constraints.extend(constraints)

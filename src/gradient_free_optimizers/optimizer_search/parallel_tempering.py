@@ -213,6 +213,7 @@ class ParallelTemperingOptimizer(_ParallelTemperingOptimizer, Search):
             int | list[dict],
         ] = None,
         constraints: list[callable] = None,
+        conditions: list[callable] = None,
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,
@@ -223,11 +224,14 @@ class ParallelTemperingOptimizer(_ParallelTemperingOptimizer, Search):
             initialize = get_default_initialize()
         if constraints is None:
             constraints = []
+        if conditions is None:
+            conditions = []
 
         super().__init__(
             search_space=search_space,
             initialize=initialize,
             constraints=constraints,
+            conditions=conditions,
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,

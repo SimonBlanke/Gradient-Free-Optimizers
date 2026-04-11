@@ -253,6 +253,7 @@ class ForestOptimizer(_ForestOptimizer, Search):
             int | list[dict],
         ] = None,
         constraints: list[callable] = None,
+        conditions: list[callable] = None,
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,
@@ -270,6 +271,8 @@ class ForestOptimizer(_ForestOptimizer, Search):
             initialize = get_default_initialize()
         if constraints is None:
             constraints = []
+        if conditions is None:
+            conditions = []
         if sampling is None:
             sampling = get_default_sampling()
 
@@ -277,6 +280,7 @@ class ForestOptimizer(_ForestOptimizer, Search):
             search_space=search_space,
             initialize=initialize,
             constraints=constraints,
+            conditions=conditions,
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,

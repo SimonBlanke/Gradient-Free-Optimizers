@@ -43,6 +43,7 @@ class PowellsMethod(_PowellsMethod, AskTell):
         search_space: dict[str, list],
         initial_evaluations: list[tuple[dict, float]],
         constraints: list[callable] = None,
+        conditions: list[callable] = None,
         random_state: int = None,
         rand_rest_p: float = 0,
         epsilon: float = 0.03,
@@ -54,11 +55,14 @@ class PowellsMethod(_PowellsMethod, AskTell):
     ):
         if constraints is None:
             constraints = []
+        if conditions is None:
+            conditions = []
 
         super().__init__(
             search_space=search_space,
             initialize={"random": 0},
             constraints=constraints,
+            conditions=conditions,
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             epsilon=epsilon,

@@ -40,6 +40,7 @@ class LipschitzOptimizer(_LipschitzOptimizer, AskTell):
         search_space: dict[str, list],
         initial_evaluations: list[tuple[dict, float]],
         constraints: list[callable] = None,
+        conditions: list[callable] = None,
         random_state: int = None,
         rand_rest_p: float = 0,
         warm_start_smbo: object | None = None,
@@ -49,6 +50,8 @@ class LipschitzOptimizer(_LipschitzOptimizer, AskTell):
     ):
         if constraints is None:
             constraints = []
+        if conditions is None:
+            conditions = []
         if sampling is None:
             sampling = get_default_sampling()
 
@@ -56,6 +59,7 @@ class LipschitzOptimizer(_LipschitzOptimizer, AskTell):
             search_space=search_space,
             initialize={"random": 0},
             constraints=constraints,
+            conditions=conditions,
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             warm_start_smbo=warm_start_smbo,

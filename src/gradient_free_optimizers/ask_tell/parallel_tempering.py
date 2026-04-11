@@ -35,6 +35,7 @@ class ParallelTemperingOptimizer(_ParallelTemperingOptimizer, AskTell):
         search_space: dict[str, list],
         initial_evaluations: list[tuple[dict, float]],
         constraints: list[callable] = None,
+        conditions: list[callable] = None,
         random_state: int = None,
         rand_rest_p: float = 0,
         population: int = 5,
@@ -42,11 +43,14 @@ class ParallelTemperingOptimizer(_ParallelTemperingOptimizer, AskTell):
     ):
         if constraints is None:
             constraints = []
+        if conditions is None:
+            conditions = []
 
         super().__init__(
             search_space=search_space,
             initialize={"random": 0},
             constraints=constraints,
+            conditions=conditions,
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             population=population,

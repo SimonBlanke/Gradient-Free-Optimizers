@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import math
 from typing import TYPE_CHECKING, Any
 
 import pandas as pd
@@ -15,6 +16,8 @@ class ResultsManager:
     full parameter dictionaries lazily when the DataFrame is accessed. This
     dramatically reduces memory usage for high-dimensional search spaces.
 
+    When conditions are active, inactive parameters appear as NaN in the
+    DataFrame, making it easy to filter rows by parameter availability.
     """
 
     def __init__(self, converter: Converter | None = None):
@@ -22,8 +25,9 @@ class ResultsManager:
         self._positions: list[tuple[int, ...]] = []
         self._scores: list[float] = []
         self._metrics: list[dict[str, Any]] = []
+        self._active_masks: list[dict[str, bool] | None] = []
 
-    def add(self, result, position) -> None:
+    def add(self, result, position, active_mask=None) -> None:
         """Add a result with its position (not params dict).
 
         Parameters
@@ -32,11 +36,14 @@ class ResultsManager:
             The result object containing score and metrics.
         position : array-like
             The position indices (will be converted to tuple for storage).
+        active_mask : dict[str, bool] or None
+            Which parameters were active for this evaluation. None means
+            all parameters were active (no conditions).
         """
-        # Store position as tuple (immutable, hashable, smaller than dict)
         self._positions.append(tuple(position))
         self._scores.append(result.score)
         self._metrics.append(result.metrics if result.metrics else {})
+        self._active_masks.append(active_mask)
 
     @property
     def dataframe(self) -> pd.DataFrame:
@@ -44,22 +51,26 @@ class ResultsManager:
 
         This reconstructs parameter dictionaries only when needed,
         avoiding the memory cost of storing them during optimization.
+        Inactive parameters (from conditions) appear as NaN.
         """
         if not self._positions:
             return pd.DataFrame()
 
         if self._converter is None:
-            # Fallback: return just scores if no converter available
             return pd.DataFrame({"score": self._scores})
 
-        # Build rows lazily
         rows = []
-        for pos, score, metrics in zip(self._positions, self._scores, self._metrics):
-            # Reconstruct params from position
+        for pos, score, metrics, active_mask in zip(
+            self._positions, self._scores, self._metrics, self._active_masks
+        ):
             value = self._converter.position2value(list(pos))
             params = self._converter.value2para(value)
 
-            # Build row: score first, then metrics, then params
+            if active_mask is not None:
+                for param_name, is_active in active_mask.items():
+                    if not is_active:
+                        params[param_name] = math.nan
+
             row = {"score": score, **metrics, **params}
             rows.append(row)
 

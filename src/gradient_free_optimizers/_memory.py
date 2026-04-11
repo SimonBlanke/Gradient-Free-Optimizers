@@ -14,8 +14,10 @@ from ._storage import BaseStorage, MemoryStorage
 
 
 class CachedObjectiveAdapter(ObjectiveAdapter):
-    def __init__(self, conv, objective, storage: BaseStorage | None = None):
-        super().__init__(conv, objective)
+    def __init__(
+        self, conv, objective, storage: BaseStorage | None = None, optimizer_ref=None
+    ):
+        super().__init__(conv, objective, optimizer_ref=optimizer_ref)
 
         self._storage: BaseStorage = storage if storage is not None else MemoryStorage()
 
@@ -57,10 +59,13 @@ class CachedObjectiveAdapter(ObjectiveAdapter):
         pos_t = tuple(pos)
 
         if self._storage.contains(pos_t):
-            params = self._conv.value2para(self._conv.position2value(pos))
-
-            return self._storage.get(pos_t), params
+            full_params = self._conv.value2para(self._conv.position2value(pos))
+            if self._conv.conditions:
+                active_mask = self._conv.evaluate_conditions(full_params)
+            else:
+                active_mask = None
+            return self._storage.get(pos_t), full_params, active_mask
         else:
-            result, params = self._call_objective(pos)
+            result, full_params, active_mask = self._call_objective(pos)
             self._storage.put(pos_t, result)
-            return result, params
+            return result, full_params, active_mask

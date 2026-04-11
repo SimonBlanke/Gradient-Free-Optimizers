@@ -164,8 +164,12 @@ class AskTell:
 
         params_list = []
         for pos in positions:
-            value = self.conv.position2value(pos)
-            params_list.append(self.conv.value2para(value))
+            if self.conv.conditions:
+                filtered, _ = self.conv.get_active_params(pos)
+                params_list.append(filtered)
+            else:
+                value = self.conv.position2value(pos)
+                params_list.append(self.conv.value2para(value))
 
         return params_list
 

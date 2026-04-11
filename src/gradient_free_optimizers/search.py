@@ -400,11 +400,10 @@ class Search(DistributedSearch, TimesTracker, SearchStatistics):
 
     def _evaluate_position(self, pos: list[int]) -> float:
         t = time.time()
-        result, params = self.adapter(pos)
+        result, full_params, active_mask = self.adapter(pos)
         self.eval_times.append(time.time() - t)
-        # Store position instead of params dict for memory efficiency
-        # Params are reconstructed lazily when search_data DataFrame is accessed
-        self.results_manager.add(result, pos)
+        # Store position and active_mask for lazy DataFrame reconstruction
+        self.results_manager.add(result, pos, active_mask)
         self._last_metrics = result.metrics if result.metrics else {}
         self._iter += 1
         return result.score
@@ -488,17 +487,28 @@ class Search(DistributedSearch, TimesTracker, SearchStatistics):
 
         if isinstance(memory, BaseStorage):
             self.adapter = CachedObjectiveAdapter(
-                self.conv, self.objective_function, storage=memory
+                self.conv,
+                self.objective_function,
+                storage=memory,
+                optimizer_ref=self,
             )
             self.adapter.memory(memory_warm_start)
             self._storage = self.adapter._storage
         elif memory not in [False, None]:
-            self.adapter = CachedObjectiveAdapter(self.conv, self.objective_function)
+            self.adapter = CachedObjectiveAdapter(
+                self.conv,
+                self.objective_function,
+                optimizer_ref=self,
+            )
             self.adapter.memory(memory_warm_start, memory)
             self._storage = self.adapter._storage
         else:
             self._storage = None
-            self.adapter = ObjectiveAdapter(self.conv, self.objective_function)
+            self.adapter = ObjectiveAdapter(
+                self.conv,
+                self.objective_function,
+                optimizer_ref=self,
+            )
 
         self.n_inits_norm = min((self.init.n_inits - self.n_init_total), self.n_iter)
 

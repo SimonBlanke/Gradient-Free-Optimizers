@@ -18,6 +18,7 @@ import time
 
 from ._catch import wrap_with_catch
 from ._result import Result, unpack_objective_result
+from ._search_params import SearchParams
 
 
 class DistributedSearch:
@@ -117,9 +118,32 @@ class DistributedSearch:
         return score, metrics
 
     def _pos_to_params(self, pos):
-        """Convert a position array to a parameter dictionary."""
+        """Convert a position array to a SearchParams dictionary.
+
+        When conditions are active, returns only the active parameters.
+        Context is snapshotted at dispatch time so the SearchParams
+        remains informative after crossing a process boundary.
+        """
         value = self.conv.position2value(pos)
-        return self.conv.value2para(value)
+        full_params = self.conv.value2para(value)
+        if self.conv.conditions:
+            active_mask = self.conv.evaluate_conditions(full_params)
+            filtered = {k: v for k, v in full_params.items() if active_mask[k]}
+        else:
+            filtered = full_params
+
+        best_pos = getattr(self, "_pos_best", None)
+        pos_best_dict = None
+        if best_pos is not None:
+            pos_best_dict = self.conv.value2para(self.conv.position2value(best_pos))
+
+        snapshot = {
+            "iteration": getattr(self, "nth_iter", 0),
+            "score_best": getattr(self, "_score_best", -math.inf),
+            "pos_best": pos_best_dict,
+            "n_iter_total": getattr(self, "n_iter_total", 0),
+        }
+        return SearchParams(filtered, context_snapshot=snapshot)
 
     def _store_in_storage(self, pos, score, metrics):
         """Persist a result to external storage if configured."""
@@ -138,7 +162,11 @@ class DistributedSearch:
             metrics = {}
         self.eval_times.append(eval_time)
         self.iter_times.append(iter_time)
-        self.results_manager.add(Result(score, metrics), pos)
+        active_mask = None
+        if self.conv.conditions:
+            full_params = self.conv.value2para(self.conv.position2value(pos))
+            active_mask = self.conv.evaluate_conditions(full_params)
+        self.results_manager.add(Result(score, metrics), pos, active_mask)
         self.pos_l.append(pos)
         self.score_l.append(score)
         self.p_bar.update(score, pos, self.nth_iter)

@@ -154,6 +154,7 @@ class Converter(MemoryOperationsMixin):
         self,
         search_space: dict[str, Any],
         constraints: list[Callable[[dict[str, Any]], bool]] | None = None,
+        conditions: list[Callable[[dict[str, Any]], dict[str, bool]]] | None = None,
     ) -> None:
         check_search_space_value(search_space)
 
@@ -164,6 +165,11 @@ class Converter(MemoryOperationsMixin):
             self.constraints = []
         else:
             self.constraints = constraints
+
+        if conditions is None:
+            self.conditions = []
+        else:
+            self.conditions = conditions
 
         self.para_names = list(search_space.keys())
 
@@ -287,8 +293,63 @@ class Converter(MemoryOperationsMixin):
         """
         return self.dim_masks.is_homogeneous_discrete
 
+    def evaluate_conditions(self, full_params: dict[str, Any]) -> dict[str, bool]:
+        """Determine which parameters are active for a given param set.
+
+        Evaluates all condition functions against the full (unfiltered)
+        parameter dict and merges results with AND logic: a parameter is
+        active only if every condition that mentions it returns True.
+
+        Parameters that are not mentioned by any condition are always active.
+
+        Parameters
+        ----------
+        full_params : dict
+            Complete parameter dict (all dimensions, including inactive ones).
+
+        Returns
+        -------
+        dict[str, bool]
+            Mapping of parameter names to active/inactive status.
+        """
+        active = {name: True for name in self.para_names}
+
+        for cond_func in self.conditions:
+            result = cond_func(full_params)
+            for param_name, is_active in result.items():
+                if param_name in active and not is_active:
+                    active[param_name] = False
+
+        return active
+
+    def get_active_params(
+        self, position: list[int] | ArrayLike
+    ) -> tuple[dict[str, Any], dict[str, bool]]:
+        """Convert position to a filtered params dict based on conditions.
+
+        Parameters
+        ----------
+        position : list or array
+            Position indices.
+
+        Returns
+        -------
+        tuple[dict, dict]
+            (filtered_params, active_mask) where filtered_params contains
+            only active parameters, and active_mask maps all parameter
+            names to their active/inactive status.
+        """
+        full_params = self.value2para(self.position2value(position))
+        active_mask = self.evaluate_conditions(full_params)
+        filtered = {k: v for k, v in full_params.items() if active_mask[k]}
+        return filtered, active_mask
+
     def not_in_constraint(self, position: list[int] | ArrayLike) -> bool:
         """Check if a position satisfies all constraints.
+
+        When conditions are present, constraints are evaluated against
+        only the active parameters. This prevents constraints from
+        rejecting positions based on inactive (irrelevant) dimensions.
 
         Parameters
         ----------
@@ -300,10 +361,14 @@ class Converter(MemoryOperationsMixin):
         bool
             True if all constraints are satisfied, False otherwise.
         """
-        para = self.value2para(self.position2value(position))
+        if self.conditions:
+            filtered_params, _ = self.get_active_params(position)
+            params_for_check = filtered_params
+        else:
+            params_for_check = self.value2para(self.position2value(position))
 
         for constraint in self.constraints:
-            if not constraint(para):
+            if not constraint(params_for_check):
                 return False
         return True
 
