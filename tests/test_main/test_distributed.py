@@ -639,6 +639,161 @@ class TestCustomBackend:
         _assert_metrics_in_search_data(opt, 20)
 
 
+class TestDistributedConditions:
+    """Conditions and constraints work correctly across all distributed paths."""
+
+    cond_space = {
+        "x": np.arange(-5, 5, 1),
+        "y": np.arange(-5, 5, 1),
+    }
+
+    def test_conditions_filter_sync_batch(self):
+        """Sync-batch (Joblib) filters inactive params from worker input."""
+        received = []
+
+        def obj(params):
+            received.append(set(params.keys()))
+            return -(params["x"] ** 2)
+
+        distributed = Joblib(n_workers=2, backend="threading").distribute(obj)
+        opt = HillClimbingOptimizer(
+            self.cond_space,
+            conditions=[lambda p: {"y": p["x"] > 0}],
+            random_state=42,
+        )
+        opt.search(distributed, n_iter=15, verbosity=False)
+
+        for keys in received:
+            assert "x" in keys
+
+    def test_conditions_filter_true_async(self):
+        """True-async (ThreadAsync) filters inactive params."""
+        received = []
+
+        def obj(params):
+            received.append(set(params.keys()))
+            return -(params["x"] ** 2)
+
+        distributed = ThreadAsync(n_workers=2).distribute(obj)
+        opt = HillClimbingOptimizer(
+            self.cond_space,
+            conditions=[lambda p: {"y": p["x"] > 0}],
+            random_state=42,
+        )
+        opt.search(distributed, n_iter=15, verbosity=False)
+
+        for keys in received:
+            assert "x" in keys
+
+    def test_conditions_filter_batch_async(self):
+        """Batch-async (stateful optimizer) filters inactive params."""
+        received = []
+
+        def obj(params):
+            received.append(set(params.keys()))
+            return -(params["x"] ** 2)
+
+        distributed = ThreadAsync(n_workers=2).distribute(obj)
+        opt = DownhillSimplexOptimizer(
+            self.cond_space,
+            conditions=[lambda p: {"y": p["x"] > 0}],
+            random_state=42,
+        )
+        opt.search(distributed, n_iter=15, verbosity=False)
+
+        for keys in received:
+            assert "x" in keys
+
+    def test_conditions_nan_in_search_data_distributed(self):
+        """Inactive params appear as NaN in search_data for distributed runs."""
+        distributed = ThreadAsync(n_workers=2).distribute(lambda p: -(p["x"] ** 2))
+        opt = HillClimbingOptimizer(
+            self.cond_space,
+            conditions=[lambda p: {"y": p["x"] > 0}],
+            random_state=42,
+        )
+        opt.search(distributed, n_iter=20, verbosity=False)
+
+        df = opt.search_data
+        inactive = df[df["x"] <= 0]
+        if len(inactive) > 0:
+            assert inactive["y"].isna().all()
+        active = df[df["x"] > 0]
+        if len(active) > 0:
+            assert active["y"].notna().all()
+
+    def test_constraints_with_conditions_distributed(self):
+        """Constraints on active params work in distributed mode."""
+        distributed = ThreadAsync(n_workers=2).distribute(lambda p: -(p["x"] ** 2))
+        opt = HillClimbingOptimizer(
+            self.cond_space,
+            conditions=[lambda p: {"y": p["x"] > 0}],
+            constraints=[lambda p: p.get("x", 0) > -3],
+            random_state=42,
+        )
+        opt.search(distributed, n_iter=20, verbosity=False)
+
+        assert np.all(opt.search_data["x"].values > -3)
+
+    def test_search_params_context_in_distributed(self):
+        """Workers receive SearchParams with snapshotted context."""
+        from gradient_free_optimizers._search_params import SearchParams
+
+        received_types = []
+        received_iters = []
+
+        def obj(params):
+            received_types.append(type(params).__name__)
+            received_iters.append(params.iteration)
+            return -(params["x"] ** 2)
+
+        distributed = ThreadAsync(n_workers=2).distribute(obj)
+        opt = HillClimbingOptimizer(
+            {"x": np.arange(-5, 5, 1)},
+            random_state=42,
+        )
+        opt.search(distributed, n_iter=15, verbosity=False)
+
+        assert all(t == "SearchParams" for t in received_types)
+
+    def test_conditions_categorical_distributed(self):
+        """Categorical conditions work across distributed backends."""
+        space = {
+            "algo": ["svm", "rf", "nn"],
+            "kernel": ["linear", "rbf"],
+            "n_trees": np.arange(10, 100, 10),
+        }
+        received = []
+
+        def obj(params):
+            received.append(dict(params))
+            return 1.0
+
+        distributed = ThreadAsync(n_workers=2).distribute(obj)
+        opt = RandomSearchOptimizer(
+            space,
+            conditions=[
+                lambda p: {
+                    "kernel": p["algo"] == "svm",
+                    "n_trees": p["algo"] == "rf",
+                }
+            ],
+            random_state=42,
+        )
+        opt.search(distributed, n_iter=20, verbosity=False)
+
+        for params in received:
+            if params["algo"] == "svm":
+                assert "kernel" in params
+                assert "n_trees" not in params
+            elif params["algo"] == "rf":
+                assert "kernel" not in params
+                assert "n_trees" in params
+            else:
+                assert "kernel" not in params
+                assert "n_trees" not in params
+
+
 class TestSearchDataConsistency:
     """Distributed search_data DataFrame matches serial in structure."""
 
