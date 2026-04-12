@@ -94,8 +94,6 @@ class Search(DistributedSearch, TimesTracker, SearchStatistics):
 
     @TimesTracker.iter_time
     def _initialization(self):
-        self.best_score = self.p_bar.score_best
-
         init_pos = self._init_pos()
 
         score_new = self._evaluate_position(init_pos)
@@ -112,8 +110,6 @@ class Search(DistributedSearch, TimesTracker, SearchStatistics):
 
     @TimesTracker.iter_time
     def _iteration(self):
-        self.best_score = self.p_bar.score_best
-
         pos_new = self._iterate()
 
         score_new = self._evaluate_position(pos_new)
@@ -507,26 +503,40 @@ class Search(DistributedSearch, TimesTracker, SearchStatistics):
         # This avoids memory spike for high-dimensional search spaces
         self._search_data_cache = None
 
-        self.best_score = self.p_bar.score_best
-        self.best_value = self.conv.position2value(self.p_bar.pos_best)
-        self.best_para = self.conv.value2para(self.best_value)
-
         self.p_bar.close()
 
         print_sections = {v for v in self.verbosity if v.startswith("print_")}
         if print_sections:
-            print_summary(self._data, print_sections)
+            print_summary(self.data, print_sections)
 
     @property
-    def _data(self) -> DataAccessor:
-        """Access search data and computed metrics (internal, may change).
+    def best_score(self) -> float:
+        """Best score found during the search.
 
-        Available after calling ``search()``. Returns a
-        :class:`~gradient_free_optimizers._data.data_accessor.DataAccessor`
-        object with properties like ``best_score``, ``convergence_data``,
-        ``overhead_pct``, and a
+        Delegates to ``self.data._best_score`` (the SearchTracker is
+        the source of truth). In v2 this flat property is slated for
+        deprecation in favor of ``opt.data.best_score``.
+
+        Note: ``best_para`` does not live here because ``CoreOptimizer``
+        already defines it higher in the MRO. Its tracker-preferred
+        resolution is implemented in
+        :class:`~gradient_free_optimizers.optimizers.core_optimizer.core_optimizer.CoreOptimizer`.
+        """
+        return self.data._best_score
+
+    @property
+    def data(self) -> DataAccessor:
+        """Diagnostic and analysis metrics from the last search.
+
+        Complements the flat attributes ``best_score``, ``best_para``, and
+        ``search_data`` (DataFrame) with derived metrics that have no
+        dedicated home: ``convergence_data``, ``overhead_pct``,
+        ``longest_plateau``, timing breakdowns, score statistics, and a
         :class:`~gradient_free_optimizers._data.raw_data.RawData`
         sub-accessor for internal tracking lists.
+
+        Available after calling ``search()``. Returns a
+        :class:`~gradient_free_optimizers._data.data_accessor.DataAccessor`.
         """
         if self._tracker is None:
             raise AttributeError("Search data not available. Call search() first.")

@@ -14,7 +14,7 @@ class RawData:
     Score lists are returned by reference (no copy).
     Position lists are converted to parameter dicts on access.
 
-    Accessed via ``opt._data.raw``.
+    Accessed via ``opt.data.raw``.
     """
 
     def __init__(self, tracker: SearchTracker, optimizer: CoreOptimizer):

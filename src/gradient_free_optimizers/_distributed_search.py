@@ -209,7 +209,6 @@ class DistributedSearch:
     def _iteration_batch(self, batch_size):
         """Execute one synchronous batch: generate, dispatch, track."""
         t_batch_start = time.time()
-        self.best_score = self.p_bar.score_best
 
         positions = self._iterate_batch(batch_size)
         n_positions = len(positions)
@@ -269,7 +268,6 @@ class DistributedSearch:
                 return 0
 
             self.nth_iter = n_evaluated + len(pending)
-            self.best_score = self.p_bar.score_best
             pos = self._iterate_batch(1)[0]
 
             if self._storage is not None:
@@ -333,7 +331,6 @@ class DistributedSearch:
         while n_evaluated < n_iter:
             t_batch_start = time.time()
             self.nth_iter = n_evaluated
-            self.best_score = self.p_bar.score_best
 
             remaining = n_iter - n_evaluated
             batch_size = min(self._batch_size, remaining)

@@ -12,7 +12,7 @@ class SearchTracker:
 
     Created by Search at the start of each search() call.
     Fed via track() during the optimization loop.
-    Read by DataAccessor (opt._data) after the search.
+    Read by DataAccessor (opt.data) after the search.
     """
 
     def __init__(self, converter: Converter):
@@ -69,6 +69,12 @@ class SearchTracker:
     @property
     def best_iteration(self) -> int:
         return self._best_iteration
+
+    @property
+    def best_position(self) -> tuple[int, ...] | None:
+        if self._best_iteration < 0:
+            return None
+        return self._positions[self._best_iteration]
 
     def results_as_dicts(self) -> list[dict[str, Any]]:
         """All results as list of dicts (pandas-free)."""

@@ -10,33 +10,52 @@ import sys
 
 from ._print_info import _H, _format_box
 
+FLAT_PREFIX = "opt"
+DATA_PREFIX = "opt.data"
+
 SUMMARY_REFERENCE: list[tuple[str, str, str]] = [
     ("", "General", ""),
     ("Objective", "Name of the objective function", ""),
     ("Optimizer", "Optimizer class used", ""),
     ("Random state", "Seed for reproducibility", ""),
     ("", "Results", ""),
-    ("Best score", "Highest score found", ".best_score"),
-    ("Best iter", "Iteration of best score", ".best_iteration"),
-    ("Best parameters", "Parameters at best score", ".best_para"),
+    ("Best score", "Highest score found", f"{FLAT_PREFIX}.best_score"),
+    ("Best iter", "Iteration of best score", f"{DATA_PREFIX}.best_iteration"),
+    ("Best parameters", "Parameters at best score", f"{FLAT_PREFIX}.best_para"),
     ("", "Search", ""),
-    ("Iterations", "Total iterations (init + opt)", ".n_iter"),
-    ("Initialization", "Initial exploration iterations", ".n_init"),
-    ("Optimization", "Strategy-driven iterations", ".n_optimization"),
-    ("Improvements", "Times best score improved", ".n_score_improvements"),
-    ("Accepted", "Accepted / proposed positions", ".acceptance_rate"),
-    ("Last improvement", "Iter of last score improvement", ".last_improvement"),
-    ("Longest plateau", "Max iters without improvement", ".longest_plateau"),
-    ("Invalid evals", "Evals returning inf/nan", ".n_invalid"),
+    ("Iterations", "Total iterations (init + opt)", f"{DATA_PREFIX}.n_iter"),
+    ("Initialization", "Initial exploration iterations", f"{DATA_PREFIX}.n_init"),
+    ("Optimization", "Strategy-driven iterations", f"{DATA_PREFIX}.n_optimization"),
+    (
+        "Improvements",
+        "Times best score improved",
+        f"{DATA_PREFIX}.n_score_improvements",
+    ),
+    ("Accepted", "Accepted / proposed positions", f"{DATA_PREFIX}.acceptance_rate"),
+    (
+        "Last improvement",
+        "Iter of last score improvement",
+        f"{DATA_PREFIX}.last_improvement",
+    ),
+    (
+        "Longest plateau",
+        "Max iters without improvement",
+        f"{DATA_PREFIX}.longest_plateau",
+    ),
+    ("Invalid evals", "Evals returning inf/nan", f"{DATA_PREFIX}.n_invalid"),
     ("", "Score Statistics", ""),
-    ("Min / Max", "Score range (excl. inf/nan)", ".score_min .score_max"),
-    ("Mean", "Mean score (excl. inf/nan)", ".score_mean"),
-    ("Std", "Score std dev (excl. inf/nan)", ".score_std"),
+    (
+        "Min / Max",
+        "Score range (excl. inf/nan)",
+        f"{DATA_PREFIX}.score_min  {DATA_PREFIX}.score_max",
+    ),
+    ("Mean", "Mean score (excl. inf/nan)", f"{DATA_PREFIX}.score_mean"),
+    ("Std", "Score std dev (excl. inf/nan)", f"{DATA_PREFIX}.score_std"),
     ("", "Timing", ""),
-    ("Evaluation time", "Time in objective function", ".eval_time"),
-    ("Optimization time", "Time in optimizer logic", ".overhead_time"),
-    ("Iteration time", "Total wall time", ".total_time"),
-    ("Throughput", "Iterations per second", ".throughput"),
+    ("Evaluation time", "Time in objective function", f"{DATA_PREFIX}.eval_time"),
+    ("Optimization time", "Time in optimizer logic", f"{DATA_PREFIX}.overhead_time"),
+    ("Iteration time", "Total wall time", f"{DATA_PREFIX}.total_time"),
+    ("Throughput", "Iterations per second", f"{DATA_PREFIX}.throughput"),
 ]
 
 
@@ -56,17 +75,15 @@ def _build_help_lines() -> tuple[list[str], int]:
         pad_label = label_col - len(label)
         pad_desc = desc_col - len(description)
 
-        if accessor:
-            api = f"opt._data{accessor}"
-        else:
-            api = ""
+        api = accessor
 
         lines.append(f"  {label}{' ' * pad_label}{description}{' ' * pad_desc}{api}")
 
     lines.append("")
     lines.append("  Verbosity flags:")
     lines.append("    print_results, print_search_stats, print_statistics, print_times")
-    lines.append("  API:  opt._data.<property>  |  opt._data.raw.<property>")
+    lines.append("  API:  opt.best_score, opt.best_para  (flat)")
+    lines.append("        opt.data.<property>  |  opt.data.raw.<property>")
     lines.append("")
 
     content_width = max((len(line) for line in lines if line), default=0)
@@ -90,7 +107,7 @@ def main() -> None:
     """Entry point for the gfo-help CLI tool."""
     if len(sys.argv) > 1 and sys.argv[1] in ("-h", "--help"):
         print("Usage: gfo-help")
-        print("Show reference for search summary metrics and opt._data properties.")
+        print("Show reference for search summary metrics and opt.data properties.")
         return
     print_help()
 

@@ -32,9 +32,11 @@ Quick Start
     # Default verbosity includes print_results and print_times
     opt.search(objective, n_iter=50)
 
-    # Access data programmatically
-    print(opt.data.best_score)
-    print(opt.data.convergence_data)
+    # Access results programmatically
+    print(opt.best_score)            # flat attribute
+    print(opt.best_para)             # flat attribute
+    print(opt.data.convergence_data) # diagnostic metric
+    print(opt.data.longest_plateau)
 
 This prints a formatted summary box to the terminal:
 
@@ -168,6 +170,13 @@ computed metrics. All properties are read-only.
 Results
 ^^^^^^^
 
+.. note::
+
+   The basic result fields are **flat attributes on the optimizer**, not on
+   ``opt.data``. Use ``opt.best_score`` (float) and ``opt.best_para`` (dict)
+   to read the headline results. ``opt.data.best_iteration`` lives here
+   because it has no flat counterpart.
+
 .. list-table::
    :widths: 30 15 55
    :header-rows: 1
@@ -175,12 +184,6 @@ Results
    * - Property
      - Type
      - Description
-   * - ``best_score``
-     - ``float``
-     - Highest score found during the search.
-   * - ``best_para``
-     - ``dict``
-     - Parameter values corresponding to the best score.
    * - ``best_iteration``
      - ``int``
      - Iteration index where the best score was found.
@@ -318,17 +321,10 @@ Timing
 All Results
 ^^^^^^^^^^^
 
-.. list-table::
-   :widths: 30 15 55
-   :header-rows: 1
-
-   * - Property
-     - Type
-     - Description
-   * - ``results``
-     - ``list[dict]``
-     - All evaluated positions as list of dicts. Each dict contains ``score``
-       and all parameter values.
+Per-iteration results are available as a pandas DataFrame via the flat
+attribute ``opt.search_data``. A pandas-free ``list[dict]`` form is planned
+for the v2 accessor API; it currently exists as a private placeholder
+(``opt.data._results``) and is not part of the public surface.
 
 ----
 
@@ -385,7 +381,8 @@ you need the raw lists for custom analysis.
 
    **When to use raw vs data:**
 
-   - Use ``opt.data.best_score`` to get a single computed value.
+   - Use ``opt.data.score_mean`` (or any other computed metric) to get a
+     single derived value.
    - Use ``opt.data.raw.scores_proposed`` when you need the full list for
      custom analysis, plotting, or export.
 
@@ -443,7 +440,7 @@ Comparing Optimizers
         opt.search(objective, n_iter=100, verbosity=False)
         d = opt.data
         results[Opt.__name__] = {
-            "score": d.best_score,
+            "score": opt.best_score,
             "improvements": d.n_score_improvements,
             "acceptance": f"{d.acceptance_rate:.1%}",
             "eval_time": f"{d.eval_time:.3f}s",

@@ -774,19 +774,25 @@ class CoreOptimizer(ABC):
     def best_para(self):
         """Return the best parameters found as a dictionary.
 
-        Uses the Converter to transform the best position into
-        user-friendly parameter names and values.
+        Resolution order:
+        1. Explicitly set ``_best_para`` (used by the ask/tell mixin).
+        2. SearchTracker-derived value when ``search()`` has populated it.
+        3. Fallback computed from ``_pos_best``.
 
-        Returns
-        -------
-        dict or None
-            Dictionary mapping parameter names to their best values,
-            or None if no evaluation has been performed yet.
+        The tracker path is preferred because ``_pos_best`` can lag behind
+        the true best for some optimizers that only update it on accepted
+        moves. In v2 the fallback path is slated for removal; the tracker
+        becomes the single source of truth.
         """
         # If explicitly set, return that value
         if hasattr(self, "_best_para") and self._best_para is not None:
             return self._best_para
-        # Otherwise compute from _pos_best
+        # Prefer SearchTracker-based best position when available
+        tracker = getattr(self, "_tracker", None)
+        if tracker is not None and tracker.best_iteration >= 0:
+            pos = list(tracker.best_position)
+            return self.conv.value2para(self.conv.position2value(pos))
+        # Fallback: compute from _pos_best
         if self._pos_best is None:
             return None
         best_value = self.conv.position2value(self._pos_best)
