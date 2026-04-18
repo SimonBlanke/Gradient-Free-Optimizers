@@ -125,39 +125,18 @@ Optimizers
     gradient_free_optimizers.ForestOptimizer
 
 
-Ask/Tell Optimizers
--------------------
+.. seealso::
 
-The same algorithms exposed through the batch-capable ask/tell interface.
-See :doc:`user_guide/ask_tell` for usage and trade-offs.
+   The same 23 algorithms are also available with a batch-capable
+   ``ask(n=...)`` / ``tell(scores)`` interface for cases where evaluation
+   should run outside the managed ``search()`` loop. See
+   :doc:`api_reference/ask_tell` for the API reference and
+   :doc:`user_guide/ask_tell` for usage and trade-offs.
 
-.. autosummary::
-    :toctree: api_reference/generated/
-    :template: class.rst
+.. toctree::
+   :hidden:
 
-    gradient_free_optimizers.ask_tell.HillClimbingOptimizer
-    gradient_free_optimizers.ask_tell.StochasticHillClimbingOptimizer
-    gradient_free_optimizers.ask_tell.RepulsingHillClimbingOptimizer
-    gradient_free_optimizers.ask_tell.SimulatedAnnealingOptimizer
-    gradient_free_optimizers.ask_tell.DownhillSimplexOptimizer
-    gradient_free_optimizers.ask_tell.RandomSearchOptimizer
-    gradient_free_optimizers.ask_tell.GridSearchOptimizer
-    gradient_free_optimizers.ask_tell.RandomRestartHillClimbingOptimizer
-    gradient_free_optimizers.ask_tell.RandomAnnealingOptimizer
-    gradient_free_optimizers.ask_tell.PatternSearch
-    gradient_free_optimizers.ask_tell.PowellsMethod
-    gradient_free_optimizers.ask_tell.LipschitzOptimizer
-    gradient_free_optimizers.ask_tell.DirectAlgorithm
-    gradient_free_optimizers.ask_tell.ParticleSwarmOptimizer
-    gradient_free_optimizers.ask_tell.SpiralOptimization
-    gradient_free_optimizers.ask_tell.ParallelTemperingOptimizer
-    gradient_free_optimizers.ask_tell.GeneticAlgorithmOptimizer
-    gradient_free_optimizers.ask_tell.EvolutionStrategyOptimizer
-    gradient_free_optimizers.ask_tell.DifferentialEvolutionOptimizer
-    gradient_free_optimizers.ask_tell.CMAESOptimizer
-    gradient_free_optimizers.ask_tell.BayesianOptimizer
-    gradient_free_optimizers.ask_tell.TreeStructuredParzenEstimators
-    gradient_free_optimizers.ask_tell.ForestOptimizer
+   api_reference/ask_tell
 
 
 Common Interface
