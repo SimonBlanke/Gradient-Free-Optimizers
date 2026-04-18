@@ -73,7 +73,7 @@ Every optimization in GFO involves three components:
 
       **How to optimize**
 
-      The algorithm that explores your search space. Choose from 22 algorithms
+      The algorithm that explores your search space. Choose from 23 algorithms
       across local search, global search, population methods, and SMBO.
 
    .. grid-item-card:: Objective Functions

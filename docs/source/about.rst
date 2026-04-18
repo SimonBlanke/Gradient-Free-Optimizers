@@ -30,7 +30,7 @@ Mission
 ^^^^^^^
 
 GFO aims to make gradient-free optimization accessible and practical. By providing
-a unified interface across 22 algorithms, it reduces the complexity of choosing
+a unified interface across 23 algorithms, it reduces the complexity of choosing
 and switching between optimization methods. The library prioritizes simplicity,
 transparency, and reliability.
 

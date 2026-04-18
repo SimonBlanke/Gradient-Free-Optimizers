@@ -23,7 +23,7 @@ running your first optimization.
         :link: algorithms
         :link-type: doc
 
-        Overview of all 22 algorithms organized by category: local, global,
+        Overview of all 23 algorithms organized by category: local, global,
         population-based, and sequential model-based.
 
     .. grid-item-card:: Mixed Search Spaces
