@@ -12,7 +12,7 @@ class SearchTracker:
 
     Created by Search at the start of each search() call.
     Fed via track() during the optimization loop.
-    Read by DataAccessor (opt.data) after the search.
+    Read by DataAccessor (opt._data, internal) after the search.
     """
 
     def __init__(self, converter: Converter):

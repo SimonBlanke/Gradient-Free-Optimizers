@@ -12,21 +12,15 @@ if TYPE_CHECKING:
 
 
 class DataAccessor:
-    """Read-only view on search results with computed metrics.
+    """Internal read-only view on search results with computed metrics.
 
     Provides derived metrics from SearchTracker (search-level data)
     and CoreOptimizer history lists (optimizer-level data).
 
-    Accessed via ``opt.data`` property after calling ``search()``.
-    The basic result attributes ``opt.best_score`` and ``opt.best_para``
-    remain the primary user-facing API; this accessor complements them
-    with diagnostic and analysis metrics that have no flat counterpart.
-
-    Underscore-prefixed attributes (``_best_score``, ``_best_para``,
-    ``_results``) are private v2 placeholders. The flat ``opt.best_score``
-    and ``opt.best_para`` delegate to them so the internal source of
-    truth already lives here; v2 can promote them to their public form
-    by removing the underscore and deprecating the flat attributes.
+    Accessed internally via ``opt._data`` after calling ``search()``.
+    Not part of the public API: properties, names, and return shapes
+    may change without notice. The public surface for results is
+    ``opt.best_score``, ``opt.best_para``, and ``opt.search_data``.
     """
 
     def __init__(self, tracker: SearchTracker, optimizer: CoreOptimizer):
@@ -51,12 +45,12 @@ class DataAccessor:
 
     @property
     def _best_score(self) -> float:
-        """Best score (v2 placeholder; ``opt.best_score`` delegates here)."""
+        """Best score (``opt.best_score`` delegates here)."""
         return self._tracker.best_score
 
     @property
     def _best_para(self) -> dict:
-        """Best parameters (v2 placeholder; ``opt.best_para`` delegates here)."""
+        """Best parameters (``opt.best_para`` delegates here)."""
         pos = self._tracker.best_position
         if pos is None:
             return {}
@@ -225,19 +219,17 @@ class DataAccessor:
 
     @property
     def _results(self) -> list[dict[str, Any]]:
-        """All evaluations as list of dicts (v2 placeholder, pandas-free).
+        """All evaluations as list of dicts (pandas-free).
 
         Each dict contains ``score``, any custom metrics, and all
-        parameter values. This is the pandas-free replacement planned
-        for ``opt.search_data`` in v2. Kept private in v1 so the public
-        surface has exactly one way to read per-iteration results
-        (``opt.search_data`` DataFrame).
+        parameter values. Internal use only; the public surface for
+        per-iteration results is ``opt.search_data`` (DataFrame).
         """
         return self._tracker.results_as_dicts()
 
     @property
     def raw(self) -> RawData:
-        """Direct access to internal tracking lists."""
+        """Direct access to internal tracking lists (internal use only)."""
         if self._raw is None:
             self._raw = RawData(self._tracker, self._optimizer)
         return self._raw
