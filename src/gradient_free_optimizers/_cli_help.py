@@ -1,7 +1,7 @@
 """CLI help tool for Gradient-Free-Optimizers.
 
-Provides terminal-friendly reference for summary metrics and data properties.
-Invoked via ``gfo-help`` entry point or ``python -m gradient_free_optimizers help``.
+Provides a terminal-friendly reference for the search summary metrics
+shown when ``verbosity`` includes ``print_*`` flags.
 """
 
 from __future__ import annotations
@@ -10,80 +10,55 @@ import sys
 
 from ._print_info import _H, _format_box
 
-FLAT_PREFIX = "opt"
-DATA_PREFIX = "opt.data"
-
-SUMMARY_REFERENCE: list[tuple[str, str, str]] = [
-    ("", "General", ""),
-    ("Objective", "Name of the objective function", ""),
-    ("Optimizer", "Optimizer class used", ""),
-    ("Random state", "Seed for reproducibility", ""),
-    ("", "Results", ""),
-    ("Best score", "Highest score found", f"{FLAT_PREFIX}.best_score"),
-    ("Best iter", "Iteration of best score", f"{DATA_PREFIX}.best_iteration"),
-    ("Best parameters", "Parameters at best score", f"{FLAT_PREFIX}.best_para"),
-    ("", "Search", ""),
-    ("Iterations", "Total iterations (init + opt)", f"{DATA_PREFIX}.n_iter"),
-    ("Initialization", "Initial exploration iterations", f"{DATA_PREFIX}.n_init"),
-    ("Optimization", "Strategy-driven iterations", f"{DATA_PREFIX}.n_optimization"),
-    (
-        "Improvements",
-        "Times best score improved",
-        f"{DATA_PREFIX}.n_score_improvements",
-    ),
-    ("Accepted", "Accepted / proposed positions", f"{DATA_PREFIX}.acceptance_rate"),
-    (
-        "Last improvement",
-        "Iter of last score improvement",
-        f"{DATA_PREFIX}.last_improvement",
-    ),
-    (
-        "Longest plateau",
-        "Max iters without improvement",
-        f"{DATA_PREFIX}.longest_plateau",
-    ),
-    ("Invalid evals", "Evals returning inf/nan", f"{DATA_PREFIX}.n_invalid"),
-    ("", "Score Statistics", ""),
-    (
-        "Min / Max",
-        "Score range (excl. inf/nan)",
-        f"{DATA_PREFIX}.score_min  {DATA_PREFIX}.score_max",
-    ),
-    ("Mean", "Mean score (excl. inf/nan)", f"{DATA_PREFIX}.score_mean"),
-    ("Std", "Score std dev (excl. inf/nan)", f"{DATA_PREFIX}.score_std"),
-    ("", "Timing", ""),
-    ("Evaluation time", "Time in objective function", f"{DATA_PREFIX}.eval_time"),
-    ("Optimization time", "Time in optimizer logic", f"{DATA_PREFIX}.overhead_time"),
-    ("Iteration time", "Total wall time", f"{DATA_PREFIX}.total_time"),
-    ("Throughput", "Iterations per second", f"{DATA_PREFIX}.throughput"),
+SUMMARY_REFERENCE: list[tuple[str, str]] = [
+    ("", "General"),
+    ("Objective", "Name of the objective function"),
+    ("Optimizer", "Optimizer class used"),
+    ("Random state", "Seed for reproducibility"),
+    ("", "Results"),
+    ("Best score", "Highest score found"),
+    ("Best iter", "Iteration of best score"),
+    ("Best parameters", "Parameters at best score"),
+    ("", "Search"),
+    ("Iterations", "Total iterations (init + opt)"),
+    ("Initialization", "Initial exploration iterations"),
+    ("Optimization", "Strategy-driven iterations"),
+    ("Improvements", "Times best score improved"),
+    ("Accepted", "Accepted / proposed positions"),
+    ("Last improvement", "Iter of last score improvement"),
+    ("Longest plateau", "Max iters without improvement"),
+    ("Invalid evals", "Evals returning inf/nan"),
+    ("", "Score Statistics"),
+    ("Min / Max", "Score range (excl. inf/nan)"),
+    ("Mean", "Mean score (excl. inf/nan)"),
+    ("Std", "Score std dev (excl. inf/nan)"),
+    ("", "Timing"),
+    ("Evaluation time", "Time in objective function"),
+    ("Optimization time", "Time in optimizer logic"),
+    ("Iteration time", "Total wall time"),
+    ("Throughput", "Iterations per second"),
 ]
 
 
 def _build_help_lines() -> tuple[list[str], int]:
     """Build formatted help lines and return them with inner_width."""
-    label_col = max(len(label) for label, _, _ in SUMMARY_REFERENCE if label) + 4
-    desc_col = max(len(desc) for _, desc, _ in SUMMARY_REFERENCE) + 4
+    label_col = max(len(label) for label, _ in SUMMARY_REFERENCE if label) + 4
 
     lines: list[str] = [""]
 
-    for label, description, accessor in SUMMARY_REFERENCE:
+    for label, description in SUMMARY_REFERENCE:
         if not label:
             lines.append("")
             lines.append(f"  {_H}{_H} {description} ")
             continue
 
         pad_label = label_col - len(label)
-        pad_desc = desc_col - len(description)
-
-        api = accessor
-
-        lines.append(f"  {label}{' ' * pad_label}{description}{' ' * pad_desc}{api}")
+        lines.append(f"  {label}{' ' * pad_label}{description}")
 
     lines.append("")
     lines.append("  Verbosity flags:")
     lines.append("    print_results, print_search_stats, print_statistics, print_times")
-    lines.append("  API:  opt.best_score, opt.best_para  (flat)")
-    lines.append("        opt.data.<property>  |  opt.data.raw.<property>")
+    lines.append("  Public results API: opt.best_score, opt.best_para, opt.search_data")
     lines.append("")
 
     content_width = max((len(line) for line in lines if line), default=0)
@@ -107,7 +82,7 @@ def main() -> None:
     """Entry point for the gfo-help CLI tool."""
     if len(sys.argv) > 1 and sys.argv[1] in ("-h", "--help"):
         print("Usage: gfo-help")
-        print("Show reference for search summary metrics and opt.data properties.")
+        print("Show reference for the search summary metrics.")
         return
     print_help()
 
