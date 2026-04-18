@@ -9,8 +9,10 @@ For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke
 
 ## [Unreleased]
 
+## [1.12.0] - 2026-04-18
+
 ### Added
-- Ask/tell interface in the new `gradient_free_optimizers.ask_tell` subpackage, exposing all 23 optimizer algorithms with a batch-capable `ask(n=...)` / `tell(scores)` loop and an `initial_evaluations` constructor parameter for seeded restarts
+- Ask/tell interface in the new `gradient_free_optimizers.ask_tell` subpackage, exposing all 23 single-objective optimizer algorithms with a batch-capable `ask(n=...)` / `tell(scores)` loop and an `initial_evaluations` constructor parameter for seeded restarts
 - (private) Distributed objective-function evaluation in the `_distributed` subpackage, with backends `Joblib`, `Ray`, `Dask`, and native `Multiprocessing`. SMBO optimizers (Bayesian, TPE, Forest) gained `_select_diverse_batch` to avoid duplicate proposals when asked for a batch of positions
 - (private) Pluggable evaluation storage (`_storage`) with `MemoryStorage` (default, in-process dict) and `SQLiteStorage` (on-disk) backends, allowing the memoization cache to persist across processes and runs
 
