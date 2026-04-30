@@ -34,8 +34,29 @@ def _to_flat_list(v):
     return list(v)
 
 
+def _numpy_erf(x):
+    """Vectorized erf via Abramowitz & Stegun, runs entirely in numpy C."""
+    sign = np.sign(x)
+    x = np.abs(x)
+    t = 1.0 / (1.0 + 0.3275911 * x)
+    y = 1.0 - (
+        (
+            (((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t
+            + 0.254829592
+        )
+        * t
+        * np.exp(-x * x)
+    )
+    return sign * y
+
+
 def norm_cdf(x, loc=0, scale=1):
     """Cumulative distribution function of normal distribution."""
+    if HAS_NUMPY and hasattr(x, "__iter__"):
+        x = np.asarray(x, dtype=float)
+        z = (x - loc) / scale
+        return 0.5 * (1.0 + _numpy_erf(z / math.sqrt(2)))
+
     if hasattr(x, "__iter__"):
         return arr_array([norm_cdf(xi, loc, scale) for xi in x])
 
@@ -45,6 +66,11 @@ def norm_cdf(x, loc=0, scale=1):
 
 def norm_pdf(x, loc=0, scale=1):
     """Probability density function of normal distribution."""
+    if HAS_NUMPY and hasattr(x, "__iter__"):
+        x = np.asarray(x, dtype=float)
+        z = (x - loc) / scale
+        return np.exp(-0.5 * z * z) / (scale * math.sqrt(2 * math.pi))
+
     if hasattr(x, "__iter__"):
         return arr_array([norm_pdf(xi, loc, scale) for xi in x])
 
