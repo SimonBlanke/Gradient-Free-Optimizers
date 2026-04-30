@@ -103,6 +103,7 @@ gfo-help = "gradient_free_optimizers._cli_help:main"
 
 [project.urls]
 "Homepage" = "https://github.com/SimonBlanke/Gradient-Free-Optimizers"
+"Documentation" = "https://gradient-free-optimizers.readthedocs.io/"
 "Bug Reports" = "https://github.com/SimonBlanke/Gradient-Free-Optimizers/issues"
 "Source" = "https://github.com/SimonBlanke/Gradient-Free-Optimizers/"
 
