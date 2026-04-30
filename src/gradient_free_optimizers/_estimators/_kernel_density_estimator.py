@@ -14,12 +14,29 @@ without NumPy/SciPy when needed (though it will be slower).
 import math
 
 from gradient_free_optimizers._array_backend import (
+    HAS_NUMPY,
     array,
     asarray,
     full,
     zeros,
 )
 from gradient_free_optimizers._math_backend import logsumexp
+
+if HAS_NUMPY:
+    import numpy as np
+
+
+def _rows_as_tuples(X):
+    """Convert 2D array-like to list of tuples for math.dist."""
+    if hasattr(X, "tolist"):
+        data = X.tolist()
+    elif hasattr(X, "_data"):
+        data = X._data if (hasattr(X, "ndim") and X.ndim == 2) else [X._data]
+    else:
+        data = list(X)
+    if data and not isinstance(data[0], list | tuple):
+        return [(v,) for v in data]
+    return [tuple(row) for row in data]
 
 
 class KernelDensityEstimator:
@@ -135,33 +152,51 @@ class KernelDensityEstimator:
             else:
                 return zeros(n_queries)
 
-        # Compute log kernel values for each query-train pair
+        log_n = math.log(self.n_samples)
+
+        if HAS_NUMPY:
+            X_np = np.asarray(X, dtype=float)
+            Xt_np = np.asarray(self.X_train, dtype=float)
+            inv_bw_sq = 1.0 / (self.bandwidth * self.bandwidth)
+
+            X_sq = np.sum(X_np * X_np, axis=1)
+            Xt_sq = np.sum(Xt_np * Xt_np, axis=1)
+            sq_dist = (
+                X_sq[:, None] + Xt_sq[None, :] - 2.0 * (X_np @ Xt_np.T)
+            ) * inv_bw_sq
+            np.maximum(sq_dist, 0.0, out=sq_dist)
+
+            log_kernels = self._log_norm_const - 0.5 * sq_dist
+            a_max = np.max(log_kernels, axis=1, keepdims=True)
+            log_sum = a_max.ravel() + np.log(
+                np.sum(np.exp(log_kernels - a_max), axis=1)
+            )
+            log_density = log_sum - log_n
+
+            if log:
+                return array(log_density.tolist())
+            density = np.exp(log_density)
+            density[density < self.atol] = 0.0
+            return array(density.tolist())
+
+        X_rows = _rows_as_tuples(X)
+        Xt_rows = _rows_as_tuples(self.X_train)
+        _exp = math.exp
+        _dist = math.dist
+        inv_bw_sq = 1.0 / (self.bandwidth * self.bandwidth)
+
         log_density_values = []
-
-        for i in range(n_queries):
-            # Compute log kernel values for this query against all training samples
+        for x_row in X_rows:
             log_kernels = []
-            for j in range(self.n_samples):
-                # Compute squared distance between query[i] and train[j]
-                sq_dist = 0.0
-                for k in range(self.n_features):
-                    diff = (float(X[i, k]) - float(self.X_train[j, k])) / self.bandwidth
-                    sq_dist += diff * diff
-
-                log_kernel = self._log_norm_const - 0.5 * sq_dist
-                log_kernels.append(log_kernel)
-
-            # Numerically stable summation via logsumexp
-            log_sum = logsumexp(log_kernels)
-            log_density = log_sum - math.log(self.n_samples)
-            log_density_values.append(log_density)
+            for xt_row in Xt_rows:
+                d = _dist(x_row, xt_row)
+                log_kernels.append(self._log_norm_const - 0.5 * d * d * inv_bw_sq)
+            log_density_values.append(logsumexp(log_kernels) - log_n)
 
         if log:
             return array(log_density_values)
-        else:
-            # Avoid exponentiating extremely small values
-            density = []
-            for ld in log_density_values:
-                d = math.exp(ld)
-                density.append(0.0 if d < self.atol else d)
-            return array(density)
+        density = []
+        for ld in log_density_values:
+            d = _exp(ld)
+            density.append(0.0 if d < self.atol else d)
+        return array(density)
