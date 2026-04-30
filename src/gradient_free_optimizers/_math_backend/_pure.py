@@ -2,73 +2,54 @@
 Pure Python math functions - SciPy-compatible interface without dependencies.
 
 This module provides pure Python implementations of mathematical functions
-used by GFO that would normally come from SciPy.
+used by GFO that would normally come from SciPy. When NumPy is available,
+it is used for performance-critical operations (cdist, logsumexp) but is
+not required for correctness.
 """
 
 import math
 
-# Try to import numpy, fall back to pure array backend
-try:
+from gradient_free_optimizers._array_backend import HAS_NUMPY
+from gradient_free_optimizers._array_backend import array as arr_array
+
+if HAS_NUMPY:
     import numpy as np
 
-    HAS_NUMPY = True
-except ImportError:
-    from gradient_free_optimizers._array_backend import _pure as np
 
-    HAS_NUMPY = False
+def _to_nested_lists(m):
+    """Extract a 2D array-like as list-of-lists of Python numbers."""
+    if hasattr(m, "tolist"):
+        return m.tolist()
+    if hasattr(m, "_data") and hasattr(m, "ndim") and m.ndim == 2:
+        return [list(row) for row in m._data]
+    return [list(row) for row in m]
 
 
-# === Statistical Functions ===
+def _to_flat_list(v):
+    """Extract a 1D array-like as a flat Python list."""
+    if hasattr(v, "tolist"):
+        return v.tolist()
+    if hasattr(v, "_data"):
+        return list(v._data)
+    return list(v)
 
 
 def norm_cdf(x, loc=0, scale=1):
-    """
-    Cumulative distribution function of normal distribution.
-
-    Uses the error function approximation for numerical stability.
-    """
+    """Cumulative distribution function of normal distribution."""
     if hasattr(x, "__iter__"):
-        return np.array([norm_cdf(xi, loc, scale) for xi in x])
+        return arr_array([norm_cdf(xi, loc, scale) for xi in x])
 
     z = (x - loc) / scale
-    return 0.5 * (1 + _erf(z / math.sqrt(2)))
+    return 0.5 * (1 + math.erf(z / math.sqrt(2)))
 
 
 def norm_pdf(x, loc=0, scale=1):
     """Probability density function of normal distribution."""
     if hasattr(x, "__iter__"):
-        return np.array([norm_pdf(xi, loc, scale) for xi in x])
+        return arr_array([norm_pdf(xi, loc, scale) for xi in x])
 
     z = (x - loc) / scale
     return math.exp(-0.5 * z * z) / (scale * math.sqrt(2 * math.pi))
-
-
-def _erf(x):
-    """
-    Error function approximation.
-
-    Uses Horner's method for the polynomial approximation.
-    Maximum error: 1.5e-7
-    """
-    # Save sign
-    sign = 1 if x >= 0 else -1
-    x = abs(x)
-
-    # Abramowitz and Stegun approximation (equation 7.1.26)
-    a1 = 0.254829592
-    a2 = -0.284496736
-    a3 = 1.421413741
-    a4 = -1.453152027
-    a5 = 1.061405429
-    p = 0.3275911
-
-    t = 1.0 / (1.0 + p * x)
-    y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * math.exp(-x * x)
-
-    return sign * y
-
-
-# === Linear Algebra ===
 
 
 def cholesky(a, lower=True):
@@ -76,188 +57,142 @@ def cholesky(a, lower=True):
     Cholesky decomposition of a positive-definite matrix.
 
     Returns lower triangular matrix L such that A = L @ L.T
-
-    Note: This is a simplified implementation for small matrices.
-    For production use with large matrices, scipy is recommended.
     """
-    if HAS_NUMPY:
-        a = np.asarray(a)
-        n = a.shape[0]
-        L = np.zeros((n, n))
+    a_data = _to_nested_lists(a)
+    n = len(a_data)
+    L = [[0.0] * n for _ in range(n)]
 
-        for i in range(n):
-            for j in range(i + 1):
-                s = sum(L[i, k] * L[j, k] for k in range(j))
+    for i in range(n):
+        for j in range(i + 1):
+            s = math.fsum(L[i][k] * L[j][k] for k in range(j))
 
-                if i == j:
-                    val = a[i, i] - s
-                    if val < 0:
-                        raise ValueError("Matrix is not positive definite")
-                    L[i, j] = math.sqrt(val)
+            if i == j:
+                val = a_data[i][i] - s
+                if val < 0:
+                    raise ValueError("Matrix is not positive definite")
+                L[i][j] = math.sqrt(val)
+            else:
+                if L[j][j] == 0:
+                    L[i][j] = 0
                 else:
-                    if L[j, j] == 0:
-                        L[i, j] = 0
-                    else:
-                        L[i, j] = (a[i, j] - s) / L[j, j]
+                    L[i][j] = (a_data[i][j] - s) / L[j][j]
 
-        if lower:
-            return L
-        return L.T
-    else:
-        raise NotImplementedError(
-            "Cholesky decomposition requires numpy. "
-            "Install numpy or scipy for full functionality."
-        )
+    if not lower:
+        L = [[L[j][i] for j in range(n)] for i in range(n)]
+
+    return arr_array(L)
 
 
 def cho_solve(c_and_lower, b):
     """
-    Solve using Cholesky decomposition.
+    Solve A @ x = b given Cholesky factor L where A = L @ L.T.
 
-    Solves A @ x = b given Cholesky decomposition L where A = L @ L.T
+    Uses forward then backward substitution.
     """
     L, lower = c_and_lower
+    L_data = _to_nested_lists(L)
+    b_data = _to_flat_list(b)
+    n = len(L_data)
 
-    if HAS_NUMPY:
-        L = np.asarray(L)
-        b = np.asarray(b)
-        n = L.shape[0]
+    y = [0.0] * n
+    for i in range(n):
+        s = math.fsum(L_data[i][j] * y[j] for j in range(i))
+        y[i] = (b_data[i] - s) / L_data[i][i]
 
-        # Forward substitution: L @ y = b
-        y = np.zeros(n)
-        for i in range(n):
-            s = sum(L[i, j] * y[j] for j in range(i))
-            y[i] = (b[i] - s) / L[i, i]
+    x = [0.0] * n
+    for i in range(n - 1, -1, -1):
+        s = math.fsum(L_data[j][i] * x[j] for j in range(i + 1, n))
+        x[i] = (y[i] - s) / L_data[i][i]
 
-        # Backward substitution: L.T @ x = y
-        x = np.zeros(n)
-        for i in range(n - 1, -1, -1):
-            s = sum(L[j, i] * x[j] for j in range(i + 1, n))
-            x[i] = (y[i] - s) / L[i, i]
-
-        return x
-    else:
-        raise NotImplementedError(
-            "cho_solve requires numpy. Install numpy or scipy for full functionality."
-        )
+    return arr_array(x)
 
 
 def solve(a, b, assume_a=None):
-    """
-    Solve linear system a @ x = b using Gaussian elimination.
+    """Solve a @ x = b via Gaussian elimination with partial pivoting."""
+    a_data = [list(row) for row in _to_nested_lists(a)]
+    b_data = list(_to_flat_list(b))
+    n = len(a_data)
 
-    Note: This is a simplified implementation. For numerical stability
-    with ill-conditioned matrices, scipy is recommended.
-    """
-    if HAS_NUMPY:
-        a = np.asarray(a, dtype=float).copy()
-        b = np.asarray(b, dtype=float).copy()
-        n = a.shape[0]
+    for i in range(n):
+        max_row = i
+        for k in range(i + 1, n):
+            if abs(a_data[k][i]) > abs(a_data[max_row][i]):
+                max_row = k
 
-        # Augmented matrix
-        for i in range(n):
-            # Find pivot
-            max_row = i
-            for k in range(i + 1, n):
-                if abs(a[k, i]) > abs(a[max_row, i]):
-                    max_row = k
+        a_data[i], a_data[max_row] = a_data[max_row], a_data[i]
+        b_data[i], b_data[max_row] = b_data[max_row], b_data[i]
 
-            # Swap rows
-            a[[i, max_row]] = a[[max_row, i]]
-            b[[i, max_row]] = b[[max_row, i]]
+        for k in range(i + 1, n):
+            if a_data[i][i] != 0:
+                c = a_data[k][i] / a_data[i][i]
+                for j in range(i, n):
+                    a_data[k][j] -= c * a_data[i][j]
+                b_data[k] -= c * b_data[i]
 
-            # Eliminate column
-            for k in range(i + 1, n):
-                if a[i, i] != 0:
-                    c = a[k, i] / a[i, i]
-                    a[k, i:] -= c * a[i, i:]
-                    b[k] -= c * b[i]
+    x = [0.0] * n
+    for i in range(n - 1, -1, -1):
+        x[i] = b_data[i]
+        for j in range(i + 1, n):
+            x[i] -= a_data[i][j] * x[j]
+        if a_data[i][i] != 0:
+            x[i] /= a_data[i][i]
 
-        # Back substitution
-        x = np.zeros(n)
-        for i in range(n - 1, -1, -1):
-            x[i] = b[i]
-            for j in range(i + 1, n):
-                x[i] -= a[i, j] * x[j]
-            if a[i, i] != 0:
-                x[i] /= a[i, i]
-
-        return x
-    else:
-        raise NotImplementedError(
-            "solve requires numpy. Install numpy or scipy for full functionality."
-        )
+    return arr_array(x)
 
 
-def solve_triangular(a, b, lower=True):
-    """
-    Solve triangular linear system.
-
-    Solves a @ x = b where a is triangular.
-
-    Parameters
-    ----------
-    a : (n, n) array
-        Triangular matrix (lower or upper)
-    b : (n,) or (n, m) array
-        Right-hand side vector(s)
-    lower : bool
-        True if a is lower triangular, False if upper triangular
-
-    Returns
-    -------
-    x : array
-        Solution vector(s)
-    """
-    if HAS_NUMPY:
-        a = np.asarray(a, dtype=float)
-        b = np.asarray(b, dtype=float)
-
-        # Handle 1D b
-        if b.ndim == 1:
-            return _solve_triangular_1d(a, b, lower)
-
-        # Handle 2D b (solve for each column)
-        n, m = b.shape
-        x = np.zeros((n, m))
-        for j in range(m):
-            x[:, j] = _solve_triangular_1d(a, b[:, j], lower)
-        return x
-    else:
-        raise NotImplementedError(
-            "solve_triangular requires numpy. "
-            "Install numpy or scipy for full functionality."
-        )
-
-
-def _solve_triangular_1d(a, b, lower):
-    """Solve triangular system for 1D right-hand side."""
-    n = len(b)
-    x = np.zeros(n)
+def _solve_triangular_1d(a_data, b_list, lower):
+    """Solve triangular system for a single right-hand side."""
+    n = len(b_list)
+    x = [0.0] * n
 
     if lower:
-        # Forward substitution
         for i in range(n):
-            s = b[i]
+            s = b_list[i]
             for j in range(i):
-                s -= a[i, j] * x[j]
-            x[i] = s / a[i, i]
+                s -= a_data[i][j] * x[j]
+            x[i] = s / a_data[i][i]
     else:
-        # Backward substitution
         for i in range(n - 1, -1, -1):
-            s = b[i]
+            s = b_list[i]
             for j in range(i + 1, n):
-                s -= a[i, j] * x[j]
-            x[i] = s / a[i, i]
+                s -= a_data[i][j] * x[j]
+            x[i] = s / a_data[i][i]
 
     return x
 
 
-# === Optimization ===
+def solve_triangular(a, b, lower=True):
+    """Solve triangular linear system a @ x = b."""
+    a_data = _to_nested_lists(a)
+
+    if hasattr(b, "tolist"):
+        b_raw = b.tolist()
+    elif hasattr(b, "_data"):
+        if hasattr(b, "ndim") and b.ndim == 2:
+            b_raw = [list(row) for row in b._data]
+        else:
+            b_raw = list(b._data)
+    else:
+        b_raw = list(b)
+
+    is_2d = isinstance(b_raw, list) and b_raw and isinstance(b_raw[0], list)
+
+    if not is_2d:
+        return arr_array(_solve_triangular_1d(a_data, list(b_raw), lower))
+
+    n_rows = len(b_raw)
+    n_cols = len(b_raw[0])
+    result = [[0.0] * n_cols for _ in range(n_rows)]
+    for j in range(n_cols):
+        col = [b_raw[i][j] for i in range(n_rows)]
+        x_col = _solve_triangular_1d(a_data, col, lower)
+        for i in range(n_rows):
+            result[i][j] = x_col[i]
+    return arr_array(result)
 
 
 class OptimizeResult:
-    """Simple result container for minimize."""
+    """Simple result container matching scipy.optimize.OptimizeResult."""
 
     def __init__(self, x, fun, success, message=""):
         self.x = x
@@ -267,17 +202,8 @@ class OptimizeResult:
 
 
 def minimize(fun, x0, method=None, bounds=None, options=None):
-    """
-    Minimize a function using simple gradient-free methods.
-
-    Note: This is a very basic implementation using coordinate descent.
-    For serious optimization, use scipy.optimize.minimize.
-    """
-    if HAS_NUMPY:
-        x = np.asarray(x0, dtype=float).copy()
-    else:
-        x = list(x0)
-
+    """Minimize a function using coordinate descent with shrinking step size."""
+    x = list(_to_flat_list(x0))
     options = options or {}
     maxiter = options.get("maxiter", 100)
     tol = options.get("gtol", 1e-5)
@@ -285,15 +211,13 @@ def minimize(fun, x0, method=None, bounds=None, options=None):
     best_f = fun(x)
     step = 0.1
 
-    for iteration in range(maxiter):
+    for _iteration in range(maxiter):
         improved = False
 
         for i in range(len(x)):
-            # Try positive step
-            x_new = x.copy() if HAS_NUMPY else list(x)
+            x_new = list(x)
             x_new[i] += step
 
-            # Apply bounds if given
             if bounds is not None:
                 lo, hi = bounds[i]
                 if lo is not None:
@@ -308,8 +232,7 @@ def minimize(fun, x0, method=None, bounds=None, options=None):
                 improved = True
                 continue
 
-            # Try negative step
-            x_new = x.copy() if HAS_NUMPY else list(x)
+            x_new = list(x)
             x_new[i] -= step
 
             if bounds is not None:
@@ -331,82 +254,48 @@ def minimize(fun, x0, method=None, bounds=None, options=None):
                 break
 
     return OptimizeResult(
-        x=x, fun=best_f, success=True, message="Optimization terminated successfully."
+        x=x,
+        fun=best_f,
+        success=True,
+        message="Optimization terminated successfully.",
     )
 
 
-# === Distance Functions ===
-
-
 def cdist(xa, xb, metric="euclidean"):
-    """
-    Compute pairwise distances between two sets of points.
+    """Compute pairwise Euclidean distances between two sets of points."""
+    if metric != "euclidean":
+        raise NotImplementedError(f"Metric '{metric}' not implemented")
 
-    Parameters
-    ----------
-    xa : array-like, shape (m, k)
-        First set of points
-    xb : array-like, shape (n, k)
-        Second set of points
-    metric : str
-        Distance metric ("euclidean" supported)
-
-    Returns
-    -------
-    distances : array, shape (m, n)
-        Distance matrix
-    """
     if HAS_NUMPY:
-        xa = np.asarray(xa)
-        xb = np.asarray(xb)
-
+        xa = np.asarray(xa, dtype=float)
+        xb = np.asarray(xb, dtype=float)
         if xa.ndim == 1:
             xa = xa.reshape(-1, 1)
         if xb.ndim == 1:
             xb = xb.reshape(-1, 1)
+        diff = xa[:, None, :] - xb[None, :, :]
+        return np.sqrt(np.sum(diff * diff, axis=2))
 
-        m = xa.shape[0]
-        n = xb.shape[0]
+    xa_data = _to_nested_lists(xa)
+    xb_data = _to_nested_lists(xb)
+    if xa_data and not isinstance(xa_data[0], list | tuple):
+        xa_data = [[v] for v in xa_data]
+    if xb_data and not isinstance(xb_data[0], list | tuple):
+        xb_data = [[v] for v in xb_data]
 
-        if metric == "euclidean":
-            result = np.zeros((m, n))
-            for i in range(m):
-                for j in range(n):
-                    diff = xa[i] - xb[j]
-                    result[i, j] = math.sqrt(np.sum(diff * diff))
-            return result
-        else:
-            raise NotImplementedError(f"Metric '{metric}' not implemented")
-    else:
-        # Pure Python version
-        m = len(xa)
-        n = len(xb)
+    m = len(xa_data)
+    n = len(xb_data)
+    result = [[0.0] * n for _ in range(m)]
+    for i in range(m):
+        for j in range(n):
+            sq_dist = math.fsum((a - b) ** 2 for a, b in zip(xa_data[i], xb_data[j]))
+            result[i][j] = math.sqrt(sq_dist)
 
-        if metric == "euclidean":
-            result = []
-            for i in range(m):
-                row = []
-                for j in range(n):
-                    if hasattr(xa[i], "__iter__"):
-                        diff_sq = sum((a - b) ** 2 for a, b in zip(xa[i], xb[j]))
-                    else:
-                        diff_sq = (xa[i] - xb[j]) ** 2
-                    row.append(math.sqrt(diff_sq))
-                result.append(row)
-            return np.array(result) if HAS_NUMPY else result
-        else:
-            raise NotImplementedError(f"Metric '{metric}' not implemented")
-
-
-# === Special Functions ===
+    return arr_array(result)
 
 
 def logsumexp(a, axis=None, keepdims=False):
-    """
-    Compute log of sum of exponentials in a numerically stable way.
-
-    log(sum(exp(a))) = max(a) + log(sum(exp(a - max(a))))
-    """
+    """Compute log(sum(exp(a))) in a numerically stable way."""
     if HAS_NUMPY:
         a = np.asarray(a)
 
@@ -420,14 +309,13 @@ def logsumexp(a, axis=None, keepdims=False):
             result = np.squeeze(a_max) + np.log(s)
 
         return result
-    else:
-        # Pure Python version
-        if hasattr(a, "_get_flat"):
-            flat = a._get_flat()
-        elif hasattr(a, "__iter__"):
-            flat = list(a)
-        else:
-            return float(a)
 
-        a_max = max(flat)
-        return a_max + math.log(sum(math.exp(x - a_max) for x in flat))
+    if hasattr(a, "_get_flat"):
+        flat = a._get_flat()
+    elif hasattr(a, "__iter__"):
+        flat = list(a)
+    else:
+        return float(a)
+
+    a_max = max(flat)
+    return a_max + math.log(math.fsum(math.exp(x - a_max) for x in flat))
