@@ -13,8 +13,6 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Literal
 
 import numpy as np
-from sklearn.ensemble import GradientBoostingRegressor
-from sklearn.gaussian_process import GaussianProcessRegressor
 
 from ..smb_opt import SMBO
 from ..smb_opt._normalize import normalize
@@ -113,8 +111,10 @@ class EnsembleOptimizer(SMBO):
             replacement=replacement,
         )
 
-        # Default ensemble of estimators
         if estimators is None:
+            from sklearn.ensemble import GradientBoostingRegressor
+            from sklearn.gaussian_process import GaussianProcessRegressor
+
             estimators = [
                 GradientBoostingRegressor(n_estimators=5),
                 GaussianProcessRegressor(),
