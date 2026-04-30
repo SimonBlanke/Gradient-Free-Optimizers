@@ -52,7 +52,7 @@ Lightweight optimization with local, global, population-based and sequential tec
   <img src="./docs/gifs/3d_optimizer_animation.gif" width="240" align="right" alt="Bayesian Optimization on Ackley Function">
 </a>
 
-**Gradient-Free-Optimizers** is a Python library for gradient-free optimization of black-box functions. It provides a unified interface to 21 optimization algorithms, from simple hill climbing to Bayesian optimization, all operating on discrete numerical search spaces defined via NumPy arrays.
+**Gradient-Free-Optimizers** is a Python library for gradient-free optimization of black-box functions. It provides a unified interface to 23 optimization algorithms, from simple hill climbing to Bayesian optimization, all operating on discrete numerical search spaces defined via NumPy arrays.
 
 Designed for hyperparameter tuning, simulation optimization, and any scenario where gradients are unavailable or impractical. The library prioritizes simplicity: define your objective function, specify the search space, and run. It serves as the optimization backend for [Hyperactive](https://github.com/SimonBlanke/Hyperactive) but can also be used standalone.
 
@@ -92,7 +92,7 @@ pip install gradient-free-optimizers[full]      # All optional dependencies
 <table>
   <tr>
     <td width="33%">
-      <a href="https://gradient-free-optimizers.readthedocs.io/en/latest/user_guide/optimizers/index.html"><b>21 Optimization Algorithms</b></a><br>
+      <a href="https://gradient-free-optimizers.readthedocs.io/en/latest/user_guide/optimizers/index.html"><b>23 Optimization Algorithms</b></a><br>
       <sub>Local, global, population-based, and sequential model-based optimizers. Switch algorithms with one line of code.</sub>
     </td>
     <td width="33%">
@@ -162,7 +162,7 @@ Best params: {'x': 0.1, 'y': 0.1}
 flowchart LR
     O["Optimizer
     ━━━━━━━━━━
-    21 algorithms"]
+    23 algorithms"]
 
     S["Search Space
     ━━━━━━━━━━━━
@@ -184,7 +184,7 @@ flowchart LR
     D -.->|warm start| O
 ```
 
-**Optimizer**: Implements the search strategy. Choose from 21 algorithms across four categories: local search, global search, population-based, and sequential model-based.
+**Optimizer**: Implements the search strategy. Choose from 23 algorithms across four categories: local search, global search, population-based, and sequential model-based.
 
 **Search Space**: Defines valid parameter combinations as NumPy arrays. Each key is a parameter name, each value is an array of allowed values.
 
@@ -413,7 +413,7 @@ This library is part of a suite of optimization tools. For updates on these pack
 |----------|-------------|
 | [User Guide](https://gradient-free-optimizers.readthedocs.io/en/latest/user_guide.html) | Comprehensive tutorials and explanations |
 | [API Reference](https://gradient-free-optimizers.readthedocs.io/en/latest/api_reference.html) | Complete API documentation |
-| [Optimizers](https://gradient-free-optimizers.readthedocs.io/en/latest/user_guide/optimizers/index.html) | Detailed description of all 21 algorithms |
+| [Optimizers](https://gradient-free-optimizers.readthedocs.io/en/latest/user_guide/optimizers/index.html) | Detailed description of all 23 algorithms |
 | [Examples](https://gradient-free-optimizers.readthedocs.io/en/latest/examples.html) | Code examples for various use cases |
 
 <br>
