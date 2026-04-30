@@ -71,6 +71,7 @@ pip install gradient-free-optimizers
 <p>
   <a href="https://pypi.org/project/gradient-free-optimizers/"><img src="https://img.shields.io/pypi/v/gradient-free-optimizers?style=flat-square&color=blue" alt="PyPI"></a>
   <a href="https://pypi.org/project/gradient-free-optimizers/"><img src="https://img.shields.io/pypi/pyversions/gradient-free-optimizers?style=flat-square" alt="Python"></a>
+  <a href="https://pepy.tech/project/gradient-free-optimizers"><img src="https://img.shields.io/pepy/dt/gradient-free-optimizers?style=flat-square&color=green" alt="Total Downloads"></a>
 </p>
 
 <details>
