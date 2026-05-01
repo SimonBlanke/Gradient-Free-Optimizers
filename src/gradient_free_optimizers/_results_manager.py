@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
 
-import pandas as pd
-
 if TYPE_CHECKING:
+    import pandas as pd
+
     from .optimizers.core_optimizer.converter import Converter
 
 
@@ -45,11 +45,12 @@ class ResultsManager:
         This reconstructs parameter dictionaries only when needed,
         avoiding the memory cost of storing them during optimization.
         """
+        import pandas as pd
+
         if not self._positions:
             return pd.DataFrame()
 
         if self._converter is None:
-            # Fallback: return just scores if no converter available
             return pd.DataFrame({"score": self._scores})
 
         # Build rows lazily

@@ -3,11 +3,14 @@
 # License: MIT License
 """DIRECT algorithm using adaptive hyperrectangle subdivision."""
 
-from typing import Literal
+from __future__ import annotations
 
-import pandas as pd
+from typing import TYPE_CHECKING, Literal
 
 from .._init_utils import get_default_initialize
+
+if TYPE_CHECKING:
+    import pandas as pd
 from ..optimizers import DirectAlgorithm as _DirectAlgorithm
 from ..search import Search
 

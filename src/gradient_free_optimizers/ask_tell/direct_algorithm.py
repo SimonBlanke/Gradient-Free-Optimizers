@@ -3,9 +3,14 @@
 # License: MIT License
 """DIRECT algorithm optimizer with ask/tell interface."""
 
-import pandas as pd
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from .._ask_tell_mixin import AskTell
+
+if TYPE_CHECKING:
+    import pandas as pd
 from ..optimizers import DirectAlgorithm as _DirectAlgorithm
 
 
