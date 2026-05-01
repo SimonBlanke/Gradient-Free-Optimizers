@@ -288,13 +288,13 @@ jobs:
               sys.exit(1)
           "
 
-      - name: Verify array backend uses pure Python
+      - name: Verify array backend does not use numpy
         run: |
           python -c "
           from gradient_free_optimizers._array_backend import _backend_name, HAS_NUMPY
           assert not HAS_NUMPY, 'HAS_NUMPY should be False'
-          assert _backend_name == 'pure', f'Expected pure backend, got {_backend_name}'
-          print('OK: using pure Python array backend')
+          assert _backend_name in ('pure', 'c_extension'), f'Unexpected backend: {_backend_name}'
+          print(f'OK: using {_backend_name} array backend (no numpy)')
           "
 
       - name: Run dependency isolation tests
