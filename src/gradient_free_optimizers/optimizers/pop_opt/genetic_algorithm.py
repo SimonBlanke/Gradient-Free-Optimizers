@@ -10,7 +10,8 @@ import random
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
-import numpy as np
+from gradient_free_optimizers._array_backend import array, ndarray
+from gradient_free_optimizers._array_backend import random as arr_random
 
 from ._individual import Individual
 from .base_population_optimizer import BasePopulationOptimizer
@@ -120,7 +121,7 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
         self.offspring_l = []
 
         # Initialize RNG for reproducibility
-        self._rng = np.random.default_rng(self.random_seed)
+        self._rng = arr_random.default_rng(self.random_seed)
 
         # Iteration state for template method coordination
         self._iteration_setup_done = False
@@ -134,14 +135,14 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
 
         Parameters
         ----------
-        parent_pos_l : list of np.ndarray
+        parent_pos_l : list of ndarray
             List of parent positions.
         crossover_rates : list of float, optional
             Probability weights for each parent. If None, uniform selection.
 
         Returns
         -------
-        np.ndarray
+        ndarray
             Offspring position.
         """
         n_parents = len(parent_pos_l)
@@ -160,7 +161,7 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
         for i, parent_idx in enumerate(choice):
             result.append(parent_pos_l[parent_idx][i])
 
-        return np.array(result)
+        return array(result)
 
     def _fittest_parents(self) -> list[Individual]:
         """Select the fittest individuals as parents.
@@ -212,7 +213,7 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
             offspring = self._constraint_loop(offspring)
             self.offspring_l.append(offspring)
 
-    def _constraint_loop(self, position: np.ndarray) -> np.ndarray:
+    def _constraint_loop(self, position: ndarray) -> ndarray:
         """Ensure position satisfies constraints.
 
         If position violates constraints, use hill climbing to find
@@ -220,12 +221,12 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
 
         Parameters
         ----------
-        position : np.ndarray
+        position : ndarray
             Position to check.
 
         Returns
         -------
-        np.ndarray
+        ndarray
             Valid position.
         """
         max_tries = 100
@@ -305,7 +306,7 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
 
         self._iteration_setup_done = True
 
-    def _compute_mutation_position(self) -> np.ndarray:
+    def _compute_mutation_position(self) -> ndarray:
         """Compute new position via mutation using the individual's hill climbing.
 
         Uses the Individual's typed iteration which applies Gaussian noise
@@ -313,7 +314,7 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
 
         Returns
         -------
-        np.ndarray
+        ndarray
             New position after mutation.
         """
         # Random restart check
@@ -338,7 +339,7 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
 
         return pos_new
 
-    def _compute_crossover_position(self) -> np.ndarray:
+    def _compute_crossover_position(self) -> ndarray:
         """Compute new position via crossover from offspring queue.
 
         Uses discrete recombination to combine parent positions.
@@ -346,7 +347,7 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
 
         Returns
         -------
-        np.ndarray
+        ndarray
             New position from crossover or fallback mutation.
         """
         # Fill offspring queue if empty
@@ -359,40 +360,40 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
             # Fallback to mutation if crossover failed
             return self._compute_mutation_position()
 
-    def _iterate_continuous_batch(self) -> np.ndarray:
+    def _iterate_continuous_batch(self) -> ndarray:
         """Generate continuous values using GA mutation/crossover.
 
         Returns the continuous portion of the GA-computed position.
 
         Returns
         -------
-        np.ndarray
+        ndarray
             New continuous values from GA operation.
         """
         self._setup_iteration()
         return self._ga_new_pos[self._continuous_mask]
 
-    def _iterate_categorical_batch(self) -> np.ndarray:
+    def _iterate_categorical_batch(self) -> ndarray:
         """Generate categorical indices using GA mutation/crossover.
 
         Returns the categorical portion of the GA-computed position.
 
         Returns
         -------
-        np.ndarray
+        ndarray
             New category indices from GA operation.
         """
         self._setup_iteration()
         return self._ga_new_pos[self._categorical_mask]
 
-    def _iterate_discrete_batch(self) -> np.ndarray:
+    def _iterate_discrete_batch(self) -> ndarray:
         """Generate discrete indices using GA mutation/crossover.
 
         Returns the discrete portion of the GA-computed position.
 
         Returns
         -------
-        np.ndarray
+        ndarray
             New discrete indices from GA operation.
         """
         self._setup_iteration()

@@ -4,9 +4,11 @@
 
 """Abstract base class for line search strategies in Powell's method."""
 
+from __future__ import annotations
+
 from abc import ABC, abstractmethod
 
-import numpy as np
+from gradient_free_optimizers._array_backend import ndarray
 
 
 class LineSearch(ABC):
@@ -132,7 +134,7 @@ class LineSearch(ABC):
             if isinstance(dim_def, tuple):
                 # Continuous
                 min_val, max_val = dim_def
-            elif isinstance(dim_def, list | np.ndarray):
+            elif isinstance(dim_def, list | ndarray):
                 # Categorical or discrete: index bounds
                 min_val, max_val = 0, len(dim_def) - 1
             else:

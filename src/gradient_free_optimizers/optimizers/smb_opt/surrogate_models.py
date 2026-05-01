@@ -9,7 +9,9 @@ Uses sklearn implementations if available, otherwise falls back to native
 implementations that have no external dependencies beyond numpy/scipy.
 """
 
-from gradient_free_optimizers._array_backend import array, ravel
+from __future__ import annotations
+
+from gradient_free_optimizers._array_backend import array, ndarray, ravel, zeros
 from gradient_free_optimizers._estimators import (
     ExtraTreesRegressor as NativeExtraTreesRegressor,
 )
@@ -84,13 +86,11 @@ def _return_std(X, trees, predictions, min_variance):
     Note: This function requires sklearn trees with tree_ attribute,
     so we keep numpy usage here for sklearn integration.
     """
-    import numpy as np
-
-    variance = np.zeros(len(X))
+    variance = zeros(len(X))
     trees = list(trees)
 
     for tree in trees:
-        if isinstance(tree, np.ndarray):
+        if isinstance(tree, ndarray):
             tree = tree[0]
 
         var_tree = tree.tree_.impurity[tree.apply(X)]

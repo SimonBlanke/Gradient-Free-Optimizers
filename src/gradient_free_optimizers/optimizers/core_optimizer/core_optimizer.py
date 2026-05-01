@@ -8,10 +8,23 @@ Core optimizer with orchestration logic for the Template Method Pattern.
 See CoreOptimizer class docstring for the full architecture description.
 """
 
+from __future__ import annotations
+
 import math
 from abc import ABC, abstractmethod
 
-import numpy as np
+from gradient_free_optimizers._array_backend import (
+    array,
+    clip,
+    empty,
+    isinf,
+    isnan,
+    ndarray,
+    zeros,
+)
+from gradient_free_optimizers._array_backend import (
+    round as arr_round,
+)
 
 from .converter import Converter
 from .init_positions import Initializer
@@ -20,12 +33,12 @@ from .utils import set_random_seed
 
 def _isinf(x):
     """Check if value is infinite."""
-    return math.isinf(x) if isinstance(x, int | float) else np.isinf(x)
+    return math.isinf(x) if isinstance(x, int | float) else isinf(x)
 
 
 def _isnan(x):
     """Check if value is NaN."""
-    return math.isnan(x) if isinstance(x, int | float) else np.isnan(x)
+    return math.isnan(x) if isinstance(x, int | float) else isnan(x)
 
 
 class CoreOptimizer(ABC):
@@ -228,9 +241,9 @@ class CoreOptimizer(ABC):
         dim_names = list(self.search_space.keys())
 
         # Initialize masks as boolean arrays
-        continuous_mask = np.zeros(n_dims, dtype=bool)
-        categorical_mask = np.zeros(n_dims, dtype=bool)
-        discrete_mask = np.zeros(n_dims, dtype=bool)
+        continuous_mask = zeros(n_dims, dtype=bool)
+        categorical_mask = zeros(n_dims, dtype=bool)
+        discrete_mask = zeros(n_dims, dtype=bool)
 
         # Lists to collect bounds/sizes for each type
         continuous_bounds_list = []
@@ -251,8 +264,8 @@ class CoreOptimizer(ABC):
                 categorical_mask[i] = True
                 categorical_sizes_list.append(len(dim_def))
 
-            elif isinstance(dim_def, np.ndarray):
-                # Discrete numerical: numpy array
+            elif isinstance(dim_def, ndarray):
+                # Discrete numerical: array
                 discrete_mask[i] = True
                 discrete_bounds_list.append([0, len(dim_def) - 1])
 
@@ -260,7 +273,7 @@ class CoreOptimizer(ABC):
                 raise ValueError(
                     f"Unknown dimension type for '{name}': {type(dim_def)}. "
                     f"Expected tuple (continuous), list (categorical), "
-                    f"or np.ndarray (discrete)."
+                    f"or ndarray (discrete)."
                 )
 
         # Store masks
@@ -270,13 +283,13 @@ class CoreOptimizer(ABC):
 
         # Convert bounds/sizes to numpy arrays for vectorized operations
         self._continuous_bounds = (
-            np.array(continuous_bounds_list) if continuous_bounds_list else None
+            array(continuous_bounds_list) if continuous_bounds_list else None
         )
         self._categorical_sizes = (
-            np.array(categorical_sizes_list) if categorical_sizes_list else None
+            array(categorical_sizes_list) if categorical_sizes_list else None
         )
         self._discrete_bounds = (
-            np.array(discrete_bounds_list) if discrete_bounds_list else None
+            array(discrete_bounds_list) if discrete_bounds_list else None
         )
 
     def _init_pos(self):
@@ -461,7 +474,7 @@ class CoreOptimizer(ABC):
             Clipped position as numpy array
         """
         n_dims = len(self.search_space)
-        new_pos = np.empty(n_dims)
+        new_pos = empty(n_dims)
 
         # Process continuous dimensions
         if self._continuous_mask is not None and self._continuous_mask.any():
@@ -477,7 +490,7 @@ class CoreOptimizer(ABC):
 
         return self._clip_position(new_pos)
 
-    def _clip_position(self, position: np.ndarray) -> np.ndarray:
+    def _clip_position(self, position: ndarray) -> ndarray:
         """Clip position to valid bounds with dimension-type-awareness.
 
         For continuous: clip to (min, max) range
@@ -498,24 +511,24 @@ class CoreOptimizer(ABC):
             cont_vals = clipped[self._continuous_mask]
             mins = self._continuous_bounds[:, 0]
             maxs = self._continuous_bounds[:, 1]
-            clipped[self._continuous_mask] = np.clip(cont_vals, mins, maxs)
+            clipped[self._continuous_mask] = clip(cont_vals, mins, maxs)
 
         # Clip categorical dimensions to valid indices [0, n_categories-1]
         if self._categorical_mask is not None and self._categorical_mask.any():
             cat_vals = clipped[self._categorical_mask]
             # Round to nearest integer and clip to valid range
-            cat_vals = np.round(cat_vals).astype(np.int64)
-            cat_vals = np.clip(cat_vals, 0, self._categorical_sizes - 1)
+            cat_vals = arr_round(cat_vals).astype(int)
+            cat_vals = clip(cat_vals, 0, self._categorical_sizes - 1)
             clipped[self._categorical_mask] = cat_vals
 
         # Clip discrete dimensions to valid indices [0, max_index]
         if self._discrete_mask is not None and self._discrete_mask.any():
             disc_vals = clipped[self._discrete_mask]
             # Round to nearest integer and clip to valid range
-            disc_vals = np.round(disc_vals).astype(np.int64)
-            mins = self._discrete_bounds[:, 0].astype(np.int64)
-            maxs = self._discrete_bounds[:, 1].astype(np.int64)
-            disc_vals = np.clip(disc_vals, mins, maxs)
+            disc_vals = arr_round(disc_vals).astype(int)
+            mins = self._discrete_bounds[:, 0].astype(int)
+            maxs = self._discrete_bounds[:, 1].astype(int)
+            disc_vals = clip(disc_vals, mins, maxs)
             clipped[self._discrete_mask] = disc_vals
 
         return clipped
@@ -525,7 +538,7 @@ class CoreOptimizer(ABC):
     # -----------------------------------------------------------------
 
     @abstractmethod
-    def _iterate_continuous_batch(self) -> np.ndarray:
+    def _iterate_continuous_batch(self) -> ndarray:
         """Generate new values for all continuous dimensions.
 
         Available instance state:
@@ -540,7 +553,7 @@ class CoreOptimizer(ABC):
         ...
 
     @abstractmethod
-    def _iterate_categorical_batch(self) -> np.ndarray:
+    def _iterate_categorical_batch(self) -> ndarray:
         """Generate new category indices for all categorical dimensions.
 
         Available instance state:
@@ -555,7 +568,7 @@ class CoreOptimizer(ABC):
         ...
 
     @abstractmethod
-    def _iterate_discrete_batch(self) -> np.ndarray:
+    def _iterate_discrete_batch(self) -> ndarray:
         """Generate new positions for all discrete dimensions.
 
         Available instance state:

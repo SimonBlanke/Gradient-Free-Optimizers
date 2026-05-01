@@ -8,10 +8,12 @@ Continuous dimensions are automatically discretized using the `resolution`
 parameter, which specifies how many grid points to create.
 """
 
+from __future__ import annotations
+
 from functools import reduce
 from math import gcd
 
-import numpy as np
+from gradient_free_optimizers._array_backend import array, linspace, ndarray
 
 from ..base_optimizer import BaseOptimizer
 
@@ -37,7 +39,7 @@ def _discretize_search_space(search_space, resolution):
             # Continuous dimension: convert to linspace
             low, high = space
             if isinstance(low, int | float) and isinstance(high, int | float):
-                discretized[name] = np.linspace(low, high, resolution)
+                discretized[name] = linspace(low, high, resolution)
             else:
                 discretized[name] = space
         else:
@@ -177,7 +179,7 @@ class GridSearchOptimizer(BaseOptimizer):
             pointer = pointer % remaining_prod
         new_pos.append(pointer)
 
-        return np.array(new_pos)
+        return array(new_pos)
 
     def _compute_orthogonal_position(self):
         """Convert current grid counter to position using orthogonal traversal.
@@ -200,7 +202,7 @@ class GridSearchOptimizer(BaseOptimizer):
             new_pos.append(remainder % dim_size)
             remainder = remainder // dim_size
 
-        return np.array(new_pos)
+        return array(new_pos)
 
     def _generate_position(self):
         """Generate next grid position based on configured direction.
@@ -230,19 +232,19 @@ class GridSearchOptimizer(BaseOptimizer):
         # Clip to valid bounds (handles edge cases)
         return self._clip_position(pos)
 
-    def _iterate_continuous_batch(self) -> "np.ndarray":
+    def _iterate_continuous_batch(self) -> ndarray:
         """Not used - grid search generates full position via _generate_position."""
         raise NotImplementedError(
             "GridSearch uses _generate_position() for grid traversal"
         )
 
-    def _iterate_categorical_batch(self) -> "np.ndarray":
+    def _iterate_categorical_batch(self) -> ndarray:
         """Not used - grid search generates full position via _generate_position."""
         raise NotImplementedError(
             "GridSearch uses _generate_position() for grid traversal"
         )
 
-    def _iterate_discrete_batch(self) -> "np.ndarray":
+    def _iterate_discrete_batch(self) -> ndarray:
         """Not used - grid search generates full position via _generate_position."""
         raise NotImplementedError(
             "GridSearch uses _generate_position() for grid traversal"

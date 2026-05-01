@@ -10,7 +10,7 @@ import random
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
-import numpy as np
+from gradient_free_optimizers._array_backend import array, ndarray, zeros
 
 from ._spiral import Spiral, rotation
 from .base_population_optimizer import BasePopulationOptimizer
@@ -184,7 +184,7 @@ class SpiralOptimization(BasePopulationOptimizer):
 
         self._iteration_setup_done = True
 
-    def _compute_spiral_position(self) -> np.ndarray:
+    def _compute_spiral_position(self) -> ndarray:
         """Compute new position using spiral movement equation.
 
         The spiral equation is:
@@ -211,8 +211,8 @@ class SpiralOptimization(BasePopulationOptimizer):
         step_rate = self._decay_factor * scales / 1000
 
         # Compute rotated offset from center
-        center = np.array(self.center_pos)
-        current = np.array(self.p_current._pos_current)
+        center = array(self.center_pos)
+        current = array(self.p_current._pos_current)
         rot = rotation(len(center), current - center)
 
         # Combine rotation with decay
@@ -221,7 +221,7 @@ class SpiralOptimization(BasePopulationOptimizer):
 
         return new_pos
 
-    def _compute_dimension_scales(self) -> np.ndarray:
+    def _compute_dimension_scales(self) -> ndarray:
         """Compute scale factors for each dimension.
 
         Returns
@@ -230,7 +230,7 @@ class SpiralOptimization(BasePopulationOptimizer):
             Scale factor for each dimension based on its type and bounds.
         """
         n_dims = len(self.search_space)
-        scales = np.zeros(n_dims)
+        scales = zeros(n_dims)
         dim_names = list(self.search_space.keys())
 
         for i, name in enumerate(dim_names):
@@ -242,13 +242,13 @@ class SpiralOptimization(BasePopulationOptimizer):
             elif isinstance(dim_def, list):
                 # Categorical: use number of categories
                 scales[i] = len(dim_def) - 1
-            elif isinstance(dim_def, np.ndarray):
+            elif isinstance(dim_def, ndarray):
                 # Discrete: use max index
                 scales[i] = len(dim_def) - 1
 
         return scales
 
-    def _iterate_continuous_batch(self) -> np.ndarray:
+    def _iterate_continuous_batch(self) -> ndarray:
         """Generate continuous values using spiral movement.
 
         Returns the continuous portion of the spiral-computed position.
@@ -261,7 +261,7 @@ class SpiralOptimization(BasePopulationOptimizer):
         self._setup_iteration()
         return self._spiral_new_pos[self._continuous_mask]
 
-    def _iterate_categorical_batch(self) -> np.ndarray:
+    def _iterate_categorical_batch(self) -> ndarray:
         """Generate categorical indices using spiral decay as switch probability.
 
         For categorical dimensions, the decay factor magnitude determines the
@@ -295,9 +295,9 @@ class SpiralOptimization(BasePopulationOptimizer):
                 # Keep current category
                 new_cats.append(int(cur_idx))
 
-        return np.array(new_cats)
+        return array(new_cats)
 
-    def _iterate_discrete_batch(self) -> np.ndarray:
+    def _iterate_discrete_batch(self) -> ndarray:
         """Generate discrete indices using spiral movement.
 
         Returns the discrete portion of the spiral-computed position.

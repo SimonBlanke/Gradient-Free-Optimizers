@@ -33,10 +33,13 @@ if HAS_NUMPY:
     from ._numpy import *
 
     _backend_name = "numpy"
+    ndarray = numpy.ndarray
 else:
     from ._pure import *
+    from ._pure import GFOArray
 
     _backend_name = "pure"
+    ndarray = GFOArray
 
 
 __all__ = [
@@ -139,4 +142,5 @@ __all__ = [
     "any",
     "ndim",
     "shape",
+    "ndarray",
 ]

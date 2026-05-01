@@ -9,7 +9,12 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Literal
 
-import numpy as np
+from gradient_free_optimizers._array_backend import (
+    array,
+    linalg,
+    ndarray,
+    random,
+)
 
 from .acquisition_function import ExpectedImprovement
 from .smbo import SMBO
@@ -25,13 +30,13 @@ if TYPE_CHECKING:
 
 def normalize(arr):
     """Normalize array to [0, 1] range."""
-    arr = np.array(arr)
+    arr = array(arr)
     arr_min = arr.min()
     arr_max = arr.max()
     range_ = arr_max - arr_min
 
     if range_ == 0:
-        return np.random.uniform(0, 1, size=arr.shape)
+        return random.uniform(0, 1, size=arr.shape)
     else:
         return (arr - arr_min) / range_
 
@@ -137,7 +142,7 @@ class ForestOptimizer(SMBO):
         self.regr = tree_regressor_dict[tree_regressor](**self.tree_para)
         self.xi = xi
 
-    def _expected_improvement(self) -> np.ndarray:
+    def _expected_improvement(self) -> ndarray:
         """Compute Expected Improvement for all candidate positions.
 
         Uses the tree ensemble's prediction variance to estimate uncertainty.
@@ -154,8 +159,8 @@ class ForestOptimizer(SMBO):
 
     def _training(self) -> None:
         """Fit the tree ensemble on training data."""
-        X_sample = np.array(self.X_sample)
-        Y_sample = np.array(self.Y_sample)
+        X_sample = array(self.X_sample)
+        Y_sample = array(self.Y_sample)
 
         if len(Y_sample) == 0:
             return
@@ -172,7 +177,7 @@ class ForestOptimizer(SMBO):
             while len(positions) < n:
                 positions.append(self._move_random())
             return [self._clip_position(pos) for pos in positions]
-        except (ValueError, np.linalg.LinAlgError):
+        except (ValueError, linalg.LinAlgError):
             return [self._clip_position(self._move_random()) for _ in range(n)]
 
     def _evaluate_batch(self, positions, scores):

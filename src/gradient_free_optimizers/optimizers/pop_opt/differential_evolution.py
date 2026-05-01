@@ -10,7 +10,8 @@ import random
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
-import numpy as np
+from gradient_free_optimizers._array_backend import array, clip, ndarray
+from gradient_free_optimizers._array_backend import random as arr_random
 
 from ._individual import Individual
 from .base_population_optimizer import BasePopulationOptimizer
@@ -102,13 +103,13 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
         self.optimizers = self.individuals
 
         # Initialize RNG for reproducibility
-        self._rng = np.random.default_rng(self.random_seed)
+        self._rng = arr_random.default_rng(self.random_seed)
 
         # Iteration state for template method coordination
         self._iteration_setup_done = False
         self._de_new_pos = None
 
-    def _mutation(self) -> np.ndarray:
+    def _mutation(self) -> ndarray:
         """Generate mutant vector using type-aware differential mutation.
 
         For continuous and discrete-numerical dimensions, uses standard DE
@@ -119,7 +120,7 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
 
         Returns
         -------
-        np.ndarray
+        ndarray
             Mutant vector.
         """
         # Need at least 3 individuals for DE mutation
@@ -139,9 +140,7 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
 
         # Fast path for legacy mode (all discrete-numerical)
         if self.conv.is_legacy_mode:
-            mutant = np.array(x_1) + self.mutation_rate * (
-                np.array(x_2) - np.array(x_3)
-            )
+            mutant = array(x_1) + self.mutation_rate * (array(x_2) - array(x_3))
             return mutant
 
         # Type-aware mutation for mixed dimension types
@@ -160,7 +159,7 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
                 # Standard DE mutation for continuous and discrete-numerical
                 mutant.append(x_1[idx] + self.mutation_rate * (x_2[idx] - x_3[idx]))
 
-        return np.array(mutant)
+        return array(mutant)
 
     def _discrete_recombination(self, parent_pos_l, crossover_rates=None):
         """Combine parent positions using discrete recombination.
@@ -169,14 +168,14 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
 
         Parameters
         ----------
-        parent_pos_l : list of np.ndarray
+        parent_pos_l : list of ndarray
             List of parent positions (typically [target, mutant]).
         crossover_rates : list of float, optional
             Probability weights for each parent.
 
         Returns
         -------
-        np.ndarray
+        ndarray
             Trial vector.
         """
         n_parents = len(parent_pos_l)
@@ -193,7 +192,7 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
         for i, parent_idx in enumerate(choice):
             result.append(parent_pos_l[parent_idx][i])
 
-        return np.array(result)
+        return array(result)
 
     def _conv2pos_typed(self, pos):
         """Convert position to valid position with proper types.
@@ -202,17 +201,17 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
 
         Parameters
         ----------
-        pos : np.ndarray
+        pos : ndarray
             Position to convert.
 
         Returns
         -------
-        np.ndarray
+        ndarray
             Valid position.
         """
         if self.conv.is_legacy_mode:
             n_zeros = [0] * len(self.conv.max_positions)
-            return np.clip(pos, n_zeros, self.conv.max_positions).astype(int)
+            return clip(pos, n_zeros, self.conv.max_positions).astype(int)
 
         from gradient_free_optimizers._dimension_types import DimensionType
 
@@ -223,24 +222,24 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
 
             if dim_type == DimensionType.CONTINUOUS:
                 # Clip to bounds, keep as float
-                pos_new.append(np.clip(val, bounds[0], bounds[1]))
+                pos_new.append(clip(val, bounds[0], bounds[1]))
             else:
                 # Discrete or categorical: clip and convert to int
-                pos_new.append(int(np.clip(round(val), bounds[0], bounds[1])))
+                pos_new.append(int(clip(round(val), bounds[0], bounds[1])))
 
-        return np.array(pos_new)
+        return array(pos_new)
 
-    def _constraint_loop(self, position: np.ndarray) -> np.ndarray:
+    def _constraint_loop(self, position: ndarray) -> ndarray:
         """Ensure position satisfies constraints.
 
         Parameters
         ----------
-        position : np.ndarray
+        position : ndarray
             Position to check.
 
         Returns
         -------
-        np.ndarray
+        ndarray
             Valid position.
         """
         max_tries = 100
@@ -323,40 +322,40 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
         self._de_new_pos = pos_new
         self._iteration_setup_done = True
 
-    def _iterate_continuous_batch(self) -> np.ndarray:
+    def _iterate_continuous_batch(self) -> ndarray:
         """Generate continuous values using DE mutation/crossover.
 
         Returns the continuous portion of the DE-computed position.
 
         Returns
         -------
-        np.ndarray
+        ndarray
             New continuous values from DE operation.
         """
         self._setup_iteration()
         return self._de_new_pos[self._continuous_mask]
 
-    def _iterate_categorical_batch(self) -> np.ndarray:
+    def _iterate_categorical_batch(self) -> ndarray:
         """Generate categorical indices using DE mutation/crossover.
 
         Returns the categorical portion of the DE-computed position.
 
         Returns
         -------
-        np.ndarray
+        ndarray
             New category indices from DE operation.
         """
         self._setup_iteration()
         return self._de_new_pos[self._categorical_mask]
 
-    def _iterate_discrete_batch(self) -> np.ndarray:
+    def _iterate_discrete_batch(self) -> ndarray:
         """Generate discrete indices using DE mutation/crossover.
 
         Returns the discrete portion of the DE-computed position.
 
         Returns
         -------
-        np.ndarray
+        ndarray
             New discrete indices from DE operation.
         """
         self._setup_iteration()

@@ -10,7 +10,8 @@ import random
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
-import numpy as np
+from gradient_free_optimizers._array_backend import array, ndarray
+from gradient_free_optimizers._array_backend import random as arr_random
 
 from ._individual import Individual
 from .base_population_optimizer import BasePopulationOptimizer
@@ -106,7 +107,7 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
         self.optimizers = self.individuals
 
         # Initialize RNG for reproducibility
-        self._rng = np.random.default_rng(self.random_seed)
+        self._rng = arr_random.default_rng(self.random_seed)
 
         # State for iterate
         self.rnd_int = 0
@@ -123,14 +124,14 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
 
         Parameters
         ----------
-        parent_pos_l : list of np.ndarray
+        parent_pos_l : list of ndarray
             List of parent positions.
         crossover_rates : list of float, optional
             Probability weights for each parent. If None, uniform selection.
 
         Returns
         -------
-        np.ndarray
+        ndarray
             Offspring position.
         """
         n_parents = len(parent_pos_l)
@@ -147,7 +148,7 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
         for i, parent_idx in enumerate(choice):
             result.append(parent_pos_l[parent_idx][i])
 
-        return np.array(result)
+        return array(result)
 
     def _cross(self):
         """Perform recombination (crossover) operation.
@@ -158,7 +159,7 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
 
         Returns
         -------
-        np.ndarray
+        ndarray
             New position from recombination.
         """
         # Select a second parent different from current
@@ -284,40 +285,40 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
         self._current_new_pos = pos_new
         self._iteration_setup_done = True
 
-    def _iterate_continuous_batch(self) -> np.ndarray:
+    def _iterate_continuous_batch(self) -> ndarray:
         """Generate continuous values by delegating to current sub-optimizer.
 
         Returns the continuous portion of the sub-optimizer's position.
 
         Returns
         -------
-        np.ndarray
+        ndarray
             New continuous values from mutation or recombination.
         """
         self._setup_iteration()
         return self._current_new_pos[self._continuous_mask]
 
-    def _iterate_categorical_batch(self) -> np.ndarray:
+    def _iterate_categorical_batch(self) -> ndarray:
         """Generate categorical indices by delegating to current sub-optimizer.
 
         Returns the categorical portion of the sub-optimizer's position.
 
         Returns
         -------
-        np.ndarray
+        ndarray
             New category indices from mutation or recombination.
         """
         self._setup_iteration()
         return self._current_new_pos[self._categorical_mask]
 
-    def _iterate_discrete_batch(self) -> np.ndarray:
+    def _iterate_discrete_batch(self) -> ndarray:
         """Generate discrete indices by delegating to current sub-optimizer.
 
         Returns the discrete portion of the sub-optimizer's position.
 
         Returns
         -------
-        np.ndarray
+        ndarray
             New discrete indices from mutation or recombination.
         """
         self._setup_iteration()

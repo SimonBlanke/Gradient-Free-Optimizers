@@ -15,8 +15,14 @@ import math
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
-import numpy as np
-
+from gradient_free_optimizers._array_backend import (
+    array,
+    array_split,
+    linspace,
+    ndarray,
+    random,
+    sqrt,
+)
 from gradient_free_optimizers._dimension_types import DimensionType
 from gradient_free_optimizers._math_backend import cdist
 
@@ -44,7 +50,7 @@ def _discretize_search_space(search_space, resolution):
             # Continuous dimension: convert to linspace
             low, high = space
             if isinstance(low, int | float) and isinstance(high, int | float):
-                discretized[name] = np.linspace(low, high, resolution)
+                discretized[name] = linspace(low, high, resolution)
             else:
                 discretized[name] = space
         else:
@@ -93,7 +99,7 @@ def _mixed_distance(pos1, pos2, dim_types, dim_infos):
                 diff = 0
             total_dist += diff**2
 
-    return np.sqrt(total_dist / n_dims) if n_dims > 0 else 0.0
+    return sqrt(total_dist / n_dims) if n_dims > 0 else 0.0
 
 
 class SubSpace:
@@ -132,7 +138,7 @@ class SubSpace:
             center_idx = int(array_size / 2)
             center_pos.append(dim_array[center_idx])
 
-        return np.array(center_pos)
+        return array(center_pos)
 
     def _find_biggest_dim(self):
         """Find the dimension with the largest array (for subdivision)."""
@@ -145,7 +151,7 @@ class SubSpace:
 
             if array_size == largest_size:
                 # Random tie-breaking using numpy (respects random_state seed)
-                if np.random.randint(0, 2):
+                if random.randint(0, 2):
                     largest_size = array_size
                     largest_dim = dim
             elif array_size > largest_size:
@@ -171,7 +177,7 @@ class SubSpace:
         for dim in list(self.search_space.keys()):
             dim_array = self.search_space[dim]
             furthest_pos_.append(dim_array[0])
-        furthest_pos = np.array(furthest_pos_)
+        furthest_pos = array(furthest_pos_)
 
         dist = _mixed_distance(
             furthest_pos, self.center_pos, self.dim_types, self.dim_infos
@@ -318,7 +324,7 @@ class DirectAlgorithm(BaseOptimizer):
         search_space = subspace.search_space
         dim_array = search_space[subspace.biggest_dim]
 
-        sub_arrays = np.array_split(dim_array, n_splits)
+        sub_arrays = array_split(dim_array, n_splits)
 
         sub_search_space_l = []
         for sub_array in sub_arrays:
@@ -348,11 +354,11 @@ class DirectAlgorithm(BaseOptimizer):
 
         return n_created
 
-    def _move_random(self) -> np.ndarray:
+    def _move_random(self) -> ndarray:
         """Generate a random valid position using the initializer."""
         return self.init.move_random_typed()
 
-    def _generate_position(self) -> np.ndarray:
+    def _generate_position(self) -> ndarray:
         """Generate next position via subspace division.
 
         DIRECT works by:
@@ -386,7 +392,7 @@ class DirectAlgorithm(BaseOptimizer):
         self.current_subspace = None
         return self._move_random()
 
-    def _iterate_continuous_batch(self) -> np.ndarray:
+    def _iterate_continuous_batch(self) -> ndarray:
         """Not used - DIRECT overrides _generate_position() with subspace division.
 
         DIRECT does not use the standard batch iteration pattern because
@@ -403,14 +409,14 @@ class DirectAlgorithm(BaseOptimizer):
             "See _generate_position() for the algorithm implementation."
         )
 
-    def _iterate_categorical_batch(self) -> np.ndarray:
+    def _iterate_categorical_batch(self) -> ndarray:
         """Not used - DIRECT overrides _generate_position()."""
         raise NotImplementedError(
             "DIRECT uses subspace division, not batch iteration. "
             "See _generate_position() for the algorithm implementation."
         )
 
-    def _iterate_discrete_batch(self) -> np.ndarray:
+    def _iterate_discrete_batch(self) -> ndarray:
         """Not used - DIRECT overrides _generate_position()."""
         raise NotImplementedError(
             "DIRECT uses subspace division, not batch iteration. "

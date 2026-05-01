@@ -10,7 +10,13 @@ import random
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
-import numpy as np
+from gradient_free_optimizers._array_backend import (
+    argmax,
+    array,
+    clip,
+    linalg,
+    ndarray,
+)
 
 from ...base_optimizer import BaseOptimizer
 from .direction import Direction
@@ -134,17 +140,17 @@ class PowellsMethod(BaseOptimizer):
 
             if isinstance(dim_def, tuple):
                 # Continuous: clip to bounds
-                pos_new.append(np.clip(val, dim_def[0], dim_def[1]))
+                pos_new.append(clip(val, dim_def[0], dim_def[1]))
             elif isinstance(dim_def, list):
                 # Categorical: clip to valid indices
-                pos_new.append(int(np.clip(round(val), 0, len(dim_def) - 1)))
-            elif isinstance(dim_def, np.ndarray):
+                pos_new.append(int(clip(round(val), 0, len(dim_def) - 1)))
+            elif isinstance(dim_def, ndarray):
                 # Discrete: clip to valid indices
-                pos_new.append(int(np.clip(round(val), 0, len(dim_def) - 1)))
+                pos_new.append(int(clip(round(val), 0, len(dim_def) - 1)))
             else:
                 pos_new.append(val)
 
-        return np.array(pos_new)
+        return array(pos_new)
 
     def _on_finish_initialization(self):
         """Set up the direction matrix and state after initialization phase."""
@@ -220,18 +226,18 @@ class PowellsMethod(BaseOptimizer):
                 self.converged = True
                 return
 
-        displacement = np.array(self._pos_current) - np.array(self.cycle_start_pos)
-        displacement_norm = np.linalg.norm(displacement)
+        displacement = array(self._pos_current) - array(self.cycle_start_pos)
+        displacement_norm = linalg.norm(displacement)
 
         if displacement_norm > 1e-10 and self.direction_improvements:
-            max_improve_idx = np.argmax(self.direction_improvements)
+            max_improve_idx = argmax(self.direction_improvements)
             try:
                 new_direction = Direction(displacement)
                 self.directions[max_improve_idx] = new_direction
             except ValueError:
                 pass  # Displacement too small, keep old direction
 
-    def _generate_position(self) -> np.ndarray:
+    def _generate_position(self) -> ndarray:
         """Generate next position via Powell's line search.
 
         Powell's method performs line searches along conjugate directions.
@@ -298,7 +304,7 @@ class PowellsMethod(BaseOptimizer):
 
         return pos
 
-    def _iterate_continuous_batch(self) -> np.ndarray:
+    def _iterate_continuous_batch(self) -> ndarray:
         """Not used - Powell's method overrides _generate_position().
 
         Powell's method uses line searches along conjugate directions,
@@ -314,14 +320,14 @@ class PowellsMethod(BaseOptimizer):
             "See _generate_position() for the algorithm implementation."
         )
 
-    def _iterate_categorical_batch(self) -> np.ndarray:
+    def _iterate_categorical_batch(self) -> ndarray:
         """Not used - Powell's method overrides _generate_position()."""
         raise NotImplementedError(
             "Powell's method uses line search, not batch iteration. "
             "See _generate_position() for the algorithm implementation."
         )
 
-    def _iterate_discrete_batch(self) -> np.ndarray:
+    def _iterate_discrete_batch(self) -> ndarray:
         """Not used - Powell's method overrides _generate_position()."""
         raise NotImplementedError(
             "Powell's method uses line search, not batch iteration. "

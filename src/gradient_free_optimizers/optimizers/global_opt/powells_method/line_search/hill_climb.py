@@ -4,7 +4,13 @@
 
 """Hill climbing line search strategy for Powell's method."""
 
-import numpy as np
+from __future__ import annotations
+
+from gradient_free_optimizers._array_backend import (
+    argmax,
+    array,
+    random,
+)
 
 from .base import LineSearch
 
@@ -50,7 +56,7 @@ class HillClimbLineSearch(LineSearch):
         self.evaluated_scores: list[float] = []
 
         # RNG for reproducibility
-        self._rng = np.random.default_rng()
+        self._rng = random.default_rng()
 
     def start(
         self,
@@ -59,13 +65,13 @@ class HillClimbLineSearch(LineSearch):
         max_iters: int,
     ) -> None:
         """Initialize hill climb search along the direction."""
-        self.origin = np.array(origin).copy()
-        self.direction = np.array(direction).copy()
+        self.origin = array(origin).copy()
+        self.direction = array(direction).copy()
         self.max_iters = max_iters
         self.current_step = 0
         self.active = True
 
-        self.current_pos = np.array(origin).copy()
+        self.current_pos = array(origin).copy()
         self.current_score = None
 
         self.evaluated_positions = []
@@ -102,12 +108,12 @@ class HillClimbLineSearch(LineSearch):
 
     def update(self, position, score: float) -> None:
         """Update current position if new score is better."""
-        self.evaluated_positions.append(np.array(position).copy())
+        self.evaluated_positions.append(array(position).copy())
         self.evaluated_scores.append(score)
 
         # Hill climbing: move to new position if it's better
         if self.current_score is None or score > self.current_score:
-            self.current_pos = np.array(position).copy()
+            self.current_pos = array(position).copy()
             self.current_score = score
 
     def get_best_result(self) -> tuple:
@@ -115,7 +121,7 @@ class HillClimbLineSearch(LineSearch):
         if not self.evaluated_scores:
             return None, None
 
-        best_idx = np.argmax(self.evaluated_scores)
+        best_idx = argmax(self.evaluated_scores)
         return self.evaluated_positions[best_idx], self.evaluated_scores[best_idx]
 
     def is_active(self) -> bool:

@@ -12,7 +12,11 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Literal
 
-import numpy as np
+from gradient_free_optimizers._array_backend import (
+    array,
+    linalg,
+    ndarray,
+)
 
 from ..smb_opt import SMBO
 from ..smb_opt._normalize import normalize
@@ -137,8 +141,8 @@ class EnsembleOptimizer(SMBO):
 
     def _training(self) -> None:
         """Train the ensemble of surrogate models."""
-        X_sample = np.array(self.X_sample)
-        Y_sample = np.array(self.Y_sample)
+        X_sample = array(self.X_sample)
+        Y_sample = array(self.Y_sample)
 
         if len(Y_sample) == 0:
             return
@@ -147,7 +151,7 @@ class EnsembleOptimizer(SMBO):
         Y_sample = normalize(Y_sample).reshape(-1, 1)
         self.regr.fit(X_sample, Y_sample)
 
-    def _expected_improvement(self) -> np.ndarray:
+    def _expected_improvement(self) -> ndarray:
         """Compute expected improvement for candidate positions."""
         self.pos_comb = self._sampling(self.all_pos_comb)
 
@@ -177,7 +181,7 @@ class EnsembleOptimizer(SMBO):
             while len(positions) < n:
                 positions.append(self._move_random())
             return [self._clip_position(pos) for pos in positions]
-        except (ValueError, np.linalg.LinAlgError):
+        except (ValueError, linalg.LinAlgError):
             return [self._clip_position(self._move_random()) for _ in range(n)]
 
     def _evaluate_batch(self, positions, scores):

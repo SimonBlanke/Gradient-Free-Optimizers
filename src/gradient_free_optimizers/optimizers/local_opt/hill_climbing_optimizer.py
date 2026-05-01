@@ -4,7 +4,16 @@
 
 """Hill Climbing Optimizer with dimension-type-aware iteration."""
 
-import numpy as np
+from __future__ import annotations
+
+from gradient_free_optimizers._array_backend import (
+    argmax,
+    floor,
+    maximum,
+    ndarray,
+    random,
+    where,
+)
 
 from ..base_optimizer import BaseOptimizer
 
@@ -86,7 +95,7 @@ class HillClimbingOptimizer(BaseOptimizer):
 
         # Initialize RNG for reproducibility using the actual seed
         # (self.random_seed is set by CoreOptimizer and accounts for nth_process)
-        self._rng = np.random.default_rng(self.random_seed)
+        self._rng = random.default_rng(self.random_seed)
 
         # Validate distribution parameter
         if distribution not in self._DISTRIBUTIONS:
@@ -95,7 +104,7 @@ class HillClimbingOptimizer(BaseOptimizer):
                 f"Choose from: {list(self._DISTRIBUTIONS.keys())}"
             )
 
-    def _iterate_continuous_batch(self) -> np.ndarray:
+    def _iterate_continuous_batch(self) -> ndarray:
         """Generate new continuous values using Gaussian noise scaled by range.
 
         Accesses state via:
@@ -126,7 +135,7 @@ class HillClimbingOptimizer(BaseOptimizer):
 
         return current + noise
 
-    def _iterate_categorical_batch(self) -> np.ndarray:
+    def _iterate_categorical_batch(self) -> ndarray:
         """Generate new categorical values using probabilistic switching.
 
         Accesses state via:
@@ -152,12 +161,12 @@ class HillClimbingOptimizer(BaseOptimizer):
 
         # Generate random categories for switching dimensions
         # Use uniform distribution over [0, n_categories)
-        random_cats = np.floor(self._rng.random(n) * n_categories).astype(np.int64)
+        random_cats = floor(self._rng.random(n) * n_categories).astype(int)
 
         # Apply switch: use random if switching, otherwise keep current
-        return np.where(switch_mask, random_cats, current.astype(np.int64))
+        return where(switch_mask, random_cats, current.astype(int))
 
-    def _iterate_discrete_batch(self) -> np.ndarray:
+    def _iterate_discrete_batch(self) -> ndarray:
         """Generate new discrete values using Gaussian noise.
 
         Accesses state via:
@@ -181,7 +190,7 @@ class HillClimbingOptimizer(BaseOptimizer):
         sigmas = max_positions * self.epsilon
 
         # Prevent zero sigma for single-value dimensions
-        sigmas = np.maximum(sigmas, 1e-10)
+        sigmas = maximum(sigmas, 1e-10)
 
         # Generate noise using the configured distribution
         noise_fn = self._DISTRIBUTIONS[self.distribution]
@@ -213,7 +222,7 @@ class HillClimbingOptimizer(BaseOptimizer):
                 return
 
             # Find the best among recent samples
-            best_idx = np.argmax(recent_scores)
+            best_idx = argmax(recent_scores)
             best_score = recent_scores[best_idx]
             best_pos = recent_positions[best_idx]
 

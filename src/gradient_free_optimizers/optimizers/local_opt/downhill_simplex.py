@@ -7,14 +7,17 @@
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
-import numpy as np
+from gradient_free_optimizers._array_backend import (
+    array,
+    clip,
+    empty,
+    ndarray,
+    random,
+)
 
 from ..base_optimizer import BaseOptimizer
-
-if TYPE_CHECKING:
-    pass
 
 
 def _arrays_equal(a: Any, b: Any) -> bool:
@@ -33,7 +36,7 @@ def _sort_list_idx(list_: list[float]) -> list[int]:
     return [i for i, _ in indexed]
 
 
-def _centroid(array_list: list) -> np.ndarray:
+def _centroid(array_list: list) -> ndarray:
     """Calculate centroid of a list of arrays."""
     n_dims = len(array_list[0])
     result = []
@@ -43,7 +46,7 @@ def _centroid(array_list: list) -> np.ndarray:
         center_dim_mean = sum(center_dim_pos) / len(center_dim_pos)
         result.append(center_dim_mean)
 
-    return np.array(result)
+    return array(result)
 
 
 class DownhillSimplexOptimizer(BaseOptimizer):
@@ -162,9 +165,9 @@ class DownhillSimplexOptimizer(BaseOptimizer):
         self._next_position_computed = False
 
         # RNG for random fallback
-        self._rng = np.random.default_rng(self.random_seed)
+        self._rng = random.default_rng(self.random_seed)
 
-    def _clip_to_bounds(self, pos: np.ndarray) -> np.ndarray:
+    def _clip_to_bounds(self, pos: ndarray) -> ndarray:
         """Clip position to valid bounds with proper types.
 
         Handles continuous, categorical, and discrete dimensions.
@@ -178,13 +181,13 @@ class DownhillSimplexOptimizer(BaseOptimizer):
 
             if isinstance(dim_def, tuple):
                 # Continuous: clip to bounds
-                pos_clipped[i] = np.clip(val, dim_def[0], dim_def[1])
+                pos_clipped[i] = clip(val, dim_def[0], dim_def[1])
             elif isinstance(dim_def, list):
                 # Categorical: clip to valid indices
-                pos_clipped[i] = int(np.clip(round(val), 0, len(dim_def) - 1))
-            elif isinstance(dim_def, np.ndarray):
+                pos_clipped[i] = int(clip(round(val), 0, len(dim_def) - 1))
+            elif isinstance(dim_def, ndarray):
                 # Discrete: clip to valid indices
-                pos_clipped[i] = int(np.clip(round(val), 0, len(dim_def) - 1))
+                pos_clipped[i] = int(clip(round(val), 0, len(dim_def) - 1))
 
         return pos_clipped
 
@@ -262,9 +265,7 @@ class DownhillSimplexOptimizer(BaseOptimizer):
         elif self.simplex_step == 4:
             # Step 4: Shrink
             pos = self.simplex_pos[self.compress_idx]
-            pos = np.array(pos) + self.sigma * (
-                np.array(self.simplex_pos[0]) - np.array(pos)
-            )
+            pos = array(pos) + self.sigma * (array(self.simplex_pos[0]) - array(pos))
             self._next_position = self._clip_to_bounds(pos)
 
         else:
@@ -273,10 +274,10 @@ class DownhillSimplexOptimizer(BaseOptimizer):
 
         self._next_position_computed = True
 
-    def _generate_random_position(self) -> np.ndarray:
+    def _generate_random_position(self) -> ndarray:
         """Generate a random position within bounds."""
         n_dims = len(self.search_space)
-        pos = np.empty(n_dims)
+        pos = empty(n_dims)
         dim_names = list(self.search_space.keys())
 
         for i, name in enumerate(dim_names):
@@ -288,13 +289,13 @@ class DownhillSimplexOptimizer(BaseOptimizer):
             elif isinstance(dim_def, list):
                 # Categorical
                 pos[i] = self._rng.integers(0, len(dim_def))
-            elif isinstance(dim_def, np.ndarray):
+            elif isinstance(dim_def, ndarray):
                 # Discrete
                 pos[i] = self._rng.integers(0, len(dim_def))
 
         return pos
 
-    def _iterate_continuous_batch(self) -> np.ndarray:
+    def _iterate_continuous_batch(self) -> ndarray:
         """Extract continuous components from pre-computed simplex position.
 
         The simplex position is computed ONCE when this method is first called.
@@ -302,12 +303,12 @@ class DownhillSimplexOptimizer(BaseOptimizer):
         self._compute_next_simplex_position()
         return self._next_position[self._continuous_mask]
 
-    def _iterate_categorical_batch(self) -> np.ndarray:
+    def _iterate_categorical_batch(self) -> ndarray:
         """Extract categorical components from pre-computed simplex position."""
         self._compute_next_simplex_position()
         return self._next_position[self._categorical_mask]
 
-    def _iterate_discrete_batch(self) -> np.ndarray:
+    def _iterate_discrete_batch(self) -> ndarray:
         """Extract discrete components from pre-computed simplex position."""
         self._compute_next_simplex_position()
         return self._next_position[self._discrete_mask]
@@ -342,10 +343,10 @@ class DownhillSimplexOptimizer(BaseOptimizer):
             else:
                 # Reflection is poor: prepare for contraction
                 if self.simplex_scores[-1] > self.r_score:
-                    self.h_pos = np.array(self.simplex_pos[-1])
+                    self.h_pos = array(self.simplex_pos[-1])
                     self.h_score = self.simplex_scores[-1]
                 else:
-                    self.h_pos = np.array(self.r_pos)
+                    self.h_pos = array(self.r_pos)
                     self.h_score = self.r_score
 
                 self.simplex_step = 3
