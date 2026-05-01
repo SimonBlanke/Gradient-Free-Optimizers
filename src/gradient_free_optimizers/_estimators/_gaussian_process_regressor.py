@@ -121,11 +121,10 @@ class GaussianProcessRegressor:
     def _add_diagonal(self, K, value):
         """Add value to diagonal of matrix K."""
         n = len(K)
-        # Convert to list of lists for manipulation
-        if hasattr(K, "_data"):
-            result = [list(row) for row in K._data]
-        elif hasattr(K, "tolist"):
+        if hasattr(K, "tolist"):
             result = K.tolist()
+        elif hasattr(K, "_data"):
+            result = [list(row) for row in K]
         else:
             result = [list(row) for row in K]
 
@@ -276,7 +275,9 @@ class GaussianProcessRegressor:
 
     def _sum_squared_cols(self, v):
         """Sum of squared values along columns (axis=0)."""
-        if hasattr(v, "_data"):
+        if hasattr(v, "tolist"):
+            data = v.tolist()
+        elif hasattr(v, "_data"):
             data = v._data
         else:
             data = list(v)
