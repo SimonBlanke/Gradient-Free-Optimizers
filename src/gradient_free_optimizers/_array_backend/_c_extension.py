@@ -20,7 +20,7 @@ _frombytes = _array_mod.array.frombytes
 def _c_result(raw_bytes, shape):
     data = _array_mod.array(_DOUBLE)
     _frombytes(data, raw_bytes)
-    return GFOArray._from_raw(data, shape)
+    return _CGFOArray._from_raw(data, shape)
 
 
 class _CGFOArray(GFOArray):
@@ -31,6 +31,7 @@ class _CGFOArray(GFOArray):
             isinstance(other, GFOArray)
             and isinstance(self._data, _array_mod.array)
             and isinstance(other._data, _array_mod.array)
+            and len(self._data) == len(other._data)
         ):
             return _c_result(_fast_ops.vec_add(self._data, other._data), self._shape)
         if isinstance(other, int | float) and isinstance(self._data, _array_mod.array):
@@ -48,6 +49,7 @@ class _CGFOArray(GFOArray):
             isinstance(other, GFOArray)
             and isinstance(self._data, _array_mod.array)
             and isinstance(other._data, _array_mod.array)
+            and len(self._data) == len(other._data)
         ):
             return _c_result(_fast_ops.vec_sub(self._data, other._data), self._shape)
         if isinstance(other, int | float) and isinstance(self._data, _array_mod.array):
@@ -62,6 +64,7 @@ class _CGFOArray(GFOArray):
             isinstance(other, GFOArray)
             and isinstance(self._data, _array_mod.array)
             and isinstance(other._data, _array_mod.array)
+            and len(self._data) == len(other._data)
         ):
             return _c_result(_fast_ops.vec_mul(self._data, other._data), self._shape)
         if isinstance(other, int | float) and isinstance(self._data, _array_mod.array):
