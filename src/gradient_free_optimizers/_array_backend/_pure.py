@@ -305,6 +305,9 @@ class GFOArray:
 
         is_bool = isinstance(idx_list[0], bool)
 
+        if not is_bool and isinstance(idx_list[0], float):
+            idx_list = [int(i) for i in idx_list]
+
         if self._ndim == 1:
             if is_bool:
                 result = [self._data[i] for i, b in enumerate(idx_list) if b]
@@ -407,17 +410,30 @@ class GFOArray:
         ]
         return str(rows)
 
+    def _broadcast_other(self, other):
+        """Tile 1D other._data to match self's 2D flat layout."""
+        if self._ndim == 2 and other._ndim == 1:
+            ncols = self._shape[1]
+            nrows = self._shape[0]
+            if len(other._data) == ncols:
+                od = other._data
+                if isinstance(od, _array_mod.array):
+                    return od * nrows
+                return od * nrows
+        return other._data
+
     def _binop(self, other, op):
         if isinstance(other, GFOArray):
+            other_data = self._broadcast_other(other)
             if isinstance(self._data, _array_mod.array) and isinstance(
-                other._data, _array_mod.array
+                other_data, _array_mod.array
             ):
                 return GFOArray._from_raw(
-                    _array_mod.array(_DOUBLE, map(op, self._data, other._data)),
+                    _array_mod.array(_DOUBLE, map(op, self._data, other_data)),
                     self._shape,
                 )
             return GFOArray._from_raw(
-                list(map(op, self._data, other._data)), self._shape
+                list(map(op, self._data, other_data)), self._shape
             )
         if isinstance(other, int | float):
             if isinstance(self._data, _array_mod.array):
@@ -504,6 +520,20 @@ class GFOArray:
 
     def __invert__(self):
         return GFOArray._from_raw([not x for x in self._data], self._shape)
+
+    def __and__(self, other):
+        if isinstance(other, GFOArray):
+            return GFOArray._from_raw(
+                [a and b for a, b in zip(self._data, other._data)], self._shape
+            )
+        return GFOArray._from_raw([a and other for a in self._data], self._shape)
+
+    def __or__(self, other):
+        if isinstance(other, GFOArray):
+            return GFOArray._from_raw(
+                [a or b for a, b in zip(self._data, other._data)], self._shape
+            )
+        return GFOArray._from_raw([a or other for a in self._data], self._shape)
 
     def __matmul__(self, other):
         if not isinstance(other, GFOArray):
@@ -693,12 +723,32 @@ class GFOArray:
     def min(self, axis=None):
         if axis is None:
             return _min(self._data)
-        raise NotImplementedError("Axis-aware min not implemented")
+        if self._ndim != 2:
+            raise NotImplementedError("Axis-aware min requires 2D array")
+        nrows, ncols = self._shape
+        data = self._data
+        if axis == 1:
+            result = [_min(data[r * ncols : (r + 1) * ncols]) for r in range(nrows)]
+        else:
+            result = [
+                _min(data[r * ncols + c] for r in range(nrows)) for c in range(ncols)
+            ]
+        return GFOArray._from_raw(_array_mod.array(_DOUBLE, result), (len(result),))
 
     def max(self, axis=None):
         if axis is None:
             return _max(self._data)
-        raise NotImplementedError("Axis-aware max not implemented")
+        if self._ndim != 2:
+            raise NotImplementedError("Axis-aware max requires 2D array")
+        nrows, ncols = self._shape
+        data = self._data
+        if axis == 1:
+            result = [_max(data[r * ncols : (r + 1) * ncols]) for r in range(nrows)]
+        else:
+            result = [
+                _max(data[r * ncols + c] for r in range(nrows)) for c in range(ncols)
+            ]
+        return GFOArray._from_raw(_array_mod.array(_DOUBLE, result), (len(result),))
 
     def argmax(self, axis=None):
         if axis is None:
@@ -723,6 +773,11 @@ class GFOArray:
                     best_i = i
             return best_i
         raise NotImplementedError("Axis-aware argmin not implemented")
+
+    def argsort(self, axis=-1):
+        data = self._data
+        indices = sorted(range(len(data)), key=data.__getitem__)
+        return GFOArray._from_raw(indices, (len(indices),))
 
     def any(self):
         return _any(self._data)
@@ -1896,13 +1951,26 @@ class _Generator:
         else:
             high_val = high
         rng = self._rng
+        low_arr = isinstance(low, GFOArray)
+        high_arr = isinstance(high_val, GFOArray)
+        if low_arr or high_arr:
+            n = len(low) if low_arr else len(high_val)
+            lows = [int(v) for v in low._data] if low_arr else [int(low)] * n
+            highs = (
+                [int(v) for v in high_val._data] if high_arr else [int(high_val)] * n
+            )
+            return GFOArray._from_raw(
+                [float(rng.randint(l, h)) for l, h in zip(lows, highs)], (n,)
+            )
         if size is None:
-            return rng.randint(low, high_val)
+            return rng.randint(int(low), int(high_val))
         n = size if isinstance(size, int) else 1
         if not isinstance(size, int):
             for s in size:
                 n *= s
-        return GFOArray._from_raw([rng.randint(low, high_val) for _ in range(n)], (n,))
+        return GFOArray._from_raw(
+            [rng.randint(int(low), int(high_val)) for _ in range(n)], (n,)
+        )
 
     def choice(self, a, size=None, replace=True, p=None):
         if isinstance(a, int):
@@ -1937,6 +2005,18 @@ class _Generator:
 
     def normal(self, loc=0.0, scale=1.0, size=None):
         rng = self._rng
+        loc_arr = isinstance(loc, GFOArray)
+        scale_arr = isinstance(scale, GFOArray)
+        if loc_arr or scale_arr:
+            n = len(scale) if scale_arr else len(loc)
+            locs = list(loc._data) if loc_arr else [loc] * n
+            scales = list(scale._data) if scale_arr else [scale] * n
+            return GFOArray._from_raw(
+                _array_mod.array(
+                    _DOUBLE, (rng.gauss(l, s) for l, s in zip(locs, scales))
+                ),
+                (n,),
+            )
         if size is None:
             return rng.gauss(loc, scale)
         n = size if isinstance(size, int) else 1
