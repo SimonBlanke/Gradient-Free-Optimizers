@@ -492,6 +492,157 @@ class TestComparison:
 # =============================================================================
 
 
+class TestTriangularExtraction:
+    """Test upper triangle extraction."""
+
+    def test_triu_k0(self):
+        mat = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+        np_result = np_backend.triu(np_backend.array(mat), k=0)
+        pure_result = pure_backend.triu(pure_backend.array(mat), k=0)
+        assert to_list(np_result.flatten()) == to_list(pure_result.flatten())
+        assert to_list(pure_result.flatten()) == [1, 2, 3, 0, 5, 6, 0, 0, 9]
+
+    def test_triu_k1(self):
+        mat = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+        np_result = np_backend.triu(np_backend.array(mat), k=1)
+        pure_result = pure_backend.triu(pure_backend.array(mat), k=1)
+        assert to_list(np_result.flatten()) == to_list(pure_result.flatten())
+        assert to_list(pure_result.flatten()) == [0, 2, 3, 0, 0, 6, 0, 0, 0]
+
+    def test_triu_k_neg1(self):
+        mat = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
+        np_result = np_backend.triu(np_backend.array(mat), k=-1)
+        pure_result = pure_backend.triu(pure_backend.array(mat), k=-1)
+        assert to_list(np_result.flatten()) == to_list(pure_result.flatten())
+        assert to_list(pure_result.flatten()) == [1, 2, 3, 4, 5, 6, 0, 8, 9]
+
+
+class TestInvert:
+    """Test boolean inversion."""
+
+    def test_invert_list(self):
+        bools = [True, False, True, False, True]
+        pure_result = pure_backend.invert(pure_backend.array(bools))
+        assert to_list(pure_result) == [False, True, False, True, False]
+
+    def test_invert_gfoarray(self):
+        arr = pure_backend.array([True, False, False, True])
+        result = pure_backend.invert(arr)
+        assert to_list(result) == [False, True, True, False]
+
+
+class TestDefaultRng:
+    """Test Generator factory via default_rng."""
+
+    def test_generator_has_methods(self):
+        rng = pure_backend.random.default_rng(42)
+        assert callable(getattr(rng, "random", None))
+        assert callable(getattr(rng, "standard_normal", None))
+        assert callable(getattr(rng, "uniform", None))
+        assert callable(getattr(rng, "integers", None))
+
+    def test_seeded_determinism(self):
+        rng1 = pure_backend.random.default_rng(123)
+        vals1 = to_list(rng1.random(size=5))
+        rng2 = pure_backend.random.default_rng(123)
+        vals2 = to_list(rng2.random(size=5))
+        assert vals1 == vals2
+
+    def test_array_output_shape(self):
+        rng = pure_backend.random.default_rng(0)
+        result = rng.uniform(0.0, 1.0, size=10)
+        assert len(to_list(result)) == 10
+
+    def test_integers_range(self):
+        rng = pure_backend.random.default_rng(7)
+        result = rng.integers(0, 10, size=50)
+        values = to_list(result)
+        assert all(0 <= v < 10 for v in values)
+
+
+class TestLinAlgError:
+    """Test LinAlgError exception type."""
+
+    def test_is_exception_class(self):
+        assert issubclass(pure_backend.linalg.LinAlgError, Exception)
+        assert issubclass(np_backend.linalg.LinAlgError, Exception)
+
+    def test_can_be_raised_and_caught(self):
+        with pytest.raises(pure_backend.linalg.LinAlgError):
+            raise pure_backend.linalg.LinAlgError("singular matrix")
+
+    def test_can_be_caught_as_exception(self):
+        with pytest.raises(Exception, match="test"):
+            raise np_backend.linalg.LinAlgError("test")
+
+
+class TestLinAlgEigh:
+    """Test eigendecomposition."""
+
+    def test_numpy_backend_returns_eigenvalues_and_vectors(self):
+        mat = np_backend.array([[2.0, 1.0], [1.0, 3.0]])
+        eigenvalues, eigenvectors = np_backend.linalg.eigh(mat)
+        assert len(to_list(eigenvalues)) == 2
+        assert eigenvectors.shape == (2, 2)
+
+    def test_pure_backend_raises(self):
+        mat = pure_backend.array([[2.0, 1.0], [1.0, 3.0]])
+        with pytest.raises(NotImplementedError):
+            pure_backend.linalg.eigh(mat)
+
+
+class TestNdarrayType:
+    """Test ndarray type export."""
+
+    def test_numpy_isinstance(self):
+        import gradient_free_optimizers._array_backend as arr_backend
+
+        arr = arr_backend.array([1, 2, 3])
+        assert isinstance(arr, arr_backend.ndarray)
+
+    def test_pure_isinstance(self):
+        arr = pure_backend.array([1, 2, 3])
+        from gradient_free_optimizers._array_backend._pure import GFOArray
+
+        assert isinstance(arr, GFOArray)
+
+
+class TestBooleanSetitem:
+    """Test boolean indexing with __setitem__."""
+
+    def test_setitem_scalar(self):
+        arr = pure_backend.array([1.0, 2.0, 3.0, 4.0])
+        mask = [True, False, True, False]
+        arr[mask] = 0.0
+        assert to_list(arr) == [0.0, 2.0, 0.0, 4.0]
+
+    def test_setitem_array_values(self):
+        arr = pure_backend.array([1.0, 2.0, 3.0, 4.0])
+        mask = [False, True, False, True]
+        arr[mask] = pure_backend.array([20.0, 40.0])
+        assert to_list(arr) == [1.0, 20.0, 3.0, 40.0]
+
+
+class TestReshapeNegativeOne:
+    """Test reshape with -1 dimension inference."""
+
+    def test_reshape_neg1_first(self):
+        arr = pure_backend.array([1, 2, 3, 4, 5, 6])
+        result = arr.reshape((-1, 2))
+        assert result.shape == (3, 2)
+
+    def test_reshape_neg1_second(self):
+        arr = pure_backend.array([1, 2, 3, 4, 5, 6])
+        result = arr.reshape((2, -1))
+        assert result.shape == (2, 3)
+
+    def test_reshape_neg1_matches_numpy(self):
+        values = list(range(12))
+        np_result = np_backend.array(values).reshape((-1, 3))
+        pure_result = pure_backend.array(values).reshape((-1, 3))
+        assert np_result.shape == pure_result.shape == (4, 3)
+
+
 class TestBackendSelection:
     """Test that backend selection works correctly."""
 

@@ -241,12 +241,64 @@ jobs:
           python -m pytest tests/test_dependencies/test_no_scipy.py -v --tb=short -p no:warnings
 
   # ===========================================================================
+  # STAGE 3c: Dependency Isolation Tests - No numpy (pure Python)
+  # ===========================================================================
+  test-no-numpy:
+    name: Tests (no numpy, pure Python)
+    runs-on: ubuntu-latest
+    needs: api-smoke-tests
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install minimal dependencies (no numpy, no scipy)
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install build pandas pytest tqdm
+
+      - name: Build and install package
+        run: |
+          python -m pip install build
+          python -m build
+          pip install dist/*.whl
+
+      - name: Verify numpy is NOT installed
+        run: |
+          python -c "
+          import sys
+          try:
+              import numpy
+              print('ERROR: numpy is installed but should not be!')
+              sys.exit(1)
+          except ImportError:
+              print('OK: numpy is not installed')
+          "
+
+      - name: Verify array backend uses pure Python
+        run: |
+          python -c "
+          from gradient_free_optimizers._array_backend import _backend_name, HAS_NUMPY
+          assert not HAS_NUMPY, 'HAS_NUMPY should be False'
+          assert _backend_name == 'pure', f'Expected pure backend, got {_backend_name}'
+          print('OK: using pure Python array backend')
+          "
+
+      - name: Run dependency isolation tests
+        run: |
+          python -m pytest tests/test_dependencies/test_no_numpy.py -v --tb=short -p no:warnings
+
+  # ===========================================================================
   # STAGE 4: Coverage Report (only on Ubuntu with full dependencies)
   # ===========================================================================
   coverage:
     name: Coverage Report
     runs-on: ubuntu-latest
-    needs: [test-matrix, test-no-scipy]  # Also depends on: test-no-sklearn (currently disabled)
+    needs: [test-matrix, test-no-scipy, test-no-numpy]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
