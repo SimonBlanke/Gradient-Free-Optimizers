@@ -198,6 +198,16 @@ convention = "numpy"
 # Search module - relaxed docstring rules
 "src/gradient_free_optimizers/search.py" = ["D100", "D101", "D102", "D103"]
 
+[tool.coverage.run]
+source = ["gradient_free_optimizers"]
+relative_files = true
+
+[tool.coverage.paths]
+source = [
+    "src/gradient_free_optimizers",
+    "*/site-packages/gradient_free_optimizers",
+]
+
 [tool.pytest.ini_options]
 markers = [
     "slow: marks tests as slow (deselect with \"-m not slow\")",

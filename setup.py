@@ -31,13 +31,17 @@ class OptionalBuildExt(build_ext):
             )
 
 
-setup(
-    cmdclass={"build_ext": OptionalBuildExt},
-    ext_modules=[
+_ext_modules = []
+if not os.environ.get("GFO_DISABLE_C_EXTENSION"):
+    _ext_modules.append(
         Extension(
             "gradient_free_optimizers._array_backend._fast_ops",
             sources=[_c_source],
             extra_compile_args=["-O2"],
         ),
-    ],
+    )
+
+setup(
+    cmdclass={"build_ext": OptionalBuildExt},
+    ext_modules=_ext_modules,
 )

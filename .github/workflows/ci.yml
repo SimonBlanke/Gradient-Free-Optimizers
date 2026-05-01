@@ -90,9 +90,23 @@ jobs:
           make install
           make install-test-requirements
 
+      - name: Reinstall in editable mode for coverage
+        run: pip install -e .
+
       - name: Run API smoke tests
-        run: |
+        run: >-
           python -m pytest tests/test_api/ -v --tb=short -p no:warnings
+          --cov=gradient_free_optimizers --cov-report=
+
+      - name: Rename coverage data
+        run: mv .coverage .coverage.api-smoke
+
+      - name: Upload coverage data
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-api-smoke
+          path: .coverage.api-smoke
+          include-hidden-files: true
 
   # ===========================================================================
   # STAGE 3a: Main Tests - OS Matrix
@@ -148,9 +162,26 @@ jobs:
             python -m pip install "numpy>=2.0,<3.0" "pandas>=2.0,<3.0"
           fi
 
+      - name: Reinstall in editable mode for coverage
+        if: matrix.python-version == '3.11' && matrix.os == 'ubuntu-latest' && matrix.numpy-version == '2'
+        run: pip install -e .
+
       - name: Run main tests
-        run: |
+        run: >-
           python -m pytest tests/test_main/ -v --tb=short -p no:warnings
+          ${{ matrix.python-version == '3.11' && matrix.os == 'ubuntu-latest' && matrix.numpy-version == '2' && '--cov=gradient_free_optimizers --cov-report=' || '' }}
+
+      - name: Rename coverage data
+        if: matrix.python-version == '3.11' && matrix.os == 'ubuntu-latest' && matrix.numpy-version == '2'
+        run: mv .coverage .coverage.test-matrix
+
+      - name: Upload coverage data
+        if: matrix.python-version == '3.11' && matrix.os == 'ubuntu-latest' && matrix.numpy-version == '2'
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-test-matrix
+          path: .coverage.test-matrix
+          include-hidden-files: true
 
   # ===========================================================================
   # STAGE 3b: Dependency Isolation Tests - No sklearn
@@ -241,10 +272,10 @@ jobs:
           python -m pytest tests/test_dependencies/test_no_scipy.py -v --tb=short -p no:warnings
 
   # ===========================================================================
-  # STAGE 3c: Dependency Isolation Tests - No numpy (pure Python)
+  # STAGE 3c: Pure Python Backend (no numpy, no scipy, no C extension)
   # ===========================================================================
-  test-no-numpy:
-    name: Tests (no numpy, pure Python)
+  test-pure-python:
+    name: Backend (pure Python)
     runs-on: ubuntu-latest
     needs: api-smoke-tests
     steps:
@@ -256,56 +287,60 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install minimal dependencies (no numpy, no scipy)
+      - name: Build and install WITHOUT C extension
+        env:
+          GFO_DISABLE_C_EXTENSION: "1"
         run: |
           python -m pip install --upgrade pip
-          python -m pip install build pytest tqdm
-
-      - name: Build and install package
-        run: |
-          python -m pip install build
+          python -m pip install build pytest tqdm setuptools
           python -m build
           pip install dist/*.whl
+          pip uninstall numpy pandas scipy -y 2>/dev/null || true
 
-      - name: Uninstall numpy and pandas (test pure Python mode)
-        run: |
-          pip uninstall numpy pandas -y
-
-      - name: Verify numpy and pandas are NOT installed
+      - name: Verify pure Python environment
         run: |
           python -c "
           import sys
           errors = []
-          for mod in ('numpy', 'pandas'):
+
+          for mod in ('numpy', 'scipy'):
               try:
                   __import__(mod)
-                  errors.append(f'{mod} is installed but should not be')
+                  errors.append(f'{mod} is importable but should not be')
               except ImportError:
-                  print(f'OK: {mod} is not installed')
+                  print(f'OK: {mod} not installed')
+
+          from gradient_free_optimizers._array_backend import (
+              HAS_NUMPY, HAS_C_EXTENSION, _backend_name, array,
+          )
+          from gradient_free_optimizers._array_backend._pure import GFOArray
+
+          if HAS_NUMPY:
+              errors.append('HAS_NUMPY is True')
+          if HAS_C_EXTENSION:
+              errors.append('HAS_C_EXTENSION is True')
+          if _backend_name != 'pure':
+              errors.append(f'_backend_name is {_backend_name!r}, expected pure')
+          a = array([1.0, 2.0])
+          if type(a) is not GFOArray:
+              errors.append(f'array() returned {type(a).__name__}, expected GFOArray')
+
           if errors:
               for e in errors:
-                  print(f'ERROR: {e}')
+                  print(f'FAIL: {e}')
               sys.exit(1)
+          print('OK: pure Python backend verified')
           "
 
-      - name: Verify array backend does not use numpy
+      - name: Run backend tests (unit + integration + backend verification)
         run: |
-          python -c "
-          from gradient_free_optimizers._array_backend import _backend_name, HAS_NUMPY
-          assert not HAS_NUMPY, 'HAS_NUMPY should be False'
-          assert _backend_name in ('pure', 'c_extension'), f'Unexpected backend: {_backend_name}'
-          print(f'OK: using {_backend_name} array backend (no numpy)')
-          "
-
-      - name: Run dependency isolation tests
-        run: |
-          python -m pytest tests/test_dependencies/test_no_numpy.py -v --tb=short -p no:warnings
+          python -m pytest tests/test_dependencies/test_backend_pure.py -v --tb=short -p no:warnings
 
   # ===========================================================================
-  # STAGE 3d: C Extension Tests (no numpy, with compiled C backend)
+  # STAGE 3d: C Extension Backend (no numpy, no scipy, with compiled C)
   # ===========================================================================
   test-c-extension:
-    name: Tests (C extension, no numpy)
+    name: Backend (C extension)
     runs-on: ubuntu-latest
     needs: api-smoke-tests
     steps:
@@ -317,38 +352,56 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install build dependencies
+      - name: Build and install WITH C extension
         run: |
           python -m pip install --upgrade pip
-          python -m pip install build pandas pytest tqdm setuptools
-
-      - name: Build and install package (with C extension)
-        run: |
-          python -m pip install build
+          python -m pip install build pytest tqdm setuptools
           python -m build
           pip install dist/*.whl
+          pip uninstall numpy pandas scipy -y 2>/dev/null || true
 
-      - name: Uninstall numpy (keep C extension)
-        run: |
-          pip uninstall numpy -y || true
-
-      - name: Verify C extension is active
+      - name: Verify C extension environment
         run: |
           python -c "
-          from gradient_free_optimizers._array_backend import _backend_name, HAS_NUMPY, HAS_C_EXTENSION
-          assert not HAS_NUMPY, 'numpy should not be installed'
-          assert HAS_C_EXTENSION, 'C extension should be available'
-          assert _backend_name == 'c_extension', f'Expected c_extension backend, got {_backend_name}'
-          print('OK: using C extension array backend')
+          import sys
+          errors = []
+
+          for mod in ('numpy', 'scipy'):
+              try:
+                  __import__(mod)
+                  errors.append(f'{mod} is importable but should not be')
+              except ImportError:
+                  print(f'OK: {mod} not installed')
+
+          from gradient_free_optimizers._array_backend import (
+              HAS_NUMPY, HAS_C_EXTENSION, _backend_name, array,
+          )
+          from gradient_free_optimizers._array_backend._c_extension import _CGFOArray
+
+          if HAS_NUMPY:
+              errors.append('HAS_NUMPY is True')
+          if not HAS_C_EXTENSION:
+              errors.append('HAS_C_EXTENSION is False (C extension not compiled)')
+          if _backend_name != 'c_extension':
+              errors.append(f'_backend_name is {_backend_name!r}, expected c_extension')
+          a = array([1.0, 2.0])
+          if type(a) is not _CGFOArray:
+              errors.append(f'array() returned {type(a).__name__}, expected _CGFOArray')
+
+          if errors:
+              for e in errors:
+                  print(f'FAIL: {e}')
+              sys.exit(1)
+          print('OK: C extension backend verified')
           "
 
       - name: Run C extension unit tests
         run: |
           python -m pytest tests/test_internal/test_array_backend/test_c_extension.py -v --tb=short -p no:warnings
 
-      - name: Run dependency isolation tests
+      - name: Run backend tests (unit + integration + backend verification)
         run: |
-          python -m pytest tests/test_dependencies/test_no_numpy.py -v --tb=short -p no:warnings
+          python -m pytest tests/test_dependencies/test_backend_c_extension.py -v --tb=short -p no:warnings
 
   # ===========================================================================
   # STAGE 4: Coverage Report (only on Ubuntu with full dependencies)
@@ -356,7 +409,7 @@ jobs:
   coverage:
     name: Coverage Report
     runs-on: ubuntu-latest
-    needs: [test-matrix, test-no-scipy, test-no-numpy, test-c-extension]
+    needs: [test-matrix, test-no-scipy, test-pure-python, test-c-extension]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -366,20 +419,20 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install build
-          make install
-          make install-test-requirements
+      - name: Install coverage
+        run: pip install "coverage[toml]"
 
-      - name: Run tests with coverage
+      - name: Download all coverage data
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-*
+          merge-multiple: true
+
+      - name: Combine coverage data
         run: |
-          python -m pytest tests/test_main/ tests/test_api/ \
-            --cov=gradient_free_optimizers \
-            --cov-report=term-missing \
-            --cov-report=xml \
-            -p no:warnings
+          coverage combine
+          coverage report --show-missing
+          coverage xml
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
