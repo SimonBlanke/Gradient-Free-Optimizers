@@ -122,6 +122,8 @@ __all__ = [
     "dot",
     "matmul",
     "outer",
+    "triu",
+    "invert",
     "linalg",
     # Random number generation
     "random",

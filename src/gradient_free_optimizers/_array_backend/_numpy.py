@@ -100,16 +100,20 @@ split = np.split
 dot = np.dot
 matmul = np.matmul
 outer = np.outer
+triu = np.triu
+invert = np.invert
 
 
 class linalg:
     """Linear algebra namespace."""
 
+    LinAlgError = np.linalg.LinAlgError
     solve = staticmethod(np.linalg.solve)
     lstsq = staticmethod(np.linalg.lstsq)
     pinv = staticmethod(np.linalg.pinv)
     inv = staticmethod(np.linalg.inv)
     eigvalsh = staticmethod(np.linalg.eigvalsh)
+    eigh = staticmethod(np.linalg.eigh)
     norm = staticmethod(np.linalg.norm)
     det = staticmethod(np.linalg.det)
 
@@ -119,10 +123,12 @@ class random:
     """Random number generation namespace."""
 
     seed = staticmethod(np.random.seed)
+    default_rng = staticmethod(np.random.default_rng)
     randint = staticmethod(np.random.randint)
     choice = staticmethod(np.random.choice)
     uniform = staticmethod(np.random.uniform)
     normal = staticmethod(np.random.normal)
+    random_sample = staticmethod(np.random.random_sample)
     laplace = staticmethod(np.random.laplace)
     logistic = staticmethod(np.random.logistic)
     gumbel = staticmethod(np.random.gumbel)
