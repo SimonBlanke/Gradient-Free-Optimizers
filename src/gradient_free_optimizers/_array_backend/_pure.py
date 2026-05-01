@@ -589,7 +589,11 @@ class GFOArray:
     def ravel(self):
         return self.flatten()
 
-    def reshape(self, shape):
+    def reshape(self, *args):
+        if len(args) == 1:
+            shape = args[0]
+        else:
+            shape = args
         if isinstance(shape, int):
             shape = (shape,)
         neg_idx = None
@@ -719,6 +723,12 @@ class GFOArray:
                     best_i = i
             return best_i
         raise NotImplementedError("Axis-aware argmin not implemented")
+
+    def any(self):
+        return _any(self._data)
+
+    def all(self):
+        return _all(self._data)
 
 
 _eq = operator.eq
