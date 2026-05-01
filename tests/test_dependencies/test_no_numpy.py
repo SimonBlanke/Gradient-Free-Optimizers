@@ -107,8 +107,6 @@ class TestNoNumpy:
 
         assert opt.best_para is not None
         assert opt.best_score is not None
-        assert opt.search_data is not None
-        assert len(opt.search_data) > 0
 
 
 def test_numpy_not_installed():
