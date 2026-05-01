@@ -60,6 +60,14 @@ def norm_cdf(x, loc=0, scale=1):
         z = (x - loc) / scale
         return 0.5 * (1.0 + _numpy_erf(z * _INV_SQRT2))
 
+    if hasattr(x, "_data"):
+        inv_scale = 1.0 / scale
+        shape = x._shape if hasattr(x, "_shape") else (len(x),)
+        result = arr_array(
+            [0.5 * (1.0 + _erf((xi - loc) * inv_scale * _INV_SQRT2)) for xi in x._data]
+        )
+        return result.reshape(shape) if len(shape) > 1 else result
+
     if hasattr(x, "__iter__"):
         inv_scale = 1.0 / scale
         return arr_array(
@@ -76,6 +84,15 @@ def norm_pdf(x, loc=0, scale=1):
         x = np.asarray(x, dtype=float)
         z = (x - loc) / scale
         return np.exp(-0.5 * z * z) / (scale * _SQRT2PI)
+
+    if hasattr(x, "_data"):
+        inv_scale = 1.0 / scale
+        coeff = inv_scale / _SQRT2PI
+        shape = x._shape if hasattr(x, "_shape") else (len(x),)
+        result = arr_array(
+            [coeff * _exp(-0.5 * ((xi - loc) * inv_scale) ** 2) for xi in x._data]
+        )
+        return result.reshape(shape) if len(shape) > 1 else result
 
     if hasattr(x, "__iter__"):
         inv_scale = 1.0 / scale
