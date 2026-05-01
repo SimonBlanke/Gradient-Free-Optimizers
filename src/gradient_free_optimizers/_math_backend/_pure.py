@@ -1,10 +1,8 @@
-"""
-Pure Python math functions - SciPy-compatible interface without dependencies.
+"""Pure Python math backend optimized for performance.
 
-This module provides pure Python implementations of mathematical functions
-used by GFO that would normally come from SciPy. When NumPy is available,
-it is used for performance-critical operations (cdist, logsumexp) but is
-not required for correctness.
+Provides scipy-compatible math functions using only the Python stdlib
+and the GFO array backend. When numpy is available (via the array backend),
+vectorized fast-paths are used for norm_cdf, norm_pdf, cdist, and logsumexp.
 """
 
 import math
@@ -15,18 +13,27 @@ from gradient_free_optimizers._array_backend import array as arr_array
 if HAS_NUMPY:
     import numpy as np
 
+_sqrt = math.sqrt
+_exp = math.exp
+_log = math.log
+_erf = math.erf
+_dist = math.dist
+_fabs = math.fabs
+
+_SQRT2 = _sqrt(2.0)
+_INV_SQRT2 = 1.0 / _SQRT2
+_SQRT2PI = _sqrt(2.0 * math.pi)
+
 
 def _to_nested_lists(m):
-    """Extract a 2D array-like as list-of-lists of Python numbers."""
+    """Convert a 2D array-like to list-of-lists of Python floats."""
     if hasattr(m, "tolist"):
         return m.tolist()
-    if hasattr(m, "_data") and hasattr(m, "ndim") and m.ndim == 2:
-        return [list(row) for row in m._data]
     return [list(row) for row in m]
 
 
 def _to_flat_list(v):
-    """Extract a 1D array-like as a flat Python list."""
+    """Convert a 1D array-like to a flat Python list."""
     if hasattr(v, "tolist"):
         return v.tolist()
     if hasattr(v, "_data"):
@@ -35,18 +42,14 @@ def _to_flat_list(v):
 
 
 def _numpy_erf(x):
-    """Vectorized erf via Abramowitz & Stegun, runs entirely in numpy C."""
+    """Vectorized erf via Abramowitz & Stegun approximation in numpy."""
     sign = np.sign(x)
     x = np.abs(x)
     t = 1.0 / (1.0 + 0.3275911 * x)
     y = 1.0 - (
-        (
-            (((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t
-            + 0.254829592
-        )
-        * t
-        * np.exp(-x * x)
-    )
+        (((1.061405429 * t - 1.453152027) * t + 1.421413741) * t - 0.284496736) * t
+        + 0.254829592
+    ) * t * np.exp(-(x * x))
     return sign * y
 
 
@@ -55,13 +58,16 @@ def norm_cdf(x, loc=0, scale=1):
     if HAS_NUMPY and hasattr(x, "__iter__"):
         x = np.asarray(x, dtype=float)
         z = (x - loc) / scale
-        return 0.5 * (1.0 + _numpy_erf(z / math.sqrt(2)))
+        return 0.5 * (1.0 + _numpy_erf(z * _INV_SQRT2))
 
     if hasattr(x, "__iter__"):
-        return arr_array([norm_cdf(xi, loc, scale) for xi in x])
+        inv_scale = 1.0 / scale
+        return arr_array(
+            [0.5 * (1.0 + _erf((xi - loc) * inv_scale * _INV_SQRT2)) for xi in x]
+        )
 
     z = (x - loc) / scale
-    return 0.5 * (1 + math.erf(z / math.sqrt(2)))
+    return 0.5 * (1.0 + _erf(z * _INV_SQRT2))
 
 
 def norm_pdf(x, loc=0, scale=1):
@@ -69,39 +75,44 @@ def norm_pdf(x, loc=0, scale=1):
     if HAS_NUMPY and hasattr(x, "__iter__"):
         x = np.asarray(x, dtype=float)
         z = (x - loc) / scale
-        return np.exp(-0.5 * z * z) / (scale * math.sqrt(2 * math.pi))
+        return np.exp(-0.5 * z * z) / (scale * _SQRT2PI)
 
     if hasattr(x, "__iter__"):
-        return arr_array([norm_pdf(xi, loc, scale) for xi in x])
+        inv_scale = 1.0 / scale
+        coeff = inv_scale / _SQRT2PI
+        return arr_array(
+            [coeff * _exp(-0.5 * ((xi - loc) * inv_scale) ** 2) for xi in x]
+        )
 
     z = (x - loc) / scale
-    return math.exp(-0.5 * z * z) / (scale * math.sqrt(2 * math.pi))
+    return _exp(-0.5 * z * z) / (scale * _SQRT2PI)
 
 
 def cholesky(a, lower=True):
-    """
-    Cholesky decomposition of a positive-definite matrix.
+    """Cholesky decomposition of a positive-definite matrix.
 
-    Returns lower triangular matrix L such that A = L @ L.T
+    Returns lower triangular L such that A = L @ L.T.
     """
-    a_data = _to_nested_lists(a)
-    n = len(a_data)
+    rows = _to_nested_lists(a)
+    n = len(rows)
     L = [[0.0] * n for _ in range(n)]
 
     for i in range(n):
+        L_i = L[i]
         for j in range(i + 1):
-            s = math.fsum(L[i][k] * L[j][k] for k in range(j))
+            L_j = L[j]
+            s = 0.0
+            for k in range(j):
+                s += L_i[k] * L_j[k]
 
             if i == j:
-                val = a_data[i][i] - s
+                val = rows[i][i] - s
                 if val < 0:
                     raise ValueError("Matrix is not positive definite")
-                L[i][j] = math.sqrt(val)
+                L_i[j] = _sqrt(val)
             else:
-                if L[j][j] == 0:
-                    L[i][j] = 0
-                else:
-                    L[i][j] = (a_data[i][j] - s) / L[j][j]
+                denom = L_j[j]
+                L_i[j] = (rows[i][j] - s) / denom if denom != 0 else 0.0
 
     if not lower:
         L = [[L[j][i] for j in range(n)] for i in range(n)]
@@ -110,11 +121,7 @@ def cholesky(a, lower=True):
 
 
 def cho_solve(c_and_lower, b):
-    """
-    Solve A @ x = b given Cholesky factor L where A = L @ L.T.
-
-    Uses forward then backward substitution.
-    """
+    """Solve A @ x = b given Cholesky factor L where A = L @ L.T."""
     L, lower = c_and_lower
     L_data = _to_nested_lists(L)
     b_data = _to_flat_list(b)
@@ -122,13 +129,18 @@ def cho_solve(c_and_lower, b):
 
     y = [0.0] * n
     for i in range(n):
-        s = math.fsum(L_data[i][j] * y[j] for j in range(i))
-        y[i] = (b_data[i] - s) / L_data[i][i]
+        s = b_data[i]
+        L_i = L_data[i]
+        for j in range(i):
+            s -= L_i[j] * y[j]
+        y[i] = s / L_i[i]
 
     x = [0.0] * n
     for i in range(n - 1, -1, -1):
-        s = math.fsum(L_data[j][i] * x[j] for j in range(i + 1, n))
-        x[i] = (y[i] - s) / L_data[i][i]
+        s = y[i]
+        for j in range(i + 1, n):
+            s -= L_data[j][i] * x[j]
+        x[i] = s / L_data[i][i]
 
     return arr_array(x)
 
@@ -141,27 +153,37 @@ def solve(a, b, assume_a=None):
 
     for i in range(n):
         max_row = i
+        max_val = _fabs(a_data[i][i])
         for k in range(i + 1, n):
-            if abs(a_data[k][i]) > abs(a_data[max_row][i]):
+            v = _fabs(a_data[k][i])
+            if v > max_val:
+                max_val = v
                 max_row = k
 
-        a_data[i], a_data[max_row] = a_data[max_row], a_data[i]
-        b_data[i], b_data[max_row] = b_data[max_row], b_data[i]
+        if max_row != i:
+            a_data[i], a_data[max_row] = a_data[max_row], a_data[i]
+            b_data[i], b_data[max_row] = b_data[max_row], b_data[i]
 
+        pivot = a_data[i][i]
+        if pivot == 0:
+            continue
+
+        a_i = a_data[i]
         for k in range(i + 1, n):
-            if a_data[i][i] != 0:
-                c = a_data[k][i] / a_data[i][i]
-                for j in range(i, n):
-                    a_data[k][j] -= c * a_data[i][j]
-                b_data[k] -= c * b_data[i]
+            a_k = a_data[k]
+            c = a_k[i] / pivot
+            for j in range(i, n):
+                a_k[j] -= c * a_i[j]
+            b_data[k] -= c * b_data[i]
 
     x = [0.0] * n
     for i in range(n - 1, -1, -1):
-        x[i] = b_data[i]
+        s = b_data[i]
+        a_i = a_data[i]
         for j in range(i + 1, n):
-            x[i] -= a_data[i][j] * x[j]
-        if a_data[i][i] != 0:
-            x[i] /= a_data[i][i]
+            s -= a_i[j] * x[j]
+        if a_i[i] != 0:
+            x[i] = s / a_i[i]
 
     return arr_array(x)
 
@@ -174,15 +196,17 @@ def _solve_triangular_1d(a_data, b_list, lower):
     if lower:
         for i in range(n):
             s = b_list[i]
+            a_i = a_data[i]
             for j in range(i):
-                s -= a_data[i][j] * x[j]
-            x[i] = s / a_data[i][i]
+                s -= a_i[j] * x[j]
+            x[i] = s / a_i[i]
     else:
         for i in range(n - 1, -1, -1):
             s = b_list[i]
+            a_i = a_data[i]
             for j in range(i + 1, n):
-                s -= a_data[i][j] * x[j]
-            x[i] = s / a_data[i][i]
+                s -= a_i[j] * x[j]
+            x[i] = s / a_i[i]
 
     return x
 
@@ -195,7 +219,7 @@ def solve_triangular(a, b, lower=True):
         b_raw = b.tolist()
     elif hasattr(b, "_data"):
         if hasattr(b, "ndim") and b.ndim == 2:
-            b_raw = [list(row) for row in b._data]
+            b_raw = b.tolist()
         else:
             b_raw = list(b._data)
     else:
@@ -304,18 +328,19 @@ def cdist(xa, xb, metric="euclidean"):
 
     xa_data = _to_nested_lists(xa)
     xb_data = _to_nested_lists(xb)
-    if xa_data and not isinstance(xa_data[0], list | tuple):
+    if xa_data and not isinstance(xa_data[0], list):
         xa_data = [[v] for v in xa_data]
-    if xb_data and not isinstance(xb_data[0], list | tuple):
+    if xb_data and not isinstance(xb_data[0], list):
         xb_data = [[v] for v in xb_data]
 
     m = len(xa_data)
     n = len(xb_data)
     result = [[0.0] * n for _ in range(m)]
     for i in range(m):
+        row_a = xa_data[i]
+        result_i = result[i]
         for j in range(n):
-            sq_dist = math.fsum((a - b) ** 2 for a, b in zip(xa_data[i], xb_data[j]))
-            result[i][j] = math.sqrt(sq_dist)
+            result_i[j] = _dist(row_a, xb_data[j])
 
     return arr_array(result)
 
@@ -327,7 +352,7 @@ def logsumexp(a, axis=None, keepdims=False):
 
         if axis is None:
             a_max = np.max(a)
-            result = a_max + math.log(np.sum(np.exp(a - a_max)))
+            result = a_max + _log(float(np.sum(np.exp(a - a_max))))
         else:
             a_max = np.max(a, axis=axis, keepdims=True)
             tmp = np.exp(a - a_max)
@@ -344,4 +369,7 @@ def logsumexp(a, axis=None, keepdims=False):
         return float(a)
 
     a_max = max(flat)
-    return a_max + math.log(math.fsum(math.exp(x - a_max) for x in flat))
+    total = 0.0
+    for x in flat:
+        total += _exp(x - a_max)
+    return a_max + _log(total)
