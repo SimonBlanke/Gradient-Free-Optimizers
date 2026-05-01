@@ -14,7 +14,6 @@ from gradient_free_optimizers._array_backend import (
     inf,
     linalg,
     ndarray,
-    prod,
 )
 from gradient_free_optimizers._math_backend import cdist
 
@@ -64,10 +63,9 @@ class LipschitzFunction:
                 x_sample1, y_sample1 = X_sample[i], Y_sample[i]
                 x_sample2, y_sample2 = X_sample[j], Y_sample[j]
 
-                if y_sample1 != y_sample2 and prod(x_sample1 - x_sample2) != 0:
-                    slopes.append(
-                        abs(y_sample1 - y_sample2) / abs(x_sample1 - x_sample2)
-                    )
+                dist = linalg.norm(x_sample1 - x_sample2)
+                if y_sample1 != y_sample2 and dist > 0:
+                    slopes.append(abs(y_sample1 - y_sample2) / dist)
 
         if not slopes:
             return 1
