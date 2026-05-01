@@ -396,6 +396,12 @@ class Search(DistributedSearch, TimesTracker, SearchStatistics):
 
     def _evaluate_position(self, pos: list[int]) -> float:
         t = time.time()
+        self.adapter._metadata = {
+            "optimizer": self.__class__.__name__,
+            "n_iter": self.n_iter,
+            "iteration": self._iter,
+            "phase": "init" if self._iter < self.n_inits_norm else "iter",
+        }
         result, params = self.adapter(pos)
         self.eval_times.append(time.time() - t)
         # Store position instead of params dict for memory efficiency
