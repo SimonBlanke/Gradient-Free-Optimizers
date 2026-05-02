@@ -55,6 +55,7 @@ class KernelDensityEstimator:
     """
 
     def __init__(self, bandwidth: float | None = None, atol: float = 1e-12):
+        self._bandwidth_param = bandwidth
         self.bandwidth = bandwidth
         self.atol = atol
         self._fitted = False
@@ -88,6 +89,9 @@ class KernelDensityEstimator:
             self._fitted = True
             return self
 
+        # Reset to original param so Silverman's rule recomputes on refit
+        self.bandwidth = self._bandwidth_param
+
         if self.bandwidth is None:
             # Silverman's rule (vectorised across dimensions)
             # Compute std for each feature
@@ -107,8 +111,10 @@ class KernelDensityEstimator:
             self.bandwidth = (
                 factor * sigma * self.n_samples ** (-1 / (self.n_features + 4))
             )
-
-        if self.bandwidth <= 0:
+            # Degenerate data (all identical points) produces zero bandwidth
+            if self.bandwidth <= 0:
+                self.bandwidth = 1.0
+        elif self.bandwidth <= 0:
             raise ValueError("bandwidth must be positive")
 
         d = self.n_features

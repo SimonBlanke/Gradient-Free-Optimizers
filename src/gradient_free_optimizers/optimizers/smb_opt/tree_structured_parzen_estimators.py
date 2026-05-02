@@ -115,11 +115,13 @@ class TreeStructuredParzenEstimators(SMBO):
 
         self.gamma_tpe = gamma_tpe
 
-        # Initialize KDE - sklearn and native have different interfaces
         if SKLEARN_AVAILABLE:
-            kde_params: dict[str, Any] = {"kernel": "gaussian", "bandwidth": 1.0}
+            kde_params: dict[str, Any] = {
+                "kernel": "gaussian",
+                "bandwidth": "silverman",
+            }
         else:
-            kde_params = {"bandwidth": 1.0}
+            kde_params: dict[str, Any] = {}
 
         self.kd_best = KernelDensity(**kde_params)
         self.kd_worst = KernelDensity(**kde_params)
