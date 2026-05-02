@@ -169,10 +169,10 @@ class GPR:
 
     def __init__(self):
         if SKLEARN_AVAILABLE:
-            matern = Matern(nu=0.5)
+            matern = Matern(nu=2.5)
             self.gpr = SklearnGPR(
                 kernel=matern + WhiteKernel(),
-                n_restarts_optimizer=0,
+                n_restarts_optimizer=3,
             )
         else:
             self.gpr = NativeGPR(optimize=True)
