@@ -127,16 +127,40 @@ class BayesianOptimizer(SMBO):
         self.regr = self.gpr
         self.xi = xi
 
+        max_pos = self.conv.max_positions
+        n_dims = len(max_pos)
+        offsets = [0.0] * n_dims
+        denoms = [1.0] * n_dims
+
+        cont_idx = 0
+        for i in range(n_dims):
+            if self._continuous_mask is not None and self._continuous_mask[i]:
+                bounds = self._continuous_bounds[cont_idx]
+                offsets[i] = float(bounds[0])
+                range_ = float(bounds[1]) - float(bounds[0])
+                denoms[i] = range_ if range_ > 0 else 1.0
+                cont_idx += 1
+            else:
+                denoms[i] = max(float(max_pos[i]), 1.0)
+
+        self._x_norm_offset = array(offsets)
+        self._x_norm_denom = array(denoms)
+
+    def _normalize_X(self, X):
+        """Normalize positions to [0, 1] per dimension."""
+        return (array(X, dtype=float) - self._x_norm_offset) / self._x_norm_denom
+
     def _expected_improvement(self) -> ndarray:
         """Compute Expected Improvement for all candidate positions."""
         self.pos_comb = self._sampling(self.all_pos_comb)
 
-        acqu_func = ExpectedImprovement(self.regr, self.pos_comb, self.xi)
+        pos_comb_norm = self._normalize_X(self.pos_comb)
+        acqu_func = ExpectedImprovement(self.regr, pos_comb_norm, self.xi)
         return acqu_func.calculate(self.X_sample, self.Y_sample)
 
     def _training(self) -> None:
-        """Fit the Gaussian Process on training data."""
-        X_sample = array(self.X_sample)
+        """Fit the Gaussian Process on normalized training data."""
+        X_sample = self._normalize_X(array(self.X_sample))
         Y_sample = array(self.Y_sample)
 
         Y_sample = normalize(Y_sample).reshape(-1, 1)
