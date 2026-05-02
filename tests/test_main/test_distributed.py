@@ -1,10 +1,12 @@
 """Tests for distributed evaluation backends and search loop integration."""
 
 import concurrent.futures
+import os
 
 import numpy as np
 import pytest
 
+import gradient_free_optimizers._distributed._multiprocessing as _mp_module
 from gradient_free_optimizers import (
     BayesianOptimizer,
     DirectAlgorithm,
@@ -16,8 +18,10 @@ from gradient_free_optimizers import (
 )
 from gradient_free_optimizers._distributed import (
     BaseDistribution,
+    Dask,
     Joblib,
     Multiprocessing,
+    Ray,
 )
 from gradient_free_optimizers._storage import MemoryStorage
 
@@ -666,3 +670,342 @@ class TestSearchDataConsistency:
         assert serial_cols == dist_cols, f"Column mismatch: {serial_cols ^ dist_cols}"
         assert "loss" in dist_cols
         assert "x_abs" in dist_cols
+
+
+def _identity_x(para):
+    """Returns para["x"] directly. Module-level for multiprocessing pickling."""
+    return para["x"]
+
+
+def _identity_x_with_metrics(para):
+    """Returns (score, metrics) tuple. Module-level for multiprocessing pickling."""
+    return para["x"], {"doubled": para["x"] * 2}
+
+
+class TestBaseDistributionValidation:
+    """Unit tests for the BaseDistribution ABC contract."""
+
+    def _make_concrete(self):
+        class Concrete(BaseDistribution):
+            def _distribute(self, func, params_batch):
+                return [func(p) for p in params_batch]
+
+        return Concrete
+
+    def test_n_workers_zero_raises(self):
+        Concrete = self._make_concrete()
+        with pytest.raises(ValueError, match="n_workers must be >= 1"):
+            Concrete(n_workers=0)
+
+    def test_n_workers_negative_raises(self):
+        Concrete = self._make_concrete()
+        with pytest.raises(ValueError, match="n_workers must be >= 1"):
+            Concrete(n_workers=-2)
+
+    def test_n_workers_one_accepted(self):
+        Concrete = self._make_concrete()
+        b = Concrete(n_workers=1)
+        assert b.n_workers == 1
+
+    def test_n_workers_stored(self):
+        Concrete = self._make_concrete()
+        b = Concrete(n_workers=7)
+        assert b.n_workers == 7
+
+    def test_is_async_default_false(self):
+        assert BaseDistribution._is_async is False
+
+    def test_submit_raises_not_implemented(self):
+        Concrete = self._make_concrete()
+        b = Concrete(n_workers=1)
+        with pytest.raises(NotImplementedError, match="Concrete"):
+            b._submit(lambda x: x, {})
+
+    def test_wait_any_raises_not_implemented(self):
+        Concrete = self._make_concrete()
+        b = Concrete(n_workers=1)
+        with pytest.raises(NotImplementedError, match="Concrete"):
+            b._wait_any([])
+
+
+class TestDistributeWrapper:
+    """Tests for the distribute() decorator on BaseDistribution."""
+
+    def _make_backend(self, n_workers=3):
+        class Serial(BaseDistribution):
+            def _distribute(self, func, params_batch):
+                return [func(p) for p in params_batch]
+
+        return Serial(n_workers=n_workers)
+
+    def test_gfo_distributed_flag(self):
+        wrapped = self._make_backend().distribute(objective)
+        assert wrapped._gfo_distributed is True
+
+    def test_gfo_batch_size_matches_n_workers(self):
+        wrapped = self._make_backend(n_workers=5).distribute(objective)
+        assert wrapped._gfo_batch_size == 5
+
+    def test_gfo_original_func_is_original(self):
+        wrapped = self._make_backend().distribute(objective)
+        assert wrapped._gfo_original_func is objective
+
+    def test_gfo_backend_is_backend_instance(self):
+        backend = self._make_backend()
+        wrapped = backend.distribute(objective)
+        assert wrapped._gfo_backend is backend
+
+    def test_preserves_function_name(self):
+        wrapped = self._make_backend().distribute(objective)
+        assert wrapped.__name__ == "objective"
+
+    def test_preserves_lambda_name(self):
+        fn = lambda para: para["x"]  # noqa: E731
+        wrapped = self._make_backend().distribute(fn)
+        assert wrapped.__name__ == "<lambda>"
+
+    def test_wrapper_delegates_to_distribute(self):
+        wrapped = self._make_backend().distribute(_identity_x)
+        results = wrapped([{"x": 10}, {"x": 20}])
+        assert results == [10, 20]
+
+    def test_wrapper_is_callable(self):
+        wrapped = self._make_backend().distribute(objective)
+        assert callable(wrapped)
+
+
+class TestMultiprocessingUnit:
+    """Unit tests for the Multiprocessing backend."""
+
+    def test_auto_detect_workers(self):
+        mp = Multiprocessing(n_workers=-1)
+        expected = os.cpu_count() or 1
+        assert mp.n_workers == expected
+
+    def test_explicit_workers(self):
+        mp = Multiprocessing(n_workers=3)
+        assert mp.n_workers == 3
+
+    def test_prefers_fork_when_available(self):
+        import multiprocessing
+
+        mp = Multiprocessing(n_workers=2)
+        if "fork" in multiprocessing.get_all_start_methods():
+            assert mp._use_fork is True
+        else:
+            assert mp._use_fork is False
+
+    def test_context_has_valid_start_method(self):
+        mp = Multiprocessing(n_workers=2)
+        assert mp._mp_context.get_start_method() in ("fork", "spawn", "forkserver")
+
+    def test_result_ordering(self):
+        mp = Multiprocessing(n_workers=2)
+        batch = [{"x": i} for i in range(10)]
+        results = mp._distribute(_identity_x, batch)
+        assert results == list(range(10))
+
+    def test_single_item_batch(self):
+        mp = Multiprocessing(n_workers=2)
+        results = mp._distribute(_identity_x, [{"x": 42}])
+        assert results == [42]
+
+    def test_empty_batch(self):
+        mp = Multiprocessing(n_workers=2)
+        results = mp._distribute(_identity_x, [])
+        assert results == []
+
+    def test_worker_func_cleaned_up_after_distribute(self):
+        mp = Multiprocessing(n_workers=2)
+        assert _mp_module._worker_func is None
+        mp._distribute(_identity_x, [{"x": 1}])
+        assert _mp_module._worker_func is None
+
+    def test_tuple_result_passthrough(self):
+        mp = Multiprocessing(n_workers=2)
+        batch = [{"x": 1}, {"x": 2}]
+        results = mp._distribute(_identity_x_with_metrics, batch)
+        assert results[0] == (1, {"doubled": 2})
+        assert results[1] == (2, {"doubled": 4})
+
+
+class TestJoblibUnit:
+    """Unit tests for the Joblib backend."""
+
+    def test_auto_detect_workers(self):
+        jl = Joblib(n_workers=-1)
+        assert jl.n_workers >= 1
+
+    def test_explicit_workers(self):
+        jl = Joblib(n_workers=3)
+        assert jl.n_workers == 3
+
+    def test_default_backend_is_loky(self):
+        jl = Joblib(n_workers=2)
+        assert jl._backend_name == "loky"
+
+    def test_custom_backend_stored(self):
+        jl = Joblib(n_workers=2, backend="threading")
+        assert jl._backend_name == "threading"
+
+    def test_result_ordering(self):
+        jl = Joblib(n_workers=2)
+        batch = [{"x": i} for i in range(10)]
+        results = jl._distribute(_identity_x, batch)
+        assert results == list(range(10))
+
+    def test_single_item_batch(self):
+        jl = Joblib(n_workers=2)
+        results = jl._distribute(_identity_x, [{"x": 99}])
+        assert results == [99]
+
+    def test_empty_batch(self):
+        jl = Joblib(n_workers=2)
+        results = jl._distribute(_identity_x, [])
+        assert results == []
+
+    def test_threading_backend_produces_correct_results(self):
+        jl = Joblib(n_workers=2, backend="threading")
+        batch = [{"x": i} for i in range(5)]
+        results = jl._distribute(_identity_x, batch)
+        assert results == list(range(5))
+
+    def test_tuple_result_passthrough(self):
+        jl = Joblib(n_workers=2)
+        batch = [{"x": 1}, {"x": 2}]
+        results = jl._distribute(_identity_x_with_metrics, batch)
+        assert results[0] == (1, {"doubled": 2})
+        assert results[1] == (2, {"doubled": 4})
+
+
+class TestRayUnit:
+    """Unit tests for the Ray backend."""
+
+    @pytest.fixture(autouse=True)
+    def _ray_lifecycle(self):
+        ray = pytest.importorskip("ray")
+        ray.init(num_cpus=2, ignore_reinit_error=True)
+        yield
+        ray.shutdown()
+
+    def test_is_async(self):
+        assert Ray._is_async is True
+
+    def test_remote_cache_initially_empty(self):
+        r = Ray(n_workers=2)
+        assert r._remote_cache == {}
+
+    def test_remote_caches_wrapper(self):
+        r = Ray(n_workers=2)
+        remote1 = r._remote(_identity_x)
+        remote2 = r._remote(_identity_x)
+        assert remote1 is remote2
+
+    def test_remote_different_funcs_get_separate_entries(self):
+        r = Ray(n_workers=2)
+        r._remote(_identity_x)
+        r._remote(_identity_x_with_metrics)
+        assert len(r._remote_cache) == 2
+
+    def test_result_ordering(self):
+        r = Ray(n_workers=2)
+        batch = [{"x": i} for i in range(8)]
+        results = r._distribute(_identity_x, batch)
+        assert results == list(range(8))
+
+    def test_single_item_batch(self):
+        r = Ray(n_workers=1)
+        results = r._distribute(_identity_x, [{"x": 7}])
+        assert results == [7]
+
+    def test_empty_batch(self):
+        r = Ray(n_workers=1)
+        results = r._distribute(_identity_x, [])
+        assert results == []
+
+    def test_submit_wait_roundtrip(self):
+        r = Ray(n_workers=2)
+        future = r._submit(_identity_x, {"x": 42})
+        completed, result = r._wait_any([future])
+        assert result == 42
+        assert completed is future
+
+    def test_tuple_result_passthrough(self):
+        r = Ray(n_workers=2)
+        batch = [{"x": 1}, {"x": 2}]
+        results = r._distribute(_identity_x_with_metrics, batch)
+        assert results[0] == (1, {"doubled": 2})
+        assert results[1] == (2, {"doubled": 4})
+
+
+class TestDaskUnit:
+    """Unit tests for the Dask backend."""
+
+    @pytest.fixture(autouse=True)
+    def _require_dask(self):
+        pytest.importorskip("dask.distributed")
+
+    @pytest.fixture
+    def backend(self):
+        b = Dask(n_workers=1)
+        yield b
+        if b._client is not None:
+            b._client.close()
+
+    def test_is_async(self):
+        assert Dask._is_async is True
+
+    def test_client_not_created_at_init(self):
+        b = Dask(n_workers=2)
+        assert b._client is None
+
+    def test_get_client_creates_on_first_call(self, backend):
+        assert backend._client is None
+        client = backend._get_client()
+        assert client is not None
+        assert backend._client is client
+
+    def test_get_client_returns_same_instance(self, backend):
+        c1 = backend._get_client()
+        c2 = backend._get_client()
+        assert c1 is c2
+
+    def test_client_arg_reused(self):
+        from dask.distributed import Client
+
+        external = Client(n_workers=1, threads_per_worker=1)
+        try:
+            b = Dask(n_workers=1, client=external)
+            assert b._get_client() is external
+        finally:
+            external.close()
+
+    def test_address_and_client_stored(self):
+        b = Dask(n_workers=2, address="tcp://localhost:9999")
+        assert b._address == "tcp://localhost:9999"
+        assert b._client_arg is None
+
+    def test_result_ordering(self, backend):
+        batch = [{"x": i} for i in range(8)]
+        results = backend._distribute(_identity_x, batch)
+        assert results == list(range(8))
+
+    def test_single_item_batch(self, backend):
+        results = backend._distribute(_identity_x, [{"x": 7}])
+        assert results == [7]
+
+    def test_empty_batch(self, backend):
+        results = backend._distribute(_identity_x, [])
+        assert results == []
+
+    def test_submit_wait_roundtrip(self, backend):
+        future = backend._submit(_identity_x, {"x": 42})
+        completed, result = backend._wait_any([future])
+        assert result == 42
+        assert completed is future
+
+    def test_tuple_result_passthrough(self, backend):
+        batch = [{"x": 1}, {"x": 2}]
+        results = backend._distribute(_identity_x_with_metrics, batch)
+        assert results[0] == (1, {"doubled": 2})
+        assert results[1] == (2, {"doubled": 4})
