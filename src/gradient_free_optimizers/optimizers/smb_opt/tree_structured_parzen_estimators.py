@@ -199,8 +199,8 @@ class TreeStructuredParzenEstimators(SMBO):
         """Fit KDE models on best and worst sample groups."""
         best_samples, worst_samples = self._get_samples()
 
-        self.kd_best.fit(best_samples)
-        self.kd_worst.fit(worst_samples)
+        self.kd_best.fit(array(best_samples))
+        self.kd_worst.fit(array(worst_samples))
 
     def _iterate_batch(self, n):
         """Train KDEs once and select n diverse positions."""
