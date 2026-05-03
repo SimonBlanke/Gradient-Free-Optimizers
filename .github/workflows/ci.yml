@@ -353,6 +353,8 @@ jobs:
           python-version: "3.11"
 
       - name: Build and install WITH C extension
+        env:
+          GFO_REQUIRE_C_EXTENSION: "1"
         run: |
           python -m pip install --upgrade pip
           python -m pip install build pytest tqdm setuptools
