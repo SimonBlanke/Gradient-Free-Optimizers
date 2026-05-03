@@ -15,13 +15,20 @@ Test Configuration:
 - Small numeric search space
 """
 
+import os
+
 import numpy as np
 import pytest
 
-# Verify scipy is NOT installed before running tests
+_ci_strict = os.environ.get("GFO_CI_STRICT")
+
 try:
     import scipy
 
+    if _ci_strict:
+        raise RuntimeError(
+            "scipy is installed but must be absent (GFO_CI_STRICT is set)"
+        )
     pytest.skip(
         "scipy is installed - these tests require scipy to be absent",
         allow_module_level=True,

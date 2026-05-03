@@ -11,11 +11,19 @@ Three test layers:
   3. Integration tests (optimizers run and use _CGFOArray)
 """
 
+import os
+
 import pytest
+
+_ci_strict = os.environ.get("GFO_CI_STRICT")
 
 try:
     import numpy
 
+    if _ci_strict:
+        raise RuntimeError(
+            "numpy is installed but must be absent (GFO_CI_STRICT is set)"
+        )
     pytest.skip(
         "numpy is installed - test requires numpy to be absent",
         allow_module_level=True,
@@ -37,6 +45,10 @@ from gradient_free_optimizers._array_backend import (
 from gradient_free_optimizers._array_backend._pure import GFOArray
 
 if not HAS_C_EXTENSION:
+    if _ci_strict:
+        raise RuntimeError(
+            "C extension not available but required (GFO_CI_STRICT is set)"
+        )
     pytest.skip(
         "C extension not available - test requires compiled _fast_ops",
         allow_module_level=True,

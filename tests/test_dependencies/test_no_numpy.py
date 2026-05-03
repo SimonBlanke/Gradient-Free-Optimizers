@@ -15,11 +15,19 @@ Test Configuration:
 - Small discrete search space using backend linspace
 """
 
+import os
+
 import pytest
+
+_ci_strict = os.environ.get("GFO_CI_STRICT")
 
 try:
     import numpy
 
+    if _ci_strict:
+        raise RuntimeError(
+            "numpy is installed but must be absent (GFO_CI_STRICT is set)"
+        )
     pytest.skip(
         "numpy is installed - these tests require numpy to be absent",
         allow_module_level=True,

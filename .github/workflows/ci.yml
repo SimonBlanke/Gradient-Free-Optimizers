@@ -235,6 +235,8 @@ jobs:
     name: Tests (no scipy)
     runs-on: ubuntu-latest
     needs: api-smoke-tests
+    env:
+      GFO_CI_STRICT: "1"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -278,6 +280,8 @@ jobs:
     name: Backend (pure Python)
     runs-on: ubuntu-latest
     needs: api-smoke-tests
+    env:
+      GFO_CI_STRICT: "1"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -343,6 +347,8 @@ jobs:
     name: Backend (C extension)
     runs-on: ubuntu-latest
     needs: api-smoke-tests
+    env:
+      GFO_CI_STRICT: "1"
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
