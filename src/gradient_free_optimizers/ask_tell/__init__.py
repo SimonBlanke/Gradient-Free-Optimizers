@@ -28,6 +28,7 @@ Usage::
     print(opt.best_para, opt.best_score)
 """
 
+from .auto_optimizer import AutoOptimizer
 from .bayesian_optimization import BayesianOptimizer
 from .cma_es import CMAESOptimizer
 from .differential_evolution import DifferentialEvolutionOptimizer
@@ -53,6 +54,7 @@ from .stochastic_hill_climbing import StochasticHillClimbingOptimizer
 from .tree_structured_parzen_estimators import TreeStructuredParzenEstimators
 
 __all__ = [
+    "AutoOptimizer",
     "HillClimbingOptimizer",
     "StochasticHillClimbingOptimizer",
     "RepulsingHillClimbingOptimizer",

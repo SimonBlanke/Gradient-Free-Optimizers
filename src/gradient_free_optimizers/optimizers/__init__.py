@@ -49,6 +49,7 @@ from .local_opt import (
 
 # Population-based optimizers
 from .pop_opt import (
+    AutoOptimizer,
     BasePopulationOptimizer,
     CMAESOptimizer,
     DifferentialEvolutionOptimizer,
@@ -85,6 +86,7 @@ __all__ = [
     "DirectAlgorithm",
     "LipschitzOptimizer",
     # Population
+    "AutoOptimizer",
     "BasePopulationOptimizer",
     "CMAESOptimizer",
     "ParticleSwarmOptimizer",

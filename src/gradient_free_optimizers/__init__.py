@@ -8,6 +8,7 @@ __version__ = importlib.metadata.version("gradient-free-optimizers")
 __license__ = "MIT"
 
 from .optimizer_search import (
+    AutoOptimizer,
     BayesianOptimizer,
     CMAESOptimizer,
     DifferentialEvolutionOptimizer,
@@ -34,6 +35,7 @@ from .optimizer_search import (
 )
 
 __all__ = [
+    "AutoOptimizer",
     "HillClimbingOptimizer",
     "StochasticHillClimbingOptimizer",
     "RepulsingHillClimbingOptimizer",

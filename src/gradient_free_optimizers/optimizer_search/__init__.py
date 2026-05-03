@@ -2,6 +2,7 @@
 # Email: simon.blanke@yahoo.com
 # License: MIT License
 
+from .auto_optimizer import AutoOptimizer
 from .bayesian_optimization import BayesianOptimizer
 from .cma_es import CMAESOptimizer
 from .differential_evolution import DifferentialEvolutionOptimizer
@@ -27,6 +28,7 @@ from .stochastic_hill_climbing import StochasticHillClimbingOptimizer
 from .tree_structured_parzen_estimators import TreeStructuredParzenEstimators
 
 __all__ = [
+    "AutoOptimizer",
     "CMAESOptimizer",
     "HillClimbingOptimizer",
     "StochasticHillClimbingOptimizer",

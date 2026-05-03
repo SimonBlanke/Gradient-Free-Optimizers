@@ -5,6 +5,7 @@
 from ._individual import Individual
 from ._particle import Particle
 from ._spiral import Spiral
+from .auto_optimizer import AutoOptimizer
 from .base_population_optimizer import BasePopulationOptimizer
 from .cma_es import CMAESOptimizer
 from .differential_evolution import DifferentialEvolutionOptimizer
@@ -15,6 +16,7 @@ from .particle_swarm_optimization import ParticleSwarmOptimizer
 from .spiral_optimization import SpiralOptimization
 
 __all__ = [
+    "AutoOptimizer",
     "BasePopulationOptimizer",
     "CMAESOptimizer",
     "ParticleSwarmOptimizer",
