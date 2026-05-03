@@ -9,7 +9,13 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Literal
 
-import numpy as np
+from gradient_free_optimizers._array_backend import (
+    array,
+    exp,
+    linalg,
+    ndarray,
+    zeros_like,
+)
 
 from .smbo import SMBO
 
@@ -111,16 +117,18 @@ class TreeStructuredParzenEstimators(SMBO):
 
         self.gamma_tpe = gamma_tpe
 
-        # Initialize KDE - sklearn and native have different interfaces
         if SKLEARN_AVAILABLE:
-            kde_params: dict[str, Any] = {"kernel": "gaussian", "bandwidth": 1.0}
+            kde_params: dict[str, Any] = {
+                "kernel": "gaussian",
+                "bandwidth": "silverman",
+            }
         else:
-            kde_params = {"bandwidth": 1.0}
+            kde_params: dict[str, Any] = {}
 
         self.kd_best = KernelDensity(**kde_params)
         self.kd_worst = KernelDensity(**kde_params)
 
-    def _get_samples(self) -> tuple[list[np.ndarray], list[np.ndarray]]:
+    def _get_samples(self) -> tuple[list[ndarray], list[ndarray]]:
         """Split samples into best and worst groups based on gamma_tpe.
 
         Returns
@@ -140,7 +148,7 @@ class TreeStructuredParzenEstimators(SMBO):
             n_best = max(n_samples - 1, 1)
             n_worst = max(n_samples - n_best, 1)
 
-        Y_sample = np.array(self.Y_sample)
+        Y_sample = array(self.Y_sample)
         sorted_indices = Y_sample.argsort()
         index_best = sorted_indices[-n_best:]
         index_worst = sorted_indices[:n_worst]
@@ -150,7 +158,7 @@ class TreeStructuredParzenEstimators(SMBO):
 
         return best_samples, worst_samples
 
-    def _expected_improvement(self) -> np.ndarray:
+    def _expected_improvement(self) -> ndarray:
         """Compute acquisition as ratio of good/bad density estimates.
 
         The acquisition function for TPE is derived from Expected Improvement
@@ -167,11 +175,11 @@ class TreeStructuredParzenEstimators(SMBO):
         logprob_best = self.kd_best.score_samples(self.pos_comb)
         logprob_worst = self.kd_worst.score_samples(self.pos_comb)
 
-        prob_best = np.exp(np.array(logprob_best))
-        prob_worst = np.exp(np.array(logprob_worst))
+        prob_best = exp(array(logprob_best))
+        prob_worst = exp(array(logprob_worst))
 
         # Safe division: only divide where prob_worst != 0
-        worst_over_best = np.zeros_like(prob_worst)
+        worst_over_best = zeros_like(prob_worst)
         nonzero_worst = prob_worst != 0
         nonzero_best = prob_best != 0
 
@@ -195,8 +203,8 @@ class TreeStructuredParzenEstimators(SMBO):
         """Fit KDE models on best and worst sample groups."""
         best_samples, worst_samples = self._get_samples()
 
-        self.kd_best.fit(best_samples)
-        self.kd_worst.fit(worst_samples)
+        self.kd_best.fit(array(best_samples))
+        self.kd_worst.fit(array(worst_samples))
 
     def _iterate_batch(self, n):
         """Train KDEs once and select n diverse positions."""
@@ -207,7 +215,7 @@ class TreeStructuredParzenEstimators(SMBO):
             while len(positions) < n:
                 positions.append(self._move_random())
             return [self._clip_position(pos) for pos in positions]
-        except (ValueError, np.linalg.LinAlgError):
+        except (ValueError, linalg.LinAlgError):
             return [self._clip_position(self._move_random()) for _ in range(n)]
 
     def _evaluate_batch(self, positions, scores):

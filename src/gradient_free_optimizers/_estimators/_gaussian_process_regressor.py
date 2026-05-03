@@ -14,6 +14,7 @@ without NumPy/SciPy when needed (though it will be slower).
 import math
 
 from gradient_free_optimizers._array_backend import (
+    HAS_NUMPY,
     array,
     asarray,
     diag,
@@ -30,6 +31,22 @@ from gradient_free_optimizers._math_backend import (
     minimize,
     solve_triangular,
 )
+
+if HAS_NUMPY:
+    import numpy as np
+
+
+def _rows_as_tuples(X):
+    """Convert 2D array-like to list of tuples for math.dist."""
+    if hasattr(X, "tolist"):
+        data = X.tolist()
+    elif hasattr(X, "_data"):
+        data = X._data if (hasattr(X, "ndim") and X.ndim == 2) else [X._data]
+    else:
+        data = list(X)
+    if data and not isinstance(data[0], list | tuple):
+        return [(v,) for v in data]
+    return [tuple(row) for row in data]
 
 
 class GaussianProcessRegressor:
@@ -104,11 +121,10 @@ class GaussianProcessRegressor:
     def _add_diagonal(self, K, value):
         """Add value to diagonal of matrix K."""
         n = len(K)
-        # Convert to list of lists for manipulation
-        if hasattr(K, "_data"):
-            result = [list(row) for row in K._data]
-        elif hasattr(K, "tolist"):
+        if hasattr(K, "tolist"):
             result = K.tolist()
+        elif hasattr(K, "_data"):
+            result = [list(row) for row in K]
         else:
             result = [list(row) for row in K]
 
@@ -259,7 +275,9 @@ class GaussianProcessRegressor:
 
     def _sum_squared_cols(self, v):
         """Sum of squared values along columns (axis=0)."""
-        if hasattr(v, "_data"):
+        if hasattr(v, "tolist"):
+            data = v.tolist()
+        elif hasattr(v, "_data"):
             data = v._data
         else:
             data = list(v)
@@ -308,7 +326,6 @@ class GaussianProcessRegressor:
         diag : bool
             If True, return only diagonal (for variance computation)
         """
-        # Extract hyperparameters
         if hasattr(theta, "__getitem__"):
             log_ell = float(theta[0])
             log_sigma_f = float(theta[1])
@@ -319,54 +336,38 @@ class GaussianProcessRegressor:
         ell = math.exp(log_ell)
         sigma_f2 = math.exp(2 * log_sigma_f)
 
-        X1 = asarray(X1, dtype=float)
-        X2 = asarray(X2, dtype=float)
-
-        # Get data as nested Python lists (pure floats, not numpy types)
-        if hasattr(X1, "_data"):
-            X1_data = X1._data if X1.ndim == 2 else [X1._data]
-        elif hasattr(X1, "tolist"):
-            # numpy array - convert to pure Python lists
-            X1_data = X1.tolist()
-            if not isinstance(X1_data[0], list):
-                X1_data = [[x] for x in X1_data]
-        else:
-            X1_data = list(X1)
-            if not isinstance(X1_data[0], list | tuple):
-                X1_data = [[x] for x in X1_data]
-
-        if hasattr(X2, "_data"):
-            X2_data = X2._data if X2.ndim == 2 else [X2._data]
-        elif hasattr(X2, "tolist"):
-            # numpy array - convert to pure Python lists
-            X2_data = X2.tolist()
-            if not isinstance(X2_data[0], list):
-                X2_data = [[x] for x in X2_data]
-        else:
-            X2_data = list(X2)
-            if not isinstance(X2_data[0], list | tuple):
-                X2_data = [[x] for x in X2_data]
-
-        n1 = len(X1_data)
-        n2 = len(X2_data)
-
         if diag:
-            # Return diagonal only (all ones scaled by sigma_f2 for same points)
-            return array([sigma_f2] * n1)
+            return array([sigma_f2] * len(X1))
 
-        # Compute full kernel matrix
-        # K[i,j] = sigma_f^2 * exp(-0.5 * ||x_i - x_j||^2 / ell^2)
+        if HAS_NUMPY:
+            X1_np = np.asarray(X1, dtype=float)
+            X2_np = np.asarray(X2, dtype=float)
+            if X1_np.ndim == 1:
+                X1_np = X1_np.reshape(-1, 1)
+            if X2_np.ndim == 1:
+                X2_np = X2_np.reshape(-1, 1)
+            # ||a-b||^2 = ||a||^2 + ||b||^2 - 2*a.b
+            # avoids O(n1*n2*d) temporary array
+            inv_ell_sq = 1.0 / (ell * ell)
+            X1_sq = np.sum(X1_np * X1_np, axis=1)
+            X2_sq = np.sum(X2_np * X2_np, axis=1)
+            sq_dist = (
+                X1_sq[:, None] + X2_sq[None, :] - 2.0 * (X1_np @ X2_np.T)
+            ) * inv_ell_sq
+            np.maximum(sq_dist, 0.0, out=sq_dist)
+            return sigma_f2 * np.exp(-0.5 * sq_dist)
+
+        X1_rows = _rows_as_tuples(X1)
+        X2_rows = _rows_as_tuples(X2)
+        _exp = math.exp
+        _dist = math.dist
+        inv_ell_sq = 1.0 / (ell * ell)
+
         result = []
-        for i in range(n1):
+        for x1 in X1_rows:
             row = []
-            for j in range(n2):
-                # Squared distance
-                sq_dist = 0.0
-                for k in range(len(X1_data[i])):
-                    diff = (X1_data[i][k] - X2_data[j][k]) / ell
-                    sq_dist += diff * diff
-                k_val = sigma_f2 * math.exp(-0.5 * sq_dist)
-                row.append(k_val)
+            for x2 in X2_rows:
+                d = _dist(x1, x2)
+                row.append(sigma_f2 * _exp(-0.5 * d * d * inv_ell_sq))
             result.append(row)
-
         return array(result)

@@ -3,13 +3,16 @@
 # License: MIT License
 
 
+from __future__ import annotations
+
 import logging
 from multiprocessing.managers import DictProxy
-from typing import Any
-
-import pandas as pd
+from typing import TYPE_CHECKING, Any
 
 from ._objective_adapter import ObjectiveAdapter
+
+if TYPE_CHECKING:
+    import pandas as pd
 from ._storage import BaseStorage, MemoryStorage
 
 
@@ -40,6 +43,8 @@ class CachedObjectiveAdapter(ObjectiveAdapter):
 
         if warm_start is None:
             return
+
+        import pandas as pd
 
         if not isinstance(warm_start, pd.DataFrame):
             logging.warning("Memory warm start must be of type pandas.DataFrame")

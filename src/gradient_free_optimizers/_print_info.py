@@ -86,10 +86,10 @@ def _build_summary_entries(data: DataAccessor, sections: set[str]) -> list:
 
     if "print_results" in sections:
         entries.append(_section("Results"))
-        entries.append(("  ", "Best score:", str(data.best_score)))
+        entries.append(("  ", "Best score:", str(data._best_score)))
         entries.append(("  ", "Best iter:", str(data.best_iteration)))
 
-        para = data.best_para
+        para = data._best_para
         if para:
             entries.append("  Best parameters:")
             for k, v in para.items():

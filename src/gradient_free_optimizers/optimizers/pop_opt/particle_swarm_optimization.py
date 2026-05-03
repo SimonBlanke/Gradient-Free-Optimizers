@@ -10,7 +10,7 @@ import random
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
-import numpy as np
+from gradient_free_optimizers._array_backend import array, ndarray, zeros
 
 from ._particle import Particle
 from .base_population_optimizer import BasePopulationOptimizer
@@ -118,7 +118,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
             p.social_weight = self.social_weight
             p.temp_weight = self.temp_weight
             p.rand_rest_p = self.rand_rest_p
-            p.velo = np.zeros(n_dims)
+            p.velo = zeros(n_dims)
 
         # Iteration state for template method coordination
         self._iteration_setup_done = False
@@ -147,7 +147,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
 
         # Initialize velocity to zero
         n_dims = self.conv.n_dimensions
-        self.p_current.velo = np.zeros(n_dims)
+        self.p_current.velo = zeros(n_dims)
 
         # Track position on current particle
         self.p_current._pos_new = position.copy()
@@ -194,7 +194,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
 
         self._iteration_setup_done = True
 
-    def _compute_pso_position(self) -> np.ndarray:
+    def _compute_pso_position(self) -> ndarray:
         """Compute new position using PSO velocity update equation.
 
         The velocity update equation is:
@@ -204,7 +204,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
 
         Returns
         -------
-        np.ndarray
+        ndarray
             New position after velocity update.
         """
         # Random restart check
@@ -221,12 +221,12 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
 
         r1, r2 = random.random(), random.random()
 
-        pos_current = np.array(self.p_current._pos_current)
-        pos_best = np.array(self.p_current._pos_best)
-        global_pos_best = np.array(self.p_current.global_pos_best)
+        pos_current = array(self.p_current._pos_current)
+        pos_best = array(self.p_current._pos_best)
+        global_pos_best = array(self.p_current.global_pos_best)
 
         # Inertia term: maintain current direction
-        A = self.inertia * np.array(self.p_current.velo)
+        A = self.inertia * array(self.p_current.velo)
 
         # Cognitive term: attract toward personal best
         B = self.cognitive_weight * r1 * (pos_best - pos_current)
@@ -240,20 +240,20 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         # Compute new position (will be clipped by CoreOptimizer)
         return pos_current + self.p_current.velo
 
-    def _iterate_continuous_batch(self) -> np.ndarray:
+    def _iterate_continuous_batch(self) -> ndarray:
         """Generate continuous values using PSO velocity update.
 
         Returns the continuous portion of the PSO-computed position.
 
         Returns
         -------
-        np.ndarray
+        ndarray
             New continuous values from PSO movement.
         """
         self._setup_iteration()
         return self._pso_new_pos[self._continuous_mask]
 
-    def _iterate_categorical_batch(self) -> np.ndarray:
+    def _iterate_categorical_batch(self) -> ndarray:
         """Generate categorical indices using PSO velocity as switch probability.
 
         For categorical dimensions, the velocity magnitude determines the
@@ -261,7 +261,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
 
         Returns
         -------
-        np.ndarray
+        ndarray
             New category indices.
         """
         self._setup_iteration()
@@ -286,16 +286,16 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
                 # Keep current category
                 new_cats.append(int(cur_idx))
 
-        return np.array(new_cats)
+        return array(new_cats)
 
-    def _iterate_discrete_batch(self) -> np.ndarray:
+    def _iterate_discrete_batch(self) -> ndarray:
         """Generate discrete indices using PSO velocity update.
 
         Returns the discrete portion of the PSO-computed position.
 
         Returns
         -------
-        np.ndarray
+        ndarray
             New discrete indices from PSO movement.
         """
         self._setup_iteration()

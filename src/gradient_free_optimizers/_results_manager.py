@@ -3,9 +3,9 @@ from __future__ import annotations
 import math
 from typing import TYPE_CHECKING, Any
 
-import pandas as pd
-
 if TYPE_CHECKING:
+    import pandas as pd
+
     from .optimizers.core_optimizer.converter import Converter
 
 
@@ -53,6 +53,8 @@ class ResultsManager:
         avoiding the memory cost of storing them during optimization.
         Inactive parameters (from conditions) appear as NaN.
         """
+        import pandas as pd
+
         if not self._positions:
             return pd.DataFrame()
 

@@ -193,6 +193,139 @@ class TestLogsumexp:
 # =============================================================================
 
 
+class TestCholesky:
+    """Test Cholesky decomposition."""
+
+    def test_3x3_positive_definite(self):
+        mat = [[4, 2, 1], [2, 5, 3], [1, 3, 6]]
+        scipy_L = scipy_backend.cholesky(mat, lower=True)
+        pure_L = pure_math.cholesky(mat, lower=True)
+
+        for i in range(3):
+            for j in range(3):
+                assert abs(scipy_L[i, j] - pure_L[i][j]) < 1e-8
+
+    def test_5x5_positive_definite(self):
+        mat = [
+            [10, 1, 0, 0, 0],
+            [1, 10, 1, 0, 0],
+            [0, 1, 10, 1, 0],
+            [0, 0, 1, 10, 1],
+            [0, 0, 0, 1, 10],
+        ]
+        scipy_L = scipy_backend.cholesky(mat, lower=True)
+        pure_L = pure_math.cholesky(mat, lower=True)
+
+        for i in range(5):
+            for j in range(5):
+                assert abs(scipy_L[i, j] - pure_L[i][j]) < 1e-8
+
+
+class TestChoSolve:
+    """Test solving via Cholesky factorization."""
+
+    def test_solution_accuracy(self):
+        mat = [[4, 2], [2, 5]]
+        b = [1.0, 2.0]
+
+        scipy_L = scipy_backend.cholesky(mat, lower=True)
+        scipy_x = scipy_backend.cho_solve((scipy_L, True), b)
+
+        pure_L = pure_math.cholesky(mat, lower=True)
+        pure_x = pure_math.cho_solve((pure_L, True), b)
+
+        for i in range(2):
+            assert abs(float(scipy_x[i]) - float(pure_x[i])) < 1e-8
+
+    def test_3x3_system(self):
+        mat = [[4, 2, 1], [2, 5, 3], [1, 3, 6]]
+        b = [1.0, 0.0, -1.0]
+
+        scipy_L = scipy_backend.cholesky(mat, lower=True)
+        scipy_x = scipy_backend.cho_solve((scipy_L, True), b)
+
+        pure_L = pure_math.cholesky(mat, lower=True)
+        pure_x = pure_math.cho_solve((pure_L, True), b)
+
+        for i in range(3):
+            assert abs(float(scipy_x[i]) - float(pure_x[i])) < 1e-8
+
+
+class TestSolve:
+    """Test Gaussian elimination solver."""
+
+    def test_2x2_system(self):
+        a = [[2.0, 1.0], [1.0, 3.0]]
+        b = [5.0, 7.0]
+        scipy_x = scipy_backend.solve(a, b)
+        pure_x = pure_math.solve(a, b)
+        for i in range(2):
+            assert abs(float(scipy_x[i]) - float(pure_x[i])) < 1e-8
+
+    def test_3x3_system(self):
+        a = [[3.0, 1.0, 0.0], [1.0, 4.0, 1.0], [0.0, 1.0, 3.0]]
+        b = [4.0, 6.0, 4.0]
+        scipy_x = scipy_backend.solve(a, b)
+        pure_x = pure_math.solve(a, b)
+        for i in range(3):
+            assert abs(float(scipy_x[i]) - float(pure_x[i])) < 1e-8
+
+
+class TestSolveTriangular:
+    """Test triangular system solver."""
+
+    def test_lower_triangular_1d(self):
+        L = [[2.0, 0.0, 0.0], [1.0, 3.0, 0.0], [0.5, 1.0, 4.0]]
+        b = [2.0, 5.0, 10.5]
+        scipy_x = scipy_backend.solve_triangular(L, b, lower=True)
+        pure_x = pure_math.solve_triangular(L, b, lower=True)
+        for i in range(3):
+            assert abs(float(scipy_x[i]) - float(pure_x[i])) < 1e-8
+
+    def test_lower_triangular_2d(self):
+        L = [[2.0, 0.0], [1.0, 3.0]]
+        b = [[4.0, 6.0], [7.0, 9.0]]
+        scipy_x = scipy_backend.solve_triangular(L, b, lower=True)
+        pure_x = pure_math.solve_triangular(L, b, lower=True)
+        for i in range(2):
+            for j in range(2):
+                assert abs(float(scipy_x[i, j]) - float(pure_x[i][j])) < 1e-8
+
+    def test_upper_triangular(self):
+        U = [[3.0, 1.0, 2.0], [0.0, 4.0, 1.0], [0.0, 0.0, 2.0]]
+        b = [9.0, 9.0, 4.0]
+        scipy_x = scipy_backend.solve_triangular(U, b, lower=False)
+        pure_x = pure_math.solve_triangular(U, b, lower=False)
+        for i in range(3):
+            assert abs(float(scipy_x[i]) - float(pure_x[i])) < 1e-8
+
+
+class TestCdistPurePath:
+    """Test the math.dist based cdist implementation."""
+
+    def test_3d_points(self):
+        xa = [[0, 0, 0], [1, 1, 1]]
+        xb = [[1, 0, 0], [0, 1, 0], [0, 0, 1]]
+        scipy_result = scipy_backend.cdist(xa, xb)
+        pure_result = pure_math.cdist(xa, xb)
+
+        for i in range(2):
+            for j in range(3):
+                assert abs(scipy_result[i, j] - pure_result[i][j]) < 1e-10
+
+    def test_single_dimension(self):
+        xa = [[0], [5], [10]]
+        xb = [[3], [7]]
+        scipy_result = scipy_backend.cdist(xa, xb)
+        pure_result = pure_math.cdist(xa, xb)
+
+        expected = [[3, 7], [2, 2], [7, 3]]
+        for i in range(3):
+            for j in range(2):
+                assert abs(scipy_result[i, j] - expected[i][j]) < 1e-10
+                assert abs(pure_result[i][j] - expected[i][j]) < 1e-10
+
+
 class TestBackendSelection:
     """Test that backend selection works correctly."""
 

@@ -9,10 +9,20 @@ step sizes (sigma). Used by Genetic Algorithm, Evolution Strategy, and
 Differential Evolution.
 """
 
+from __future__ import annotations
+
 import math
 import random
 
-import numpy as np
+from gradient_free_optimizers._array_backend import (
+    clip,
+    empty,
+    floor,
+    ndarray,
+)
+from gradient_free_optimizers._array_backend import (
+    round as arr_round,
+)
 
 from ..local_opt import HillClimbingOptimizer
 
@@ -98,7 +108,7 @@ class Individual(HillClimbingOptimizer):
 
         self._iteration_setup_done = True
 
-    def _iterate_continuous_batch(self) -> np.ndarray:
+    def _iterate_continuous_batch(self) -> ndarray:
         """Generate continuous values with self-adaptive sigma.
 
         Calls lazy setup first, then either returns random values
@@ -120,7 +130,7 @@ class Individual(HillClimbingOptimizer):
         # Use parent's implementation with mutated epsilon (sigma_new)
         return super()._iterate_continuous_batch()
 
-    def _iterate_categorical_batch(self) -> np.ndarray:
+    def _iterate_categorical_batch(self) -> ndarray:
         """Generate categorical indices with self-adaptive mutation rate.
 
         Calls lazy setup first, then either returns random values
@@ -136,14 +146,12 @@ class Individual(HillClimbingOptimizer):
         if self._use_random_restart:
             # Generate random categorical indices
             n_categories = self._categorical_sizes
-            return np.floor(self._rng.random(len(n_categories)) * n_categories).astype(
-                np.int64
-            )
+            return floor(self._rng.random(len(n_categories)) * n_categories).astype(int)
 
         # Use parent's implementation
         return super()._iterate_categorical_batch()
 
-    def _iterate_discrete_batch(self) -> np.ndarray:
+    def _iterate_discrete_batch(self) -> ndarray:
         """Generate discrete indices with self-adaptive sigma.
 
         Calls lazy setup first, then either returns random values
@@ -233,7 +241,7 @@ class Individual(HillClimbingOptimizer):
         Note: This is a helper method for move_climb_typed(), not for iterate().
         """
         n_dims = len(pos_current)
-        new_pos = np.empty(n_dims, dtype=object)
+        new_pos = empty(n_dims, dtype=object)
 
         # Temporarily set _pos_current so template methods can access it
         # Bypass the property setter to avoid appending to _pos_current_list;
@@ -256,7 +264,7 @@ class Individual(HillClimbingOptimizer):
                 # Call parent's method directly (bypass our override's setup)
                 cont_new = HillClimbingOptimizer._iterate_continuous_batch(self)
                 # Clip to bounds
-                cont_new = np.clip(cont_new, cont_bounds[:, 0], cont_bounds[:, 1])
+                cont_new = clip(cont_new, cont_bounds[:, 0], cont_bounds[:, 1])
                 new_pos[cont_mask] = cont_new
 
             # Handle categorical dimensions
@@ -266,7 +274,7 @@ class Individual(HillClimbingOptimizer):
                 # Call parent's method directly
                 cat_new = HillClimbingOptimizer._iterate_categorical_batch(self)
                 # Clip to valid range
-                cat_new = np.clip(cat_new, 0, n_cats - 1).astype(int)
+                cat_new = clip(cat_new, 0, n_cats - 1).astype(int)
                 new_pos[cat_mask] = cat_new
 
             # Handle discrete dimensions
@@ -276,10 +284,10 @@ class Individual(HillClimbingOptimizer):
                 # Call parent's method directly
                 disc_new = HillClimbingOptimizer._iterate_discrete_batch(self)
                 # Round and clip to bounds
-                disc_new = np.round(disc_new)
-                disc_new = np.clip(
-                    disc_new, disc_bounds[:, 0], disc_bounds[:, 1]
-                ).astype(int)
+                disc_new = arr_round(disc_new)
+                disc_new = clip(disc_new, disc_bounds[:, 0], disc_bounds[:, 1]).astype(
+                    int
+                )
                 new_pos[disc_mask] = disc_new
         finally:
             # Restore original state (bypass property setter)

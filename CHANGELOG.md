@@ -9,6 +9,26 @@ For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke
 
 ## [Unreleased]
 
+## [1.12.0] - 2026-04-18
+
+### Added
+- Ask/tell interface in the new `gradient_free_optimizers.ask_tell` subpackage, exposing all 23 single-objective optimizer algorithms with a batch-capable `ask(n=...)` / `tell(scores)` loop and an `initial_evaluations` constructor parameter for seeded restarts
+- (private) Distributed objective-function evaluation in the `_distributed` subpackage, with backends `Joblib`, `Ray`, `Dask`, and native `Multiprocessing`. SMBO optimizers (Bayesian, TPE, Forest) gained `_select_diverse_batch` to avoid duplicate proposals when asked for a batch of positions
+- (private) Pluggable evaluation storage (`_storage`) with `MemoryStorage` (default, in-process dict) and `SQLiteStorage` (on-disk) backends, allowing the memoization cache to persist across processes and runs
+
+### Changed
+- `wrap_with_catch` rewritten from a closure into a callable class so wrapped objectives remain picklable under the new parallel backends
+- Objective-function result unpacking (score and optional metadata) centralized in a single path
+
+### Fixed
+- Error when the objective function returns a metadata dict alongside the score (affecting `search()`, the SQLite storage backend, and the distributed base class)
+- `Multiprocessing` distribution backend now supports `spawn` start method (Windows and macOS 3.14+) by pickling the objective alongside each parameter dict via `starmap`; previously it hard-coded `fork` and broke on platforms where `fork` is unavailable
+- Async batch refill loop: cache hits consumed an iteration without submitting a future, stalling the worker pool. The refill now retries submission until a future is queued or there is nothing left to dispatch
+- `search_data.rst` user-guide referenced `opt.data` and its sub-accessors as public API, but the code only exposed them as `_data` (private) since v1.11.0. Docs now reflect the actual public surface: `opt.search_data`, `opt.best_score`, `opt.best_para`
+
+### Tests
+- Added coverage for the ask/tell interface (including batch semantics), distributed backends, and persistent storage
+
 ## [1.11.1] - 2026-03-15
 
 ### Fixed

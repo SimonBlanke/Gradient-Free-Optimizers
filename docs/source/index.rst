@@ -316,7 +316,7 @@ for Python.
         Perfect when you need fine-grained control over the
         optimization process.
 
-        - 22 algorithms
+        - 23 algorithms
         - NumPy-based search spaces
         - Constraint support
 
@@ -375,7 +375,7 @@ Documentation
         :link-type: doc
         :text-align: center
 
-        All 22 optimization algorithms explained
+        All 23 optimization algorithms explained
 
     .. grid-item-card:: Examples
         :link: examples

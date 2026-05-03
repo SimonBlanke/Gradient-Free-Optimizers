@@ -7,7 +7,9 @@
 Uses sequential nested loop traversal (dimension by dimension).
 """
 
-import numpy as np
+from __future__ import annotations
+
+from gradient_free_optimizers._array_backend import array, ndarray
 
 from ..base_optimizer import BaseOptimizer
 
@@ -113,7 +115,7 @@ class OrthogonalGridSearch(BaseOptimizer):
             new_pos.append(remainder % dim_size)
             remainder = remainder // dim_size
 
-        return np.array(new_pos)
+        return array(new_pos)
 
     def _generate_position(self):
         """Generate next grid position using orthogonal traversal.
@@ -138,19 +140,19 @@ class OrthogonalGridSearch(BaseOptimizer):
         # Clip to valid bounds (handles edge cases)
         return self._clip_position(pos)
 
-    def _iterate_continuous_batch(self) -> np.ndarray:
+    def _iterate_continuous_batch(self) -> ndarray:
         """Not used - grid search generates full position via _generate_position."""
         raise NotImplementedError(
             "OrthogonalGridSearch uses _generate_position() for grid traversal"
         )
 
-    def _iterate_categorical_batch(self) -> np.ndarray:
+    def _iterate_categorical_batch(self) -> ndarray:
         """Not used - grid search generates full position via _generate_position."""
         raise NotImplementedError(
             "OrthogonalGridSearch uses _generate_position() for grid traversal"
         )
 
-    def _iterate_discrete_batch(self) -> np.ndarray:
+    def _iterate_discrete_batch(self) -> ndarray:
         """Not used - grid search generates full position via _generate_position."""
         raise NotImplementedError(
             "OrthogonalGridSearch uses _generate_position() for grid traversal"

@@ -37,6 +37,14 @@ class SearchParams(dict):
         optimizer reference is not available (cross-process boundary).
     """
 
+    _optimizer = None
+    _n_iter = None
+    _iteration = None
+    _search_space = None
+    _phase = None
+    _best_score = None
+    _best_params = None
+
     def __init__(
         self,
         data: dict[str, Any],

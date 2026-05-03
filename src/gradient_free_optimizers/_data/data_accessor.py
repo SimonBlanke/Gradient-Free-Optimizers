@@ -12,12 +12,15 @@ if TYPE_CHECKING:
 
 
 class DataAccessor:
-    """Read-only view on search results with computed metrics.
+    """Internal read-only view on search results with computed metrics.
 
     Provides derived metrics from SearchTracker (search-level data)
     and CoreOptimizer history lists (optimizer-level data).
 
-    Accessed via ``opt._data`` property after calling ``search()``.
+    Accessed internally via ``opt._data`` after calling ``search()``.
+    Not part of the public API: properties, names, and return shapes
+    may change without notice. The public surface for results is
+    ``opt.best_score``, ``opt.best_para``, and ``opt.search_data``.
     """
 
     def __init__(self, tracker: SearchTracker, optimizer: CoreOptimizer):
@@ -41,14 +44,18 @@ class DataAccessor:
         return self._tracker.n_iter
 
     @property
-    def best_score(self) -> float:
-        """Best score found during the search."""
+    def _best_score(self) -> float:
+        """Best score (``opt.best_score`` delegates here)."""
         return self._tracker.best_score
 
     @property
-    def best_para(self) -> dict:
-        """Parameters corresponding to the best score."""
-        return self._optimizer.best_para
+    def _best_para(self) -> dict:
+        """Best parameters (``opt.best_para`` delegates here)."""
+        pos = self._tracker.best_position
+        if pos is None:
+            return {}
+        conv = self._optimizer.conv
+        return conv.value2para(conv.position2value(list(pos)))
 
     @property
     def best_iteration(self) -> int:
@@ -211,17 +218,18 @@ class DataAccessor:
         return self._tracker.convergence
 
     @property
-    def results(self) -> list[dict[str, Any]]:
-        """All evaluated positions as list of dicts (pandas-free).
+    def _results(self) -> list[dict[str, Any]]:
+        """All evaluations as list of dicts (pandas-free).
 
         Each dict contains ``score``, any custom metrics, and all
-        parameter values.
+        parameter values. Internal use only; the public surface for
+        per-iteration results is ``opt.search_data`` (DataFrame).
         """
         return self._tracker.results_as_dicts()
 
     @property
     def raw(self) -> RawData:
-        """Direct access to internal tracking lists."""
+        """Direct access to internal tracking lists (internal use only)."""
         if self._raw is None:
             self._raw = RawData(self._tracker, self._optimizer)
         return self._raw

@@ -9,8 +9,12 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Literal
 
-import numpy as np
-
+from gradient_free_optimizers._array_backend import (
+    array,
+    inf,
+    linalg,
+    ndarray,
+)
 from gradient_free_optimizers._math_backend import cdist
 
 from ..smb_opt import SMBO
@@ -59,14 +63,13 @@ class LipschitzFunction:
                 x_sample1, y_sample1 = X_sample[i], Y_sample[i]
                 x_sample2, y_sample2 = X_sample[j], Y_sample[j]
 
-                if y_sample1 != y_sample2 and np.prod(x_sample1 - x_sample2) != 0:
-                    slopes.append(
-                        abs(y_sample1 - y_sample2) / abs(x_sample1 - x_sample2)
-                    )
+                dist = linalg.norm(x_sample1 - x_sample2)
+                if y_sample1 != y_sample2 and dist > 0:
+                    slopes.append(abs(y_sample1 - y_sample2) / dist)
 
         if not slopes:
             return 1
-        return np.max(slopes)
+        return max(slopes)
 
     def calculate(self, X_sample, Y_sample, score_best):
         """Compute upper bounds for all candidate positions.
@@ -91,22 +94,22 @@ class LipschitzFunction:
         """
         lip_c = self.find_best_slope(X_sample, Y_sample)
 
-        positions_np = np.array(self.position_l)
-        samples_np = np.array(X_sample)
+        positions_np = array(self.position_l)
+        samples_np = array(X_sample)
 
         # Compute distances and scale by Lipschitz constant
         pos_dist = cdist(positions_np, samples_np) * lip_c
 
         # Upper bound = distance * L + observed value
         upper_bound_l = pos_dist
-        upper_bound_l += np.array(Y_sample)
+        upper_bound_l += array(Y_sample)
 
-        # Mask zeros and take minimum across samples for each position
-        mx = np.ma.masked_array(upper_bound_l, mask=upper_bound_l == 0)
-        upper_bound_l = mx.min(1).reshape(1, -1).T
+        # Exclude zero entries from minimum by replacing with inf
+        upper_bound_l[upper_bound_l == 0] = inf
+        upper_bound_l = upper_bound_l.min(1).reshape(1, -1).T
 
         # Positions that can't improve on best are marked -inf
-        upper_bound_l[upper_bound_l <= score_best] = -np.inf
+        upper_bound_l[upper_bound_l <= score_best] = -inf
 
         return upper_bound_l
 
@@ -200,7 +203,7 @@ class LipschitzOptimizer(SMBO):
         """
         self.pos_comb = self._sampling(self.all_pos_comb)
 
-    def _expected_improvement(self) -> np.ndarray:
+    def _expected_improvement(self) -> ndarray:
         """Compute Lipschitz upper bounds for candidate positions.
 
         The upper bound at each candidate position is computed using:
@@ -233,7 +236,7 @@ class LipschitzOptimizer(SMBO):
             while len(positions) < n:
                 positions.append(self._move_random())
             return [self._clip_position(pos) for pos in positions]
-        except (ValueError, np.linalg.LinAlgError):
+        except (ValueError, linalg.LinAlgError):
             return [self._clip_position(self._move_random()) for _ in range(n)]
 
     def _evaluate_batch(self, positions, scores):

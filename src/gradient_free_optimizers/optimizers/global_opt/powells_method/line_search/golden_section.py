@@ -4,9 +4,14 @@
 
 """Golden section search strategy for Powell's method."""
 
+from __future__ import annotations
+
 import math
 
-import numpy as np
+from gradient_free_optimizers._array_backend import (
+    argmax,
+    array,
+)
 
 from .base import LineSearch
 
@@ -51,8 +56,8 @@ class GoldenSectionLineSearch(LineSearch):
         max_iters: int,
     ) -> None:
         """Initialize golden section search with bracket [a, b]."""
-        self.origin = np.array(origin).copy()
-        self.direction = np.array(direction).copy()
+        self.origin = array(origin).copy()
+        self.direction = array(direction).copy()
         self.max_iters = max_iters
         self.current_step = 0
         self.active = True
@@ -94,7 +99,7 @@ class GoldenSectionLineSearch(LineSearch):
 
     def update(self, position, score: float) -> None:
         """Update bracket based on evaluation result."""
-        self.evaluated_positions.append(np.array(position).copy())
+        self.evaluated_positions.append(array(position).copy())
         self.evaluated_scores.append(score)
 
         if self.phase == "eval_c":
@@ -150,7 +155,7 @@ class GoldenSectionLineSearch(LineSearch):
         if not self.evaluated_scores:
             return None, None
 
-        best_idx = np.argmax(self.evaluated_scores)
+        best_idx = argmax(self.evaluated_scores)
         return self.evaluated_positions[best_idx], self.evaluated_scores[best_idx]
 
     def is_active(self) -> bool:

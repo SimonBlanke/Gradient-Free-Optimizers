@@ -11,7 +11,24 @@ import math
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Literal
 
-import numpy as np
+from gradient_free_optimizers._array_backend import (
+    all as arr_all,
+)
+from gradient_free_optimizers._array_backend import (
+    array,
+    inf,
+    intersect1d,
+    invert,
+    isin,
+    isinf,
+    isnan,
+    linalg,
+    meshgrid,
+    nan,
+    ndarray,
+    nonzero,
+    random,
+)
 
 from ..base_optimizer import BaseOptimizer
 from ..core_optimizer import CoreOptimizer
@@ -23,12 +40,12 @@ if TYPE_CHECKING:
 
 def _isinf(x):
     """Check if value is infinite."""
-    return math.isinf(x) if isinstance(x, int | float) else np.isinf(x)
+    return math.isinf(x) if isinstance(x, int | float) else isinf(x)
 
 
 def _isnan(x):
     """Check if value is NaN."""
-    return math.isnan(x) if isinstance(x, int | float) else np.isnan(x)
+    return math.isnan(x) if isinstance(x, int | float) else isnan(x)
 
 
 class SMBO(BaseOptimizer):
@@ -135,7 +152,7 @@ class SMBO(BaseOptimizer):
         if search_data is not None:
             # Filter out nan and inf
             warm_start_smbo = search_data[
-                ~search_data.isin([np.nan, np.inf, -np.inf]).any(axis=1)
+                ~search_data.isin([nan, inf, -inf]).any(axis=1)
             ]
 
             # Filter out elements that are not in search space
@@ -144,12 +161,12 @@ class SMBO(BaseOptimizer):
                 search_data_dim = warm_start_smbo[para_name].values
                 search_space_dim = self.conv.search_space[para_name]
 
-                int_idx = np.nonzero(np.isin(search_data_dim, search_space_dim))[0]
+                int_idx = nonzero(isin(search_data_dim, search_space_dim))[0]
                 int_idx_list.append(int_idx)
 
             intersec = int_idx_list[0]
             for int_idx in int_idx_list[1:]:
-                intersec = np.intersect1d(intersec, int_idx)
+                intersec = intersect1d(intersec, int_idx)
             warm_start_smbo_f = warm_start_smbo.iloc[intersec]
 
             X_sample_values = warm_start_smbo_f[self.conv.para_names].values
@@ -204,7 +221,7 @@ class SMBO(BaseOptimizer):
             if len(self.X_sample) > len(self.Y_sample):
                 del self.X_sample[-1]
 
-    def _all_possible_pos(self) -> np.ndarray:
+    def _all_possible_pos(self) -> ndarray:
         """Generate all possible positions in the search space.
 
         For large spaces, this is subsampled by _sampling().
@@ -213,8 +230,8 @@ class SMBO(BaseOptimizer):
         n_dim = len(pos_space)
 
         # Create meshgrid and reshape
-        grids = np.meshgrid(*pos_space)
-        all_pos_comb = np.array(grids).T.reshape(-1, n_dim)
+        grids = meshgrid(*pos_space)
+        all_pos_comb = array(grids).T.reshape(-1, n_dim)
 
         # Filter by constraints
         all_pos_comb_constr = []
@@ -222,9 +239,9 @@ class SMBO(BaseOptimizer):
             if self.conv.not_in_constraint(pos):
                 all_pos_comb_constr.append(pos)
 
-        return np.array(all_pos_comb_constr)
+        return array(all_pos_comb_constr)
 
-    def _sampling(self, all_pos_comb: np.ndarray) -> np.ndarray:
+    def _sampling(self, all_pos_comb: ndarray) -> ndarray:
         """Subsample candidate positions for large search spaces."""
         if self.sampling is False:
             return all_pos_comb
@@ -232,7 +249,7 @@ class SMBO(BaseOptimizer):
             return self._random_sampling(all_pos_comb)
         return all_pos_comb
 
-    def _random_sampling(self, pos_comb: np.ndarray) -> np.ndarray:
+    def _random_sampling(self, pos_comb: ndarray) -> ndarray:
         """Random subsampling of candidate positions."""
         n_samples = self.sampling["random"]
         n_pos_comb = len(pos_comb)
@@ -240,13 +257,13 @@ class SMBO(BaseOptimizer):
         if n_pos_comb <= n_samples:
             return pos_comb
         else:
-            idx_sample = np.random.choice(n_pos_comb, n_samples, replace=False)
+            idx_sample = random.choice(n_pos_comb, n_samples, replace=False)
             return pos_comb[idx_sample]
 
-    def _remove_position(self, position: np.ndarray) -> None:
+    def _remove_position(self, position: ndarray) -> None:
         """Remove a position from the candidate set (for replacement=False)."""
-        mask = np.all(self.all_pos_comb == position, axis=1)
-        self.all_pos_comb = self.all_pos_comb[np.invert(mask)]
+        mask = arr_all(self.all_pos_comb == position, axis=1)
+        self.all_pos_comb = self.all_pos_comb[invert(mask)]
 
     # NOTE: _init_pos() is NOT overridden
     # X_sample tracking happens via _pos_new setter
@@ -288,7 +305,7 @@ class SMBO(BaseOptimizer):
             )
             self._cached_proposed_pos = self._move_random()
 
-    def _iterate_continuous_batch(self) -> np.ndarray:
+    def _iterate_continuous_batch(self) -> ndarray:
         """Return continuous portion of surrogate-proposed position.
 
         SMBO trains a surrogate model and proposes positions globally,
@@ -297,7 +314,7 @@ class SMBO(BaseOptimizer):
         self._ensure_surrogate_trained()
         return self._cached_proposed_pos[self._continuous_mask]
 
-    def _iterate_categorical_batch(self) -> np.ndarray:
+    def _iterate_categorical_batch(self) -> ndarray:
         """Return categorical portion of surrogate-proposed position.
 
         SMBO trains a surrogate model and proposes positions globally,
@@ -306,7 +323,7 @@ class SMBO(BaseOptimizer):
         self._ensure_surrogate_trained()
         return self._cached_proposed_pos[self._categorical_mask]
 
-    def _iterate_discrete_batch(self) -> np.ndarray:
+    def _iterate_discrete_batch(self) -> ndarray:
         """Return discrete portion of surrogate-proposed position.
 
         SMBO trains a surrogate model and proposes positions globally,
@@ -322,14 +339,14 @@ class SMBO(BaseOptimizer):
         """
         raise NotImplementedError("Subclass must implement _training()")
 
-    def _expected_improvement(self) -> np.ndarray:
+    def _expected_improvement(self) -> ndarray:
         """Compute acquisition function values for candidate positions.
 
         Override in subclasses.
         """
         raise NotImplementedError("Subclass must implement _expected_improvement()")
 
-    def _move_random(self) -> np.ndarray:
+    def _move_random(self) -> ndarray:
         """Generate a random valid position.
 
         When replacement=False, selects from remaining positions in all_pos_comb.
@@ -341,7 +358,7 @@ class SMBO(BaseOptimizer):
                     "Search space exhausted: no positions remaining with "
                     "replacement=False"
                 )
-            idx = np.random.randint(len(self.all_pos_comb))
+            idx = random.randint(len(self.all_pos_comb))
             return self.all_pos_comb[idx]
         return self.init.move_random_typed()
 
@@ -388,7 +405,7 @@ class SMBO(BaseOptimizer):
 
         k = min(max(10 * n, 50), n_candidates)
         top_k_indices = exp_imp.argsort()[::-1][:k]
-        top_k_positions = np.array([self.pos_comb[i] for i in top_k_indices])
+        top_k_positions = array([self.pos_comb[i] for i in top_k_indices])
         top_k_ei = exp_imp[top_k_indices]
 
         if k < 2 * n:
@@ -419,7 +436,7 @@ class SMBO(BaseOptimizer):
             while len(positions) < n:
                 positions.append(self._move_random())
             return [self._clip_position(pos) for pos in positions]
-        except (ValueError, np.linalg.LinAlgError):
+        except (ValueError, linalg.LinAlgError):
             return [self._clip_position(self._move_random()) for _ in range(n)]
 
     def _evaluate_batch(self, positions, scores):

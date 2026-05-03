@@ -94,8 +94,6 @@ class Search(DistributedSearch, TimesTracker, SearchStatistics):
 
     @TimesTracker.iter_time
     def _initialization(self):
-        self.best_score = self.p_bar.score_best
-
         init_pos = self._init_pos()
 
         score_new = self._evaluate_position(init_pos)
@@ -112,8 +110,6 @@ class Search(DistributedSearch, TimesTracker, SearchStatistics):
 
     @TimesTracker.iter_time
     def _iteration(self):
-        self.best_score = self.p_bar.score_best
-
         pos_new = self._iterate()
 
         score_new = self._evaluate_position(pos_new)
@@ -400,6 +396,12 @@ class Search(DistributedSearch, TimesTracker, SearchStatistics):
 
     def _evaluate_position(self, pos: list[int]) -> float:
         t = time.time()
+        self.adapter._metadata = {
+            "optimizer": self.__class__.__name__,
+            "n_iter": self.n_iter,
+            "iteration": self._iter,
+            "phase": "init" if self._iter < self.n_inits_norm else "iter",
+        }
         result, full_params, active_mask = self.adapter(pos)
         self.eval_times.append(time.time() - t)
         # Store position and active_mask for lazy DataFrame reconstruction
@@ -517,10 +519,6 @@ class Search(DistributedSearch, TimesTracker, SearchStatistics):
         # This avoids memory spike for high-dimensional search spaces
         self._search_data_cache = None
 
-        self.best_score = self.p_bar.score_best
-        self.best_value = self.conv.position2value(self.p_bar.pos_best)
-        self.best_para = self.conv.value2para(self.best_value)
-
         self.p_bar.close()
 
         print_sections = {v for v in self.verbosity if v.startswith("print_")}
@@ -528,15 +526,22 @@ class Search(DistributedSearch, TimesTracker, SearchStatistics):
             print_summary(self._data, print_sections)
 
     @property
-    def _data(self) -> DataAccessor:
-        """Access search data and computed metrics (internal, may change).
+    def best_score(self) -> float:
+        """Best score found during the search.
 
-        Available after calling ``search()``. Returns a
-        :class:`~gradient_free_optimizers._data.data_accessor.DataAccessor`
-        object with properties like ``best_score``, ``convergence_data``,
-        ``overhead_pct``, and a
-        :class:`~gradient_free_optimizers._data.raw_data.RawData`
-        sub-accessor for internal tracking lists.
+        Reads from the internal :class:`SearchTracker` (the single source
+        of truth) via the private ``self._data`` accessor.
+        """
+        return self._data._best_score
+
+    @property
+    def _data(self) -> DataAccessor:
+        """Internal accessor for diagnostic metrics from the last search.
+
+        Backs ``best_score`` and ``print_summary``. Not part of the public
+        API: shape, naming, and contents may change without notice. Public
+        access to per-iteration data goes through ``opt.search_data``
+        (DataFrame) and the flat ``opt.best_score`` / ``opt.best_para``.
         """
         if self._tracker is None:
             raise AttributeError("Search data not available. Call search() first.")
@@ -560,6 +565,29 @@ class Search(DistributedSearch, TimesTracker, SearchStatistics):
     def search_data(self, value: pd.DataFrame) -> None:
         """Allow direct assignment for backward compatibility."""
         self._search_data_cache = value
+
+    @property
+    def diagnostics(self):
+        """Diagnostics accessor for the last search.
+
+        Returns an accessor whose methods run the diagnostics in
+        :mod:`gradient_free_optimizers.diagnostics` on this optimizer's
+        ``search_data``.
+
+        For saved runs or cross-run analysis, prefer the free functions
+        in ``gradient_free_optimizers.diagnostics`` which accept any
+        list-of-dicts, pandas/polars DataFrame, or dict-of-sequences.
+
+        Raises
+        ------
+        AttributeError
+            If ``search()`` has not been called yet.
+        """
+        if self._tracker is None:
+            raise AttributeError("Diagnostics not available. Call search() first.")
+        from .diagnostics import DiagnosticsAccessor
+
+        return DiagnosticsAccessor(self)
 
     def _build_callback_info(self, nth_iter: int) -> CallbackInfo:
         pos = self.pos_l[-1]

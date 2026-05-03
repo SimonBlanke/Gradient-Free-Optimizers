@@ -9,7 +9,12 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Literal
 
-import numpy as np
+from gradient_free_optimizers._array_backend import (
+    array,
+    linalg,
+    ndarray,
+    random,
+)
 
 from .acquisition_function import ExpectedImprovement
 from .smbo import SMBO
@@ -21,13 +26,13 @@ if TYPE_CHECKING:
 
 def normalize(arr):
     """Normalize array to [0, 1] range."""
-    arr = np.array(arr)
+    arr = array(arr)
     arr_min = arr.min()
     arr_max = arr.max()
     range_ = arr_max - arr_min
 
     if range_ == 0:
-        return np.random.uniform(0, 1, size=arr.shape)
+        return random.uniform(0, 1, size=arr.shape)
     else:
         return (arr - arr_min) / range_
 
@@ -124,17 +129,41 @@ class BayesianOptimizer(SMBO):
         self.regr = self.gpr
         self.xi = xi
 
-    def _expected_improvement(self) -> np.ndarray:
+        max_pos = self.conv.max_positions
+        n_dims = len(max_pos)
+        offsets = [0.0] * n_dims
+        denoms = [1.0] * n_dims
+
+        cont_idx = 0
+        for i in range(n_dims):
+            if self._continuous_mask is not None and self._continuous_mask[i]:
+                bounds = self._continuous_bounds[cont_idx]
+                offsets[i] = float(bounds[0])
+                range_ = float(bounds[1]) - float(bounds[0])
+                denoms[i] = range_ if range_ > 0 else 1.0
+                cont_idx += 1
+            else:
+                denoms[i] = max(float(max_pos[i]), 1.0)
+
+        self._x_norm_offset = array(offsets)
+        self._x_norm_denom = array(denoms)
+
+    def _normalize_X(self, X):
+        """Normalize positions to [0, 1] per dimension."""
+        return (array(X, dtype=float) - self._x_norm_offset) / self._x_norm_denom
+
+    def _expected_improvement(self) -> ndarray:
         """Compute Expected Improvement for all candidate positions."""
         self.pos_comb = self._sampling(self.all_pos_comb)
 
-        acqu_func = ExpectedImprovement(self.regr, self.pos_comb, self.xi)
+        pos_comb_norm = self._normalize_X(self.pos_comb)
+        acqu_func = ExpectedImprovement(self.regr, pos_comb_norm, self.xi)
         return acqu_func.calculate(self.X_sample, self.Y_sample)
 
     def _training(self) -> None:
-        """Fit the Gaussian Process on training data."""
-        X_sample = np.array(self.X_sample)
-        Y_sample = np.array(self.Y_sample)
+        """Fit the Gaussian Process on normalized training data."""
+        X_sample = self._normalize_X(array(self.X_sample))
+        Y_sample = array(self.Y_sample)
 
         Y_sample = normalize(Y_sample).reshape(-1, 1)
         self.regr.fit(X_sample, Y_sample)
@@ -148,7 +177,7 @@ class BayesianOptimizer(SMBO):
             while len(positions) < n:
                 positions.append(self._move_random())
             return [self._clip_position(pos) for pos in positions]
-        except (ValueError, np.linalg.LinAlgError):
+        except (ValueError, linalg.LinAlgError):
             return [self._clip_position(self._move_random()) for _ in range(n)]
 
     def _evaluate_batch(self, positions, scores):

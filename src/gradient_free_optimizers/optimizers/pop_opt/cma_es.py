@@ -9,7 +9,29 @@ from __future__ import annotations
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
-import numpy as np
+from gradient_free_optimizers._array_backend import (
+    arange,
+    argsort,
+    clip,
+    diag,
+    exp,
+    eye,
+    full,
+    inf,
+    linalg,
+    log,
+    maximum,
+    ndarray,
+    ones,
+    outer,
+    random,
+    sqrt,
+    triu,
+    zeros,
+)
+from gradient_free_optimizers._array_backend import (
+    sum as arr_sum,
+)
 
 from .base_population_optimizer import BasePopulationOptimizer
 
@@ -84,7 +106,7 @@ class CMAESOptimizer(BasePopulationOptimizer):
         n = len(search_space)
 
         if population is None:
-            population = 4 + int(3 * np.log(n)) if n > 0 else 4
+            population = 4 + int(3 * log(n)) if n > 0 else 4
 
         super().__init__(
             search_space=search_space,
@@ -109,7 +131,7 @@ class CMAESOptimizer(BasePopulationOptimizer):
         if diff_init > 0:
             self.init.add_n_random_init_pos(diff_init)
 
-        self._rng = np.random.default_rng(self.random_seed)
+        self._rng = random.default_rng(self.random_seed)
         self._n = n
 
         # Normalization arrays (maps positions to [0, 1]^n)
@@ -119,14 +141,14 @@ class CMAESOptimizer(BasePopulationOptimizer):
         self._compute_strategy_params()
 
         # CMA-ES state (mean initialized in _on_finish_initialization)
-        self._mean = np.full(n, 0.5)
+        self._mean = full(n, 0.5)
         self._cma_sigma = sigma
-        self._C = np.eye(n)
-        self._p_sigma = np.zeros(n)
-        self._p_c = np.zeros(n)
-        self._B = np.eye(n)
-        self._D = np.ones(n)
-        self._invsqrtC = np.eye(n)
+        self._C = eye(n)
+        self._p_sigma = zeros(n)
+        self._p_c = zeros(n)
+        self._B = eye(n)
+        self._D = ones(n)
+        self._invsqrtC = eye(n)
 
         # Generation state
         self._generation_samples = []
@@ -140,7 +162,7 @@ class CMAESOptimizer(BasePopulationOptimizer):
 
         # IPOP restart state
         self._initial_lambda = self._lambda
-        self._best_score_at_restart = -np.inf
+        self._best_score_at_restart = -inf
         self._gens_without_improvement = 0
 
     def _setup_normalization(self):
@@ -151,8 +173,8 @@ class CMAESOptimizer(BasePopulationOptimizer):
         of their original scale.
         """
         n = self._n
-        self._dim_scales = np.ones(n)
-        self._dim_offsets = np.zeros(n)
+        self._dim_scales = ones(n)
+        self._dim_offsets = zeros(n)
 
         for i, (name, dim_def) in enumerate(self.search_space.items()):
             if isinstance(dim_def, tuple) and len(dim_def) == 2:
@@ -161,7 +183,7 @@ class CMAESOptimizer(BasePopulationOptimizer):
             elif isinstance(dim_def, list):
                 self._dim_offsets[i] = 0
                 self._dim_scales[i] = max(len(dim_def) - 1, 1)
-            elif isinstance(dim_def, np.ndarray):
+            elif isinstance(dim_def, ndarray):
                 self._dim_offsets[i] = 0
                 self._dim_scales[i] = max(len(dim_def) - 1, 1)
 
@@ -188,17 +210,15 @@ class CMAESOptimizer(BasePopulationOptimizer):
             return
 
         # Recombination weights (log-proportional, normalized)
-        raw_w = np.log(mu + 0.5) - np.log(np.arange(1, mu + 1))
+        raw_w = log(mu + 0.5) - log(arange(1, mu + 1))
         self._weights = raw_w / raw_w.sum()
-        self._mu_eff = 1.0 / np.sum(self._weights**2)
+        self._mu_eff = 1.0 / arr_sum(self._weights**2)
 
         mu_eff = self._mu_eff
 
         # Step-size control (CSA)
         self._c_sigma = (mu_eff + 2) / (n + mu_eff + 5)
-        self._d_sigma = (
-            1 + 2 * max(0, np.sqrt((mu_eff - 1) / (n + 1)) - 1) + self._c_sigma
-        )
+        self._d_sigma = 1 + 2 * max(0, sqrt((mu_eff - 1) / (n + 1)) - 1) + self._c_sigma
 
         # Covariance matrix adaptation
         self._c_c = (4 + mu_eff / n) / (n + 4 + 2 * mu_eff / n)
@@ -209,7 +229,7 @@ class CMAESOptimizer(BasePopulationOptimizer):
         )
 
         # Expected length of N(0, I) vector
-        self._chi_n = np.sqrt(n) * (1 - 1 / (4 * n) + 1 / (21 * n**2))
+        self._chi_n = sqrt(n) * (1 - 1 / (4 * n) + 1 / (21 * n**2))
 
     def _eigendecomposition(self):
         """Decompose C = B * D^2 * B^T for sampling and invsqrtC.
@@ -217,20 +237,20 @@ class CMAESOptimizer(BasePopulationOptimizer):
         Also enforces symmetry and positive-definiteness, and resets
         C if the condition number becomes too large.
         """
-        self._C = np.triu(self._C) + np.triu(self._C, 1).T
+        self._C = triu(self._C) + triu(self._C, 1).T
 
-        D_sq, B = np.linalg.eigh(self._C)
-        D_sq = np.maximum(D_sq, 1e-20)
+        D_sq, B = linalg.eigh(self._C)
+        D_sq = maximum(D_sq, 1e-20)
 
         # Reset if condition number is dangerously large
         if D_sq.max() / D_sq.min() > 1e14:
-            self._C = np.eye(self._n)
-            D_sq = np.ones(self._n)
-            B = np.eye(self._n)
+            self._C = eye(self._n)
+            D_sq = ones(self._n)
+            B = eye(self._n)
 
-        self._D = np.sqrt(D_sq)
+        self._D = sqrt(D_sq)
         self._B = B
-        self._invsqrtC = B @ np.diag(1.0 / self._D) @ B.T
+        self._invsqrtC = B @ diag(1.0 / self._D) @ B.T
 
     def _sample_generation(self):
         """Sample lambda candidates from N(mean, sigma^2 * C)."""
@@ -248,12 +268,12 @@ class CMAESOptimizer(BasePopulationOptimizer):
         if self._pos_best is not None:
             self._mean = self._normalize(self._pos_best.copy())
         else:
-            self._mean = np.full(self._n, 0.5)
+            self._mean = full(self._n, 0.5)
 
         self._cma_sigma = self._initial_sigma
-        self._C = np.eye(self._n)
-        self._p_sigma = np.zeros(self._n)
-        self._p_c = np.zeros(self._n)
+        self._C = eye(self._n)
+        self._p_sigma = zeros(self._n)
+        self._p_c = zeros(self._n)
         self._eigendecomposition()
         self._sample_generation()
 
@@ -269,17 +289,17 @@ class CMAESOptimizer(BasePopulationOptimizer):
         self._current_denorm_pos = self._denormalize(sample)
         self._iteration_setup_done = True
 
-    def _iterate_continuous_batch(self) -> np.ndarray:
+    def _iterate_continuous_batch(self) -> ndarray:
         """Return continuous portion of the current CMA-ES sample."""
         self._setup_iteration()
         return self._current_denorm_pos[self._continuous_mask]
 
-    def _iterate_categorical_batch(self) -> np.ndarray:
+    def _iterate_categorical_batch(self) -> ndarray:
         """Return categorical portion of the current CMA-ES sample."""
         self._setup_iteration()
         return self._current_denorm_pos[self._categorical_mask]
 
-    def _iterate_discrete_batch(self) -> np.ndarray:
+    def _iterate_discrete_batch(self) -> ndarray:
         """Return discrete portion of the current CMA-ES sample."""
         self._setup_iteration()
         return self._current_denorm_pos[self._discrete_mask]
@@ -329,10 +349,10 @@ class CMAESOptimizer(BasePopulationOptimizer):
         old_mean = self._mean.copy()
 
         # 1. Rank by score (descending)
-        indices = np.argsort(self._generation_scores)[::-1]
+        indices = argsort(self._generation_scores)[::-1]
 
         # 2. Weighted mean of mu best samples
-        self._mean = np.zeros(n)
+        self._mean = zeros(n)
         for i in range(self._mu):
             self._mean += self._weights[i] * self._generation_samples[indices[i]]
 
@@ -340,30 +360,30 @@ class CMAESOptimizer(BasePopulationOptimizer):
         y_w = (self._mean - old_mean) / self._cma_sigma
 
         # 3a. Evolution path for step-size control (CSA)
-        self._p_sigma = (1 - self._c_sigma) * self._p_sigma + np.sqrt(
+        self._p_sigma = (1 - self._c_sigma) * self._p_sigma + sqrt(
             self._c_sigma * (2 - self._c_sigma) * self._mu_eff
         ) * (self._invsqrtC @ y_w)
 
         # h_sigma: stall indicator for p_c update
-        p_sigma_norm = np.linalg.norm(self._p_sigma)
+        p_sigma_norm = linalg.norm(self._p_sigma)
         gen_factor = 1 - (1 - self._c_sigma) ** (2 * (self._generation_count + 1))
-        threshold = (1.4 + 2 / (n + 1)) * self._chi_n * np.sqrt(gen_factor)
+        threshold = (1.4 + 2 / (n + 1)) * self._chi_n * sqrt(gen_factor)
         h_sigma = 1.0 if p_sigma_norm < threshold else 0.0
 
         # 3b. Evolution path for rank-one update
-        self._p_c = (1 - self._c_c) * self._p_c + h_sigma * np.sqrt(
+        self._p_c = (1 - self._c_c) * self._p_c + h_sigma * sqrt(
             self._c_c * (2 - self._c_c) * self._mu_eff
         ) * y_w
 
         # 4. Covariance matrix update
         delta_h = (1 - h_sigma) * self._c_c * (2 - self._c_c)
 
-        rank_one = np.outer(self._p_c, self._p_c)
+        rank_one = outer(self._p_c, self._p_c)
 
-        rank_mu = np.zeros((n, n))
+        rank_mu = zeros((n, n))
         for i in range(self._mu):
             y_i = (self._generation_samples[indices[i]] - old_mean) / self._cma_sigma
-            rank_mu += self._weights[i] * np.outer(y_i, y_i)
+            rank_mu += self._weights[i] * outer(y_i, y_i)
 
         self._C = (
             (1 + self._c_1 * delta_h - self._c_1 - self._c_mu_cov) * self._C
@@ -372,10 +392,10 @@ class CMAESOptimizer(BasePopulationOptimizer):
         )
 
         # 5. Step-size update
-        self._cma_sigma *= np.exp(
+        self._cma_sigma *= exp(
             (self._c_sigma / self._d_sigma) * (p_sigma_norm / self._chi_n - 1)
         )
-        self._cma_sigma = np.clip(self._cma_sigma, 1e-20, 10.0)
+        self._cma_sigma = clip(self._cma_sigma, 1e-20, 10.0)
 
         # 6. Eigendecomposition for next generation
         self._eigendecomposition()
@@ -401,9 +421,9 @@ class CMAESOptimizer(BasePopulationOptimizer):
 
             self._mean = self._rng.uniform(0, 1, self._n)
             self._cma_sigma = self._initial_sigma
-            self._C = np.eye(self._n)
-            self._p_sigma = np.zeros(self._n)
-            self._p_c = np.zeros(self._n)
+            self._C = eye(self._n)
+            self._p_sigma = zeros(self._n)
+            self._p_c = zeros(self._n)
             self._eigendecomposition()
 
             self._gens_without_improvement = 0

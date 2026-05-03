@@ -4,11 +4,13 @@
 
 """Parallel Tempering (Replica Exchange) Optimizer."""
 
+from __future__ import annotations
+
 import copy
 import math
 import random
 
-import numpy as np
+from gradient_free_optimizers._array_backend import isinf, ndarray
 
 from ..local_opt import SimulatedAnnealingOptimizer
 from .base_population_optimizer import BasePopulationOptimizer
@@ -168,7 +170,7 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
 
         if denom == 0:
             return 100
-        elif np.isinf(abs(denom)):
+        elif isinf(abs(denom)):
             return 0
         else:
             score_diff_norm = (_p1_._score_current - _p2_._score_current) / denom
@@ -235,7 +237,7 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
 
         self._iteration_setup_done = True
 
-    def _iterate_continuous_batch(self) -> np.ndarray:
+    def _iterate_continuous_batch(self) -> ndarray:
         """Generate continuous values by delegating to current sub-optimizer.
 
         Returns the continuous portion of the sub-optimizer's position.
@@ -248,7 +250,7 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
         self._setup_iteration()
         return self._current_new_pos[self._continuous_mask]
 
-    def _iterate_categorical_batch(self) -> np.ndarray:
+    def _iterate_categorical_batch(self) -> ndarray:
         """Generate categorical indices by delegating to current sub-optimizer.
 
         Returns the categorical portion of the sub-optimizer's position.
@@ -261,7 +263,7 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
         self._setup_iteration()
         return self._current_new_pos[self._categorical_mask]
 
-    def _iterate_discrete_batch(self) -> np.ndarray:
+    def _iterate_discrete_batch(self) -> ndarray:
         """Generate discrete indices by delegating to current sub-optimizer.
 
         Returns the discrete portion of the sub-optimizer's position.

@@ -4,7 +4,14 @@
 
 """Repulsing Hill Climbing Optimizer."""
 
-import numpy as np
+from __future__ import annotations
+
+from gradient_free_optimizers._array_backend import (
+    floor,
+    maximum,
+    ndarray,
+    where,
+)
 
 from .hill_climbing_optimizer import HillClimbingOptimizer
 
@@ -84,7 +91,7 @@ class RepulsingHillClimbingOptimizer(HillClimbingOptimizer):
         self.repulsion_factor = repulsion_factor
         self.epsilon_mod = 1  # Multiplier for epsilon, increases when stuck
 
-    def _iterate_continuous_batch(self) -> np.ndarray:
+    def _iterate_continuous_batch(self) -> ndarray:
         """Generate new continuous values with adaptive step size.
 
         Accesses via: self._pos_current, self._continuous_bounds
@@ -103,7 +110,7 @@ class RepulsingHillClimbingOptimizer(HillClimbingOptimizer):
 
         return current + noise
 
-    def _iterate_categorical_batch(self) -> np.ndarray:
+    def _iterate_categorical_batch(self) -> ndarray:
         """Generate new categorical values with adaptive switch probability.
 
         Accesses via: self._pos_current, self._categorical_sizes
@@ -118,11 +125,11 @@ class RepulsingHillClimbingOptimizer(HillClimbingOptimizer):
 
         # Higher epsilon_mod means more likely to switch categories
         switch_mask = self._rng.random(n) < effective_epsilon
-        random_cats = np.floor(self._rng.random(n) * n_categories).astype(np.int64)
+        random_cats = floor(self._rng.random(n) * n_categories).astype(int)
 
-        return np.where(switch_mask, random_cats, current.astype(np.int64))
+        return where(switch_mask, random_cats, current.astype(int))
 
-    def _iterate_discrete_batch(self) -> np.ndarray:
+    def _iterate_discrete_batch(self) -> ndarray:
         """Generate new discrete values with adaptive step size.
 
         Accesses via: self._pos_current, self._discrete_bounds
@@ -136,7 +143,7 @@ class RepulsingHillClimbingOptimizer(HillClimbingOptimizer):
         effective_epsilon = self.epsilon * self.epsilon_mod
         sigmas = max_positions * effective_epsilon
 
-        sigmas = np.maximum(sigmas, 1e-10)
+        sigmas = maximum(sigmas, 1e-10)
 
         noise_fn = self._DISTRIBUTIONS[self.distribution]
         noise = noise_fn(self._rng, sigmas, len(current))

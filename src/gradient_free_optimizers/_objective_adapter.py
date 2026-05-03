@@ -18,6 +18,7 @@ class ObjectiveAdapter:
         self._conv = conv
         self._objective = objective
         self._optimizer_ref = optimizer_ref
+        self._metadata = {}
 
     def _call_objective(self, pos):
         """Run the underlying objective and normalise outputs."""
@@ -31,6 +32,9 @@ class ObjectiveAdapter:
             filtered = full_params
 
         params = SearchParams(filtered, optimizer_ref=self._optimizer_ref)
+        for key, value in self._metadata.items():
+            setattr(params, f"_{key}", value)
+
         out = self._objective(params)
         params._apply_deferred()
 

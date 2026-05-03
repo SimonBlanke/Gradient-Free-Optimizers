@@ -4,7 +4,14 @@
 
 """Random Annealing Optimizer."""
 
-import numpy as np
+from __future__ import annotations
+
+from gradient_free_optimizers._array_backend import (
+    floor,
+    maximum,
+    ndarray,
+    where,
+)
 
 from ..local_opt import HillClimbingOptimizer
 
@@ -89,7 +96,7 @@ class RandomAnnealingOptimizer(HillClimbingOptimizer):
         self.start_temp = start_temp
         self.temp = start_temp
 
-    def _iterate_continuous_batch(self) -> np.ndarray:
+    def _iterate_continuous_batch(self) -> ndarray:
         """Generate new continuous values with temperature-scaled step size.
 
         Accesses via: self._pos_current, self._continuous_bounds
@@ -108,7 +115,7 @@ class RandomAnnealingOptimizer(HillClimbingOptimizer):
 
         return current + noise
 
-    def _iterate_categorical_batch(self) -> np.ndarray:
+    def _iterate_categorical_batch(self) -> ndarray:
         """Generate new categorical values with temperature-scaled switch probability.
 
         Accesses via: self._pos_current, self._categorical_sizes
@@ -123,11 +130,11 @@ class RandomAnnealingOptimizer(HillClimbingOptimizer):
         switch_prob = min(effective_epsilon, 1.0)  # Cap at 1.0
 
         switch_mask = self._rng.random(n) < switch_prob
-        random_cats = np.floor(self._rng.random(n) * n_categories).astype(np.int64)
+        random_cats = floor(self._rng.random(n) * n_categories).astype(int)
 
-        return np.where(switch_mask, random_cats, current.astype(np.int64))
+        return where(switch_mask, random_cats, current.astype(int))
 
-    def _iterate_discrete_batch(self) -> np.ndarray:
+    def _iterate_discrete_batch(self) -> ndarray:
         """Generate new discrete values with temperature-scaled step size.
 
         Accesses via: self._pos_current, self._discrete_bounds
@@ -140,7 +147,7 @@ class RandomAnnealingOptimizer(HillClimbingOptimizer):
         # Scale sigma by temperature
         effective_epsilon = self.epsilon * self.temp
         sigmas = max_positions * effective_epsilon
-        sigmas = np.maximum(sigmas, 1e-10)
+        sigmas = maximum(sigmas, 1e-10)
 
         noise_fn = self._DISTRIBUTIONS[self.distribution]
         noise = noise_fn(self._rng, sigmas, len(current))

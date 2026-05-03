@@ -4,7 +4,12 @@
 
 """Random Restart Hill Climbing Optimizer."""
 
-import numpy as np
+from __future__ import annotations
+
+from gradient_free_optimizers._array_backend import (
+    empty,
+    floor,
+)
 
 from ..local_opt import HillClimbingOptimizer
 
@@ -111,7 +116,7 @@ class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer):
             Clipped random position as numpy array
         """
         n_dims = len(self.search_space)
-        new_pos = np.empty(n_dims)
+        new_pos = empty(n_dims)
 
         # Random continuous values
         if self._continuous_mask is not None and self._continuous_mask.any():
@@ -122,14 +127,14 @@ class RandomRestartHillClimbingOptimizer(HillClimbingOptimizer):
         # Random categorical indices
         if self._categorical_mask is not None and self._categorical_mask.any():
             n_cats = self._categorical_sizes
-            new_pos[self._categorical_mask] = np.floor(
+            new_pos[self._categorical_mask] = floor(
                 self._rng.random(len(n_cats)) * n_cats
-            ).astype(np.int64)
+            ).astype(int)
 
         # Random discrete indices
         if self._discrete_mask is not None and self._discrete_mask.any():
-            mins = self._discrete_bounds[:, 0].astype(np.int64)
-            maxs = self._discrete_bounds[:, 1].astype(np.int64)
+            mins = self._discrete_bounds[:, 0].astype(int)
+            maxs = self._discrete_bounds[:, 1].astype(int)
             new_pos[self._discrete_mask] = self._rng.integers(mins, maxs + 1)
 
         return self._clip_position(new_pos)

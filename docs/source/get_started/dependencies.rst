@@ -38,7 +38,7 @@ This adds:
   for surrogate models
 
 However, sklearn is **not required**. GFO ships its own Gaussian Process, Random
-Forest, and KDE implementations, so all 22 optimizers work out of the box without
+Forest, and KDE implementations, so all 23 optimizers work out of the box without
 scikit-learn installed.
 
 

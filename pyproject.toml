@@ -10,7 +10,7 @@ license-files = []
 
 [project]
 name = "gradient-free-optimizers"
-version = "1.11.1"
+version = "1.12.0"
 description = "Lightweight optimization with local, global, population-based and sequential techniques across mixed search spaces "
 readme = "README.md"
 requires-python = ">=3.10"
@@ -66,13 +66,15 @@ classifiers=[
 
 dependencies = [
   "numpy >=1.18.1, <3.0.0",
-  "scipy <2.0.0",
   "pandas <3.0.0",
 ]
 
 [project.optional-dependencies]
 progress = [
   "tqdm >=4.48.0, <5.0.0",
+]
+scipy = [
+  "scipy <2.0.0",
 ]
 sklearn = [
   "scikit-learn >=0.21, !=0.23.*",
@@ -88,11 +90,12 @@ build = [
   "wheel",
 ]
 test = [
-  "pytest == 9.0.2",
+  "pytest == 9.0.3",
   "flake8",
   "pytest-cov",
   "surfaces",
   "scikit-learn >=0.21, !=0.23.*",
+  "scipy <2.0.0",
 ]
 
 [project.scripts]
@@ -100,6 +103,7 @@ gfo-help = "gradient_free_optimizers._cli_help:main"
 
 [project.urls]
 "Homepage" = "https://github.com/SimonBlanke/Gradient-Free-Optimizers"
+"Documentation" = "https://gradient-free-optimizers.readthedocs.io/"
 "Bug Reports" = "https://github.com/SimonBlanke/Gradient-Free-Optimizers/issues"
 "Source" = "https://github.com/SimonBlanke/Gradient-Free-Optimizers/"
 
@@ -193,6 +197,16 @@ convention = "numpy"
 "src/gradient_free_optimizers/optimizers_legacy/**/*.py" = ["D100", "D101", "D102", "D103", "D205", "D401", "S311"]
 # Search module - relaxed docstring rules
 "src/gradient_free_optimizers/search.py" = ["D100", "D101", "D102", "D103"]
+
+[tool.coverage.run]
+source = ["gradient_free_optimizers"]
+relative_files = true
+
+[tool.coverage.paths]
+source = [
+    "src/gradient_free_optimizers",
+    "*/site-packages/gradient_free_optimizers",
+]
 
 [tool.pytest.ini_options]
 markers = [

@@ -11,7 +11,7 @@ General
 GFO focuses on simplicity and transparency:
 
 - Search spaces are just NumPy arrays (no special types)
-- All 22 algorithms share the same interface
+- All 23 algorithms share the same interface
 - Pure Python with minimal dependencies
 - Serves as the backend for Hyperactive
 

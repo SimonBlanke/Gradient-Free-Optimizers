@@ -125,6 +125,20 @@ Optimizers
     gradient_free_optimizers.ForestOptimizer
 
 
+.. seealso::
+
+   The same 23 algorithms are also available with a batch-capable
+   ``ask(n=...)`` / ``tell(scores)`` interface for cases where evaluation
+   should run outside the managed ``search()`` loop. See
+   :doc:`api_reference/ask_tell` for the API reference and
+   :doc:`user_guide/ask_tell` for usage and trade-offs.
+
+.. toctree::
+   :hidden:
+
+   api_reference/ask_tell
+
+
 Common Interface
 ----------------
 

@@ -4,15 +4,17 @@
 
 """Normalization utilities for SMBO optimizers."""
 
-import numpy as np
+from __future__ import annotations
+
+from gradient_free_optimizers._array_backend import random
 
 
-def normalize(array):
+def normalize(arr):
     """Normalize array values to [0, 1] range using min-max scaling.
 
     Parameters
     ----------
-    array : np.ndarray
+    arr : np.ndarray
         Input array to normalize.
 
     Returns
@@ -22,11 +24,11 @@ def normalize(array):
         If all values are identical (range=0), returns random values
         to avoid division by zero and enable exploration.
     """
-    array_min = array.min()
-    array_max = array.max()
+    array_min = arr.min()
+    array_max = arr.max()
     range_ = array_max - array_min
 
     if range_ == 0:
-        return np.random.random_sample(array.shape)
+        return random.random_sample(arr.shape)
     else:
-        return (array - array_min) / range_
+        return (arr - array_min) / range_

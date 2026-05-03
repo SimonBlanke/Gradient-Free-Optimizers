@@ -9,9 +9,11 @@ Population-based optimizers maintain multiple candidate solutions
 and may have different iteration patterns than single-solution optimizers.
 """
 
+from __future__ import annotations
+
 import math
 
-import numpy as np
+from gradient_free_optimizers._array_backend import ndarray
 
 from ..core_optimizer import CoreOptimizer
 
@@ -212,7 +214,7 @@ class BasePopulationOptimizer(CoreOptimizer):
             f"{self.__class__.__name__} must implement _on_evaluate()"
         )
 
-    def _iterate_continuous_batch(self) -> "np.ndarray":
+    def _iterate_continuous_batch(self) -> ndarray:
         """Generate continuous values for the current iteration.
 
         Population optimizers must implement this to provide
@@ -222,7 +224,7 @@ class BasePopulationOptimizer(CoreOptimizer):
             f"{self.__class__.__name__} must implement _iterate_continuous_batch()"
         )
 
-    def _iterate_categorical_batch(self) -> "np.ndarray":
+    def _iterate_categorical_batch(self) -> ndarray:
         """Generate categorical indices for the current iteration.
 
         Population optimizers must implement this to provide
@@ -232,7 +234,7 @@ class BasePopulationOptimizer(CoreOptimizer):
             f"{self.__class__.__name__} must implement _iterate_categorical_batch()"
         )
 
-    def _iterate_discrete_batch(self) -> "np.ndarray":
+    def _iterate_discrete_batch(self) -> ndarray:
         """Generate discrete indices for the current iteration.
 
         Population optimizers must implement this to provide

@@ -1,4 +1,4 @@
-"""Tests for the opt._data explainability interface."""
+"""Tests for the internal opt._data accessor (private API)."""
 
 import math
 
@@ -70,20 +70,17 @@ class TestIterationCounts:
         d = opt._data
         assert d.n_iter == 1
         assert len(d.convergence_data) == 1
-        assert len(d.results) == 1
+        assert len(d._results) == 1
 
 
 class TestBestResults:
     def test_best_score(self, hill_opt):
-        d = hill_opt._data
-        assert d.best_score <= 0
-        assert d.best_score == hill_opt.best_score
+        assert hill_opt.best_score <= 0
 
     def test_best_para(self, hill_opt):
-        d = hill_opt._data
-        assert isinstance(d.best_para, dict)
-        assert "x" in d.best_para
-        assert "y" in d.best_para
+        assert isinstance(hill_opt.best_para, dict)
+        assert "x" in hill_opt.best_para
+        assert "y" in hill_opt.best_para
 
     def test_best_iteration_in_range(self, hill_opt):
         assert 0 <= hill_opt._data.best_iteration < N_ITER
@@ -166,10 +163,10 @@ class TestScoreStatistics:
 
 class TestResults:
     def test_results_length(self, hill_opt):
-        assert len(hill_opt._data.results) == N_ITER
+        assert len(hill_opt._data._results) == N_ITER
 
     def test_results_structure(self, hill_opt):
-        row = hill_opt._data.results[0]
+        row = hill_opt._data._results[0]
         assert isinstance(row, dict)
         assert "score" in row
         assert "x" in row
@@ -284,8 +281,8 @@ class TestAcrossOptimizers:
         assert d.n_iter == 20
         assert d.n_init + d.n_optimization == 20
         assert len(d.convergence_data) == 20
-        assert len(d.results) == 20
-        assert d.best_score <= 0
+        assert len(d._results) == 20
+        assert opt.best_score <= 0
         assert 0 <= d.best_iteration < 20
         assert d.n_score_improvements >= 1
         assert 0.0 <= d.acceptance_rate <= 1.0

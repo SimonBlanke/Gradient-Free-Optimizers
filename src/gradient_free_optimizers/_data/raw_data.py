@@ -10,11 +10,12 @@ if TYPE_CHECKING:
 class RawData:
     """Direct access to internal tracking lists.
 
-    Exposes raw optimization data with user-friendly names.
+    Exposes raw optimization data with friendly names.
     Score lists are returned by reference (no copy).
     Position lists are converted to parameter dicts on access.
 
-    Accessed via ``opt._data.raw``.
+    Accessed internally via ``opt._data.raw`` (private; not part of
+    the public API).
     """
 
     def __init__(self, tracker: SearchTracker, optimizer: CoreOptimizer):

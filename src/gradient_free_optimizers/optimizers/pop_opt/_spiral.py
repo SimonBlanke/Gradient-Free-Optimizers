@@ -9,7 +9,9 @@ A Spiral particle moves in a spiral trajectory toward the center position,
 combining rotation and contraction to balance exploration and exploitation.
 """
 
-import numpy as np
+from __future__ import annotations
+
+from gradient_free_optimizers._array_backend import array, clip, zeros
 
 from ..local_opt import HillClimbingOptimizer
 
@@ -37,7 +39,7 @@ def rotation(n_dim, vector):
         Rotated vector.
     """
     if n_dim == 1:
-        return np.array([-1.0])  # Return as array for consistency
+        return array([-1.0])  # Return as array for consistency
 
     # Build rotation matrix
     # R has shape (n_dim, n_dim)
@@ -45,12 +47,12 @@ def rotation(n_dim, vector):
     # - 1 row of zeros on top
     # - 1 column of zeros on right
     # - then R[0, n_dim-1] = -1
-    R = np.zeros((n_dim, n_dim))
+    R = zeros((n_dim, n_dim))
     for i in range(n_dim - 1):
         R[i + 1, i] = 1.0
     R[0, n_dim - 1] = -1.0
 
-    return np.matmul(R, np.array(vector))
+    return R @ array(vector)
 
 
 class Spiral(HillClimbingOptimizer):
@@ -96,9 +98,9 @@ class Spiral(HillClimbingOptimizer):
             New position after applying velocity.
         """
         if self.conv.is_legacy_mode:
-            pos_new = (np.array(pos) + np.array(velo)).astype(int)
+            pos_new = (array(pos) + array(velo)).astype(int)
             n_zeros = [0] * len(self.conv.max_positions)
-            return np.clip(pos_new, n_zeros, self.conv.max_positions)
+            return clip(pos_new, n_zeros, self.conv.max_positions)
 
         # Type-aware movement for mixed dimension types
         pos_new = []
@@ -106,7 +108,7 @@ class Spiral(HillClimbingOptimizer):
             new_val = pos[idx] + velo[idx]
             pos_new.append(new_val)
 
-        return self._conv2pos_typed(np.array(pos_new))
+        return self._conv2pos_typed(array(pos_new))
 
     def move_spiral(self, center_pos):
         """Move particle in spiral pattern toward center.
@@ -139,7 +141,7 @@ class Spiral(HillClimbingOptimizer):
 
         # Compute step rate based on search space size
         if self.conv.is_legacy_mode:
-            step_rate = self.decay_factor * np.array(self.conv.max_positions) / 1000
+            step_rate = self.decay_factor * array(self.conv.max_positions) / 1000
         else:
             # For typed dimensions, use bounds to compute scale
             scales = []
@@ -151,11 +153,11 @@ class Spiral(HillClimbingOptimizer):
                     scales.append(bounds[1] - bounds[0])
                 else:
                     scales.append(bounds[1])
-            step_rate = self.decay_factor * np.array(scales) / 1000
+            step_rate = self.decay_factor * array(scales) / 1000
 
         # Compute rotated offset from center
-        A = np.array(center_pos)
-        rot = rotation(len(center_pos), np.array(self._pos_current) - A)
+        A = array(center_pos)
+        rot = rotation(len(center_pos), array(self._pos_current) - A)
 
         # Combine rotation with decay
         B = step_rate * rot
@@ -164,7 +166,7 @@ class Spiral(HillClimbingOptimizer):
         # Convert to valid position
         if self.conv.is_legacy_mode:
             n_zeros = [0] * len(self.conv.max_positions)
-            pos_new = np.clip(new_pos, n_zeros, self.conv.max_positions).astype(int)
+            pos_new = clip(new_pos, n_zeros, self.conv.max_positions).astype(int)
         else:
             pos_new = self._conv2pos_typed(new_pos)
 
@@ -180,7 +182,7 @@ class Spiral(HillClimbingOptimizer):
         """
         if self.conv.is_legacy_mode:
             n_zeros = [0] * len(self.conv.max_positions)
-            return np.clip(pos, n_zeros, self.conv.max_positions).astype(int)
+            return clip(pos, n_zeros, self.conv.max_positions).astype(int)
 
         from gradient_free_optimizers._dimension_types import DimensionType
 
@@ -191,12 +193,12 @@ class Spiral(HillClimbingOptimizer):
 
             if dim_type == DimensionType.CONTINUOUS:
                 # Clip to bounds, keep as float
-                pos_new.append(np.clip(val, bounds[0], bounds[1]))
+                pos_new.append(clip(val, bounds[0], bounds[1]))
             else:
                 # Discrete or categorical: clip and convert to int
-                pos_new.append(int(np.clip(round(val), bounds[0], bounds[1])))
+                pos_new.append(int(clip(round(val), bounds[0], bounds[1])))
 
-        return np.array(pos_new)
+        return array(pos_new)
 
     def _on_evaluate(self, score_new):
         """Evaluate and track scores."""

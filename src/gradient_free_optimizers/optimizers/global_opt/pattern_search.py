@@ -10,7 +10,16 @@ import random
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
-import numpy as np
+from gradient_free_optimizers._array_backend import (
+    argmax,
+    array,
+    clip,
+    empty,
+    ndarray,
+)
+from gradient_free_optimizers._array_backend import (
+    random as arr_random,
+)
 
 from ..base_optimizer import BaseOptimizer
 
@@ -107,13 +116,13 @@ class PatternSearch(BaseOptimizer):
         n_dims = len(self.search_space)
         self.n_positions_ = min(n_positions, n_dims)
         self.pattern_size_tmp = pattern_size
-        self.pattern_pos_l: list[np.ndarray] = []
+        self.pattern_pos_l: list[ndarray] = []
 
         # Initialize RNG for reproducibility
-        self._rng = np.random.default_rng(self.random_seed)
+        self._rng = arr_random.default_rng(self.random_seed)
 
         # Pre-computed next position for "State vor iterate()" pattern
-        self._next_position: np.ndarray | None = None
+        self._next_position: ndarray | None = None
         self._next_position_computed: bool = False
 
     def _get_dim_sizes(self):
@@ -127,14 +136,14 @@ class PatternSearch(BaseOptimizer):
             elif isinstance(dim_def, list):
                 # Categorical: number of categories
                 sizes.append(len(dim_def))
-            elif isinstance(dim_def, np.ndarray):
+            elif isinstance(dim_def, ndarray):
                 # Discrete: length of array
                 sizes.append(len(dim_def))
             else:
                 sizes.append(1)
-        return np.array(sizes)
+        return array(sizes)
 
-    def _clip_to_bounds(self, pos: np.ndarray) -> np.ndarray:
+    def _clip_to_bounds(self, pos: ndarray) -> ndarray:
         """Clip position to valid bounds with proper types.
 
         Handles continuous, categorical, and discrete dimensions.
@@ -148,17 +157,17 @@ class PatternSearch(BaseOptimizer):
 
             if isinstance(dim_def, tuple):
                 # Continuous: clip to bounds
-                pos_clipped[i] = np.clip(val, dim_def[0], dim_def[1])
+                pos_clipped[i] = clip(val, dim_def[0], dim_def[1])
             elif isinstance(dim_def, list):
                 # Categorical: clip to valid indices
-                pos_clipped[i] = int(np.clip(round(val), 0, len(dim_def) - 1))
-            elif isinstance(dim_def, np.ndarray):
+                pos_clipped[i] = int(clip(round(val), 0, len(dim_def) - 1))
+            elif isinstance(dim_def, ndarray):
                 # Discrete: clip to valid indices
-                pos_clipped[i] = int(np.clip(round(val), 0, len(dim_def) - 1))
+                pos_clipped[i] = int(clip(round(val), 0, len(dim_def) - 1))
 
         return pos_clipped
 
-    def _generate_pattern(self, current_position: np.ndarray) -> None:
+    def _generate_pattern(self, current_position: ndarray) -> None:
         """Generate pattern positions around the current position.
 
         Creates positions at +/- pattern_size * dim_size along each axis,
@@ -179,7 +188,7 @@ class PatternSearch(BaseOptimizer):
         if n_pos_min > 0 and self._pos_best is not None:
             recent_positions = self.positions_valid[-n_pos_min:]
             best_in_recent_pos = any(
-                _arrays_equal(np.array(self._pos_best), pos) for pos in recent_positions
+                _arrays_equal(array(self._pos_best), pos) for pos in recent_positions
             )
             if best_in_recent_pos:
                 self.pattern_size_tmp *= self.reduction
@@ -189,8 +198,8 @@ class PatternSearch(BaseOptimizer):
         dim_names = list(self.search_space.keys())
 
         for idx in range(len(dim_names)):
-            pos_pattern_p = np.array(current_position, dtype=float)
-            pos_pattern_n = np.array(current_position, dtype=float)
+            pos_pattern_p = array(current_position, dtype=float)
+            pos_pattern_n = array(current_position, dtype=float)
 
             dim_def = self.search_space[dim_names[idx]]
 
@@ -222,10 +231,10 @@ class PatternSearch(BaseOptimizer):
         else:
             self.pattern_pos_l = pattern_pos_l
 
-    def _generate_random_position(self) -> np.ndarray:
+    def _generate_random_position(self) -> ndarray:
         """Generate a random position within bounds."""
         n_dims = len(self.search_space)
-        pos = np.empty(n_dims)
+        pos = empty(n_dims)
         dim_names = list(self.search_space.keys())
 
         for i, name in enumerate(dim_names):
@@ -237,7 +246,7 @@ class PatternSearch(BaseOptimizer):
             elif isinstance(dim_def, list):
                 # Categorical
                 pos[i] = self._rng.integers(0, len(dim_def))
-            elif isinstance(dim_def, np.ndarray):
+            elif isinstance(dim_def, ndarray):
                 # Discrete
                 pos[i] = self._rng.integers(0, len(dim_def))
 
@@ -297,7 +306,7 @@ class PatternSearch(BaseOptimizer):
             for _ in range(max_tries):
                 # Perturb position slightly
                 noise = self._rng.normal(0, 0.1, len(pos_new))
-                pos_new = self._clip_to_bounds(np.array(pos_new) + noise)
+                pos_new = self._clip_to_bounds(array(pos_new) + noise)
                 if self.conv.not_in_constraint(pos_new):
                     break
 
@@ -308,7 +317,7 @@ class PatternSearch(BaseOptimizer):
         self._next_position = pos_new
         self._next_position_computed = True
 
-    def _iterate_continuous_batch(self) -> np.ndarray:
+    def _iterate_continuous_batch(self) -> ndarray:
         """Extract continuous components from pre-computed pattern position.
 
         The pattern position is computed ONCE when this method is first called.
@@ -316,12 +325,12 @@ class PatternSearch(BaseOptimizer):
         self._compute_next_pattern_position()
         return self._next_position[self._continuous_mask]
 
-    def _iterate_categorical_batch(self) -> np.ndarray:
+    def _iterate_categorical_batch(self) -> ndarray:
         """Extract categorical components from pre-computed pattern position."""
         self._compute_next_pattern_position()
         return self._next_position[self._categorical_mask]
 
-    def _iterate_discrete_batch(self) -> np.ndarray:
+    def _iterate_discrete_batch(self) -> ndarray:
         """Extract discrete components from pre-computed pattern position."""
         self._compute_next_pattern_position()
         return self._next_position[self._discrete_mask]
@@ -354,7 +363,7 @@ class PatternSearch(BaseOptimizer):
                 pos_new_list_temp = self.positions_valid[-n_recent:]
 
                 if score_new_list_temp:
-                    idx = np.argmax(score_new_list_temp)
+                    idx = argmax(score_new_list_temp)
                     score = score_new_list_temp[idx]
                     pos = pos_new_list_temp[idx]
 

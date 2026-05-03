@@ -4,7 +4,13 @@
 
 """Random Search Optimizer."""
 
-import numpy as np
+from __future__ import annotations
+
+from gradient_free_optimizers._array_backend import (
+    floor,
+    ndarray,
+    random,
+)
 
 from ..base_optimizer import BaseOptimizer
 
@@ -70,9 +76,9 @@ class RandomSearchOptimizer(BaseOptimizer):
 
         # Initialize RNG for reproducibility using the actual seed
         # (self.random_seed is set by CoreOptimizer and accounts for nth_process)
-        self._rng = np.random.default_rng(self.random_seed)
+        self._rng = random.default_rng(self.random_seed)
 
-    def _iterate_continuous_batch(self) -> np.ndarray:
+    def _iterate_continuous_batch(self) -> ndarray:
         """Uniform random sampling in continuous ranges.
 
         Accesses via: self._continuous_bounds
@@ -89,7 +95,7 @@ class RandomSearchOptimizer(BaseOptimizer):
         maxs = bounds[:, 1]
         return self._rng.uniform(mins, maxs)
 
-    def _iterate_categorical_batch(self) -> np.ndarray:
+    def _iterate_categorical_batch(self) -> ndarray:
         """Uniform random category selection.
 
         Accesses via: self._categorical_sizes
@@ -103,9 +109,9 @@ class RandomSearchOptimizer(BaseOptimizer):
         """
         n_categories = self._categorical_sizes
         n = len(n_categories)
-        return np.floor(self._rng.random(n) * n_categories).astype(np.int64)
+        return floor(self._rng.random(n) * n_categories).astype(int)
 
-    def _iterate_discrete_batch(self) -> np.ndarray:
+    def _iterate_discrete_batch(self) -> ndarray:
         """Uniform random index selection.
 
         Accesses via: self._discrete_bounds
@@ -118,8 +124,8 @@ class RandomSearchOptimizer(BaseOptimizer):
             Random indices within bounds
         """
         bounds = self._discrete_bounds
-        mins = bounds[:, 0].astype(np.int64)
-        maxs = bounds[:, 1].astype(np.int64)
+        mins = bounds[:, 0].astype(int)
+        maxs = bounds[:, 1].astype(int)
         # randint is exclusive on high, so add 1
         return self._rng.integers(mins, maxs + 1)
 

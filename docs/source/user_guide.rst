@@ -73,7 +73,7 @@ Every optimization in GFO involves three components:
 
       **How to optimize**
 
-      The algorithm that explores your search space. Choose from 22 algorithms
+      The algorithm that explores your search space. Choose from 23 algorithms
       across local search, global search, population methods, and SMBO.
 
    .. grid-item-card:: Objective Functions
@@ -149,6 +149,13 @@ Guide Sections
       Using the simple ``.search()``
       method.
 
+   .. grid-item-card:: Ask/Tell Interface
+      :link: user_guide/ask_tell
+      :link-type: doc
+
+      Drive the loop yourself when you
+      need external evaluation control.
+
 ----
 
 Algorithms
@@ -212,6 +219,7 @@ GFO provides 22 optimization algorithms organized into four categories:
    user_guide/memory
    user_guide/stopping_conditions
    user_guide/search_interface
+   user_guide/ask_tell
 
 .. toctree::
    :maxdepth: 2
