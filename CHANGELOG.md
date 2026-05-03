@@ -8,6 +8,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke/Gradient-Free-Optimizers/releases).
 
 ## [Unreleased]
+<!-- changelog-cursor: 466b721 -->
+
+### Added
+- C extension backend (`_fast_ops`) as an intermediate performance tier between numpy and pure Python, accelerating elementwise arithmetic, math functions, reductions, and matrix multiply
+- `SearchParams` dict subclass carrying optimization metadata as private attributes for tooling integration
+
+### Changed
+- SciPy moved from core dependency to optional extra (`pip install gradient-free-optimizers[scipy]`)
+- All optimizers ported from direct numpy imports to the internal array/math backends, enabling numpy-free operation
+- All pandas imports made lazy, reducing startup cost
+- Bayesian Optimization normalizes inputs to [0, 1] before GP fitting for better length-scale stability
+- GPR surrogate switched from Matern ν=0.5 to ν=2.5 with hyperparameter optimization (`n_restarts_optimizer=3`)
+- TPE bandwidth selection changed from hardcoded 1.0 to Silverman's rule
+- Performance improvements in GPR kernel and KDE score computation via vectorized distance matrices
+
+### Removed
+- Legacy optimizer implementations (`optimizers_legacy/`)
+
+### Fixed
+- KDE bandwidth computation on degenerate data (all identical points) causing division-by-zero
+- KDE bandwidth not recomputed on refit with new data
+- `min`/`max` broadcasting in the pure-Python array backend
+- `norm_cdf`/`norm_pdf` recursion when checking for iterability
+
+### Tests
+- Unit tests for all six internal estimators
+- C extension backend and pure-Python integration tests (no numpy, no scipy)
+- Expanded coverage for distributed module and ask/tell interface
+- CI: no-scipy and no-numpy isolation jobs, coverage collection
 
 ## [1.12.0] - 2026-04-18
 
