@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke/Gradient-Free-Optimizers/releases).
 
 ## [Unreleased]
-<!-- changelog-cursor: 466b721 -->
+<!-- changelog-cursor: a8d98ae -->
 
 ### Added
 - C extension backend (`_fast_ops`) as an intermediate performance tier between numpy and pure Python, accelerating elementwise arithmetic, math functions, reductions, and matrix multiply
@@ -22,6 +22,7 @@ For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke
 - GPR surrogate switched from Matern ν=0.5 to ν=2.5 with hyperparameter optimization (`n_restarts_optimizer=3`)
 - TPE bandwidth selection changed from hardcoded 1.0 to Silverman's rule
 - Performance improvements in GPR kernel and KDE score computation via vectorized distance matrices
+- License metadata migrated to PEP 639 format (`license = "MIT"` under `[project]`), fixing `SetuptoolsDeprecationWarning`
 
 ### Removed
 - Legacy optimizer implementations (`optimizers_legacy/`)
@@ -31,12 +32,14 @@ For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke
 - KDE bandwidth not recomputed on refit with new data
 - `min`/`max` broadcasting in the pure-Python array backend
 - `norm_cdf`/`norm_pdf` recursion when checking for iterability
+- C extension build silently falling back to pure Python in CI; `GFO_REQUIRE_C_EXTENSION=1` now makes compilation failures fatal
 
 ### Tests
 - Unit tests for all six internal estimators
 - C extension backend and pure-Python integration tests (no numpy, no scipy)
 - Expanded coverage for distributed module and ask/tell interface
 - CI: no-scipy and no-numpy isolation jobs, coverage collection
+- CI: strict mode (`GFO_CI_STRICT`) prevents dependency-isolation tests from silently skipping when the wrong packages are installed
 
 ## [1.12.0] - 2026-04-18
 
