@@ -37,6 +37,8 @@ from .sampling import InitialSampler
 if TYPE_CHECKING:
     import pandas as pd
 
+logger = logging.getLogger(__name__)
+
 
 def _isinf(x):
     """Check if value is infinite."""
@@ -172,13 +174,36 @@ class SMBO(BaseOptimizer):
                 elif dim_type == DimensionType.DISTRIBUTION:
                     q_low, q_high = info.bounds
                     valid_idx = []
+                    n_failed_cdf = 0
+                    n_outside_bounds = 0
                     for i, value in enumerate(search_data_dim):
                         try:
                             q_value = distribution_cdf(info.distribution, value)
-                        except (TypeError, ValueError, OverflowError):
+                        except (
+                            TypeError,
+                            ValueError,
+                            OverflowError,
+                            FloatingPointError,
+                        ):
+                            n_failed_cdf += 1
                             continue
                         if q_low <= q_value <= q_high:
                             valid_idx.append(i)
+                        else:
+                            n_outside_bounds += 1
+                    n_dropped = n_failed_cdf + n_outside_bounds
+                    if n_dropped > 0:
+                        logger.warning(
+                            "Dropped %d warm-start rows for distribution "
+                            "dimension '%s' (%d cdf conversions failed, "
+                            "%d outside quantile bounds [%s, %s])",
+                            n_dropped,
+                            para_name,
+                            n_failed_cdf,
+                            n_outside_bounds,
+                            q_low,
+                            q_high,
+                        )
                 else:
                     search_space_dim = self.conv.search_space[para_name]
                     int_idx = nonzero(isin(search_data_dim, search_space_dim))[0]
