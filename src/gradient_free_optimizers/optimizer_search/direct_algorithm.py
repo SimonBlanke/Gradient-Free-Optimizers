@@ -215,6 +215,7 @@ class DirectAlgorithm(_DirectAlgorithm, Search):
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,
+        boundary: str = "clip",
         warm_start: pd.DataFrame = None,
         resolution: int = 100,
         # Legacy SMBO parameters - no-op, kept for backwards compatibility
@@ -235,6 +236,7 @@ class DirectAlgorithm(_DirectAlgorithm, Search):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
+            boundary=boundary,
             warm_start=warm_start,
             resolution=resolution,
             warm_start_smbo=warm_start_smbo,

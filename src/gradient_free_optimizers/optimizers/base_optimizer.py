@@ -51,6 +51,7 @@ class BaseOptimizer(CoreOptimizer):
         random_state=None,
         rand_rest_p=0,
         nth_process=None,
+        boundary="clip",
     ):
         super().__init__(
             search_space=search_space,
@@ -59,6 +60,7 @@ class BaseOptimizer(CoreOptimizer):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
+            boundary=boundary,
         )
 
         # Single-solution optimizer: population is just [self]

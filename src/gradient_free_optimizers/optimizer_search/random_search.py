@@ -166,6 +166,7 @@ class RandomSearchOptimizer(_RandomSearchOptimizer, Search):
         constraints: list[callable] = None,
         random_state: int = None,
         nth_process: int = None,
+        boundary: str = "clip",
     ):
         if initialize is None:
             initialize = get_default_initialize()
@@ -178,4 +179,5 @@ class RandomSearchOptimizer(_RandomSearchOptimizer, Search):
             constraints=constraints,
             random_state=random_state,
             nth_process=nth_process,
+            boundary=boundary,
         )

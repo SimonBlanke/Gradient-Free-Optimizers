@@ -232,6 +232,7 @@ class PowellsMethod(_PowellsMethod, Search):
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,
+        boundary: str = "clip",
         epsilon: float = 0.03,
         distribution: str = "normal",
         n_neighbours: int = 3,  # no-op, kept for backwards compatibility
@@ -251,6 +252,7 @@ class PowellsMethod(_PowellsMethod, Search):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
+            boundary=boundary,
             epsilon=epsilon,
             distribution=distribution,
             n_neighbours=n_neighbours,

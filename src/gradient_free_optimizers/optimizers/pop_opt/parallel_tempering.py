@@ -83,6 +83,7 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
         random_state=None,
         rand_rest_p=0,
         nth_process=None,
+        boundary="clip",
         population=5,
         n_iter_swap=5,
     ):
@@ -93,6 +94,7 @@ class ParallelTemperingOptimizer(BasePopulationOptimizer):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
+            boundary=boundary,
             population=population,
         )
 

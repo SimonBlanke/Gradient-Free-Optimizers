@@ -10,7 +10,7 @@ import random
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
-from gradient_free_optimizers._array_backend import array, clip, ndarray
+from gradient_free_optimizers._array_backend import array, ndarray
 from gradient_free_optimizers._array_backend import random as arr_random
 
 from ._individual import Individual
@@ -81,6 +81,7 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
         random_state: int | None = None,
         rand_rest_p: float = 0,
         nth_process: int | None = None,
+        boundary: str = "clip",
         population: int = 10,
         mutation_rate: float = 0.9,
         crossover_rate: float = 0.9,
@@ -92,6 +93,7 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
+            boundary=boundary,
             population=population,
         )
 
@@ -209,25 +211,7 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
         ndarray
             Valid position.
         """
-        if self.conv.is_legacy_mode:
-            n_zeros = [0] * len(self.conv.max_positions)
-            return clip(pos, n_zeros, self.conv.max_positions).astype(int)
-
-        from gradient_free_optimizers._dimension_types import DimensionType
-
-        pos_new = []
-        for idx, dim_type in enumerate(self.conv.dim_types):
-            bounds = self.conv.dim_infos[idx].bounds
-            val = pos[idx]
-
-            if dim_type == DimensionType.CONTINUOUS:
-                # Clip to bounds, keep as float
-                pos_new.append(clip(val, bounds[0], bounds[1]))
-            else:
-                # Discrete or categorical: clip and convert to int
-                pos_new.append(int(clip(round(val), bounds[0], bounds[1])))
-
-        return array(pos_new)
+        return self._clip_position(pos)
 
     def _constraint_loop(self, position: ndarray) -> ndarray:
         """Ensure position satisfies constraints.

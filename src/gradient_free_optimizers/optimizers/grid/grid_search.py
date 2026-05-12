@@ -97,6 +97,7 @@ class GridSearchOptimizer(BaseOptimizer):
         random_state=None,
         rand_rest_p=0,
         nth_process=None,
+        boundary="clip",
         step_size=1,
         direction="diagonal",
         resolution=100,
@@ -112,6 +113,7 @@ class GridSearchOptimizer(BaseOptimizer):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
+            boundary=boundary,
         )
 
         self.step_size = step_size

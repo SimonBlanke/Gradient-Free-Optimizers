@@ -15,13 +15,9 @@ import math
 import random
 
 from gradient_free_optimizers._array_backend import (
-    clip,
     empty,
     floor,
     ndarray,
-)
-from gradient_free_optimizers._array_backend import (
-    round as arr_round,
 )
 
 from ..local_opt import HillClimbingOptimizer
@@ -260,34 +256,22 @@ class Individual(HillClimbingOptimizer):
             # Handle continuous dimensions
             if self._continuous_bounds is not None:
                 cont_mask = self._continuous_mask
-                cont_bounds = self._continuous_bounds
                 # Call parent's method directly (bypass our override's setup)
                 cont_new = HillClimbingOptimizer._iterate_continuous_batch(self)
-                # Clip to bounds
-                cont_new = clip(cont_new, cont_bounds[:, 0], cont_bounds[:, 1])
                 new_pos[cont_mask] = cont_new
 
             # Handle categorical dimensions
             if self._categorical_sizes is not None:
                 cat_mask = self._categorical_mask
-                n_cats = self._categorical_sizes
                 # Call parent's method directly
                 cat_new = HillClimbingOptimizer._iterate_categorical_batch(self)
-                # Clip to valid range
-                cat_new = clip(cat_new, 0, n_cats - 1).astype(int)
                 new_pos[cat_mask] = cat_new
 
             # Handle discrete dimensions
             if self._discrete_bounds is not None:
                 disc_mask = self._discrete_mask
-                disc_bounds = self._discrete_bounds
                 # Call parent's method directly
                 disc_new = HillClimbingOptimizer._iterate_discrete_batch(self)
-                # Round and clip to bounds
-                disc_new = arr_round(disc_new)
-                disc_new = clip(disc_new, disc_bounds[:, 0], disc_bounds[:, 1]).astype(
-                    int
-                )
                 new_pos[disc_mask] = disc_new
         finally:
             # Restore original state (bypass property setter)
@@ -295,4 +279,6 @@ class Individual(HillClimbingOptimizer):
             self._iteration_setup_done = old_setup_done
             self._use_random_restart = old_use_random
 
-        return new_pos.astype(float)
+        return self._clip_position(
+            new_pos.astype(float), reference_position=pos_current
+        )

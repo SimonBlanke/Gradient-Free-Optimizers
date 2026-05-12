@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING, Any
 from gradient_free_optimizers._array_backend import (
     argmax,
     array,
-    clip,
     linalg,
     ndarray,
 )
@@ -90,6 +89,7 @@ class PowellsMethod(BaseOptimizer):
         random_state: int | None = None,
         rand_rest_p: float = 0,
         nth_process: int | None = None,
+        boundary: str = "clip",
         epsilon: float = 0.03,
         distribution: str = "normal",
         n_neighbours: int = 3,  # no-op, kept for backwards compatibility
@@ -104,6 +104,7 @@ class PowellsMethod(BaseOptimizer):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
+            boundary=boundary,
         )
 
         # Parameters for line search (used by HillClimbLineSearch)
@@ -131,26 +132,7 @@ class PowellsMethod(BaseOptimizer):
 
     def _conv2pos_typed(self, pos):
         """Convert position to valid position with proper types."""
-        pos_new = []
-        dim_names = list(self.search_space.keys())
-
-        for i, name in enumerate(dim_names):
-            dim_def = self.search_space[name]
-            val = pos[i]
-
-            if isinstance(dim_def, tuple):
-                # Continuous: clip to bounds
-                pos_new.append(clip(val, dim_def[0], dim_def[1]))
-            elif isinstance(dim_def, list):
-                # Categorical: clip to valid indices
-                pos_new.append(int(clip(round(val), 0, len(dim_def) - 1)))
-            elif isinstance(dim_def, ndarray):
-                # Discrete: clip to valid indices
-                pos_new.append(int(clip(round(val), 0, len(dim_def) - 1)))
-            else:
-                pos_new.append(val)
-
-        return array(pos_new)
+        return self._clip_position(pos)
 
     def _on_finish_initialization(self):
         """Set up the direction matrix and state after initialization phase."""

@@ -37,6 +37,7 @@ class ParallelTemperingOptimizer(_ParallelTemperingOptimizer, AskTell):
         constraints: list[callable] = None,
         random_state: int = None,
         rand_rest_p: float = 0,
+        boundary: str = "clip",
         population: int = 5,
         n_iter_swap: int = 5,
     ):
@@ -49,6 +50,7 @@ class ParallelTemperingOptimizer(_ParallelTemperingOptimizer, AskTell):
             constraints=constraints,
             random_state=random_state,
             rand_rest_p=rand_rest_p,
+            boundary=boundary,
             population=population,
             n_iter_swap=n_iter_swap,
         )

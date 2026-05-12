@@ -19,7 +19,9 @@ from gradient_free_optimizers._array_backend import (
     empty,
     isinf,
     isnan,
+    minimum,
     ndarray,
+    random,
     zeros,
 )
 from gradient_free_optimizers._array_backend import (
@@ -154,6 +156,7 @@ class CoreOptimizer(ABC):
     __name__ = "CoreOptimizer"
 
     _supports_async = True
+    _valid_boundaries = ("clip", "reflect", "periodic", "random", "intermediate")
 
     def __init__(
         self,
@@ -163,6 +166,7 @@ class CoreOptimizer(ABC):
         random_state=None,
         rand_rest_p=0,
         nth_process=None,
+        boundary="clip",
     ):
         # Call super().__init__() without args for cooperative MRO.
         # When combined with Search via multiple inheritance, super() may
@@ -175,9 +179,15 @@ class CoreOptimizer(ABC):
         self.random_state = random_state
         self.rand_rest_p = rand_rest_p
         self.nth_process = nth_process
+        if boundary not in self._valid_boundaries:
+            raise ValueError(
+                f"boundary must be one of {self._valid_boundaries}, got {boundary!r}"
+            )
+        self.boundary = boundary
 
         # Set random seed for reproducibility
         self.random_seed = set_random_seed(nth_process, random_state)
+        self._rng_boundary = random.default_rng(self.random_seed + 1_299_721)
 
         # Initialize Converter and Initializer for Search compatibility
         self.conv = Converter(search_space, constraints if constraints else [])
@@ -490,28 +500,38 @@ class CoreOptimizer(ABC):
 
         return self._clip_position(new_pos)
 
-    def _clip_position(self, position: ndarray) -> ndarray:
-        """Clip position to valid bounds with dimension-type-awareness.
+    def _clip_position(
+        self, position: ndarray, reference_position: ndarray | None = None
+    ) -> ndarray:
+        """Apply the configured boundary strategy with dimension-type-awareness.
 
-        For continuous: clip to (min, max) range
-        For categorical: clip to [0, n_categories-1] and cast to int
-        For discrete: clip to [0, max_index] and cast to int
+        For continuous: apply boundary strategy to (min, max) range
+        For categorical: always clip to [0, n_categories-1] and cast to int
+        For discrete: round, apply boundary strategy, and cast to int
 
         Args:
             position: Raw position that may be out of bounds
+            reference_position: Position used by the "intermediate" boundary.
+                Defaults to the optimizer's current position.
 
         Returns
         -------
-            Clipped position within valid bounds
+            Position within valid bounds
         """
         clipped = position.copy()
 
-        # Clip continuous dimensions to their bounds
+        # Apply boundary strategy to continuous dimensions.
         if self._continuous_mask is not None and self._continuous_mask.any():
             cont_vals = clipped[self._continuous_mask]
             mins = self._continuous_bounds[:, 0]
             maxs = self._continuous_bounds[:, 1]
-            clipped[self._continuous_mask] = clip(cont_vals, mins, maxs)
+            clipped[self._continuous_mask] = self._apply_boundary(
+                cont_vals,
+                mins,
+                maxs,
+                self._continuous_mask,
+                reference_position=reference_position,
+            )
 
         # Clip categorical dimensions to valid indices [0, n_categories-1]
         if self._categorical_mask is not None and self._categorical_mask.any():
@@ -521,17 +541,128 @@ class CoreOptimizer(ABC):
             cat_vals = clip(cat_vals, 0, self._categorical_sizes - 1)
             clipped[self._categorical_mask] = cat_vals
 
-        # Clip discrete dimensions to valid indices [0, max_index]
+        # Apply boundary strategy to discrete dimensions after rounding.
         if self._discrete_mask is not None and self._discrete_mask.any():
             disc_vals = clipped[self._discrete_mask]
-            # Round to nearest integer and clip to valid range
-            disc_vals = arr_round(disc_vals).astype(int)
             mins = self._discrete_bounds[:, 0].astype(int)
             maxs = self._discrete_bounds[:, 1].astype(int)
+            disc_vals = arr_round(disc_vals)
+            disc_vals = self._apply_boundary(
+                disc_vals,
+                mins,
+                maxs,
+                self._discrete_mask,
+                is_discrete=True,
+                reference_position=reference_position,
+            )
+            disc_vals = arr_round(disc_vals).astype(int)
             disc_vals = clip(disc_vals, mins, maxs)
             clipped[self._discrete_mask] = disc_vals
 
         return clipped
+
+    def _apply_boundary(
+        self,
+        values,
+        mins,
+        maxs,
+        mask,
+        is_discrete=False,
+        reference_position=None,
+    ):
+        if self.boundary == "clip":
+            return clip(values, mins, maxs)
+
+        if self.boundary == "reflect":
+            return self._reflect_boundary(values, mins, maxs)
+
+        if self.boundary == "periodic":
+            return self._periodic_boundary(values, mins, maxs, is_discrete)
+
+        if self.boundary == "random":
+            return self._random_boundary(values, mins, maxs, is_discrete)
+
+        if self.boundary == "intermediate":
+            return self._intermediate_boundary(
+                values, mins, maxs, mask, reference_position
+            )
+
+        return clip(values, mins, maxs)
+
+    def _reflect_boundary(self, values, mins, maxs):
+        reflected = values.copy()
+        ranges = maxs - mins
+        nonzero = ranges > 0
+        if nonzero.any():
+            periods = 2 * ranges[nonzero]
+            shifted = (reflected[nonzero] - mins[nonzero]) % periods
+            reflected[nonzero] = mins[nonzero] + minimum(shifted, periods - shifted)
+        return clip(reflected, mins, maxs)
+
+    def _periodic_boundary(self, values, mins, maxs, is_discrete):
+        wrapped = values.copy()
+        ranges = maxs - mins
+        periods = ranges + 1 if is_discrete else ranges
+        nonzero = periods > 0
+        oob = (wrapped < mins) | (wrapped > maxs)
+        active = nonzero & oob
+        if active.any():
+            wrapped[active] = mins[active] + (
+                (wrapped[active] - mins[active]) % periods[active]
+            )
+        return clip(wrapped, mins, maxs)
+
+    def _random_boundary(self, values, mins, maxs, is_discrete):
+        result = values.copy()
+        oob = (result < mins) | (result > maxs)
+        if not oob.any():
+            return result
+
+        if is_discrete:
+            result[oob] = array(
+                [
+                    self._rng_boundary.integers(int(lo), int(hi) + 1)
+                    for lo, hi in zip(mins[oob], maxs[oob])
+                ]
+            )
+        else:
+            result[oob] = array(
+                [
+                    self._rng_boundary.uniform(float(lo), float(hi))
+                    for lo, hi in zip(mins[oob], maxs[oob])
+                ]
+            )
+
+        return result
+
+    def _intermediate_boundary(self, values, mins, maxs, mask, reference_position):
+        result = values.copy()
+        reference_position = self._boundary_reference_position(reference_position)
+        if reference_position is None:
+            return clip(result, mins, maxs)
+
+        reference_values = reference_position[mask]
+        above = result > maxs
+        if above.any():
+            result[above] = (reference_values[above] + maxs[above]) / 2
+        below = result < mins
+        if below.any():
+            result[below] = (reference_values[below] + mins[below]) / 2
+
+        return clip(result, mins, maxs)
+
+    def _boundary_reference_position(self, reference_position):
+        if reference_position is not None:
+            return reference_position
+
+        p_current = getattr(self, "p_current", None)
+        if (
+            p_current is not None
+            and getattr(p_current, "_pos_current", None) is not None
+        ):
+            return p_current._pos_current
+
+        return self._pos_current
 
     # -----------------------------------------------------------------
     # Abstract hooks: subclasses must implement these

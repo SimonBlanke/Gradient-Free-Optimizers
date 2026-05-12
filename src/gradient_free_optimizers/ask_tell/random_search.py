@@ -28,6 +28,7 @@ class RandomSearchOptimizer(_RandomSearchOptimizer, AskTell):
         initial_evaluations: list[tuple[dict, float]],
         constraints: list[callable] = None,
         random_state: int = None,
+        boundary: str = "clip",
     ):
         if constraints is None:
             constraints = []
@@ -37,6 +38,7 @@ class RandomSearchOptimizer(_RandomSearchOptimizer, AskTell):
             initialize={"random": 0},
             constraints=constraints,
             random_state=random_state,
+            boundary=boundary,
         )
 
         self._process_initial_evaluations(initial_evaluations)

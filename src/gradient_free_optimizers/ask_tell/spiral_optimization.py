@@ -35,6 +35,7 @@ class SpiralOptimization(_SpiralOptimization, AskTell):
         constraints: list[callable] = None,
         random_state: int = None,
         rand_rest_p: float = 0,
+        boundary: str = "clip",
         population: int = 10,
         decay_rate: float = 0.99,
     ):
@@ -47,6 +48,7 @@ class SpiralOptimization(_SpiralOptimization, AskTell):
             constraints=constraints,
             random_state=random_state,
             rand_rest_p=rand_rest_p,
+            boundary=boundary,
             population=population,
             decay_rate=decay_rate,
         )

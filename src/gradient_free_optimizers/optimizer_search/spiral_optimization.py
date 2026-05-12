@@ -211,6 +211,7 @@ class SpiralOptimization(_SpiralOptimization, Search):
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,
+        boundary: str = "clip",
         population: int = 10,
         decay_rate: float = 0.99,
     ):
@@ -226,6 +227,7 @@ class SpiralOptimization(_SpiralOptimization, Search):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
+            boundary=boundary,
             population=population,
             decay_rate=decay_rate,
         )

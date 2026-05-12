@@ -106,6 +106,7 @@ class SMBO(BaseOptimizer):
         random_state: int | None = None,
         rand_rest_p: float = 0,
         nth_process: int | None = None,
+        boundary: str = "clip",
         warm_start_smbo: pd.DataFrame | None = None,
         max_sample_size: int = 10000000,
         sampling: dict[str, int] | Literal[False] | None = None,
@@ -118,6 +119,7 @@ class SMBO(BaseOptimizer):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
+            boundary=boundary,
         )
 
         self.warm_start_smbo = warm_start_smbo

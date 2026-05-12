@@ -104,6 +104,7 @@ class BasePopulationOptimizer(CoreOptimizer):
         rand_rest_p=0,
         nth_process=None,
         population=10,
+        boundary="clip",
     ):
         super().__init__(
             search_space=search_space,
@@ -112,6 +113,7 @@ class BasePopulationOptimizer(CoreOptimizer):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
+            boundary=boundary,
         )
         self.population = population
 
@@ -166,6 +168,7 @@ class BasePopulationOptimizer(CoreOptimizer):
                         rand_rest_p=self.rand_rest_p,
                         initialize={"warm_start": init_paras},
                         constraints=self.constraints,
+                        boundary=self.boundary,
                     )
                 )
         else:

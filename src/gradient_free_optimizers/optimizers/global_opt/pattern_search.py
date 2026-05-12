@@ -13,7 +13,6 @@ from typing import TYPE_CHECKING, Any
 from gradient_free_optimizers._array_backend import (
     argmax,
     array,
-    clip,
     empty,
     ndarray,
 )
@@ -93,6 +92,7 @@ class PatternSearch(BaseOptimizer):
         random_state: int | None = None,
         rand_rest_p: float = 0,
         nth_process: int | None = None,
+        boundary: str = "clip",
         n_positions: int = 4,
         pattern_size: float = 0.25,
         reduction: float = 0.9,
@@ -104,6 +104,7 @@ class PatternSearch(BaseOptimizer):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
+            boundary=boundary,
         )
 
         self.n_positions = n_positions
@@ -146,24 +147,7 @@ class PatternSearch(BaseOptimizer):
 
         Handles continuous, categorical, and discrete dimensions.
         """
-        pos_clipped = pos.copy()
-        dim_names = list(self.search_space.keys())
-
-        for i, name in enumerate(dim_names):
-            dim_def = self.search_space[name]
-            val = pos[i]
-
-            if isinstance(dim_def, tuple):
-                # Continuous: clip to bounds
-                pos_clipped[i] = clip(val, dim_def[0], dim_def[1])
-            elif isinstance(dim_def, list):
-                # Categorical: clip to valid indices
-                pos_clipped[i] = int(clip(round(val), 0, len(dim_def) - 1))
-            elif isinstance(dim_def, ndarray):
-                # Discrete: clip to valid indices
-                pos_clipped[i] = int(clip(round(val), 0, len(dim_def) - 1))
-
-        return pos_clipped
+        return self._clip_position(pos)
 
     def _generate_pattern(self, current_position: ndarray) -> None:
         """Generate pattern positions around the current position.

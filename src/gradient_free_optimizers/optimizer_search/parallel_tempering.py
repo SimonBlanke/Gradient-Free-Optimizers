@@ -216,6 +216,7 @@ class ParallelTemperingOptimizer(_ParallelTemperingOptimizer, Search):
         random_state: int = None,
         rand_rest_p: float = 0,
         nth_process: int = None,
+        boundary: str = "clip",
         population: int = 5,
         n_iter_swap: int = 5,
     ):
@@ -231,6 +232,7 @@ class ParallelTemperingOptimizer(_ParallelTemperingOptimizer, Search):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
+            boundary=boundary,
             population=population,
             n_iter_swap=n_iter_swap,
         )

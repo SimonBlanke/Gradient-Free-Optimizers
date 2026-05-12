@@ -81,6 +81,7 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
         random_state: int | None = None,
         rand_rest_p: float = 0,
         nth_process: int | None = None,
+        boundary: str = "clip",
         population: int = 10,
         offspring: int = 20,
         replace_parents: bool = False,
@@ -94,6 +95,7 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
+            boundary=boundary,
             population=population,
         )
 

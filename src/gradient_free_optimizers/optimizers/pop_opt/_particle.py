@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import random
 
-from gradient_free_optimizers._array_backend import array, clip
+from gradient_free_optimizers._array_backend import array
 
 from ..local_opt import HillClimbingOptimizer
 
@@ -90,8 +90,7 @@ class Particle(HillClimbingOptimizer):
         # Fast path for legacy mode (all discrete-numerical)
         if self.conv.is_legacy_mode:
             pos_new = (array(pos) + array(velo)).astype(int)
-            n_zeros = [0] * len(self.conv.max_positions)
-            return clip(pos_new, n_zeros, self.conv.max_positions)
+            return self._clip_position(pos_new)
 
         # Type-aware movement for mixed dimension types
         from gradient_free_optimizers._dimension_types import DimensionType
@@ -185,22 +184,4 @@ class Particle(HillClimbingOptimizer):
 
         Clips values to bounds and ensures correct data types for each dimension.
         """
-        if self.conv.is_legacy_mode:
-            n_zeros = [0] * len(self.conv.max_positions)
-            return clip(pos, n_zeros, self.conv.max_positions).astype(int)
-
-        from gradient_free_optimizers._dimension_types import DimensionType
-
-        pos_new = []
-        for idx, dim_type in enumerate(self.conv.dim_types):
-            bounds = self.conv.dim_infos[idx].bounds
-            val = pos[idx]
-
-            if dim_type == DimensionType.CONTINUOUS:
-                # Clip to bounds, keep as float
-                pos_new.append(clip(val, bounds[0], bounds[1]))
-            else:
-                # Discrete or categorical: clip and convert to int
-                pos_new.append(int(clip(round(val), bounds[0], bounds[1])))
-
-        return array(pos_new)
+        return self._clip_position(pos)

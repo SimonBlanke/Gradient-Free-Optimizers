@@ -77,6 +77,7 @@ class HillClimbingOptimizer(BaseOptimizer):
         random_state=None,
         rand_rest_p=0,
         nth_process=None,
+        boundary="clip",
         epsilon=0.03,
         distribution="normal",
         n_neighbours=3,
@@ -88,6 +89,7 @@ class HillClimbingOptimizer(BaseOptimizer):
             random_state=random_state,
             rand_rest_p=rand_rest_p,
             nth_process=nth_process,
+            boundary=boundary,
         )
         self.epsilon = epsilon
         self.distribution = distribution
