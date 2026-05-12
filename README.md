@@ -54,7 +54,7 @@ Lightweight optimization with local, global, population-based and sequential tec
 
 **Gradient-Free-Optimizers** is a Python library for gradient-free optimization of black-box functions. It provides a unified interface to 23 optimization algorithms, from simple hill climbing to Bayesian optimization, all operating on discrete numerical search spaces defined via NumPy arrays.
 
-Designed for hyperparameter tuning, simulation optimization, and any scenario where gradients are unavailable or impractical. The library prioritizes simplicity: define your objective function, specify the search space, and run. It serves as the optimization backend for [Hyperactive](https://github.com/SimonBlanke/Hyperactive) but can also be used standalone.
+Designed for hyperparameter tuning, simulation optimization, feature selection, engineering design, and any scenario where gradients are unavailable or impractical. The library prioritizes simplicity: define your objective function, specify the search space, and run. All algorithms share one consistent API, so switching from hill climbing to Bayesian optimization is a one-line change. GFO runs without NumPy or SciPy when needed, making it suitable for minimal environments, containers, and embedded systems.
 
 <p>
   <a href="https://www.linkedin.com/in/simonblanke/"><img src="https://img.shields.io/badge/LinkedIn-Follow-0A66C2?style=flat-square&logo=linkedin" alt="LinkedIn"></a>
@@ -365,6 +365,35 @@ opt2.search(expensive_function, n_iter=100, memory_warm_start=opt1.search_data)
 
 
 <details>
+<summary><b>Ask/Tell Interface</b></summary>
+
+```python
+import numpy as np
+from gradient_free_optimizers import BayesianOptimizer
+
+def objective(params):
+    return -(params["x"]**2 + params["y"]**2)
+
+search_space = {
+    "x": np.arange(-10, 10, 0.1),
+    "y": np.arange(-10, 10, 0.1),
+}
+
+# Manual control over the optimization loop
+opt = BayesianOptimizer(search_space)
+opt.setup_search(objective, n_iter=100)
+
+for _ in range(100):
+    params = opt.ask()           # Get next parameters to evaluate
+    score = objective(params)
+    opt.tell(params, score)      # Report result back
+```
+
+</details>
+
+
+
+<details>
 <summary><b>Early Stopping</b></summary>
 
 ```python
@@ -397,12 +426,11 @@ opt.search(
 
 ## Ecosystem
 
-This library is part of a suite of optimization tools. For updates on these packages, [follow on GitHub](https://github.com/SimonBlanke).
+GFO is used as the optimization engine in other packages and integrates with the broader Python optimization ecosystem. For updates, [follow on GitHub](https://github.com/SimonBlanke).
 
 | Package | Description |
 |---------|-------------|
-| [Hyperactive](https://github.com/SimonBlanke/Hyperactive) | Hyperparameter optimization framework with experiment abstraction and ML integrations |
-| [Gradient-Free-Optimizers](https://github.com/SimonBlanke/Gradient-Free-Optimizers) | Core optimization algorithms for black-box function optimization |
+| [Hyperactive](https://github.com/SimonBlanke/Hyperactive) | High-level hyperparameter optimization framework, uses GFO as its optimization backend |
 | [Surfaces](https://github.com/SimonBlanke/Surfaces) | Test functions and benchmark surfaces for optimization algorithm evaluation |
 
 <br>
