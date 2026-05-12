@@ -129,7 +129,7 @@ class LineSearch(ABC):
             if abs(d) < 1e-10:
                 continue
 
-            if info.dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
+            if info.dim_type.is_continuous_like:
                 # Continuous-like internal bounds
                 min_val, max_val = info.bounds
             elif info.dim_type in (

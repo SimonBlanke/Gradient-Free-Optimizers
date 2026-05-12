@@ -137,7 +137,7 @@ class PowellsMethod(BaseOptimizer):
         for i, info in enumerate(self.conv.dim_infos):
             val = pos[i]
 
-            if info.dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
+            if info.dim_type.is_continuous_like:
                 # Continuous-like: clip to internal bounds
                 pos_new.append(clip(val, info.bounds[0], info.bounds[1]))
             elif info.dim_type == DimensionType.CATEGORICAL:

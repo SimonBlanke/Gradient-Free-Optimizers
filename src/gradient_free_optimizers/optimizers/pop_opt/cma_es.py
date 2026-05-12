@@ -176,7 +176,7 @@ class CMAESOptimizer(BasePopulationOptimizer):
         self._dim_offsets = zeros(n)
 
         for i, info in enumerate(self.conv.dim_infos):
-            if info.dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
+            if info.dim_type.is_continuous_like:
                 self._dim_offsets[i] = info.bounds[0]
                 self._dim_scales[i] = info.bounds[1] - info.bounds[0]
             elif info.dim_type == DimensionType.CATEGORICAL:

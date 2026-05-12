@@ -145,11 +145,9 @@ class Spiral(HillClimbingOptimizer):
         else:
             # For typed dimensions, use bounds to compute scale
             scales = []
-            from gradient_free_optimizers._dimension_types import DimensionType
-
             for idx, dim_type in enumerate(self.conv.dim_types):
                 bounds = self.conv.dim_infos[idx].bounds
-                if dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
+                if dim_type.is_continuous_like:
                     scales.append(bounds[1] - bounds[0])
                 else:
                     scales.append(bounds[1])
@@ -184,14 +182,12 @@ class Spiral(HillClimbingOptimizer):
             n_zeros = [0] * len(self.conv.max_positions)
             return clip(pos, n_zeros, self.conv.max_positions).astype(int)
 
-        from gradient_free_optimizers._dimension_types import DimensionType
-
         pos_new = []
         for idx, dim_type in enumerate(self.conv.dim_types):
             bounds = self.conv.dim_infos[idx].bounds
             val = pos[idx]
 
-            if dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
+            if dim_type.is_continuous_like:
                 # Clip to bounds, keep as float
                 pos_new.append(clip(val, bounds[0], bounds[1]))
             else:

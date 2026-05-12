@@ -48,6 +48,11 @@ class DimensionType(Enum):
     CATEGORICAL = "categorical"
     DISTRIBUTION = "distribution"
 
+    @property
+    def is_continuous_like(self) -> bool:
+        """True for dimensions that use continuous float positions internally."""
+        return self in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION)
+
 
 @dataclass
 class DimensionInfo:
@@ -75,7 +80,7 @@ class DimensionInfo:
 
     def __post_init__(self):
         """Validate the dimension info after initialization."""
-        if self.dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
+        if self.dim_type.is_continuous_like:
             if self.values is not None:
                 raise ValueError(
                     f"{self.dim_type.value.title()} dimension '{self.name}' "
@@ -294,7 +299,7 @@ def distribution_quantile_bounds(distribution: Any) -> tuple[float, float]:
     try:
         lower = distribution_ppf(distribution, 0.0)
         upper = distribution_ppf(distribution, 1.0)
-    except (TypeError, ValueError, OverflowError):
+    except (TypeError, ValueError, OverflowError, FloatingPointError):
         return DEFAULT_DISTRIBUTION_QUANTILES
 
     if math.isfinite(lower) and math.isfinite(upper) and lower < upper:

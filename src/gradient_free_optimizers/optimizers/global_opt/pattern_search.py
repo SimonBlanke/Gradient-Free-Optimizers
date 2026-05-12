@@ -128,7 +128,7 @@ class PatternSearch(BaseOptimizer):
         """Get dimension sizes for pattern generation."""
         sizes = []
         for info in self.conv.dim_infos:
-            if info.dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
+            if info.dim_type.is_continuous_like:
                 # Continuous-like: internal range
                 sizes.append(info.bounds[1] - info.bounds[0])
             elif info.dim_type == DimensionType.CATEGORICAL:
@@ -148,7 +148,7 @@ class PatternSearch(BaseOptimizer):
         for i, info in enumerate(self.conv.dim_infos):
             val = pos[i]
 
-            if info.dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
+            if info.dim_type.is_continuous_like:
                 # Continuous-like: clip to internal bounds
                 pos_clipped[i] = clip(val, info.bounds[0], info.bounds[1])
             elif info.dim_type == DimensionType.CATEGORICAL:
@@ -229,7 +229,7 @@ class PatternSearch(BaseOptimizer):
         n_dims = len(self.search_space)
         pos = empty(n_dims)
         for i, info in enumerate(self.conv.dim_infos):
-            if info.dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
+            if info.dim_type.is_continuous_like:
                 # Continuous-like
                 pos[i] = self._rng.uniform(info.bounds[0], info.bounds[1])
             elif info.dim_type == DimensionType.CATEGORICAL:

@@ -234,7 +234,7 @@ class SpiralOptimization(BasePopulationOptimizer):
         scales = zeros(n_dims)
 
         for i, info in enumerate(self.conv.dim_infos):
-            if info.dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
+            if info.dim_type.is_continuous_like:
                 # Continuous-like: use internal range
                 scales[i] = info.bounds[1] - info.bounds[0]
             elif info.dim_type == DimensionType.CATEGORICAL:

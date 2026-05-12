@@ -88,7 +88,7 @@ def _mixed_distance(pos1, pos2, dim_types, dim_infos):
     n_dims = len(dim_types)
 
     for idx, dim_type in enumerate(dim_types):
-        if dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
+        if dim_type.is_continuous_like:
             # Normalized Euclidean for continuous-like dimensions
             range_size = dim_infos[idx].bounds[1] - dim_infos[idx].bounds[0]
             if range_size > 0:

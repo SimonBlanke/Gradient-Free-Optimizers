@@ -275,7 +275,7 @@ class Converter(MemoryOperationsMixin):
         """
         sizes = []
         for info in self.dim_infos:
-            if info.dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
+            if info.dim_type.is_continuous_like:
                 # Placeholder for continuous - actual range is in bounds
                 sizes.append(1)
             else:
@@ -286,7 +286,7 @@ class Converter(MemoryOperationsMixin):
         """Compute valid position indices for each dimension."""
         positions = []
         for info in self.dim_infos:
-            if info.dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
+            if info.dim_type.is_continuous_like:
                 # Continuous dimensions don't have discrete positions
                 # Use empty list as placeholder
                 positions.append([])
@@ -302,7 +302,7 @@ class Converter(MemoryOperationsMixin):
         """
         values = []
         for idx, info in enumerate(self.dim_infos):
-            if info.dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
+            if info.dim_type.is_continuous_like:
                 # Store the tuple/distribution for continuous-like dimensions
                 values.append(self.search_space[info.name])
             else:
@@ -491,6 +491,8 @@ class Converter(MemoryOperationsMixin):
         list
             List of position arrays.
         """
+        # Per-row delegation instead of batch searchsorted: simpler and
+        # correct for continuous/distribution dims that lack discrete indices.
         return [self.value2position(list(value)) for value in values]
 
     def _find_position(self, space_dim: Any, value: Any) -> int:

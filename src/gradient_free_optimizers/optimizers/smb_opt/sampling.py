@@ -16,7 +16,6 @@ from gradient_free_optimizers._array_backend import (
 from gradient_free_optimizers._array_backend import (
     random as np_random,
 )
-from gradient_free_optimizers._dimension_types import DimensionType
 
 # Maximum supported dimensions for SMBO sampling
 # Limited by memory requirements for full position space enumeration
@@ -55,7 +54,7 @@ class InitialSampler:
             for idx, dim_size in enumerate(self.conv.dim_sizes):
                 dim_type = self.conv.dim_types[idx]
 
-                if dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
+                if dim_type.is_continuous_like:
                     # Sample floats uniformly in the continuous range
                     min_val, max_val = self.conv.dim_infos[idx].bounds
                     # Use a reasonable number of samples for continuous dims
@@ -81,7 +80,7 @@ class InitialSampler:
         effective_sizes = []
         for idx, dim_size in enumerate(self.conv.dim_sizes):
             dim_type = self.conv.dim_types[idx]
-            if dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
+            if dim_type.is_continuous_like:
                 effective_sizes.append(continuous_samples)
             else:
                 effective_sizes.append(dim_size)
@@ -120,7 +119,7 @@ class InitialSampler:
         ):
             dim_type = self.conv.dim_types[idx]
 
-            if dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
+            if dim_type.is_continuous_like:
                 # Sample floats uniformly in the continuous range
                 min_val, max_val = self.conv.dim_infos[idx].bounds
                 pos_space.append(np_random.uniform(min_val, max_val, n_samples))

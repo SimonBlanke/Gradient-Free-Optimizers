@@ -98,7 +98,7 @@ class Particle(HillClimbingOptimizer):
 
         pos_new = []
         for idx, dim_type in enumerate(self.conv.dim_types):
-            if dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
+            if dim_type.is_continuous_like:
                 # Keep as float, will be clipped by _conv2pos_typed
                 new_val = float(pos[idx]) + float(velo[idx])
                 pos_new.append(new_val)
@@ -189,14 +189,12 @@ class Particle(HillClimbingOptimizer):
             n_zeros = [0] * len(self.conv.max_positions)
             return clip(pos, n_zeros, self.conv.max_positions).astype(int)
 
-        from gradient_free_optimizers._dimension_types import DimensionType
-
         pos_new = []
         for idx, dim_type in enumerate(self.conv.dim_types):
             bounds = self.conv.dim_infos[idx].bounds
             val = pos[idx]
 
-            if dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
+            if dim_type.is_continuous_like:
                 # Clip to bounds, keep as float
                 pos_new.append(clip(val, bounds[0], bounds[1]))
             else:
