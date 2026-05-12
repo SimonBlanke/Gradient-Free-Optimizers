@@ -17,6 +17,7 @@ from gradient_free_optimizers._array_backend import (
     linalg,
     ndarray,
 )
+from gradient_free_optimizers._dimension_types import DimensionType
 
 from ...base_optimizer import BaseOptimizer
 from .direction import Direction
@@ -132,21 +133,19 @@ class PowellsMethod(BaseOptimizer):
     def _conv2pos_typed(self, pos):
         """Convert position to valid position with proper types."""
         pos_new = []
-        dim_names = list(self.search_space.keys())
 
-        for i, name in enumerate(dim_names):
-            dim_def = self.search_space[name]
+        for i, info in enumerate(self.conv.dim_infos):
             val = pos[i]
 
-            if isinstance(dim_def, tuple):
-                # Continuous: clip to bounds
-                pos_new.append(clip(val, dim_def[0], dim_def[1]))
-            elif isinstance(dim_def, list):
+            if info.dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
+                # Continuous-like: clip to internal bounds
+                pos_new.append(clip(val, info.bounds[0], info.bounds[1]))
+            elif info.dim_type == DimensionType.CATEGORICAL:
                 # Categorical: clip to valid indices
-                pos_new.append(int(clip(round(val), 0, len(dim_def) - 1)))
-            elif isinstance(dim_def, ndarray):
+                pos_new.append(int(clip(round(val), 0, info.size - 1)))
+            elif info.dim_type == DimensionType.DISCRETE_NUMERICAL:
                 # Discrete: clip to valid indices
-                pos_new.append(int(clip(round(val), 0, len(dim_def) - 1)))
+                pos_new.append(int(clip(round(val), 0, info.size - 1)))
             else:
                 pos_new.append(val)
 

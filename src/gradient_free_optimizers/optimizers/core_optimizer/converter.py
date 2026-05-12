@@ -23,6 +23,9 @@ from gradient_free_optimizers._dimension_types import (
     DimensionMasks,
     DimensionType,
     classify_search_space_value,
+    distribution_cdf,
+    distribution_ppf,
+    distribution_quantile_bounds,
 )
 
 from ._converter_memory import MemoryOperationsMixin
@@ -38,6 +41,7 @@ def check_search_space_value(search_space: dict[str, Any]) -> None:
     - Array-like (numpy.ndarray, GFOArray) for discrete numerical dimensions
     - Python list for categorical dimensions
     - Tuple of (min, max) for continuous dimensions
+    - SciPy stats continuous distributions
     """
     for para_name, dim_values in search_space.items():
         dim_type = classify_search_space_value(dim_values)
@@ -77,6 +81,16 @@ def check_search_space_value(search_space: dict[str, Any]) -> None:
                     f"one value."
                 )
 
+        elif dim_type == DimensionType.DISTRIBUTION:
+            quantile_bounds = distribution_quantile_bounds(dim_values)
+            low_value = distribution_ppf(dim_values, quantile_bounds[0])
+            high_value = distribution_ppf(dim_values, quantile_bounds[1])
+            if low_value >= high_value:
+                raise ValueError(
+                    f"Distribution dimension '{para_name}' must have increasing "
+                    "values across its effective quantile bounds."
+                )
+
         else:  # DISCRETE_NUMERICAL
             # Accept numpy arrays or our GFOArray
             has_shape = hasattr(dim_values, "shape")
@@ -102,6 +116,15 @@ def check_numpy_array(search_space: dict[str, Any]) -> None:
         Use check_search_space_value instead, which supports all dimension types.
     """
     check_search_space_value(search_space)
+
+
+def _clip_scalar(value: float, low: float, high: float) -> float:
+    """Clip a scalar value to inclusive bounds."""
+    if value < low:
+        return float(low)
+    if value > high:
+        return float(high)
+    return float(value)
 
 
 class Converter(MemoryOperationsMixin):
@@ -214,6 +237,15 @@ class Converter(MemoryOperationsMixin):
                     values=None,
                     size=None,
                 )
+            elif dim_type == DimensionType.DISTRIBUTION:
+                info = DimensionInfo(
+                    name=name,
+                    dim_type=dim_type,
+                    bounds=distribution_quantile_bounds(value),
+                    values=None,
+                    size=None,
+                    distribution=value,
+                )
             elif dim_type == DimensionType.CATEGORICAL:
                 info = DimensionInfo(
                     name=name,
@@ -243,7 +275,7 @@ class Converter(MemoryOperationsMixin):
         """
         sizes = []
         for info in self.dim_infos:
-            if info.dim_type == DimensionType.CONTINUOUS:
+            if info.dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
                 # Placeholder for continuous - actual range is in bounds
                 sizes.append(1)
             else:
@@ -254,7 +286,7 @@ class Converter(MemoryOperationsMixin):
         """Compute valid position indices for each dimension."""
         positions = []
         for info in self.dim_infos:
-            if info.dim_type == DimensionType.CONTINUOUS:
+            if info.dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
                 # Continuous dimensions don't have discrete positions
                 # Use empty list as placeholder
                 positions.append([])
@@ -270,8 +302,8 @@ class Converter(MemoryOperationsMixin):
         """
         values = []
         for idx, info in enumerate(self.dim_infos):
-            if info.dim_type == DimensionType.CONTINUOUS:
-                # Store the tuple for continuous
+            if info.dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
+                # Store the tuple/distribution for continuous-like dimensions
                 values.append(self.search_space[info.name])
             else:
                 # Store the array/list for discrete/categorical
@@ -340,6 +372,11 @@ class Converter(MemoryOperationsMixin):
             if self.dim_types[n] == DimensionType.CONTINUOUS:
                 # For continuous dimensions, position is the actual value
                 value.append(float(position[n]))
+            elif self.dim_types[n] == DimensionType.DISTRIBUTION:
+                # For distribution dimensions, position is a quantile.
+                info = self.dim_infos[n]
+                q = _clip_scalar(float(position[n]), info.bounds[0], info.bounds[1])
+                value.append(distribution_ppf(space_dim, q))
             else:
                 # For discrete/categorical, position is an index
                 value.append(space_dim[int(position[n])])
@@ -370,6 +407,13 @@ class Converter(MemoryOperationsMixin):
             if self.dim_types[n] == DimensionType.CONTINUOUS:
                 # For continuous dimensions, the value is the position
                 position.append(float(value[n]))
+            elif self.dim_types[n] == DimensionType.DISTRIBUTION:
+                # For distribution dimensions, convert value to quantile.
+                info = self.dim_infos[n]
+                quantile = distribution_cdf(space_dim, value[n])
+                position.append(
+                    _clip_scalar(float(quantile), info.bounds[0], info.bounds[1])
+                )
             elif self.dim_types[n] == DimensionType.CATEGORICAL:
                 # For categorical dimensions, find exact match
                 values_list = list(space_dim)
@@ -447,33 +491,7 @@ class Converter(MemoryOperationsMixin):
         list
             List of position arrays.
         """
-        positions_temp = []
-        values_arr = array(values)
-
-        for n, space_dim in enumerate(self.search_space_values):
-            # Get column n from 2D array
-            if hasattr(values_arr, "shape") and len(values_arr.shape) > 1:
-                values_1d = [values_arr[i, n] for i in range(len(values_arr))]
-            else:
-                values_1d = [v[n] for v in values]
-
-            # Use searchsorted if available, otherwise manual search
-            if hasattr(space_dim, "searchsorted"):
-                pos_list = space_dim.searchsorted(values_1d)
-            else:
-                pos_list = [self._find_position(space_dim, v) for v in values_1d]
-
-            positions_temp.append(pos_list)
-
-        # Transpose and convert to list of arrays
-        positions = [
-            array(
-                [positions_temp[dim][i] for dim in range(len(positions_temp))]
-            ).astype(int)
-            for i in range(len(positions_temp[0]))
-        ]
-
-        return positions
+        return [self.value2position(list(value)) for value in values]
 
     def _find_position(self, space_dim: Any, value: Any) -> int:
         """Find position using binary search."""
@@ -511,6 +529,15 @@ class Converter(MemoryOperationsMixin):
             if self.dim_types[n] == DimensionType.CONTINUOUS:
                 # For continuous dimensions, positions are the actual values (floats)
                 value_ = [float(p) for p in pos_1d]
+            elif self.dim_types[n] == DimensionType.DISTRIBUTION:
+                info = self.dim_infos[n]
+                value_ = [
+                    distribution_ppf(
+                        space_dim,
+                        _clip_scalar(float(p), info.bounds[0], info.bounds[1]),
+                    )
+                    for p in pos_1d
+                ]
             else:
                 # For discrete/categorical, positions are indices (ints)
                 if hasattr(space_dim, "__getitem__"):

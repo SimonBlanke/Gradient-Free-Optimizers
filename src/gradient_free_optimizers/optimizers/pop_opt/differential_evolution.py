@@ -220,7 +220,7 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
             bounds = self.conv.dim_infos[idx].bounds
             val = pos[idx]
 
-            if dim_type == DimensionType.CONTINUOUS:
+            if dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
                 # Clip to bounds, keep as float
                 pos_new.append(clip(val, bounds[0], bounds[1]))
             else:

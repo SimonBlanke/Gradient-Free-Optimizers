@@ -55,7 +55,7 @@ class InitialSampler:
             for idx, dim_size in enumerate(self.conv.dim_sizes):
                 dim_type = self.conv.dim_types[idx]
 
-                if dim_type == DimensionType.CONTINUOUS:
+                if dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
                     # Sample floats uniformly in the continuous range
                     min_val, max_val = self.conv.dim_infos[idx].bounds
                     # Use a reasonable number of samples for continuous dims
@@ -81,7 +81,7 @@ class InitialSampler:
         effective_sizes = []
         for idx, dim_size in enumerate(self.conv.dim_sizes):
             dim_type = self.conv.dim_types[idx]
-            if dim_type == DimensionType.CONTINUOUS:
+            if dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
                 effective_sizes.append(continuous_samples)
             else:
                 effective_sizes.append(dim_size)
@@ -120,7 +120,7 @@ class InitialSampler:
         ):
             dim_type = self.conv.dim_types[idx]
 
-            if dim_type == DimensionType.CONTINUOUS:
+            if dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
                 # Sample floats uniformly in the continuous range
                 min_val, max_val = self.conv.dim_infos[idx].bounds
                 pos_space.append(np_random.uniform(min_val, max_val, n_samples))

@@ -23,7 +23,12 @@ from gradient_free_optimizers._array_backend import (
     random,
     sqrt,
 )
-from gradient_free_optimizers._dimension_types import DimensionType
+from gradient_free_optimizers._dimension_types import (
+    DimensionType,
+    distribution_ppf,
+    distribution_quantile_bounds,
+    is_scipy_distribution,
+)
 from gradient_free_optimizers._math_backend import cdist
 
 from ..base_optimizer import BaseOptimizer
@@ -53,6 +58,10 @@ def _discretize_search_space(search_space, resolution):
                 discretized[name] = linspace(low, high, resolution)
             else:
                 discretized[name] = space
+        elif is_scipy_distribution(space):
+            q_low, q_high = distribution_quantile_bounds(space)
+            quantiles = linspace(q_low, q_high, resolution)
+            discretized[name] = array([distribution_ppf(space, q) for q in quantiles])
         else:
             discretized[name] = space
     return discretized
@@ -79,8 +88,8 @@ def _mixed_distance(pos1, pos2, dim_types, dim_infos):
     n_dims = len(dim_types)
 
     for idx, dim_type in enumerate(dim_types):
-        if dim_type == DimensionType.CONTINUOUS:
-            # Normalized Euclidean for continuous
+        if dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
+            # Normalized Euclidean for continuous-like dimensions
             range_size = dim_infos[idx].bounds[1] - dim_infos[idx].bounds[0]
             if range_size > 0:
                 diff = (pos1[idx] - pos2[idx]) / range_size

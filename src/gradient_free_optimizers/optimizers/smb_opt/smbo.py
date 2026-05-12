@@ -17,7 +17,6 @@ from gradient_free_optimizers._array_backend import (
 from gradient_free_optimizers._array_backend import (
     array,
     inf,
-    intersect1d,
     invert,
     isin,
     isinf,
@@ -29,6 +28,7 @@ from gradient_free_optimizers._array_backend import (
     nonzero,
     random,
 )
+from gradient_free_optimizers._dimension_types import DimensionType, distribution_cdf
 
 from ..base_optimizer import BaseOptimizer
 from ..core_optimizer import CoreOptimizer
@@ -153,18 +153,40 @@ class SMBO(BaseOptimizer):
                 ~search_data.isin([nan, inf, -inf]).any(axis=1)
             ]
 
-            # Filter out elements that are not in search space
-            int_idx_list = []
-            for para_name in self.conv.para_names:
-                search_data_dim = warm_start_smbo[para_name].values
-                search_space_dim = self.conv.search_space[para_name]
+            # Filter out elements that are not in search space.
+            # Continuous-like dimensions validate by bounds; discrete and
+            # categorical dimensions validate by membership.
+            valid_idx_sets = []
+            for idx, para_name in enumerate(self.conv.para_names):
+                search_data_dim = list(warm_start_smbo[para_name].values)
+                dim_type = self.conv.dim_types[idx]
+                info = self.conv.dim_infos[idx]
 
-                int_idx = nonzero(isin(search_data_dim, search_space_dim))[0]
-                int_idx_list.append(int_idx)
+                if dim_type == DimensionType.CONTINUOUS:
+                    low, high = info.bounds
+                    valid_idx = [
+                        i
+                        for i, value in enumerate(search_data_dim)
+                        if low <= value <= high
+                    ]
+                elif dim_type == DimensionType.DISTRIBUTION:
+                    q_low, q_high = info.bounds
+                    valid_idx = []
+                    for i, value in enumerate(search_data_dim):
+                        try:
+                            q_value = distribution_cdf(info.distribution, value)
+                        except (TypeError, ValueError, OverflowError):
+                            continue
+                        if q_low <= q_value <= q_high:
+                            valid_idx.append(i)
+                else:
+                    search_space_dim = self.conv.search_space[para_name]
+                    int_idx = nonzero(isin(search_data_dim, search_space_dim))[0]
+                    valid_idx = list(int_idx)
 
-            intersec = int_idx_list[0]
-            for int_idx in int_idx_list[1:]:
-                intersec = intersect1d(intersec, int_idx)
+                valid_idx_sets.append(set(valid_idx))
+
+            intersec = sorted(set.intersection(*valid_idx_sets))
             warm_start_smbo_f = warm_start_smbo.iloc[intersec]
 
             X_sample_values = warm_start_smbo_f[self.conv.para_names].values

@@ -93,7 +93,7 @@ class MemoryOperationsMixin:
         if memory_dict is None:
             return None
 
-        positions = [array(pos).astype(int) for pos in list(memory_dict.keys())]
+        positions = [array(pos) for pos in list(memory_dict.keys())]
         # Extract scores from Result objects
         scores = [
             result.score if isinstance(result, Result) else result

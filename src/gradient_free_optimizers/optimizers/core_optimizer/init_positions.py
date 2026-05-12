@@ -56,8 +56,8 @@ class Initializer:
         for idx, dim_type in enumerate(self.conv.dim_types):
             bounds = self.conv.dim_infos[idx].bounds
 
-            if dim_type == DimensionType.CONTINUOUS:
-                # Uniform random in continuous range
+            if dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
+                # Uniform random in continuous/quantile range
                 pos.append(random.uniform(bounds[0], bounds[1]))
             else:
                 # Random index for discrete/categorical
@@ -161,8 +161,8 @@ class Initializer:
             for idx, dim_type in enumerate(self.conv.dim_types):
                 bounds = self.conv.dim_infos[idx].bounds
 
-                if dim_type == DimensionType.CONTINUOUS:
-                    # For continuous: evenly spaced points in range
+                if dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
+                    # For continuous-like: evenly spaced points in internal range
                     min_val, max_val = bounds
                     step = (max_val - min_val) / (p_per_dim + 1)
                     n_points = [min_val + step * n for n in range(1, p_per_dim + 1)]
@@ -212,8 +212,8 @@ class Initializer:
             bounds = self.conv.dim_infos[idx].bounds
             rnd = random.randint(0, 1)
 
-            if dim_type == DimensionType.CONTINUOUS:
-                # For continuous, vertex is min or max of range
+            if dim_type in (DimensionType.CONTINUOUS, DimensionType.DISTRIBUTION):
+                # For continuous-like, vertex is min or max of internal range
                 vertex.append(bounds[0] if rnd == 0 else bounds[1])
             else:
                 # For discrete/categorical, vertex is first or last index
