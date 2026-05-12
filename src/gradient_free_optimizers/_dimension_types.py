@@ -260,19 +260,18 @@ def is_scipy_distribution(value: Any) -> bool:
         return False
 
     try:
-        from scipy.stats._distn_infrastructure import rv_continuous, rv_frozen
-    except (ImportError, AttributeError):
+        from scipy.stats import rv_continuous
+    except ImportError:
         return False
 
     if isinstance(value, rv_continuous):
         return True
-    if isinstance(value, rv_frozen):
-        return isinstance(getattr(value, "dist", None), rv_continuous)
 
-    module_name = type(value).__module__
-    has_pdf = callable(getattr(value, "pdf", None))
-    has_pmf = callable(getattr(value, "pmf", None))
-    return module_name.startswith("scipy.stats") and has_pdf and not has_pmf
+    # Frozen distributions (e.g. stats.norm(loc=0, scale=1)) expose the
+    # underlying rv_continuous via .dist; discrete frozen objects have
+    # rv_discrete there instead, so the isinstance check excludes them.
+    dist = getattr(value, "dist", None)
+    return isinstance(dist, rv_continuous)
 
 
 def distribution_ppf(distribution: Any, quantile: float) -> float:
