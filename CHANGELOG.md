@@ -11,6 +11,8 @@ For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke
 <!-- changelog-cursor: a8d98ae -->
 
 ### Added
+- `boundary` optimizer parameter for out-of-bounds candidate handling, with `clip`, `reflect`, `periodic`, `random`, and `intermediate` strategies
+- Documentation and runnable example for boundary strategies
 - SciPy stats continuous distributions can now be used as search-space dimensions; optimizers operate on quantiles internally and pass `ppf` values to objective functions
 - Example for SciPy distribution-backed search spaces
 - C extension backend (`_fast_ops`) as an intermediate performance tier between numpy and pure Python, accelerating elementwise arithmetic, math functions, reductions, and matrix multiply
