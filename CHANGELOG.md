@@ -11,6 +11,8 @@ For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke
 <!-- changelog-cursor: a8d98ae -->
 
 ### Added
+- SciPy stats continuous distributions can now be used as search-space dimensions; optimizers operate on quantiles internally and pass `ppf` values to objective functions
+- Example for SciPy distribution-backed search spaces
 - C extension backend (`_fast_ops`) as an intermediate performance tier between numpy and pure Python, accelerating elementwise arithmetic, math functions, reductions, and matrix multiply
 - `SearchParams` dict subclass carrying optimization metadata as private attributes for tooling integration
 
@@ -28,6 +30,8 @@ For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke
 - Legacy optimizer implementations (`optimizers_legacy/`)
 
 ### Fixed
+- Warm-start rows with distribution values outside the search space are now dropped instead of being silently clipped to boundary quantiles
+- NaN distribution quantile positions now fall back to the midpoint quantile instead of propagating NaN to objective functions
 - KDE bandwidth computation on degenerate data (all identical points) causing division-by-zero
 - KDE bandwidth not recomputed on refit with new data
 - `min`/`max` broadcasting in the pure-Python array backend
@@ -35,6 +39,7 @@ For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke
 - C extension build silently falling back to pure Python in CI; `GFO_REQUIRE_C_EXTENSION=1` now makes compilation failures fatal
 
 ### Tests
+- Coverage for SciPy distribution-backed search spaces across optimizers, memory warm starts, SMBO warm starts, constraints, and ask/tell
 - Unit tests for all six internal estimators
 - C extension backend and pure-Python integration tests (no numpy, no scipy)
 - Expanded coverage for distributed module and ask/tell interface
