@@ -177,6 +177,39 @@ def test_distribution_memory_roundtrip_uses_quantile_keys():
     assert restored["score"].iloc[0] == 1.0
 
 
+def test_distribution_memory_warm_start_drops_clipped_tail_values(caplog):
+    dist = stats.norm(loc=0, scale=1)
+    conv = Converter({"x": dist})
+    upper_edge = float(dist.ppf(DEFAULT_DISTRIBUTION_QUANTILES[1]))
+    search_data = pd.DataFrame({"x": [0.0, upper_edge, 4.0], "score": [0.0, 1.0, 4.0]})
+
+    with caplog.at_level("WARNING"):
+        memory = conv.dataframe2memory_dict(search_data)
+
+    restored = conv.memory_dict2dataframe(memory)
+
+    assert len(restored) == 2
+    assert set(restored["score"]) == {0.0, 1.0}
+    assert "Dropped 1 memory warm-start rows" in caplog.text
+
+
+def test_distribution_memory_warm_start_drops_values_outside_finite_support(caplog):
+    conv = Converter({"x": stats.uniform(loc=0, scale=10)})
+    search_data = pd.DataFrame(
+        {"x": [-1.0, 0.0, 10.0, 11.0], "score": [-1.0, 0.0, 10.0, 11.0]}
+    )
+
+    with caplog.at_level("WARNING"):
+        memory = conv.dataframe2memory_dict(search_data)
+
+    restored = conv.memory_dict2dataframe(memory)
+
+    assert len(restored) == 2
+    assert set(restored["score"]) == {0.0, 10.0}
+    assert all(0.0 <= value <= 10.0 for value in restored["x"])
+    assert "Dropped 2 memory warm-start rows" in caplog.text
+
+
 def test_random_search_samples_distribution_values():
     search_space = {"lr": stats.loguniform(1e-5, 1e-1)}
 
@@ -344,3 +377,25 @@ def test_smbo_warm_start_with_distribution():
 
     assert len(opt.search_data) == 10
     assert math.isfinite(opt.best_score)
+
+
+def test_smbo_warm_start_drops_invalid_distribution_rows(caplog):
+    dist = stats.norm(loc=0, scale=1)
+    previous_data = pd.DataFrame(
+        {
+            "x": [0.0, float(dist.ppf(DEFAULT_DISTRIBUTION_QUANTILES[1])), 4.0],
+            "score": [0.0, -1.0, -4.0],
+        }
+    )
+
+    with caplog.at_level("WARNING"):
+        opt = BayesianOptimizer(
+            {"x": dist},
+            initialize={"random": 2},
+            random_state=1,
+            warm_start_smbo=previous_data,
+        )
+
+    assert len(opt.X_sample) == 2
+    assert opt.Y_sample == [0.0, -1.0]
+    assert "Dropped 1 SMBO warm-start rows" in caplog.text

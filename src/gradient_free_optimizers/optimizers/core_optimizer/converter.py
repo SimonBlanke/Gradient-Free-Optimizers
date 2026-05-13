@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import math
 from collections.abc import Callable
 from functools import reduce
 from typing import Any, TypeVar
@@ -125,6 +126,12 @@ def _clip_scalar(value: float, low: float, high: float) -> float:
     if value > high:
         return float(high)
     return float(value)
+
+
+def _is_within_bounds(value: float, low: float, high: float) -> bool:
+    """Return True if value is within inclusive bounds with tiny tolerance."""
+    tol = 1e-12 * max(abs(low), abs(high), 1.0)
+    return low - tol <= value <= high + tol
 
 
 class Converter(MemoryOperationsMixin):
@@ -435,6 +442,80 @@ class Converter(MemoryOperationsMixin):
 
         return array(position)
 
+    def is_value_in_search_space(self, value: list[Any]) -> bool:
+        """Return True if a value row belongs to this search space.
+
+        This stricter check is intended for user-provided warm-start data.
+        Unlike ``value2position()``, it does not accept distribution values
+        that would only become valid after quantile clipping.
+        """
+        if len(value) != self.n_dimensions:
+            return False
+
+        for n, space_dim in enumerate(self.search_space_values):
+            dim_type = self.dim_types[n]
+            dim_value = value[n]
+
+            if dim_type == DimensionType.CONTINUOUS:
+                if not self._is_continuous_value_in_bounds(dim_value, n):
+                    return False
+            elif dim_type == DimensionType.DISTRIBUTION:
+                if not self._is_distribution_value_in_bounds(dim_value, n):
+                    return False
+            elif dim_type == DimensionType.CATEGORICAL:
+                if dim_value not in list(space_dim):
+                    return False
+            else:
+                if dim_value not in list(space_dim):
+                    return False
+
+        return True
+
+    def _is_continuous_value_in_bounds(self, value: Any, dim_idx: int) -> bool:
+        """Validate a continuous warm-start value."""
+        try:
+            value_f = float(value)
+        except (TypeError, ValueError):
+            return False
+
+        if not math.isfinite(value_f):
+            return False
+
+        low, high = self.dim_infos[dim_idx].bounds
+        return _is_within_bounds(value_f, low, high)
+
+    def _is_distribution_value_in_bounds(self, value: Any, dim_idx: int) -> bool:
+        """Validate a distribution value without quantile clipping."""
+        info = self.dim_infos[dim_idx]
+
+        try:
+            value_f = float(value)
+            q_value = float(distribution_cdf(info.distribution, value_f))
+        except (TypeError, ValueError, OverflowError, FloatingPointError):
+            return False
+
+        if not (math.isfinite(value_f) and math.isfinite(q_value)):
+            return False
+
+        q_low, q_high = info.bounds
+        if not _is_within_bounds(q_value, q_low, q_high):
+            return False
+
+        try:
+            roundtrip_value = float(distribution_ppf(info.distribution, q_value))
+        except (TypeError, ValueError, OverflowError, FloatingPointError):
+            return False
+
+        if not math.isfinite(roundtrip_value):
+            return False
+
+        return math.isclose(
+            roundtrip_value,
+            value_f,
+            rel_tol=1e-8,
+            abs_tol=1e-12,
+        )
+
     @returnNoneIfArgNone
     def value2para(self, value: list[Any] | None) -> dict[str, Any] | None:
         """Convert a value list to a parameter dictionary.
@@ -494,6 +575,22 @@ class Converter(MemoryOperationsMixin):
         # Per-row delegation instead of batch searchsorted: simpler and
         # correct for continuous/distribution dims that lack discrete indices.
         return [self.value2position(list(value)) for value in values]
+
+    @returnNoneIfArgNone
+    def values2positions_strict(
+        self, values: list[list[Any]] | None
+    ) -> tuple[list[ArrayLike], list[int]] | None:
+        """Convert valid value rows to positions and return kept row indices."""
+        positions = []
+        valid_indices = []
+
+        for idx, value in enumerate(values):
+            value_list = list(value)
+            if self.is_value_in_search_space(value_list):
+                positions.append(self.value2position(value_list))
+                valid_indices.append(idx)
+
+        return positions, valid_indices
 
     def _find_position(self, space_dim: Any, value: Any) -> int:
         """Find position using binary search."""

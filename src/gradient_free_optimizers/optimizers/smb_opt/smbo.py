@@ -18,17 +18,14 @@ from gradient_free_optimizers._array_backend import (
     array,
     inf,
     invert,
-    isin,
     isinf,
     isnan,
     linalg,
     meshgrid,
     nan,
     ndarray,
-    nonzero,
     random,
 )
-from gradient_free_optimizers._dimension_types import DimensionType, distribution_cdf
 
 from ..base_optimizer import BaseOptimizer
 from ..core_optimizer import CoreOptimizer
@@ -155,69 +152,21 @@ class SMBO(BaseOptimizer):
                 ~search_data.isin([nan, inf, -inf]).any(axis=1)
             ]
 
-            # Filter out elements that are not in search space.
-            # Continuous-like dimensions validate by bounds; discrete and
-            # categorical dimensions validate by membership.
-            valid_idx_sets = []
-            for idx, para_name in enumerate(self.conv.para_names):
-                search_data_dim = list(warm_start_smbo[para_name].values)
-                dim_type = self.conv.dim_types[idx]
-                info = self.conv.dim_infos[idx]
+            X_sample_values = warm_start_smbo[self.conv.para_names].values
+            self.X_sample, valid_indices = self.conv.values2positions_strict(
+                X_sample_values
+            )
+            n_dropped = len(X_sample_values) - len(valid_indices)
+            if n_dropped > 0:
+                logger.warning(
+                    "Dropped %d SMBO warm-start rows with values outside "
+                    "the search space.",
+                    n_dropped,
+                )
 
-                if dim_type == DimensionType.CONTINUOUS:
-                    low, high = info.bounds
-                    valid_idx = [
-                        i
-                        for i, value in enumerate(search_data_dim)
-                        if low <= value <= high
-                    ]
-                elif dim_type == DimensionType.DISTRIBUTION:
-                    q_low, q_high = info.bounds
-                    valid_idx = []
-                    n_failed_cdf = 0
-                    n_outside_bounds = 0
-                    for i, value in enumerate(search_data_dim):
-                        try:
-                            q_value = distribution_cdf(info.distribution, value)
-                        except (
-                            TypeError,
-                            ValueError,
-                            OverflowError,
-                            FloatingPointError,
-                        ):
-                            n_failed_cdf += 1
-                            continue
-                        if q_low <= q_value <= q_high:
-                            valid_idx.append(i)
-                        else:
-                            n_outside_bounds += 1
-                    n_dropped = n_failed_cdf + n_outside_bounds
-                    if n_dropped > 0:
-                        logger.warning(
-                            "Dropped %d warm-start rows for distribution "
-                            "dimension '%s' (%d cdf conversions failed, "
-                            "%d outside quantile bounds [%s, %s])",
-                            n_dropped,
-                            para_name,
-                            n_failed_cdf,
-                            n_outside_bounds,
-                            q_low,
-                            q_high,
-                        )
-                else:
-                    search_space_dim = self.conv.search_space[para_name]
-                    int_idx = nonzero(isin(search_data_dim, search_space_dim))[0]
-                    valid_idx = list(int_idx)
-
-                valid_idx_sets.append(set(valid_idx))
-
-            intersec = sorted(set.intersection(*valid_idx_sets))
-            warm_start_smbo_f = warm_start_smbo.iloc[intersec]
-
-            X_sample_values = warm_start_smbo_f[self.conv.para_names].values
+            warm_start_smbo_f = warm_start_smbo.iloc[valid_indices]
             Y_sample = warm_start_smbo_f["score"].values
 
-            self.X_sample = self.conv.values2positions(X_sample_values)
             self.Y_sample = list(Y_sample)
         else:
             self.X_sample = []
