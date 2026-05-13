@@ -121,6 +121,13 @@ Guide Sections
       Restrict the search space with
       constraint functions.
 
+   .. grid-item-card:: Boundary Strategies
+      :link: user_guide/boundary_strategies
+      :link-type: doc
+
+      Control how out-of-bounds
+      candidates are repaired.
+
    .. grid-item-card:: Initialization
       :link: user_guide/initialization
       :link-type: doc
@@ -215,6 +222,7 @@ GFO provides 22 optimization algorithms organized into four categories:
    user_guide/objective_functions
    user_guide/optimizer_selection
    user_guide/constraints
+   user_guide/boundary_strategies
    user_guide/initialization
    user_guide/memory
    user_guide/stopping_conditions

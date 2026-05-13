@@ -46,6 +46,13 @@ Advanced Features
       Define parameter constraints to restrict the search space. Perfect
       for problems with physical constraints or valid parameter combinations.
 
+   .. grid-item-card:: Boundary Strategies
+      :link: examples/boundary_strategies
+      :link-type: doc
+
+      Compare how optimizers repair candidates that leave the search-space
+      bounds during local or population-based moves.
+
    .. grid-item-card:: Comparing Algorithms
       :link: examples/comparing_optimizers
       :link-type: doc
@@ -95,5 +102,6 @@ By Use Case
    examples/simple_optimization
    examples/hyperparameter_tuning
    examples/constrained_optimization
+   examples/boundary_strategies
    examples/comparing_optimizers
    examples/warm_start

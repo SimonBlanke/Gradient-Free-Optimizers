@@ -138,6 +138,11 @@ This is the right choice when you want the optimizer to explore the full
 continuous range. For parameters that span several orders of magnitude,
 consider using a discrete log-scale grid instead (see below).
 
+When optimizers generate candidates outside a continuous range, the
+``boundary`` optimizer parameter controls how those candidates are mapped
+back into the valid range. See :doc:`boundary_strategies` for the available
+strategies.
+
 
 Distribution Parameters
 -----------------------
