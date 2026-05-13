@@ -155,6 +155,15 @@ def test_distribution_converter_roundtrip_in_quantile_space():
     assert lower_value == stats.norm().ppf(DEFAULT_DISTRIBUTION_QUANTILES[0])
 
 
+def test_distribution_nan_position_uses_mid_quantile():
+    conv = Converter({"x": stats.norm(loc=0, scale=1)})
+
+    value = conv.position2value([float("nan")])
+
+    assert math.isfinite(value[0])
+    assert abs(value[0]) < 1e-12
+
+
 def test_distribution_values2positions_preserves_float_positions():
     conv = Converter({"x": stats.norm(loc=0, scale=1)})
 

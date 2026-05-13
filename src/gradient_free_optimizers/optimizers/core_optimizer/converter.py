@@ -122,6 +122,8 @@ def check_numpy_array(search_space: dict[str, Any]) -> None:
 
 def _clip_scalar(value: float, low: float, high: float) -> float:
     """Clip a scalar value to inclusive bounds."""
+    if math.isnan(value):
+        return (float(low) + float(high)) / 2
     if value < low:
         return float(low)
     if value > high:
