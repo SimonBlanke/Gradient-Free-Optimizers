@@ -11,6 +11,7 @@ from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
 from gradient_free_optimizers._array_backend import array, ndarray, zeros
+from gradient_free_optimizers._dimension_types import DimensionType
 
 from ._spiral import Spiral, rotation
 from .base_population_optimizer import BasePopulationOptimizer
@@ -233,20 +234,17 @@ class SpiralOptimization(BasePopulationOptimizer):
         """
         n_dims = len(self.search_space)
         scales = zeros(n_dims)
-        dim_names = list(self.search_space.keys())
 
-        for i, name in enumerate(dim_names):
-            dim_def = self.search_space[name]
-
-            if isinstance(dim_def, tuple) and len(dim_def) == 2:
-                # Continuous: use range
-                scales[i] = dim_def[1] - dim_def[0]
-            elif isinstance(dim_def, list):
+        for i, info in enumerate(self.conv.dim_infos):
+            if info.dim_type.is_continuous_like:
+                # Continuous-like: use internal range
+                scales[i] = info.bounds[1] - info.bounds[0]
+            elif info.dim_type == DimensionType.CATEGORICAL:
                 # Categorical: use number of categories
-                scales[i] = len(dim_def) - 1
-            elif isinstance(dim_def, ndarray):
+                scales[i] = info.size - 1
+            else:
                 # Discrete: use max index
-                scales[i] = len(dim_def) - 1
+                scales[i] = info.size - 1
 
         return scales
 

@@ -40,6 +40,7 @@ class MemoryOperationsMixin:
     - `search_space`: dict mapping parameter names to value arrays
     - `para_names`: list of parameter names
     - `values2positions()`: method to convert values to positions
+    - `values2positions_strict()`: method to convert valid warm-start values
     - `positions2values()`: method to convert positions to values
     """
 
@@ -93,7 +94,7 @@ class MemoryOperationsMixin:
         if memory_dict is None:
             return None
 
-        positions = [array(pos).astype(int) for pos in list(memory_dict.keys())]
+        positions = [array(pos) for pos in list(memory_dict.keys())]
         # Extract scores from Result objects
         scores = [
             result.score if isinstance(result, Result) else result
@@ -127,8 +128,16 @@ class MemoryOperationsMixin:
 
         if parameter <= memory_para:
             values = list(dataframe[self.para_names].values)
-            positions = self.values2positions(values)
-            scores = dataframe["score"]
+            positions, valid_indices = self.values2positions_strict(values)
+            scores = dataframe["score"].iloc[valid_indices]
+
+            n_dropped = len(values) - len(valid_indices)
+            if n_dropped > 0:
+                logger.warning(
+                    "Dropped %d memory warm-start rows with values outside "
+                    "the search space.",
+                    n_dropped,
+                )
 
             memory_dict = self.positions_scores2memory_dict(positions, scores)
 

@@ -17,16 +17,13 @@ from gradient_free_optimizers._array_backend import (
 from gradient_free_optimizers._array_backend import (
     array,
     inf,
-    intersect1d,
     invert,
-    isin,
     isinf,
     isnan,
     linalg,
     meshgrid,
     nan,
     ndarray,
-    nonzero,
     random,
 )
 
@@ -36,6 +33,8 @@ from .sampling import InitialSampler
 
 if TYPE_CHECKING:
     import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 
 def _isinf(x):
@@ -155,24 +154,21 @@ class SMBO(BaseOptimizer):
                 ~search_data.isin([nan, inf, -inf]).any(axis=1)
             ]
 
-            # Filter out elements that are not in search space
-            int_idx_list = []
-            for para_name in self.conv.para_names:
-                search_data_dim = warm_start_smbo[para_name].values
-                search_space_dim = self.conv.search_space[para_name]
+            X_sample_values = warm_start_smbo[self.conv.para_names].values
+            self.X_sample, valid_indices = self.conv.values2positions_strict(
+                X_sample_values
+            )
+            n_dropped = len(X_sample_values) - len(valid_indices)
+            if n_dropped > 0:
+                logger.warning(
+                    "Dropped %d SMBO warm-start rows with values outside "
+                    "the search space.",
+                    n_dropped,
+                )
 
-                int_idx = nonzero(isin(search_data_dim, search_space_dim))[0]
-                int_idx_list.append(int_idx)
-
-            intersec = int_idx_list[0]
-            for int_idx in int_idx_list[1:]:
-                intersec = intersect1d(intersec, int_idx)
-            warm_start_smbo_f = warm_start_smbo.iloc[intersec]
-
-            X_sample_values = warm_start_smbo_f[self.conv.para_names].values
+            warm_start_smbo_f = warm_start_smbo.iloc[valid_indices]
             Y_sample = warm_start_smbo_f["score"].values
 
-            self.X_sample = self.conv.values2positions(X_sample_values)
             self.Y_sample = list(Y_sample)
         else:
             self.X_sample = []

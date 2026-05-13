@@ -74,6 +74,26 @@ type, so choosing the right data structure matters.
 
                "kernel": ["linear", "rbf", "poly"]
 
+   .. grid-item-card:: Distribution
+      :class-card: sd-border-warning gfo-compact
+
+      .. grid:: 2
+         :margin: 0
+         :padding: 0
+
+         .. grid-item::
+            :columns: 5
+
+            A **SciPy stats distribution** for
+            prior-shaped continuous sampling.
+
+         .. grid-item::
+            :columns: 7
+
+            .. code-block:: python
+
+               "learning_rate": stats.loguniform(1e-5, 1e-1)
+
 
 Quick Example
 -------------
@@ -83,10 +103,12 @@ All three types can coexist in a single search space:
 .. code-block:: python
 
     import numpy as np
+    from scipy import stats
     from gradient_free_optimizers import BayesianOptimizer
 
     search_space = {
         "learning_rate": (0.0001, 0.1),           # continuous
+        "dropout": stats.beta(2, 8),              # distribution
         "n_layers": np.arange(1, 6),              # discrete
         "hidden_size": np.arange(32, 256, 32),    # discrete
         "optimizer": ["adam", "sgd", "rmsprop"],   # categorical
@@ -115,6 +137,36 @@ grid of points:
 This is the right choice when you want the optimizer to explore the full
 continuous range. For parameters that span several orders of magnitude,
 consider using a discrete log-scale grid instead (see below).
+
+
+Distribution Parameters
+-----------------------
+
+If SciPy is installed, you can use a **SciPy stats continuous distribution**
+as a search-space dimension:
+
+.. code-block:: python
+
+    from scipy import stats
+
+    search_space = {
+        "learning_rate": stats.loguniform(1e-5, 1e-1),
+        "x": stats.norm(loc=0.0, scale=1.0),
+    }
+
+The optimizer works internally in quantile space and passes sampled
+``ppf`` values to your objective function. This means random initialization,
+random search, local perturbations, and model-based candidate sampling follow
+the distribution shape instead of a uniform value scale.
+
+SciPy remains optional. Distribution dimensions are available only when the
+user passes a SciPy distribution object; GFO itself does not require SciPy for
+standard continuous, discrete, or categorical search spaces.
+
+For infinite-support distributions such as ``stats.norm()``, GFO uses effective
+tail bounds at the 0.001 and 0.999 quantiles to keep optimizer bounds finite.
+Finite-support distributions such as ``stats.loguniform(a, b)`` use their full
+quantile range.
 
 
 Discrete Parameters
@@ -198,6 +250,7 @@ handles each dimension according to its type internally:
 .. code-block:: python
 
     import numpy as np
+    from scipy import stats
     from gradient_free_optimizers import BayesianOptimizer
     from sklearn.svm import SVC
     from sklearn.model_selection import cross_val_score
@@ -205,6 +258,7 @@ handles each dimension according to its type internally:
 
     search_space = {
         "C": (0.01, 100.0),                        # continuous
+        "gamma": stats.loguniform(1e-5, 1e-1),      # distribution
         "degree": np.arange(2, 6),                  # discrete
         "kernel": ["linear", "rbf", "poly"],        # categorical
         "shrinking": [True, False],                  # categorical (boolean)

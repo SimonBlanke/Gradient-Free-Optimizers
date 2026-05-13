@@ -32,6 +32,7 @@ from gradient_free_optimizers._array_backend import (
 from gradient_free_optimizers._array_backend import (
     sum as arr_sum,
 )
+from gradient_free_optimizers._dimension_types import DimensionType
 
 from .base_population_optimizer import BasePopulationOptimizer
 
@@ -176,16 +177,16 @@ class CMAESOptimizer(BasePopulationOptimizer):
         self._dim_scales = ones(n)
         self._dim_offsets = zeros(n)
 
-        for i, (name, dim_def) in enumerate(self.search_space.items()):
-            if isinstance(dim_def, tuple) and len(dim_def) == 2:
-                self._dim_offsets[i] = dim_def[0]
-                self._dim_scales[i] = dim_def[1] - dim_def[0]
-            elif isinstance(dim_def, list):
+        for i, info in enumerate(self.conv.dim_infos):
+            if info.dim_type.is_continuous_like:
+                self._dim_offsets[i] = info.bounds[0]
+                self._dim_scales[i] = info.bounds[1] - info.bounds[0]
+            elif info.dim_type == DimensionType.CATEGORICAL:
                 self._dim_offsets[i] = 0
-                self._dim_scales[i] = max(len(dim_def) - 1, 1)
-            elif isinstance(dim_def, ndarray):
+                self._dim_scales[i] = max(info.size - 1, 1)
+            elif info.dim_type == DimensionType.DISCRETE_NUMERICAL:
                 self._dim_offsets[i] = 0
-                self._dim_scales[i] = max(len(dim_def) - 1, 1)
+                self._dim_scales[i] = max(info.size - 1, 1)
 
         self._dim_scales[self._dim_scales == 0] = 1.0
 

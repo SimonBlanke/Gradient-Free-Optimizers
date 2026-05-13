@@ -14,6 +14,11 @@ from functools import reduce
 from math import gcd
 
 from gradient_free_optimizers._array_backend import array, linspace, ndarray
+from gradient_free_optimizers._dimension_types import (
+    distribution_ppf,
+    distribution_quantile_bounds,
+    is_scipy_distribution,
+)
 
 from ..base_optimizer import BaseOptimizer
 
@@ -42,6 +47,10 @@ def _discretize_search_space(search_space, resolution):
                 discretized[name] = linspace(low, high, resolution)
             else:
                 discretized[name] = space
+        elif is_scipy_distribution(space):
+            q_low, q_high = distribution_quantile_bounds(space)
+            quantiles = linspace(q_low, q_high, resolution)
+            discretized[name] = array([distribution_ppf(space, q) for q in quantiles])
         else:
             discretized[name] = space
     return discretized

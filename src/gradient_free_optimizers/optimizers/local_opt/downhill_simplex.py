@@ -15,6 +15,7 @@ from gradient_free_optimizers._array_backend import (
     ndarray,
     random,
 )
+from gradient_free_optimizers._dimension_types import DimensionType
 
 from ..base_optimizer import BaseOptimizer
 
@@ -262,20 +263,17 @@ class DownhillSimplexOptimizer(BaseOptimizer):
         """Generate a random position within bounds."""
         n_dims = len(self.search_space)
         pos = empty(n_dims)
-        dim_names = list(self.search_space.keys())
 
-        for i, name in enumerate(dim_names):
-            dim_def = self.search_space[name]
-
-            if isinstance(dim_def, tuple):
-                # Continuous
-                pos[i] = self._rng.uniform(dim_def[0], dim_def[1])
-            elif isinstance(dim_def, list):
+        for i, info in enumerate(self.conv.dim_infos):
+            if info.dim_type.is_continuous_like:
+                # Continuous-like
+                pos[i] = self._rng.uniform(info.bounds[0], info.bounds[1])
+            elif info.dim_type == DimensionType.CATEGORICAL:
                 # Categorical
-                pos[i] = self._rng.integers(0, len(dim_def))
-            elif isinstance(dim_def, ndarray):
+                pos[i] = self._rng.integers(0, info.size)
+            else:
                 # Discrete
-                pos[i] = self._rng.integers(0, len(dim_def))
+                pos[i] = self._rng.integers(0, info.size)
 
         return pos
 

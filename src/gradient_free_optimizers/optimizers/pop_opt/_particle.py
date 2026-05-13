@@ -97,7 +97,7 @@ class Particle(HillClimbingOptimizer):
 
         pos_new = []
         for idx, dim_type in enumerate(self.conv.dim_types):
-            if dim_type == DimensionType.CONTINUOUS:
+            if dim_type.is_continuous_like:
                 # Keep as float, will be clipped by _conv2pos_typed
                 new_val = float(pos[idx]) + float(velo[idx])
                 pos_new.append(new_val)

@@ -27,6 +27,11 @@ from gradient_free_optimizers._array_backend import (
 from gradient_free_optimizers._array_backend import (
     round as arr_round,
 )
+from gradient_free_optimizers._dimension_types import (
+    DimensionType,
+    classify_search_space_value,
+    distribution_quantile_bounds,
+)
 
 from .converter import Converter
 from .init_positions import Initializer
@@ -197,6 +202,7 @@ class CoreOptimizer(ABC):
         self._continuous_mask = None
         self._categorical_mask = None
         self._discrete_mask = None
+        self._distribution_mask = None
 
         # Bounds arrays for vectorized operations
         self._continuous_bounds = None
@@ -254,6 +260,7 @@ class CoreOptimizer(ABC):
         continuous_mask = zeros(n_dims, dtype=bool)
         categorical_mask = zeros(n_dims, dtype=bool)
         discrete_mask = zeros(n_dims, dtype=bool)
+        distribution_mask = zeros(n_dims, dtype=bool)
 
         # Lists to collect bounds/sizes for each type
         continuous_bounds_list = []
@@ -263,18 +270,29 @@ class CoreOptimizer(ABC):
         # Classify each dimension
         for i, name in enumerate(dim_names):
             dim_def = self.search_space[name]
+            dim_type = classify_search_space_value(dim_def)
 
-            if isinstance(dim_def, tuple) and len(dim_def) == 2:
+            if dim_type == DimensionType.CONTINUOUS:
                 # Continuous: tuple (min, max)
                 continuous_mask[i] = True
                 continuous_bounds_list.append([dim_def[0], dim_def[1]])
 
-            elif isinstance(dim_def, list):
+            elif dim_type == DimensionType.DISTRIBUTION:
+                # Distribution dimensions are optimized in quantile space.
+                continuous_mask[i] = True
+                distribution_mask[i] = True
+                continuous_bounds_list.append(
+                    list(distribution_quantile_bounds(dim_def))
+                )
+
+            elif dim_type == DimensionType.CATEGORICAL:
                 # Categorical: list of options
                 categorical_mask[i] = True
                 categorical_sizes_list.append(len(dim_def))
 
-            elif isinstance(dim_def, ndarray):
+            elif dim_type == DimensionType.DISCRETE_NUMERICAL and isinstance(
+                dim_def, ndarray
+            ):
                 # Discrete numerical: array
                 discrete_mask[i] = True
                 discrete_bounds_list.append([0, len(dim_def) - 1])
@@ -283,13 +301,14 @@ class CoreOptimizer(ABC):
                 raise ValueError(
                     f"Unknown dimension type for '{name}': {type(dim_def)}. "
                     f"Expected tuple (continuous), list (categorical), "
-                    f"or ndarray (discrete)."
+                    f"ndarray (discrete), or scipy.stats distribution."
                 )
 
         # Store masks
         self._continuous_mask = continuous_mask
         self._categorical_mask = categorical_mask
         self._discrete_mask = discrete_mask
+        self._distribution_mask = distribution_mask
 
         # Convert bounds/sizes to numpy arrays for vectorized operations
         self._continuous_bounds = (

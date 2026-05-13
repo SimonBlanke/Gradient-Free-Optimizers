@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 
-from gradient_free_optimizers._array_backend import ndarray
+from gradient_free_optimizers._dimension_types import DimensionType
 
 
 class LineSearch(ABC):
@@ -122,21 +122,22 @@ class LineSearch(ABC):
         max_t_negative = float("inf")
 
         # Get dimension bounds
-        dim_names = list(self.optimizer.search_space.keys())
-        for i, name in enumerate(dim_names):
+        for i, info in enumerate(self.optimizer.conv.dim_infos):
             d = direction[i]
             o = origin[i]
 
             if abs(d) < 1e-10:
                 continue
 
-            dim_def = self.optimizer.search_space[name]
-            if isinstance(dim_def, tuple):
-                # Continuous
-                min_val, max_val = dim_def
-            elif isinstance(dim_def, list | ndarray):
+            if info.dim_type.is_continuous_like:
+                # Continuous-like internal bounds
+                min_val, max_val = info.bounds
+            elif info.dim_type in (
+                DimensionType.CATEGORICAL,
+                DimensionType.DISCRETE_NUMERICAL,
+            ):
                 # Categorical or discrete: index bounds
-                min_val, max_val = 0, len(dim_def) - 1
+                min_val, max_val = 0, info.size - 1
             else:
                 continue
 

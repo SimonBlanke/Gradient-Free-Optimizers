@@ -19,6 +19,7 @@ from gradient_free_optimizers._array_backend import (
 from gradient_free_optimizers._array_backend import (
     random as arr_random,
 )
+from gradient_free_optimizers._dimension_types import DimensionType
 
 from ..base_optimizer import BaseOptimizer
 
@@ -127,19 +128,16 @@ class PatternSearch(BaseOptimizer):
     def _get_dim_sizes(self):
         """Get dimension sizes for pattern generation."""
         sizes = []
-        for i, name in enumerate(self.search_space.keys()):
-            dim_def = self.search_space[name]
-            if isinstance(dim_def, tuple):
-                # Continuous: range
-                sizes.append(dim_def[1] - dim_def[0])
-            elif isinstance(dim_def, list):
+        for info in self.conv.dim_infos:
+            if info.dim_type.is_continuous_like:
+                # Continuous-like: internal range
+                sizes.append(info.bounds[1] - info.bounds[0])
+            elif info.dim_type == DimensionType.CATEGORICAL:
                 # Categorical: number of categories
-                sizes.append(len(dim_def))
-            elif isinstance(dim_def, ndarray):
-                # Discrete: length of array
-                sizes.append(len(dim_def))
+                sizes.append(info.size)
             else:
-                sizes.append(1)
+                # Discrete: length of array
+                sizes.append(info.size)
         return array(sizes)
 
     def _clip_to_bounds(self, pos: ndarray) -> ndarray:
@@ -183,11 +181,11 @@ class PatternSearch(BaseOptimizer):
             pos_pattern_p = array(current_position, dtype=float)
             pos_pattern_n = array(current_position, dtype=float)
 
-            dim_def = self.search_space[dim_names[idx]]
+            dim_type = self.conv.dim_types[idx]
 
-            if isinstance(dim_def, list):
+            if dim_type == DimensionType.CATEGORICAL:
                 # Categorical: random switch instead of arithmetic
-                n_cats = len(dim_def)
+                n_cats = self.conv.dim_infos[idx].size
                 if n_cats > 1:
                     # Pick two random different categories
                     current_cat = int(current_position[idx])
@@ -217,20 +215,16 @@ class PatternSearch(BaseOptimizer):
         """Generate a random position within bounds."""
         n_dims = len(self.search_space)
         pos = empty(n_dims)
-        dim_names = list(self.search_space.keys())
-
-        for i, name in enumerate(dim_names):
-            dim_def = self.search_space[name]
-
-            if isinstance(dim_def, tuple):
-                # Continuous
-                pos[i] = self._rng.uniform(dim_def[0], dim_def[1])
-            elif isinstance(dim_def, list):
+        for i, info in enumerate(self.conv.dim_infos):
+            if info.dim_type.is_continuous_like:
+                # Continuous-like
+                pos[i] = self._rng.uniform(info.bounds[0], info.bounds[1])
+            elif info.dim_type == DimensionType.CATEGORICAL:
                 # Categorical
-                pos[i] = self._rng.integers(0, len(dim_def))
-            elif isinstance(dim_def, ndarray):
+                pos[i] = self._rng.integers(0, info.size)
+            else:
                 # Discrete
-                pos[i] = self._rng.integers(0, len(dim_def))
+                pos[i] = self._rng.integers(0, info.size)
 
         return pos
 

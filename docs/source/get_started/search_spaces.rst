@@ -2,10 +2,11 @@
 Mixed Search Spaces
 ===================
 
-Gradient-Free-Optimizers natively supports continuous, discrete, and categorical
-dimensions in a single search space. There is no need to encode or transform
-parameter types -- the library detects the dimension type from the array you provide
-and applies appropriate optimization logic for each type internally.
+Gradient-Free-Optimizers natively supports continuous, discrete, categorical,
+and SciPy distribution-backed dimensions in a single search space. There is no
+need to encode or transform parameter types -- the library detects the
+dimension type from the object you provide and applies appropriate optimization
+logic for each type internally.
 
 
 Dimension Types
@@ -43,6 +44,15 @@ of candidate values. The type of each dimension is determined by the array conte
 
     "use_bias": np.array([True, False])
 
+**Distribution** -- a SciPy stats continuous distribution. SciPy is optional,
+and this type is available when the user passes a SciPy distribution object:
+
+.. code-block:: python
+
+    from scipy import stats
+
+    "learning_rate": stats.loguniform(1e-5, 1e-1)
+
 
 Mixing Types Freely
 -------------------
@@ -54,11 +64,13 @@ naturally:
 .. code-block:: python
 
     import numpy as np
+    from scipy import stats
     from gradient_free_optimizers import BayesianOptimizer
 
     # Mixed search space for SVM hyperparameter tuning
     search_space = {
         "C": np.linspace(0.01, 100, 200),           # continuous
+        "gamma": stats.loguniform(1e-5, 1e-1),      # distribution
         "degree": np.arange(2, 6),                    # discrete
         "kernel": np.array(["linear", "rbf", "poly"]),# categorical
         "shrinking": np.array([True, False]),          # boolean
@@ -109,7 +121,9 @@ Many optimization libraries require all dimensions to be the same type, or force
 you to encode categoricals as integers. GFO uses dimension-type-aware routing
 internally: the optimization logic that generates new candidate positions adapts
 its strategy per dimension. Continuous dimensions use perturbation-based moves,
-while categorical dimensions use swap-based moves. This means:
+while categorical dimensions use swap-based moves. Distribution dimensions are
+optimized in quantile space and converted to ``ppf`` values before objective
+evaluation. This means:
 
 - No manual encoding or decoding of categorical parameters
 - The optimizer uses moves that make sense for each type
