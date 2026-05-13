@@ -343,6 +343,23 @@ def test_values2positions_1(test_input, expected):
     assert equal_arraysInList(positions, expected)
 
 
+def test_values2positions_continuous_preserves_float_positions():
+    conv = Converter({"x": (0.0, 1.0)})
+
+    positions = conv.values2positions([[0.25], [0.75]])
+
+    assert np.allclose(np.array(positions[0], dtype=float), np.array([0.25]))
+    assert np.allclose(np.array(positions[1], dtype=float), np.array([0.75]))
+
+
+def test_values2positions_categorical_uses_exact_matching():
+    conv = Converter({"x": ["b", "a", "c"]})
+
+    positions = conv.values2positions([["a"], ["c"]])
+
+    assert equal_arraysInList(positions, [np.array([1]), np.array([2])])
+
+
 """ --- test positions2values --- """
 
 values_0 = [

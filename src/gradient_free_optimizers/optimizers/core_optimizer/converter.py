@@ -17,6 +17,7 @@ from gradient_free_optimizers._array_backend import (
 from gradient_free_optimizers._array_backend import (
     arange,
     array,
+    searchsorted,
     take,
 )
 from gradient_free_optimizers._dimension_types import (
@@ -572,9 +573,39 @@ class Converter(MemoryOperationsMixin):
         list
             List of position arrays.
         """
-        # Per-row delegation instead of batch searchsorted: simpler and
-        # correct for continuous/distribution dims that lack discrete indices.
+        if self.dim_masks.is_homogeneous_discrete:
+            return self._values2positions_discrete_fast(values)
+
+        # Per-row delegation is correct for continuous, categorical, and
+        # distribution dims that lack homogeneous discrete index semantics.
         return [self.value2position(list(value)) for value in values]
+
+    def _values2positions_discrete_fast(
+        self, values: list[list[Any]]
+    ) -> list[ArrayLike]:
+        """Convert values via the legacy vectorized path for discrete spaces."""
+        if len(values) == 0:
+            return []
+
+        positions_temp = []
+        values_arr = array(values)
+
+        for n, space_dim in enumerate(self.search_space_values):
+            # Get column n from 2D array
+            if hasattr(values_arr, "shape") and len(values_arr.shape) > 1:
+                values_1d = [values_arr[i, n] for i in range(len(values_arr))]
+            else:
+                values_1d = [v[n] for v in values]
+
+            positions_temp.append(searchsorted(space_dim, values_1d))
+
+        # Transpose and convert to list of arrays
+        return [
+            array(
+                [positions_temp[dim][i] for dim in range(len(positions_temp))]
+            ).astype(int)
+            for i in range(len(positions_temp[0]))
+        ]
 
     @returnNoneIfArgNone
     def values2positions_strict(
