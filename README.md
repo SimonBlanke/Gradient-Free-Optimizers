@@ -52,9 +52,9 @@ Lightweight optimization with local, global, population-based and sequential tec
   <img src="./docs/gifs/3d_optimizer_animation.gif" width="240" align="right" alt="Bayesian Optimization on Ackley Function">
 </a>
 
-**Gradient-Free-Optimizers** is a Python library for gradient-free optimization of black-box functions. It provides a unified interface to 23 optimization algorithms, from simple hill climbing to Bayesian optimization, all operating on discrete numerical search spaces defined via NumPy arrays.
+**Gradient-Free-Optimizers** is a Python library for gradient-free optimization of black-box functions. It provides a unified interface to 23 optimization algorithms, from simple hill climbing to Bayesian optimization, all operating on mixed search spaces that combine continuous ranges, discrete grids, categorical choices, and SciPy distribution-backed dimensions.
 
-Designed for hyperparameter tuning, simulation optimization, feature selection, engineering design, and any scenario where gradients are unavailable or impractical. The library prioritizes simplicity: define your objective function, specify the search space, and run. All algorithms share one consistent API, so switching from hill climbing to Bayesian optimization is a one-line change. GFO runs without NumPy or SciPy when needed, making it suitable for minimal environments, containers, and embedded systems.
+Designed for hyperparameter tuning, simulation optimization, feature selection, engineering design, and any scenario where gradients are unavailable or impractical. The library prioritizes simplicity: define your objective function, specify the search space, and run. All algorithms share one consistent API, so switching from hill climbing to Bayesian optimization is a one-line change. SciPy is optional; GFO works with only pandas as a required dependency, making it suitable as an optimization backend or for minimal environments, containers, and embedded systems.
 
 <p>
   <a href="https://www.linkedin.com/in/simonblanke/"><img src="https://img.shields.io/badge/LinkedIn-Follow-0A66C2?style=flat-square&logo=linkedin" alt="LinkedIn"></a>
@@ -106,8 +106,8 @@ pip install gradient-free-optimizers[full]      # All optional dependencies
   </tr>
   <tr>
     <td width="33%">
-      <a href="https://gradient-free-optimizers.readthedocs.io/en/latest/user_guide/search_spaces.html"><b>Discrete Search Spaces</b></a><br>
-      <sub>Define parameter spaces with familiar NumPy syntax using arrays and ranges.</sub>
+      <a href="https://gradient-free-optimizers.readthedocs.io/en/latest/user_guide/search_spaces.html"><b>Mixed Search Spaces</b></a><br>
+      <sub>Combine continuous ranges, discrete grids, categorical choices, and SciPy distributions in a single search space.</sub>
     </td>
     <td width="33%">
       <a href="https://gradient-free-optimizers.readthedocs.io/en/latest/user_guide/constraints.html"><b>Constraints Support</b></a><br>
@@ -128,30 +128,20 @@ pip install gradient-free-optimizers[full]      # All optional dependencies
 import numpy as np
 from gradient_free_optimizers import HillClimbingOptimizer
 
-# Define objective function (maximize)
 def objective(params):
     x, y = params["x"], params["y"]
-    return -(x**2 + y**2)  # Negative paraboloid, optimum at (0, 0)
+    return -(x**2 + y**2)
 
-# Define search space
 search_space = {
-    "x": np.arange(-5, 5, 0.1),
-    "y": np.arange(-5, 5, 0.1),
+    "x": (-5.0, 5.0),            # continuous range
+    "y": np.arange(-5, 5, 0.1),  # discrete grid
 }
 
-# Run optimization
 opt = HillClimbingOptimizer(search_space)
 opt.search(objective, n_iter=1000)
 
-# Results
 print(f"Best score: {opt.best_score}")
 print(f"Best params: {opt.best_para}")
-```
-
-**Output:**
-```
-Best score: -0.02
-Best params: {'x': 0.1, 'y': 0.1}
 ```
 
 <br>
@@ -166,7 +156,7 @@ flowchart LR
 
     S["Search Space
     ━━━━━━━━━━━━
-    NumPy arrays"]
+    mixed dimensions"]
 
     F["Objective
     ━━━━━━━━━━
@@ -186,7 +176,7 @@ flowchart LR
 
 **Optimizer**: Implements the search strategy. Choose from 23 algorithms across four categories: local search, global search, population-based, and sequential model-based.
 
-**Search Space**: Defines valid parameter combinations as NumPy arrays. Each key is a parameter name, each value is an array of allowed values.
+**Search Space**: Defines valid parameter ranges and choices. Each key is a parameter name, each value is a tuple `(min, max)` for continuous, a NumPy array for discrete, a list for categorical, or a SciPy distribution.
 
 **Objective Function**: Your function to maximize. Takes a dictionary of parameters, returns a score. Use negation to minimize.
 
@@ -333,6 +323,36 @@ opt.search(objective, n_iter=1000)
 
 </details>
 
+
+
+<details>
+<summary><b>Mixed Search Space</b></summary>
+
+```python
+import numpy as np
+from scipy import stats
+from gradient_free_optimizers import BayesianOptimizer
+
+def objective(params):
+    x = params["x"]
+    n_layers = params["n_layers"]
+    lr = params["learning_rate"]
+    activation_scores = {"relu": 0.0, "tanh": 0.1, "gelu": 0.3}
+    return -(x**2) - 0.1 * n_layers + activation_scores[params["activation"]] - abs(lr - 0.001)
+
+search_space = {
+    "x": (-5.0, 5.0),                          # continuous
+    "n_layers": np.arange(1, 6),                # discrete
+    "activation": ["relu", "tanh", "gelu"],     # categorical
+    "learning_rate": stats.loguniform(1e-5, 1),  # distribution
+}
+
+opt = BayesianOptimizer(search_space)
+opt.search(objective, n_iter=100)
+```
+
+</details>
+
 <br>
 
 <details>
@@ -463,7 +483,7 @@ If you use this software in your research, please cite:
 ```bibtex
 @software{gradient_free_optimizers,
   author = {Simon Blanke},
-  title = {Gradient-Free-Optimizers: Simple and reliable optimization with local, global, population-based and sequential techniques in numerical search spaces},
+  title = {Gradient-Free-Optimizers: Simple and reliable optimization with local, global, population-based and sequential techniques in mixed search spaces},
   year = {2020},
   url = {https://github.com/SimonBlanke/Gradient-Free-Optimizers},
 }
