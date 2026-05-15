@@ -125,6 +125,23 @@ class ForestOptimizer(_ForestOptimizer, Search):
         Simulated Annealing) that can get trapped. For population-based
         optimizers, the effect is less pronounced since they already maintain
         diversity through multiple agents.
+    boundary : {"clip", "reflect", "periodic", "random", "intermediate"}, default="clip"
+        Strategy for handling positions that exceed the search space bounds.
+        When the optimizer proposes a candidate outside the valid range, this
+        parameter controls how that candidate is mapped back.
+
+        - ``"clip"``: Clamp each coordinate to the nearest bound.
+        - ``"reflect"``: Mirror the position back into the search space at
+          the boundary it crossed.
+        - ``"periodic"``: Wrap around to the opposite end of the range,
+          treating the search space as periodic.
+        - ``"random"``: Replace the out-of-bounds position with a uniformly
+          random position within the valid range.
+        - ``"intermediate"``: Move to the midpoint between the current
+          position and the violated bound.
+
+        Applies to continuous and discrete numerical dimensions. Categorical
+        dimensions always snap to the nearest valid category index.
     warm_start_smbo : object or None, default=None
         Previous SMBO state for warm-starting the surrogate model. Allows
         continuing optimization from a previous run by reusing the fitted

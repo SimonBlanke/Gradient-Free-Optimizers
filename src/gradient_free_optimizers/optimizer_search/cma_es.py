@@ -127,6 +127,23 @@ class CMAESOptimizer(_CMAESOptimizer, Search):
         - ``0.1-0.3``: Aggressive restarts, useful for highly multi-modal
           landscapes.
         - ``1.0``: Equivalent to random search.
+    boundary : {"clip", "reflect", "periodic", "random", "intermediate"}, default="clip"
+        Strategy for handling positions that exceed the search space bounds.
+        When the optimizer proposes a candidate outside the valid range, this
+        parameter controls how that candidate is mapped back.
+
+        - ``"clip"``: Clamp each coordinate to the nearest bound.
+        - ``"reflect"``: Mirror the position back into the search space at
+          the boundary it crossed.
+        - ``"periodic"``: Wrap around to the opposite end of the range,
+          treating the search space as periodic.
+        - ``"random"``: Replace the out-of-bounds position with a uniformly
+          random position within the valid range.
+        - ``"intermediate"``: Move to the midpoint between the current
+          position and the violated bound.
+
+        Applies to continuous and discrete numerical dimensions. Categorical
+        dimensions always snap to the nearest valid category index.
     population : int or None, default=None
         Number of candidate solutions sampled per generation (lambda in
         CMA-ES notation). If ``None``, uses the standard heuristic:
