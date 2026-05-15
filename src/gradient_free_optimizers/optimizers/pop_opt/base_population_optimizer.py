@@ -16,6 +16,7 @@ import math
 from gradient_free_optimizers._array_backend import ndarray
 
 from ..core_optimizer import CoreOptimizer
+from ._topology import VALID_TOPOLOGIES, get_neighbors
 
 
 def split(positions_l, population):
@@ -77,6 +78,10 @@ class BasePopulationOptimizer(CoreOptimizer):
         Process index for parallel optimization.
     population : int, default=10
         Number of individuals in the population.
+    topology : str, default="star"
+        Neighborhood topology controlling information sharing between
+        individuals. Currently supported by ParticleSwarmOptimizer and
+        SpiralOptimization.
 
     Attributes
     ----------
@@ -105,6 +110,7 @@ class BasePopulationOptimizer(CoreOptimizer):
         nth_process=None,
         population=10,
         boundary="clip",
+        topology="star",
     ):
         super().__init__(
             search_space=search_space,
@@ -116,6 +122,12 @@ class BasePopulationOptimizer(CoreOptimizer):
             boundary=boundary,
         )
         self.population = population
+
+        if topology not in VALID_TOPOLOGIES:
+            raise ValueError(
+                f"topology must be one of {VALID_TOPOLOGIES}, got {topology!r}"
+            )
+        self.topology = topology
 
         # Population state
         self.systems = None  # List of sub-optimizers
@@ -244,6 +256,32 @@ class BasePopulationOptimizer(CoreOptimizer):
         raise NotImplementedError(
             f"{self.__class__.__name__} must implement _iterate_discrete_batch()"
         )
+
+    def _get_neighbor_indices(self, individual_idx):
+        """Return neighbor indices for an individual under the current topology."""
+        return get_neighbors(self.topology, individual_idx, len(self.optimizers))
+
+    def _get_best_neighbor(self, individual_idx):
+        """Return the best-scoring neighbor by ``_score_current``.
+
+        Returns ``None`` if no neighbor has been scored yet.
+        """
+        neighbors = self._get_neighbor_indices(individual_idx)
+        best = None
+        best_score = float("-inf")
+        for idx in neighbors:
+            p = self.optimizers[idx]
+            if p._score_current is not None and p._score_current > best_score:
+                best = p
+                best_score = p._score_current
+        return best
+
+    def _get_best_neighbor_position(self, individual_idx, position_attr):
+        """Return a position attribute from the best-scoring neighbor."""
+        best_neighbor = self._get_best_neighbor(individual_idx)
+        if best_neighbor is None:
+            return None
+        return getattr(best_neighbor, position_attr)
 
     def _on_finish_initialization(self):
         """Perform population-specific setup after init phase.

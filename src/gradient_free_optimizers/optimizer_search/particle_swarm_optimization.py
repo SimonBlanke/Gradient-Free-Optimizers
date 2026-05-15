@@ -205,6 +205,30 @@ class ParticleSwarmOptimizer(_ParticleSwarmOptimizer, Search):
           region).
         - ``0.5-1.0``: Strong randomness, aggressive exploration.
 
+    topology : {"star", "ring", "von_neumann", "stochastic"}, default="star"
+        Controls how particles share information about good positions.
+        The topology defines each particle's neighborhood, restricting
+        which other particles can influence its movement.
+
+        - ``"star"``: All particles see the global best (gbest PSO).
+          Fast convergence but prone to premature collapse on
+          multimodal functions.
+        - ``"ring"``: Each particle sees only its immediate left and
+          right neighbors in a circular arrangement (lbest PSO).
+          Slower convergence but preserves population diversity.
+        - ``"von_neumann"``: Particles are arranged on a 2D toroidal
+          grid with up to 4 adjacent neighbors each. Middle ground between star
+          and ring, well-suited for larger populations.
+        - ``"stochastic"``: Each iteration, each particle gets a fresh
+          set of random neighbors. Combines diversity preservation
+          with stochastic information sharing.
+
+        The topology does not change the movement equations, only
+        which "best" position each particle is attracted toward.
+        For unimodal problems, star converges fastest. For multimodal
+        problems, ring or von_neumann prevent the entire swarm from
+        collapsing into one basin of attraction.
+
     Notes
     -----
     Each particle's velocity and position are updated at each iteration:
@@ -276,6 +300,7 @@ class ParticleSwarmOptimizer(_ParticleSwarmOptimizer, Search):
         cognitive_weight: float = 0.5,
         social_weight: float = 0.5,
         temp_weight: float = 0.2,
+        topology: str = "star",
     ):
         if initialize is None:
             initialize = get_default_initialize()
@@ -295,4 +320,5 @@ class ParticleSwarmOptimizer(_ParticleSwarmOptimizer, Search):
             cognitive_weight=cognitive_weight,
             social_weight=social_weight,
             temp_weight=temp_weight,
+            topology=topology,
         )

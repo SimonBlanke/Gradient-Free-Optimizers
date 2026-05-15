@@ -173,6 +173,24 @@ class SpiralOptimization(_SpiralOptimization, Search):
         ``decay_rate^t``. After 100 iterations with ``decay_rate=0.99``,
         the radius is ~37% of its initial value.
 
+    topology : {"star", "ring", "von_neumann", "stochastic"}, default="star"
+        Controls how particles share information about good positions.
+        The topology defines each particle's neighborhood, restricting
+        which center position each spiral converges toward.
+
+        - ``"star"``: All particles spiral toward the global best.
+          Fast convergence but prone to premature collapse on
+          multimodal functions.
+        - ``"ring"``: Each particle spirals toward the best current
+          position among its immediate left and right neighbors in a circular
+          arrangement. Slower convergence, preserves diversity.
+        - ``"von_neumann"``: Particles are arranged on a 2D toroidal
+          grid with up to 4 adjacent neighbors each. Middle ground between star
+          and ring, well-suited for larger populations.
+        - ``"stochastic"``: Each iteration, each particle gets a fresh
+          set of random neighbors. Combines diversity preservation
+          with stochastic information sharing.
+
     Notes
     -----
     Each agent moves along a logarithmic spiral toward the current best
@@ -231,6 +249,7 @@ class SpiralOptimization(_SpiralOptimization, Search):
         boundary: str = "clip",
         population: int = 10,
         decay_rate: float = 0.99,
+        topology: str = "star",
     ):
         if initialize is None:
             initialize = get_default_initialize()
@@ -247,4 +266,5 @@ class SpiralOptimization(_SpiralOptimization, Search):
             boundary=boundary,
             population=population,
             decay_rate=decay_rate,
+            topology=topology,
         )

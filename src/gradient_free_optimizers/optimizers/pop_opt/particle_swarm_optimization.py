@@ -89,6 +89,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         cognitive_weight: float = 0.5,
         social_weight: float = 0.5,
         temp_weight: float = 0.2,
+        topology: str = "star",
     ) -> None:
         super().__init__(
             search_space=search_space,
@@ -99,6 +100,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
             nth_process=nth_process,
             boundary=boundary,
             population=population,
+            topology=topology,
         )
 
         self.inertia = inertia
@@ -123,6 +125,12 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         # Iteration state for template method coordination
         self._iteration_setup_done = False
         self._pso_new_pos = None
+
+    def _set_particle_global_best(self, particle_idx) -> None:
+        """Set the topology-restricted best position for the current particle."""
+        self.p_current.global_pos_best = self._get_best_neighbor_position(
+            particle_idx, "_pos_best"
+        )
 
     def _on_init_pos(self, position) -> None:
         """Initialize current particle with the given position.
@@ -182,14 +190,9 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         if self._iteration_setup_done:
             return
 
-        # Select current particle (round-robin)
-        self.p_current = self.particles[self.nth_trial % len(self.particles)]
-
-        # Update global best reference for this particle
-        self._sort_pop_best_score()
-        self.p_current.global_pos_best = self.pop_sorted[0]._pos_best
-
-        # Compute full PSO position using velocity update
+        particle_idx = self.nth_trial % len(self.particles)
+        self.p_current = self.particles[particle_idx]
+        self._set_particle_global_best(particle_idx)
         self._pso_new_pos = self._compute_pso_position()
 
         self._iteration_setup_done = True
@@ -329,14 +332,13 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
 
     def _iterate_batch(self, n):
         """Generate n positions by cycling through particles."""
-        self._sort_pop_best_score()
         positions = []
         self._batch_particle_indices = []
         for i in range(n):
             idx = (self.nth_trial + i) % len(self.particles)
             self._batch_particle_indices.append(idx)
             self.p_current = self.particles[idx]
-            self.p_current.global_pos_best = self.pop_sorted[0]._pos_best
+            self._set_particle_global_best(idx)
             pos = self._compute_pso_position()
             positions.append(self._clip_position(pos))
         return positions

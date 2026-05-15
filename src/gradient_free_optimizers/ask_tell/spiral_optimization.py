@@ -38,6 +38,7 @@ class SpiralOptimization(_SpiralOptimization, AskTell):
         boundary: str = "clip",
         population: int = 10,
         decay_rate: float = 0.99,
+        topology: str = "star",
     ):
         if constraints is None:
             constraints = []
@@ -51,6 +52,7 @@ class SpiralOptimization(_SpiralOptimization, AskTell):
             boundary=boundary,
             population=population,
             decay_rate=decay_rate,
+            topology=topology,
         )
 
         self._process_initial_evaluations(initial_evaluations)

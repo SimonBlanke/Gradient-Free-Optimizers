@@ -11,6 +11,7 @@ For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke
 <!-- changelog-cursor: a8d98ae -->
 
 ### Added
+- `topology` parameter for `ParticleSwarmOptimizer` and `SpiralOptimization` controlling neighborhood-based information sharing (`"star"`, `"ring"`, `"von_neumann"`, `"stochastic"`)
 - `boundary` optimizer parameter for out-of-bounds candidate handling, with `clip`, `reflect`, `periodic`, `random`, and `intermediate` strategies
 - Documentation and runnable example for boundary strategies
 - SciPy stats continuous distributions can now be used as search-space dimensions; optimizers operate on quantiles internally and pass `ppf` values to objective functions

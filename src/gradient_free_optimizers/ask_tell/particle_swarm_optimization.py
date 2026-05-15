@@ -47,6 +47,7 @@ class ParticleSwarmOptimizer(_ParticleSwarmOptimizer, AskTell):
         cognitive_weight: float = 0.5,
         social_weight: float = 0.5,
         temp_weight: float = 0.2,
+        topology: str = "star",
     ):
         if constraints is None:
             constraints = []
@@ -63,6 +64,7 @@ class ParticleSwarmOptimizer(_ParticleSwarmOptimizer, AskTell):
             cognitive_weight=cognitive_weight,
             social_weight=social_weight,
             temp_weight=temp_weight,
+            topology=topology,
         )
 
         self._process_initial_evaluations(initial_evaluations)
