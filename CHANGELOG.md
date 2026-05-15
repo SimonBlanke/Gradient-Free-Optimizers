@@ -8,7 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke/Gradient-Free-Optimizers/releases).
 
 ## [Unreleased]
-<!-- changelog-cursor: a8d98ae -->
+
+## [1.13.0] - 2026-05-15
 
 ### Added
 - `boundary` optimizer parameter for out-of-bounds candidate handling, with `clip`, `reflect`, `periodic`, `random`, and `intermediate` strategies
