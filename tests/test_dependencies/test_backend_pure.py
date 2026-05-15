@@ -1,8 +1,8 @@
 """Backend isolation tests for the pure Python tier.
 
 Verifies that Gradient-Free-Optimizers works correctly when
-numpy, scipy, and the C extension are all absent. This is the
-lowest-performance tier: only stdlib + tqdm + pandas.
+numpy and scipy are both absent. This is the lowest-performance
+tier: only stdlib + tqdm + pandas.
 
 Three test layers:
   1. Environment verification (correct backend is active)
@@ -31,7 +31,6 @@ except ImportError:
     pass
 
 from gradient_free_optimizers._array_backend import (
-    HAS_C_EXTENSION,
     HAS_NUMPY,
     _backend_name,
     argsort,
@@ -62,11 +61,6 @@ class TestEnvironmentVerification:
     def test_scipy_not_importable(self):
         with pytest.raises(ImportError):
             import scipy  # noqa: F401
-
-    def test_c_extension_not_available(self):
-        assert (
-            not HAS_C_EXTENSION
-        ), "C extension should not be available in pure Python tier"
 
     def test_numpy_flag_false(self):
         assert not HAS_NUMPY
@@ -344,7 +338,7 @@ class TestIntegrationPure:
 
     @pytest.mark.parametrize("Optimizer", ALL_OPTIMIZERS)
     def test_optimizer_uses_pure_backend(self, Optimizer):
-        """Verify that optimizer arrays are GFOArray, not _CGFOArray."""
+        """Verify that optimizer arrays are GFOArray."""
         opt = Optimizer(
             SEARCH_SPACE,
             initialize={"random": 3},

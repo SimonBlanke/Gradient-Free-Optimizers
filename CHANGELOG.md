@@ -16,7 +16,6 @@ For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke
 - Documentation and runnable example for boundary strategies
 - SciPy stats continuous distributions can now be used as search-space dimensions; optimizers operate on quantiles internally and pass `ppf` values to objective functions
 - Example for SciPy distribution-backed search spaces
-- C extension backend (`_fast_ops`) as an intermediate performance tier between numpy and pure Python, accelerating elementwise arithmetic, math functions, reductions, and matrix multiply
 - `SearchParams` dict subclass carrying optimization metadata as private attributes for tooling integration
 
 ### Changed
@@ -39,12 +38,11 @@ For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke
 - KDE bandwidth not recomputed on refit with new data
 - `min`/`max` broadcasting in the pure-Python array backend
 - `norm_cdf`/`norm_pdf` recursion when checking for iterability
-- C extension build silently falling back to pure Python in CI; `GFO_REQUIRE_C_EXTENSION=1` now makes compilation failures fatal
 
 ### Tests
 - Coverage for SciPy distribution-backed search spaces across optimizers, memory warm starts, SMBO warm starts, constraints, and ask/tell
 - Unit tests for all six internal estimators
-- C extension backend and pure-Python integration tests (no numpy, no scipy)
+- Pure-Python backend integration tests (no numpy, no scipy)
 - Expanded coverage for distributed module and ask/tell interface
 - CI: no-scipy and no-numpy isolation jobs, coverage collection
 - CI: strict mode (`GFO_CI_STRICT`) prevents dependency-isolation tests from silently skipping when the wrong packages are installed

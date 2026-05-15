@@ -2,7 +2,7 @@
 Array backend abstraction for optional NumPy dependency.
 
 This module provides a unified interface for array operations with automatic
-fallback: numpy (fastest) -> C extension (fast) -> pure Python (functional).
+fallback: numpy (fastest) -> pure Python (functional).
 
 Usage:
     from gradient_free_optimizers._array_backend import array, zeros, clip, rint
@@ -19,24 +19,11 @@ try:
 except (ImportError, AttributeError):
     HAS_NUMPY = False
 
-try:
-    from . import _fast_ops  # noqa: F401
-
-    HAS_C_EXTENSION = True
-except ImportError:
-    HAS_C_EXTENSION = False
-
 if HAS_NUMPY:
     from ._numpy import *
 
     _backend_name = "numpy"
     ndarray = numpy.ndarray
-elif HAS_C_EXTENSION:
-    from ._c_extension import *
-    from ._pure import GFOArray
-
-    _backend_name = "c_extension"
-    ndarray = GFOArray
 else:
     from ._pure import *
     from ._pure import GFOArray
