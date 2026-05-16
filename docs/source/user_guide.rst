@@ -63,8 +63,8 @@ Every optimization in GFO involves three components:
 
       **Where to search**
 
-      Parameter ranges defined as NumPy arrays. Supports continuous,
-      discrete, and categorical parameters.
+      Parameter ranges defined as tuples, NumPy arrays, lists, or optional
+      SciPy distributions.
 
    .. grid-item-card:: Optimizers
       :class-card: sd-border-success
@@ -97,7 +97,8 @@ Guide Sections
       :link: user_guide/search_spaces
       :link-type: doc
 
-      Define parameter ranges with NumPy arrays.
+      Define continuous ranges, discrete grids, categorical choices, and
+      optional distribution-backed dimensions.
       **Start here** for the fundamentals.
 
    .. grid-item-card:: Objective Functions
@@ -168,7 +169,7 @@ Guide Sections
 Algorithms
 ==========
 
-GFO provides 22 optimization algorithms organized into four categories:
+GFO provides 23 optimization algorithms organized into four categories:
 
 .. grid:: 2 2 2 2
    :gutter: 3
@@ -198,10 +199,10 @@ GFO provides 22 optimization algorithms organized into four categories:
       :link-type: doc
       :class-card: sd-border-start sd-border-primary
 
-      **6 algorithms** using collective intelligence
+      **7 algorithms** using collective intelligence
 
       Particle Swarm, Genetic Algorithm, Evolution
-      Strategy, Differential Evolution.
+      Strategy, Differential Evolution, CMA-ES.
 
    .. grid-item-card:: Sequential Model-Based
       :link: user_guide/optimizers/smbo/index

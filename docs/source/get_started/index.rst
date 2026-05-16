@@ -4,7 +4,7 @@
 Get Started
 ===========
 
-Gradient-Free-Optimizers provides 22 optimization algorithms behind a simple,
+Gradient-Free-Optimizers provides 23 optimization algorithms behind a simple,
 Pythonic API. These pages cover everything you need to go from installation to
 running your first optimization.
 
@@ -38,7 +38,7 @@ running your first optimization.
         :link-type: doc
 
         Only NumPy and pandas required. No heavy frameworks,
-        no compiled extensions, fast installation everywhere.
+        no external optimization backend.
 
     .. grid-item-card:: Pythonic API
         :link: pythonic_api

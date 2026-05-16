@@ -4,7 +4,7 @@
 About
 =====
 
-Gradient-Free-Optimizers is a Python library providing 22 gradient-free
+Gradient-Free-Optimizers is a Python library providing 23 gradient-free
 optimization algorithms with a unified interface for black-box function optimization.
 
 .. toctree::
@@ -38,14 +38,15 @@ transparency, and reliability.
 Key Features
 ^^^^^^^^^^^^
 
-- **22 Optimization Algorithms**: From simple hill climbing to advanced Bayesian
+- **23 Optimization Algorithms**: From simple hill climbing to advanced Bayesian
   optimization, organized into local, global, population, and sequential model-based categories.
 
 - **Unified Interface**: All algorithms share the same API. Switch algorithms by
   changing one line of code.
 
-- **NumPy-Based Search Spaces**: No special types or complex syntax. Define search
-  spaces using familiar NumPy arrays.
+- **Mixed Search Spaces**: Define continuous ranges, discrete grids,
+  categorical choices, and optional SciPy distribution-backed dimensions in a
+  single dictionary.
 
 - **Constraint Support**: Define constraints as simple Python functions. Invalid
   positions are automatically avoided during search.
@@ -69,8 +70,9 @@ Design Philosophy
 3. **Interchangeable Algorithms**: The unified interface makes it easy to
    experiment with different optimizers.
 
-4. **Zero Dependencies**: Core library only requires NumPy. Optional features
-   (progress bars, SMBO) have opt-in dependencies.
+4. **Low Dependency Surface**: Core library only requires NumPy and pandas.
+   Progress bars, SciPy distribution dimensions, and sklearn-based surrogate
+   models have opt-in dependencies.
 
 
 Related Projects

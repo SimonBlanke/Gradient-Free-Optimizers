@@ -13,16 +13,16 @@ Three Key Interfaces
 
 The entire workflow uses three concepts, each mapped to a familiar Python type:
 
-**1. Search space = Python dict with NumPy arrays**
+**1. Search space = Python dict with tuples, arrays, or lists**
 
 .. code-block:: python
 
     import numpy as np
 
     search_space = {
-        "x": np.linspace(-10, 10, 100),
+        "x": (-10.0, 10.0),
         "y": np.arange(1, 50),
-        "method": np.array(["adam", "sgd", "rmsprop"]),
+        "method": ["adam", "sgd", "rmsprop"],
     }
 
 **2. Objective = any Python callable that takes a dict and returns a float**

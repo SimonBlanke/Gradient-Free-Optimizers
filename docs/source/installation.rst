@@ -20,8 +20,8 @@ Install GFO from PyPI using pip:
 
     pip install gradient-free-optimizers
 
-This installs GFO with its core dependencies (NumPy, SciPy, and pandas), which is
-sufficient for all core optimization algorithms.
+This installs GFO with its core dependencies, NumPy and pandas. SciPy,
+tqdm, and scikit-learn are optional extras.
 
 
 Installation with Extras
@@ -39,7 +39,15 @@ For additional functionality, you can install optional extras:
 
         Adds ``tqdm`` for progress bars during optimization.
 
-    .. tab-item:: SMBO Algorithms
+    .. tab-item:: SciPy Distributions
+
+        .. code-block:: bash
+
+            pip install gradient-free-optimizers[scipy]
+
+        Adds ``scipy`` for distribution-backed search-space dimensions.
+
+    .. tab-item:: Sklearn Surrogates
 
         .. code-block:: bash
 
@@ -54,7 +62,7 @@ For additional functionality, you can install optional extras:
 
             pip install gradient-free-optimizers[full]
 
-        Installs all optional dependencies (tqdm + scikit-learn).
+        Installs all optional dependencies (tqdm, scipy, and scikit-learn).
 
 
 Development Installation
@@ -96,8 +104,6 @@ Gradient-Free-Optimizers requires the following packages (automatically installe
      - Purpose
    * - ``numpy >= 1.18.1, < 3.0.0``
      - Numerical operations, array handling, and search space definition
-   * - ``scipy < 2.0.0``
-     - Scientific computing and statistical functions
    * - ``pandas < 3.0.0``
      - Search data storage and manipulation
 
@@ -112,7 +118,9 @@ Optional Dependencies
      - Purpose
    * - ``tqdm >= 4.48`` (extra: ``progress``)
      - Progress bars during optimization
-   * - ``scikit-learn >= 0.23`` (extra: ``sklearn``)
+   * - ``scipy < 2.0.0`` (extra: ``scipy``)
+     - Distribution-backed search-space dimensions
+   * - ``scikit-learn >= 0.21, != 0.23.*`` (extra: ``sklearn``)
      - Surrogate models for SMBO algorithms (Bayesian, TPE, Forest)
 
 
@@ -240,13 +248,13 @@ Jupyter Notebooks
 
 Install directly in a notebook cell:
 
-.. code-block:: python
+.. code-block:: text
 
     !pip install gradient-free-optimizers
 
 Or with extras:
 
-.. code-block:: python
+.. code-block:: text
 
     !pip install gradient-free-optimizers[full]
 
@@ -256,7 +264,7 @@ Google Colab
 
 GFO works out of the box in Google Colab:
 
-.. code-block:: python
+.. code-block:: text
 
     !pip install gradient-free-optimizers
     import gradient_free_optimizers

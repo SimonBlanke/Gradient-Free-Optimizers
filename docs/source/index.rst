@@ -17,7 +17,7 @@
     <div class="stats-strip">
         <a href="get_started/algorithms.html" class="stat-item">
             <div class="stat-front">
-                <div class="stat-value">22</div>
+                <div class="stat-value">23</div>
                 <div class="stat-label">Algorithms</div>
             </div>
             <div class="stat-hover">
@@ -76,7 +76,7 @@ Not every optimization problem has gradients. Machine learning hyperparameter tu
 simulation optimization, feature selection, and black-box optimization all require
 algorithms that can navigate parameter spaces without derivative information.
 
-**Gradient-Free-Optimizers** provides a unified interface to 22 optimization algorithms,
+**Gradient-Free-Optimizers** provides a unified interface to 23 optimization algorithms,
 from simple hill climbing to sophisticated Bayesian optimization, all designed for
 discrete, continuous, and mixed search spaces.
 
@@ -114,11 +114,11 @@ Algorithm Categories
         :link-type: doc
         :class-card: sd-border-start sd-border-primary
 
-        **6 Algorithms** using collective intelligence
+        **7 Algorithms** using collective intelligence
 
         Particle Swarm, Genetic Algorithm, Evolution Strategy,
-        Differential Evolution, and more. Multiple agents work together
-        to find optimal solutions.
+        Differential Evolution, CMA-ES, and more. Multiple agents work
+        together to find optimal solutions.
 
     .. grid-item-card:: Sequential Model-Based
         :link: user_guide/optimizers/smbo/index
@@ -141,8 +141,8 @@ Key Features
     .. grid-item-card:: Simple Search Space Definition
         :class-card: sd-rounded-3
 
-        Define search spaces using NumPy arrays. No complex syntax,
-        no special types. Supports discrete, continuous, and mixed spaces.
+        Define search spaces with tuples, NumPy arrays, lists, or optional
+        SciPy distributions. Supports discrete, continuous, and mixed spaces.
 
         .. code-block:: python
 
@@ -317,7 +317,7 @@ for Python.
         optimization process.
 
         - 23 algorithms
-        - NumPy-based search spaces
+        - Mixed search spaces
         - Constraint support
 
     .. grid-item-card:: Hyperactive

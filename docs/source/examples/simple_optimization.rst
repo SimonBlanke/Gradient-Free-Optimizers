@@ -23,7 +23,7 @@ Let's find the minimum of the sphere function: f(x, y) = x^2 + y^2
         y = para["y"]
         return -(x**2 + y**2)
 
-    # Define the search space as NumPy arrays
+    # Define a simple two-dimensional search space
     search_space = {
         "x": np.linspace(-10, 10, 100),  # 100 values from -10 to 10
         "y": np.linspace(-10, 10, 100),

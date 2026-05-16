@@ -2,7 +2,7 @@
 Optimization Algorithms
 =========================
 
-Gradient-Free-Optimizers provides 22 optimization algorithms organized into four
+Gradient-Free-Optimizers provides 23 optimization algorithms organized into four
 categories. Each category represents a different strategy for exploring the search
 space, and the right choice depends on your problem characteristics.
 
@@ -91,6 +91,7 @@ problems with many local optima.
 - ``EvolutionStrategyOptimizer`` -- Mutation and selection inspired by biological evolution
 - ``GeneticAlgorithmOptimizer`` -- Crossover and mutation of parent solutions
 - ``DifferentialEvolutionOptimizer`` -- Difference vectors between population members drive mutation
+- ``CMAESOptimizer`` -- Covariance matrix adaptation for continuous search spaces
 - ``SpiralOptimization`` -- Points spiral inward toward the best-known position
 - ``ParallelTemperingOptimizer`` -- Multiple simulated annealing chains at different temperatures
 

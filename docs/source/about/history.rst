@@ -84,10 +84,10 @@ Design Philosophy Evolution
 
 **Core principles maintained**:
 
-1. **Simplicity**: NumPy arrays for search spaces, no complex syntax
+1. **Simplicity**: Dictionary-based search spaces, no complex syntax
 2. **Consistency**: All algorithms share the same interface
 3. **Transparency**: No hidden state or magic
-4. **Minimal dependencies**: Core library only needs NumPy
+4. **Minimal dependencies**: Core library only needs NumPy and pandas
 
 **Improvements over time**:
 

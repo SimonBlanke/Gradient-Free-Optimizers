@@ -14,28 +14,43 @@ The following packages are required:
 
 - **NumPy** -- array operations and search space representation
 - **pandas** -- results storage via ``opt.search_data`` DataFrame
-- **SciPy** -- used internally by some optimizers (e.g. distance calculations)
-- **tqdm** -- progress bar display during ``search()``
 
-That's it. No heavy frameworks, no compiled C extensions beyond what NumPy
-and SciPy already provide, no external optimization backends.
+That's it. No heavy frameworks and no external optimization backends are
+required for the standard optimizer API.
 
 
 Optional Dependencies
 ---------------------
 
+Optional extras enable additional integrations:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 20 30 50
+
+   * - Extra
+     - Install command
+     - Adds
+   * - ``progress``
+     - ``pip install gradient-free-optimizers[progress]``
+     - ``tqdm`` progress bars during ``search()``
+   * - ``scipy``
+     - ``pip install gradient-free-optimizers[scipy]``
+     - SciPy distribution-backed search-space dimensions
+   * - ``sklearn``
+     - ``pip install gradient-free-optimizers[sklearn]``
+     - scikit-learn surrogate models for SMBO optimizers
+   * - ``full``
+     - ``pip install gradient-free-optimizers[full]``
+     - all optional dependencies
+
 For surrogate-model-based optimizers (``BayesianOptimizer``, ``ForestOptimizer``,
-``TreeStructuredParzenEstimators``), you can optionally install scikit-learn to
-use sklearn-based surrogate models:
+``TreeStructuredParzenEstimators``), scikit-learn is optional. Install it when
+you want to use sklearn-based surrogate models:
 
 .. code-block:: bash
 
     pip install gradient-free-optimizers[sklearn]
-
-This adds:
-
-- **scikit-learn** -- provides alternative GP, Random Forest, and KDE implementations
-  for surrogate models
 
 However, sklearn is **not required**. GFO ships its own Gaussian Process, Random
 Forest, and KDE implementations, so all 23 optimizers work out of the box without
@@ -60,9 +75,9 @@ environments:
 - Serverless functions with package size limits
 - Air-gapped environments with limited package availability
 
-**No conflicts.** NumPy, pandas, SciPy, and tqdm are among the most widely used
-Python packages. Adding GFO to an existing project is unlikely to introduce
-version conflicts.
+**No conflicts.** NumPy and pandas are among the most widely used Python
+packages. SciPy, tqdm, and scikit-learn stay optional, so downstream libraries
+can avoid pulling them in unless they need those features.
 
 
 Built-in Surrogate Models

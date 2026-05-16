@@ -105,7 +105,7 @@ Parameters
     * - ``search_space``
       - dict
       - required
-      - Dictionary mapping parameter names to NumPy arrays of values
+      - Dictionary mapping parameter names to search-space definitions
     * - ``initialize``
       - dict
       - {"grid": 4, "random": 2, "vertices": 4}

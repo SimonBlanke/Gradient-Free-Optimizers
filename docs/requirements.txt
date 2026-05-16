@@ -1,4 +1,4 @@
-# Requirements for building Surfaces documentation
+# Requirements for building Gradient-Free-Optimizers documentation
 
 # Core Sphinx and extensions
 sphinx>=8.1.3

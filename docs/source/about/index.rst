@@ -6,7 +6,7 @@ About
 Gradient-Free-Optimizers
 ------------------------
 
-Gradient-Free-Optimizers is a Python library providing 22 gradient-free
+Gradient-Free-Optimizers is a Python library providing 23 gradient-free
 optimization algorithms with a unified interface. It serves as the optimization
 backend for `Hyperactive <https://github.com/SimonBlanke/Hyperactive>`_.
 
@@ -53,8 +53,8 @@ If you use Gradient-Free-Optimizers in your research, please cite:
     }
 
 
-Contributing
-------------
+Contribute
+----------
 
 Contributions are welcome! Please see the
 `GitHub repository <https://github.com/SimonBlanke/Gradient-Free-Optimizers>`_

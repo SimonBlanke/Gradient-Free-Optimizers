@@ -217,7 +217,7 @@ Kernel Can't Find Package
 
 Or install directly in a notebook cell:
 
-.. code-block:: python
+.. code-block:: text
 
     !pip install gradient-free-optimizers
 

@@ -12,17 +12,16 @@ logic for each type internally.
 Dimension Types
 ---------------
 
-A search space is a Python dictionary mapping parameter names to NumPy arrays
-of candidate values. The type of each dimension is determined by the array contents:
+A search space is a Python dictionary mapping parameter names to dimension
+definitions. A dimension can be a tuple for a continuous range, a NumPy array
+for a discrete grid, a Python list for categorical choices, or an optional
+SciPy distribution object.
 
-**Continuous** -- floating-point values, typically created with ``np.linspace``:
+**Continuous** -- a tuple ``(lower, upper)``:
 
 .. code-block:: python
 
-    import numpy as np
-
-    # 200 evenly spaced floats from 0.001 to 1.0
-    "learning_rate": np.linspace(0.001, 1.0, 200)
+    "learning_rate": (0.001, 1.0)
 
 **Discrete** -- integer or evenly spaced numerical values, typically created with ``np.arange``:
 
@@ -31,18 +30,18 @@ of candidate values. The type of each dimension is determined by the array conte
     # Integers: 10, 20, 30, ..., 200
     "n_estimators": np.arange(10, 210, 10)
 
-**Categorical** -- strings or other non-numeric values:
+**Categorical** -- strings or other non-numeric values, typically provided as a list:
 
 .. code-block:: python
 
     # Categorical choices
-    "kernel": np.array(["linear", "rbf", "poly"])
+    "kernel": ["linear", "rbf", "poly"]
 
 **Boolean** -- a special case of categorical with two values:
 
 .. code-block:: python
 
-    "use_bias": np.array([True, False])
+    "use_bias": [True, False]
 
 **Distribution** -- a SciPy stats continuous distribution. SciPy is optional,
 and this type is available when the user passes a SciPy distribution object:
@@ -69,11 +68,11 @@ naturally:
 
     # Mixed search space for SVM hyperparameter tuning
     search_space = {
-        "C": np.linspace(0.01, 100, 200),           # continuous
+        "C": (0.01, 100.0),                         # continuous
         "gamma": stats.loguniform(1e-5, 1e-1),      # distribution
         "degree": np.arange(2, 6),                    # discrete
-        "kernel": np.array(["linear", "rbf", "poly"]),# categorical
-        "shrinking": np.array([True, False]),          # boolean
+        "kernel": ["linear", "rbf", "poly"],          # categorical
+        "shrinking": [True, False],                    # boolean
     }
 
     def objective(para):

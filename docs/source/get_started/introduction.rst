@@ -6,8 +6,8 @@ This guide will help you install Gradient-Free-Optimizers and run your first opt
 in under 5 minutes.
 
 
-Installation
-------------
+Quick Installation
+------------------
 
 Install from PyPI using pip:
 
@@ -18,7 +18,10 @@ Install from PyPI using pip:
 **Requirements:**
 
 - Python 3.10+
-- NumPy, SciPy, pandas, tqdm
+- NumPy and pandas
+
+SciPy, tqdm, and scikit-learn are optional extras for distribution-backed
+dimensions, progress bars, and alternative surrogate models.
 
 **Optional dependencies:**
 
@@ -83,22 +86,22 @@ Understanding Search Spaces
 Search spaces in GFO are defined as dictionaries where:
 
 - **Keys** are parameter names
-- **Values** are NumPy arrays of possible values
+- **Values** are tuples, NumPy arrays, lists, or optional SciPy distributions
 
 .. code-block:: python
 
     search_space = {
-        # Continuous: 100 values from 0.001 to 1.0
-        "learning_rate": np.linspace(0.001, 1.0, 100),
+        # Continuous range
+        "learning_rate": (0.001, 1.0),
 
         # Discrete integers: 10, 20, 30, ..., 200
         "n_estimators": np.arange(10, 210, 10),
 
-        # Categorical: array of strings
-        "optimizer": np.array(["adam", "sgd", "rmsprop"]),
+        # Categorical choices
+        "optimizer": ["adam", "sgd", "rmsprop"],
 
-        # Boolean: array with True/False
-        "use_bias": np.array([True, False]),
+        # Boolean choices
+        "use_bias": [True, False],
     }
 
 The optimizer samples from these arrays, so the **granularity** of your array
@@ -204,7 +207,7 @@ Next Steps
         :link: ../user_guide/optimizers/index
         :link-type: doc
 
-        Detailed documentation for all 22 optimization algorithms with
+        Detailed documentation for all 23 optimization algorithms with
         visualizations and parameter guides.
 
     .. grid-item-card:: Examples

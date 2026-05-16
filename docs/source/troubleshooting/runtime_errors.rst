@@ -89,9 +89,11 @@ ValueError
 "could not broadcast input array"
 ----------------------------------
 
-**Problem**: Inconsistent array shapes in search space.
+**Problem**: A search-space dimension contains nested or multi-dimensional values.
 
-**Solution**: Ensure all parameter arrays are 1D NumPy arrays:
+**Solution**: Use flat values for each dimension. Discrete grids should be
+one-dimensional arrays, categorical choices should be flat lists, and
+continuous ranges should use ``(lower, upper)`` tuples:
 
 .. code-block:: python
 
@@ -109,18 +111,20 @@ ValueError
 "all the input arrays must have same number of dimensions"
 -----------------------------------------------------------
 
-**Problem**: Mixing lists and arrays in search space.
+**Problem**: One or more dimensions contain nested array-like values.
 
-**Solution**: Convert everything to NumPy arrays:
+**Solution**: Keep each dimension one-dimensional and use the intended
+dimension type:
 
 .. code-block:: python
 
     import numpy as np
 
     search_space = {
-        "x": np.array([1, 2, 3]),      # NumPy array
-        "y": np.linspace(0, 10, 50),   # NumPy array
-        "z": np.arange(1, 100),        # NumPy array
+        "x": np.array([1, 2, 3]),         # discrete grid
+        "y": np.linspace(0, 10, 50),      # discrete grid
+        "method": ["fast", "accurate"],   # categorical choices
+        "learning_rate": (0.001, 1.0),    # continuous range
     }
 
 
