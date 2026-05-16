@@ -127,7 +127,7 @@ class Particle(HillClimbingOptimizer):
             c1 = cognitive_weight (attraction to personal best)
             c2 = social_weight (attraction to global best)
             c3 = temp_weight (random vibration)
-            r1, r2 = random values in [0, 1]
+            r1, r2 = random vectors in [0, 1]
             r3 = random vector in [-1, 1]
 
         Returns
@@ -152,11 +152,13 @@ class Particle(HillClimbingOptimizer):
             self._pos_new = pos_new  # Property setter auto-appends
             return pos_new
 
-        r1, r2 = random.random(), random.random()
-
         pos_current = array(self._pos_current)
         pos_best = array(self._pos_best)
         global_pos_best = array(self.global_pos_best)
+        n_dims = len(pos_current)
+
+        r1 = self._random_vector(n_dims)
+        r2 = self._random_vector(n_dims)
 
         # Inertia term: maintain current direction
         A = self.inertia * array(self.velo)
@@ -168,7 +170,7 @@ class Particle(HillClimbingOptimizer):
         C = self.social_weight * r2 * (global_pos_best - pos_current)
 
         # Temperature term: add a bounded random vibration in position space
-        D = self._compute_temperature_vibration(len(pos_current))
+        D = self._compute_temperature_vibration(n_dims)
 
         # Update velocity
         self.velo = A + B + C + D
@@ -189,6 +191,10 @@ class Particle(HillClimbingOptimizer):
         return self.temp_weight * array(
             [random.uniform(-1.0, 1.0) for _ in range(n_dims)]
         )
+
+    def _random_vector(self, n_dims):
+        """Sample per-dimension PSO random coefficients."""
+        return array([random.random() for _ in range(n_dims)])
 
     def move_climb_typed(self, pos_new):
         """Fallback movement using hill climbing when constraints violated."""

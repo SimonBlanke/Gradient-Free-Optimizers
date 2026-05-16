@@ -234,11 +234,13 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         ):
             return self.p_current.init.move_random_typed()
 
-        r1, r2 = random.random(), random.random()
-
         pos_current = array(self.p_current._pos_current)
         pos_best = array(self.p_current._pos_best)
         global_pos_best = array(self.p_current.global_pos_best)
+        n_dims = len(pos_current)
+
+        r1 = self._random_vector(n_dims)
+        r2 = self._random_vector(n_dims)
 
         # Inertia term: maintain current direction
         A = self.inertia * array(self.p_current.velo)
@@ -250,7 +252,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         C = self.social_weight * r2 * (global_pos_best - pos_current)
 
         # Temperature term: add a bounded random vibration in position space
-        D = self._compute_temperature_vibration(len(pos_current))
+        D = self._compute_temperature_vibration(n_dims)
 
         # Update velocity
         self.p_current.velo = A + B + C + D
@@ -266,6 +268,10 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         return self.temp_weight * array(
             [random.uniform(-1.0, 1.0) for _ in range(n_dims)]
         )
+
+    def _random_vector(self, n_dims: int) -> ndarray:
+        """Sample per-dimension PSO random coefficients."""
+        return array([random.random() for _ in range(n_dims)])
 
     def _reset_rejected_constraint_candidate(self) -> None:
         """Roll back non-evaluated PSO candidate state and clear the cache."""
