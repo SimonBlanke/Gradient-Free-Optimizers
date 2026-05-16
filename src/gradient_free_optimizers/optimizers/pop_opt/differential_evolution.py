@@ -360,9 +360,9 @@ class DifferentialEvolutionOptimizer(BasePopulationOptimizer):
         # Track position on individual (needed for personal best tracking)
         self.p_current._pos_new = self._pos_new
 
-        # DE greedy selection is handled by individual's evaluate
-        # which updates pos_current only if score improved
-        self.p_current._evaluate(score_new)
+        # DE selection is target-wise: the trial vector replaces the target
+        # only if it is at least as good as the current target.
+        self.p_current._evaluate_greedy(score_new, accept_equal=True)
 
         # Update global tracking
         self._update_best(self._pos_new, score_new)

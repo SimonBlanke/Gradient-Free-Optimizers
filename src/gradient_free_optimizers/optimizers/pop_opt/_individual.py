@@ -201,6 +201,43 @@ class Individual(HillClimbingOptimizer):
         # Update best if improved
         self._update_best(self._pos_new, score_new)
 
+    def _evaluate_greedy(self, score_new, accept_equal=False):
+        """Evaluate a trial and replace current only if the score is accepted.
+
+        This is used by population optimizers with per-target survival
+        semantics. The public evaluation flow is intentionally not used here
+        because ``_on_evaluate`` always replaces the current position, which is
+        not a valid replacement rule for those algorithms.
+        """
+        score_current = self._score_current
+        has_current = self._pos_current is not None
+
+        self._track_score(score_new)
+
+        has_score = score_current is not None
+        improved = (not has_current) or (not has_score) or score_new > score_current
+        equal_accepted = (
+            accept_equal and has_current and has_score and score_new == score_current
+        )
+        accepted = improved or equal_accepted
+
+        if improved:
+            self.sigma = self.sigma_new
+
+        # Restore original epsilon if it was modified
+        if self._original_epsilon is not None:
+            self.epsilon = self._original_epsilon
+            self._original_epsilon = None
+
+        # Reset iteration setup for next iteration
+        self._iteration_setup_done = False
+        self._use_random_restart = False
+
+        if accepted:
+            self._update_current(self._pos_new, score_new)
+
+        self._update_best(self._pos_new, score_new)
+
     def move_climb_typed(self, pos, epsilon_mod=1.0):
         """Move using hill climbing with optional epsilon modifier.
 

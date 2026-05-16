@@ -416,8 +416,9 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
         # Track position on individual (needed for personal best tracking)
         self.p_current._pos_new = self._pos_new
 
-        # Delegate to current individual
-        self.p_current._evaluate(score_new)
+        # Preserve selection pressure: a trial should not overwrite an
+        # individual's current state unless it improves that individual.
+        self.p_current._evaluate_greedy(score_new)
 
         # Update global tracking
         self._update_best(self._pos_new, score_new)

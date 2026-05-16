@@ -20,11 +20,14 @@ For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke
 - Spiral Optimization now updates its center after the evaluated particle state is current and derives the center from particle personal-best scores
 - The public Spiral Optimization wrapper now uses the documented defaults `spiral_radius=1.0` and `rotation_degrees=90.0`
 - One-dimensional Spiral Optimization rotation now flips the input vector sign instead of returning a constant offset
+- Differential Evolution now applies target-wise greedy replacement, preserving the current target vector when a trial vector scores worse
+- Genetic Algorithm now preserves an individual's current state when a mutation or crossover trial scores worse, maintaining selection pressure for parent ranking
 
 ### Tests
 - Added regression tests for PSO particle state updates, PSO personal-best ordering, and one-dimensional spiral rotation
 - Added regression coverage for scale-invariant Spiral Optimization movement
 - Added regression coverage for PSO temperature vibration and Spiral Optimization center updates after newly found best positions
+- Added regression coverage for Differential Evolution and Genetic Algorithm population replacement semantics
 
 ## [1.13.0] - 2026-05-15
 
