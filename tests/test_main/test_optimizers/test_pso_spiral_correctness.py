@@ -1,0 +1,60 @@
+"""Regression tests for PSO and Spiral optimizer state updates."""
+
+import numpy as np
+
+from gradient_free_optimizers import ParticleSwarmOptimizer
+from gradient_free_optimizers.optimizers.pop_opt._spiral import rotation
+
+
+def objective_function(para):
+    return -(para["x"] * para["x"])
+
+
+def test_pso_updates_particle_current_and_personal_best_every_evaluation():
+    search_space = {"x": np.arange(-10, 11)}
+    opt = ParticleSwarmOptimizer(
+        search_space,
+        initialize={"warm_start": [{"x": 10}, {"x": 0}]},
+        population=2,
+        random_state=1,
+        inertia=0.0,
+        cognitive_weight=0.0,
+        social_weight=2.0,
+    )
+
+    opt.search(objective_function, n_iter=3, memory=False, verbosity=False)
+
+    particle = opt.particles[0]
+    assert list(opt.conv.position2value(particle._pos_current)) == [8]
+    assert particle._score_current == -64
+    assert list(opt.conv.position2value(particle._pos_best)) == [8]
+    assert particle._score_best == -64
+
+
+def test_pso_sorts_particles_by_personal_best_score():
+    search_space = {"x": np.arange(-10, 11)}
+    opt = ParticleSwarmOptimizer(
+        search_space,
+        initialize={"warm_start": [{"x": -10}, {"x": 0}]},
+        population=2,
+        random_state=0,
+    )
+    first, second = opt.particles
+
+    first._pos_current = np.array([0])
+    first._score_current = -100
+    first._pos_best = np.array([0])
+    first._score_best = 10
+
+    second._pos_current = np.array([1])
+    second._score_current = 100
+    second._pos_best = np.array([1])
+    second._score_best = -10
+
+    opt._sort_pop_personal_best_score()
+
+    assert opt.pop_sorted[0] is first
+
+
+def test_spiral_1d_rotation_flips_vector_sign():
+    assert list(rotation(1, np.array([5.0]))) == [-5.0]

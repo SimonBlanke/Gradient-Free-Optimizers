@@ -172,6 +172,17 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         # Update particle's current
         self.p_current._score_current = score_new
 
+    def _sort_pop_personal_best_score(self) -> None:
+        """Sort particles by their personal-best score, best first."""
+        indexed = list(enumerate(self.particles))
+        indexed.sort(
+            key=lambda x: (
+                x[1]._score_best if x[1]._pos_best is not None else float("-inf")
+            ),
+            reverse=True,
+        )
+        self.pop_sorted = [self.particles[i] for i, _ in indexed]
+
     def _setup_iteration(self) -> None:
         """Set up current iteration by selecting particle and computing velocity.
 
@@ -186,7 +197,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         self.p_current = self.particles[self.nth_trial % len(self.particles)]
 
         # Update global best reference for this particle
-        self._sort_pop_best_score()
+        self._sort_pop_personal_best_score()
         self.p_current.global_pos_best = self.pop_sorted[0]._pos_best
 
         # Compute full PSO position using velocity update
@@ -329,7 +340,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
 
     def _iterate_batch(self, n):
         """Generate n positions by cycling through particles."""
-        self._sort_pop_best_score()
+        self._sort_pop_personal_best_score()
         positions = []
         self._batch_particle_indices = []
         for i in range(n):

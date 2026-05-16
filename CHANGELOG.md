@@ -9,6 +9,14 @@ For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke
 
 ## [Unreleased]
 
+### Fixed
+- Particle Swarm Optimization now updates each particle's current position and personal best after every evaluated move instead of inheriting hill-climbing acceptance behavior
+- Particle Swarm Optimization now selects the swarm best from particle personal-best scores instead of current scores
+- One-dimensional Spiral Optimization rotation now flips the input vector sign instead of returning a constant offset
+
+### Tests
+- Added regression tests for PSO particle state updates, PSO personal-best ordering, and one-dimensional spiral rotation
+
 ## [1.13.0] - 2026-05-15
 
 ### Added

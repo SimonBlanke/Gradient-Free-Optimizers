@@ -179,6 +179,11 @@ class Particle(HillClimbingOptimizer):
         """Fallback movement using hill climbing when constraints violated."""
         return self._iterate()
 
+    def _on_evaluate(self, score_new):
+        """Update PSO particle state after every evaluated move."""
+        self._update_current(self._pos_new, score_new)
+        self._update_best(self._pos_new, score_new)
+
     def _conv2pos_typed(self, pos):
         """Convert position array to valid position with proper types.
 

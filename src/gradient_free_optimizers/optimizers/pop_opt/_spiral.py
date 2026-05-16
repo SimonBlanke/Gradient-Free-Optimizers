@@ -39,7 +39,7 @@ def rotation(n_dim, vector):
         Rotated vector.
     """
     if n_dim == 1:
-        return array([-1.0])  # Return as array for consistency
+        return -array(vector)
 
     # Build rotation matrix
     # R has shape (n_dim, n_dim)
