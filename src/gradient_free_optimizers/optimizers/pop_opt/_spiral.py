@@ -12,6 +12,7 @@ combining rotation and contraction to balance exploration and exploitation.
 from __future__ import annotations
 
 from gradient_free_optimizers._array_backend import array, zeros
+from gradient_free_optimizers._dimension_types import DimensionType
 
 from ..local_opt import HillClimbingOptimizer
 
@@ -80,7 +81,8 @@ class Spiral(HillClimbingOptimizer):
         self.global_pos_best = None
 
         self.decay_rate = None
-        self.decay_factor = 3  # Initial scaling factor
+        self.spiral_radius = 1.0
+        self.decay_factor = self.spiral_radius
 
     def _move_part(self, pos, velo):
         """Apply velocity to position.
@@ -138,27 +140,14 @@ class Spiral(HillClimbingOptimizer):
         # Update decay factor
         self.decay_factor *= self.decay_rate
 
-        # Compute step rate based on search space size
-        if self.conv.is_legacy_mode:
-            step_rate = self.decay_factor * array(self.conv.max_positions) / 1000
-        else:
-            # For typed dimensions, use bounds to compute scale
-            scales = []
-            for idx, dim_type in enumerate(self.conv.dim_types):
-                bounds = self.conv.dim_infos[idx].bounds
-                if dim_type.is_continuous_like:
-                    scales.append(bounds[1] - bounds[0])
-                else:
-                    scales.append(bounds[1])
-            step_rate = self.decay_factor * array(scales) / 1000
+        center = array(center_pos)
+        current = array(self._pos_current)
+        center_norm = self._normalize_position(center)
+        current_norm = self._normalize_position(current)
 
-        # Compute rotated offset from center
-        A = array(center_pos)
-        rot = rotation(len(center_pos), array(self._pos_current) - A)
-
-        # Combine rotation with decay
-        B = step_rate * rot
-        new_pos = A + B
+        rot = rotation(len(center_norm), current_norm - center_norm)
+        new_norm = center_norm + self.decay_factor * rot
+        new_pos = self._denormalize_position(new_norm)
 
         # Convert to valid position
         pos_new = self._conv2pos_typed(new_pos)
@@ -167,6 +156,49 @@ class Spiral(HillClimbingOptimizer):
         self._pos_new = pos_new
 
         return pos_new
+
+    def _compute_dimension_bounds(self):
+        lower = zeros(len(self.search_space))
+        upper = zeros(len(self.search_space))
+
+        for i, info in enumerate(self.conv.dim_infos):
+            if info.dim_type.is_continuous_like:
+                lower[i] = info.bounds[0]
+                upper[i] = info.bounds[1]
+            elif info.dim_type == DimensionType.CATEGORICAL:
+                lower[i] = 0
+                upper[i] = info.size - 1
+            else:
+                lower[i] = 0
+                upper[i] = info.size - 1
+
+        return lower, upper
+
+    def _normalize_position(self, position):
+        lower, upper = self._compute_dimension_bounds()
+        normalized = []
+
+        for value, lo, hi in zip(position, lower, upper):
+            span = hi - lo
+            if span > 0:
+                normalized.append((value - lo) / span)
+            else:
+                normalized.append(0.0)
+
+        return array(normalized)
+
+    def _denormalize_position(self, normalized_position):
+        lower, upper = self._compute_dimension_bounds()
+        position = []
+
+        for value, lo, hi in zip(normalized_position, lower, upper):
+            span = hi - lo
+            if span > 0:
+                position.append(lo + value * span)
+            else:
+                position.append(lo)
+
+        return array(position)
 
     def _conv2pos_typed(self, pos):
         """Convert position array to valid position with proper types.

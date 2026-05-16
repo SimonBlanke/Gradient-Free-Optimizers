@@ -33,10 +33,13 @@ class SpiralOptimization(BasePopulationOptimizer):
     exploration and exploitation.
 
     The spiral equation is:
-        new_pos = center + decay * rotation(current - center)
+        new_pos = denormalize(
+            center_norm + radius * decay * rotation(current_norm - center_norm)
+        )
 
     Where:
         - center is the global best position
+        - radius is a dimensionless normalized search radius
         - decay contracts over time (decay_rate^iteration)
         - rotation creates the spiral trajectory
 
@@ -65,6 +68,8 @@ class SpiralOptimization(BasePopulationOptimizer):
     decay_rate : float, default=0.99
         Rate at which spiral radius contracts per iteration.
         Values closer to 1 cause slower contraction (more exploration).
+    spiral_radius : float, default=1.0
+        Initial radius multiplier in normalized search-space coordinates.
     """
 
     name = "Spiral Optimization"
@@ -85,6 +90,7 @@ class SpiralOptimization(BasePopulationOptimizer):
         boundary: str = "clip",
         population: int = 10,
         decay_rate: float = 0.99,
+        spiral_radius: float = 1.0,
     ) -> None:
         super().__init__(
             search_space=search_space,
@@ -98,6 +104,7 @@ class SpiralOptimization(BasePopulationOptimizer):
         )
 
         self.decay_rate = decay_rate
+        self.spiral_radius = spiral_radius
 
         # Create population of spiral particles
         self.particles = self._create_population(Spiral)
@@ -106,6 +113,8 @@ class SpiralOptimization(BasePopulationOptimizer):
         # Set decay_rate on all particles upfront
         for p in self.particles:
             p.decay_rate = self.decay_rate
+            p.spiral_radius = self.spiral_radius
+            p.decay_factor = self.spiral_radius
 
         # Center position (best found so far)
         self.center_pos = None
@@ -114,7 +123,7 @@ class SpiralOptimization(BasePopulationOptimizer):
         # Iteration state for template method coordination
         self._iteration_setup_done = False
         self._spiral_new_pos = None
-        self._decay_factor = 3.0  # Initial scaling factor
+        self._decay_factor = self.spiral_radius
 
     def _on_init_pos(self, position) -> None:
         """Initialize current particle with the given position.
@@ -128,6 +137,7 @@ class SpiralOptimization(BasePopulationOptimizer):
         nth_pop = (self.nth_init - 1) % len(self.particles)
         self.p_current = self.particles[nth_pop]
         self.p_current.decay_rate = self.decay_rate
+        self.p_current.spiral_radius = self.spiral_radius
 
         # Track position on current particle
         self.p_current._pos_new = position.copy()
@@ -191,7 +201,9 @@ class SpiralOptimization(BasePopulationOptimizer):
         """Compute new position using spiral movement equation.
 
         The spiral equation is:
-            new_pos = center + decay * rotation(current - center)
+            new_pos = denormalize(
+                center_norm + radius * decay * rotation(current_norm - center_norm)
+            )
 
         Returns
         -------
@@ -209,44 +221,68 @@ class SpiralOptimization(BasePopulationOptimizer):
         # Update decay factor
         self._decay_factor *= self.decay_rate
 
-        # Compute step rate based on search space size
-        scales = self._compute_dimension_scales()
-        step_rate = self._decay_factor * scales / 1000
-
-        # Compute rotated offset from center
         center = array(self.center_pos)
         current = array(self.p_current._pos_current)
-        rot = rotation(len(center), current - center)
+        center_norm = self._normalize_position(center)
+        current_norm = self._normalize_position(current)
 
-        # Combine rotation with decay
-        offset = step_rate * rot
-        new_pos = center + offset
+        rot = rotation(len(center_norm), current_norm - center_norm)
+        new_norm = center_norm + self._decay_factor * rot
 
-        return new_pos
+        return self._denormalize_position(new_norm)
 
-    def _compute_dimension_scales(self) -> ndarray:
-        """Compute scale factors for each dimension.
+    def _compute_dimension_bounds(self) -> tuple[ndarray, ndarray]:
+        """Compute lower and upper internal bounds for each dimension.
 
         Returns
         -------
-        np.ndarray
-            Scale factor for each dimension based on its type and bounds.
+        tuple[np.ndarray, np.ndarray]
+            Lower and upper bounds in the optimizer's internal position space.
         """
         n_dims = len(self.search_space)
-        scales = zeros(n_dims)
+        lower = zeros(n_dims)
+        upper = zeros(n_dims)
 
         for i, info in enumerate(self.conv.dim_infos):
             if info.dim_type.is_continuous_like:
-                # Continuous-like: use internal range
-                scales[i] = info.bounds[1] - info.bounds[0]
+                lower[i] = info.bounds[0]
+                upper[i] = info.bounds[1]
             elif info.dim_type == DimensionType.CATEGORICAL:
-                # Categorical: use number of categories
-                scales[i] = info.size - 1
+                lower[i] = 0
+                upper[i] = info.size - 1
             else:
-                # Discrete: use max index
-                scales[i] = info.size - 1
+                lower[i] = 0
+                upper[i] = info.size - 1
 
-        return scales
+        return lower, upper
+
+    def _normalize_position(self, position) -> ndarray:
+        """Map an internal position to normalized [0, 1] coordinates."""
+        lower, upper = self._compute_dimension_bounds()
+        normalized = []
+
+        for value, lo, hi in zip(position, lower, upper):
+            span = hi - lo
+            if span > 0:
+                normalized.append((value - lo) / span)
+            else:
+                normalized.append(0.0)
+
+        return array(normalized)
+
+    def _denormalize_position(self, normalized_position) -> ndarray:
+        """Map normalized [0, 1] coordinates back to internal positions."""
+        lower, upper = self._compute_dimension_bounds()
+        position = []
+
+        for value, lo, hi in zip(normalized_position, lower, upper):
+            span = hi - lo
+            if span > 0:
+                position.append(lo + value * span)
+            else:
+                position.append(lo)
+
+        return array(position)
 
     def _iterate_continuous_batch(self) -> ndarray:
         """Generate continuous values using spiral movement.

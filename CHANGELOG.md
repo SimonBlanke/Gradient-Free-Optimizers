@@ -9,6 +9,9 @@ For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke
 
 ## [Unreleased]
 
+### Changed
+- Spiral Optimization now computes movement in normalized search-space coordinates via the explicit `spiral_radius` parameter instead of using search-space scale divided by a fixed constant
+
 ### Fixed
 - Particle Swarm Optimization now updates each particle's current position and personal best after every evaluated move instead of inheriting hill-climbing acceptance behavior
 - Particle Swarm Optimization now selects the swarm best from particle personal-best scores instead of current scores
@@ -16,6 +19,7 @@ For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke
 
 ### Tests
 - Added regression tests for PSO particle state updates, PSO personal-best ordering, and one-dimensional spiral rotation
+- Added regression coverage for scale-invariant Spiral Optimization movement
 
 ## [1.13.0] - 2026-05-15
 

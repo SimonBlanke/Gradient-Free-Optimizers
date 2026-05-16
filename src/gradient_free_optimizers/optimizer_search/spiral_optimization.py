@@ -33,9 +33,10 @@ class SpiralOptimization(_SpiralOptimization, Search):
     - Problems requiring smooth convergence behavior
     - Situations where controlled exploration-exploitation balance is needed
 
-    The `decay_rate` is the key parameter: values below 1 cause the spiral
-    to contract (convergent behavior), while values above 1 cause expansion
-    (divergent exploration).
+    The `spiral_radius` parameter controls the initial normalized movement
+    radius, while `decay_rate` controls how quickly that radius contracts.
+    Values below 1 for `decay_rate` cause contraction, while values above 1
+    cause expansion.
 
     Parameters
     ----------
@@ -170,8 +171,13 @@ class SpiralOptimization(_SpiralOptimization, Search):
           caution.
 
         The effective search radius at iteration t is proportional to
-        ``decay_rate^t``. After 100 iterations with ``decay_rate=0.99``,
-        the radius is ~37% of its initial value.
+        ``spiral_radius * decay_rate^t``. After 100 iterations with
+        ``decay_rate=0.99``, the radius is ~37% of its initial value.
+    spiral_radius : float, default=1.0
+        Initial radius multiplier in normalized search-space coordinates.
+        The spiral step is computed after mapping every dimension to
+        ``[0, 1]``, so this parameter is independent of the original
+        units and bounds of each dimension.
 
     Notes
     -----
@@ -180,12 +186,12 @@ class SpiralOptimization(_SpiralOptimization, Search):
 
     .. math::
 
-        x_{t+1} = R(\\theta) \\cdot r \\cdot (x_t - x_{\\text{best}}) + x_{\\text{best}}
+        u_{t+1} = R(\\theta) \\cdot r \\cdot (u_t - u_{\\text{best}}) + u_{\\text{best}}
 
     where :math:`R(\\theta)` is a rotation matrix, :math:`r` is the
-    ``decay_rate``, and :math:`x_{\\text{best}}` is the global best
-    position. The rotation angle is randomized per dimension to avoid
-    synchronization.
+    contracted normalized spiral radius, :math:`u_t` is the normalized
+    current position, and :math:`u_{\\text{best}}` is the normalized global
+    best position.
 
     The spiral movement naturally provides a balance between exploration
     (early iterations with wide orbits) and exploitation (later iterations
@@ -231,6 +237,7 @@ class SpiralOptimization(_SpiralOptimization, Search):
         boundary: str = "clip",
         population: int = 10,
         decay_rate: float = 0.99,
+        spiral_radius: float = 1.0,
     ):
         if initialize is None:
             initialize = get_default_initialize()
@@ -247,4 +254,5 @@ class SpiralOptimization(_SpiralOptimization, Search):
             boundary=boundary,
             population=population,
             decay_rate=decay_rate,
+            spiral_radius=spiral_radius,
         )

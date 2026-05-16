@@ -3,12 +3,14 @@ Spiral Optimization
 ===================
 
 Spiral Optimization moves each particle along a spiral trajectory centered on
-the current global best position. At each iteration, a rotation matrix rotates
-the particle around the center while a decay factor reduces its distance from
-it. The combination of rotation and contraction produces a deterministic path
-that sweeps through the neighborhood of the best known solution. The decay rate
-controls how quickly the spiral tightens: values close to 1.0 produce wide,
-slow spirals while lower values contract rapidly.
+the current global best position. At each iteration, the optimizer maps the
+particle and center positions into normalized coordinates, rotates the particle
+around the center, then maps the result back to the original search space. A
+decay factor reduces the normalized spiral radius over time. The combination of
+rotation and contraction produces a deterministic path that sweeps through the
+neighborhood of the best known solution. The decay rate controls how quickly the
+spiral tightens: values close to 1.0 produce wide, slow spirals while lower
+values contract rapidly.
 
 
 .. grid:: 2
@@ -41,8 +43,9 @@ structure is effective when the global optimum lies within a broad basin of
 attraction, because the spiral systematically covers the surrounding region. On
 multi-modal landscapes with many isolated basins, PSO or Differential Evolution
 will typically perform better due to their stochastic exploration. Spiral
-Optimization has only one tuning parameter (``decay_rate``), making it the
-simplest population-based optimizer to configure in this library.
+Optimization has two movement parameters: ``spiral_radius`` controls the initial
+normalized search radius, while ``decay_rate`` controls how quickly that radius
+contracts.
 
 
 Algorithm
@@ -50,14 +53,17 @@ Algorithm
 
 Each particle follows a spiral path toward the global best:
 
-1. Compute distance and angle to global best
-2. Rotate position around global best by spiral angle
-3. Move closer by decay factor
-4. Update if new position is better
+1. Normalize current position and global best into ``[0, 1]`` coordinates
+2. Compute the normalized offset from the global best
+3. Rotate the offset by the spiral rotation matrix
+4. Scale the rotated offset by ``spiral_radius * decay_rate^t``
+5. Denormalize the candidate back into the search space
+6. Update if new position is better
 
 .. code-block:: text
 
-    new_pos = center + decay_rate * rotation_matrix * (current_pos - center)
+    new_norm = center_norm + radius_t * rotation_matrix * (current_norm - center_norm)
+    new_pos = denormalize(new_norm)
 
 .. note::
 
@@ -90,6 +96,10 @@ Parameters
       - float
       - 0.99
       - How quickly spirals contract (closer to 1 = slower)
+    * - ``spiral_radius``
+      - float
+      - 1.0
+      - Initial radius multiplier in normalized search-space coordinates
 
 
 Example
@@ -112,6 +122,7 @@ Example
         search_space,
         population=15,
         decay_rate=0.98,
+        spiral_radius=1.0,
     )
 
     opt.search(objective, n_iter=200)
@@ -157,6 +168,7 @@ best, while PSO balances personal and global best attractions.
         search_space,
         population=25,
         decay_rate=0.995,
+        spiral_radius=1.0,
     )
 
     opt.search(schwefel_3d, n_iter=500)
@@ -167,12 +179,15 @@ best, while PSO balances personal and global best attractions.
 Trade-offs
 ----------
 
-- **Exploration vs. exploitation**: Controlled by ``decay_rate``. Values close
-  to 1.0 give slow contraction (more exploration); lower values contract quickly.
+- **Exploration vs. exploitation**: Controlled by ``spiral_radius`` and
+  ``decay_rate``. Larger initial radii explore more broadly; values close to
+  1.0 for ``decay_rate`` give slow contraction, while lower values contract
+  quickly.
 - **Computational overhead**: Low. Each particle update is a simple matrix
   multiplication.
-- **Parameter sensitivity**: ``decay_rate`` is the main tuning parameter.
-  Population size affects coverage of the spiral region.
+- **Parameter sensitivity**: ``spiral_radius`` controls the initial movement
+  scale in normalized coordinates. ``decay_rate`` controls how quickly that
+  movement shrinks. Population size affects coverage of the spiral region.
 
 
 Related Algorithms

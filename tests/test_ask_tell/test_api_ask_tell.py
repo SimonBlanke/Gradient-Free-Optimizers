@@ -248,6 +248,7 @@ OPTIMIZER_CONFIGS = [
         {
             "population": 5,
             "decay_rate": 0.95,
+            "spiral_radius": 0.8,
         },
     ),
     (
@@ -388,7 +389,7 @@ def _opt_id(opt):
 
 
 @pytest.mark.parametrize(
-    "Optimizer, is_pop, uses_small, algo_params",
+    ("Optimizer", "is_pop", "uses_small", "algo_params"),
     OPTIMIZER_CONFIGS,
     ids=[_opt_id(c[0]) for c in OPTIMIZER_CONFIGS],
 )
@@ -456,7 +457,7 @@ class TestRandRestP:
 
 
 @pytest.mark.parametrize(
-    "Optimizer, is_pop, uses_small, param_name, param_value",
+    ("Optimizer", "is_pop", "uses_small", "param_name", "param_value"),
     INDIVIDUAL_PARAMS,
     ids=[f"{p[0].__name__}-{p[3]}" for p in INDIVIDUAL_PARAMS],
 )
@@ -472,7 +473,7 @@ class TestIndividualAlgoParameters:
 
 
 @pytest.mark.parametrize(
-    "Optimizer, is_pop, uses_small, algo_params",
+    ("Optimizer", "is_pop", "uses_small", "algo_params"),
     OPTIMIZER_CONFIGS,
     ids=[_opt_id(c[0]) for c in OPTIMIZER_CONFIGS],
 )

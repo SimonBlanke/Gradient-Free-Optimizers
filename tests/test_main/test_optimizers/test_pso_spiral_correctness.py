@@ -2,7 +2,7 @@
 
 import numpy as np
 
-from gradient_free_optimizers import ParticleSwarmOptimizer
+from gradient_free_optimizers import ParticleSwarmOptimizer, SpiralOptimization
 from gradient_free_optimizers.optimizers.pop_opt._spiral import rotation
 
 
@@ -58,3 +58,34 @@ def test_pso_sorts_particles_by_personal_best_score():
 
 def test_spiral_1d_rotation_flips_vector_sign():
     assert list(rotation(1, np.array([5.0]))) == [-5.0]
+
+
+def test_spiral_movement_uses_normalized_coordinates():
+    unit_space = {"x": (-1.0, 1.0), "y": (-1.0, 1.0)}
+    wide_space = {"x": (-100.0, 100.0), "y": (-100.0, 100.0)}
+
+    unit_opt = SpiralOptimization(
+        unit_space,
+        initialize={"warm_start": [{"x": 0.0, "y": 0.0}]},
+        population=1,
+        decay_rate=1.0,
+        spiral_radius=1.0,
+    )
+    wide_opt = SpiralOptimization(
+        wide_space,
+        initialize={"warm_start": [{"x": 0.0, "y": 0.0}]},
+        population=1,
+        decay_rate=1.0,
+        spiral_radius=1.0,
+    )
+
+    unit_opt.center_pos = np.array([0.0, 0.0])
+    unit_opt.p_current = unit_opt.particles[0]
+    unit_opt.p_current._pos_current = np.array([1.0, 0.0])
+
+    wide_opt.center_pos = np.array([0.0, 0.0])
+    wide_opt.p_current = wide_opt.particles[0]
+    wide_opt.p_current._pos_current = np.array([100.0, 0.0])
+
+    assert list(unit_opt._compute_spiral_position()) == [0.0, 1.0]
+    assert list(wide_opt._compute_spiral_position()) == [0.0, 100.0]
