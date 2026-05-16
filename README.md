@@ -54,7 +54,7 @@ Lightweight optimization with local, global, population-based and sequential tec
 
 **Gradient-Free-Optimizers** is a Python library for gradient-free optimization of black-box functions. It provides a unified interface to 23 optimization algorithms, from simple hill climbing to Bayesian optimization, all operating on mixed search spaces that combine continuous ranges, discrete grids, categorical choices, and SciPy distribution-backed dimensions.
 
-Designed for hyperparameter tuning, simulation optimization, feature selection, engineering design, and any scenario where gradients are unavailable or impractical. The library prioritizes simplicity: define your objective function, specify the search space, and run. All algorithms share one consistent API, so switching from hill climbing to Bayesian optimization is a one-line change. SciPy is optional; GFO works with only pandas as a required dependency, making it suitable as an optimization backend or for minimal environments, containers, and embedded systems.
+Designed for hyperparameter tuning, simulation optimization, feature selection, engineering design, and any scenario where gradients are unavailable or impractical. The library prioritizes simplicity: define your objective function, specify the search space, and run. All algorithms share one consistent API, so switching from hill climbing to Bayesian optimization is a one-line change. SciPy is optional; GFO only requires NumPy and pandas, making it suitable as an optimization backend or for minimal environments, containers, and embedded systems.
 
 <p>
   <a href="https://www.linkedin.com/in/simonblanke/"><img src="https://img.shields.io/badge/LinkedIn-Follow-0A66C2?style=flat-square&logo=linkedin" alt="LinkedIn"></a>
@@ -115,7 +115,7 @@ pip install gradient-free-optimizers[full]      # All optional dependencies
     </td>
     <td width="33%">
       <a href="https://github.com/SimonBlanke/Gradient-Free-Optimizers"><b>Minimal Dependencies</b></a><br>
-      <sub>Only pandas required. Optional integrations for progress bars (tqdm) and surrogate models (scikit-learn).</sub>
+      <sub>Only NumPy and pandas required. Optional integrations for progress bars (tqdm), SciPy distributions, and surrogate models (scikit-learn).</sub>
     </td>
   </tr>
 </table>
