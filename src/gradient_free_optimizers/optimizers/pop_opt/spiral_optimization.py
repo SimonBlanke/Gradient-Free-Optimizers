@@ -168,6 +168,33 @@ class SpiralOptimization(BasePopulationOptimizer):
         # Update particle's current
         self.p_current._score_current = score_new
 
+    def _sort_pop_personal_best_score(self) -> None:
+        """Sort particles by their personal-best score, best first."""
+        indexed = list(enumerate(self.particles))
+        indexed.sort(
+            key=lambda x: (
+                x[1]._score_best if x[1]._pos_best is not None else float("-inf")
+            ),
+            reverse=True,
+        )
+        self.pop_sorted = [self.particles[i] for i, _ in indexed]
+
+    def _update_center_from_personal_best(self, force: bool = False) -> None:
+        """Update the spiral center from the best particle personal best."""
+        self._sort_pop_personal_best_score()
+        best_particle = self.pop_sorted[0]
+
+        if best_particle._pos_best is None or best_particle._score_best is None:
+            return
+
+        if (
+            force
+            or self.center_score is None
+            or best_particle._score_best > self.center_score
+        ):
+            self.center_pos = best_particle._pos_best.copy()
+            self.center_score = best_particle._score_best
+
     def _on_finish_initialization(self) -> None:
         """Set up initial center position from best particle.
 
@@ -177,9 +204,7 @@ class SpiralOptimization(BasePopulationOptimizer):
 
         Note: DO NOT set search_state here - CoreOptimizer handles that.
         """
-        self._sort_pop_best_score()
-        self.center_pos = self.pop_sorted[0]._pos_current
-        self.center_score = self.pop_sorted[0]._score_current
+        self._update_center_from_personal_best(force=True)
 
     def _setup_iteration(self) -> None:
         """Set up current iteration by selecting particle and computing spiral position.
@@ -195,8 +220,8 @@ class SpiralOptimization(BasePopulationOptimizer):
         self.p_current = self.particles[self.nth_trial % len(self.particles)]
 
         # Update global best reference for this particle
-        self._sort_pop_best_score()
-        self.p_current.global_pos_best = self.pop_sorted[0]._pos_current
+        self._update_center_from_personal_best()
+        self.p_current.global_pos_best = self.center_pos
 
         # Compute full spiral position
         self._spiral_new_pos = self._compute_spiral_position()
@@ -370,19 +395,11 @@ class SpiralOptimization(BasePopulationOptimizer):
         # Track position on particle
         self.p_current._pos_new = self._pos_new
 
-        # Update center if better position found
-        if self.search_state == "iter":
-            self._sort_pop_best_score()
-            if self.pop_sorted[0]._score_current is not None:
-                if (
-                    self.center_score is None
-                    or self.pop_sorted[0]._score_current > self.center_score
-                ):
-                    self.center_pos = self.pop_sorted[0]._pos_current
-                    self.center_score = self.pop_sorted[0]._score_current
-
         # Delegate to current particle's evaluate
         self.p_current._evaluate(score_new)
+
+        if self.search_state == "iter":
+            self._update_center_from_personal_best()
 
         # Update global tracking
         self._update_best(self._pos_new, score_new)
@@ -399,7 +416,7 @@ class SpiralOptimization(BasePopulationOptimizer):
         position. Otherwise a batch of size n would decay the spiral
         n times, contracting it much faster than in serial mode.
         """
-        self._sort_pop_best_score()
+        self._update_center_from_personal_best()
         positions = []
         self._batch_particle_indices = []
 
@@ -408,7 +425,7 @@ class SpiralOptimization(BasePopulationOptimizer):
             idx = (self.nth_trial + i) % len(self.particles)
             self._batch_particle_indices.append(idx)
             self.p_current = self.particles[idx]
-            self.p_current.global_pos_best = self.pop_sorted[0]._pos_current
+            self.p_current.global_pos_best = self.center_pos
             # Use the same decay factor for all positions in this batch
             self._decay_factor = saved_decay
             pos = self._compute_spiral_position()

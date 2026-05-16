@@ -4,12 +4,12 @@ Particle Swarm Optimization
 
 Particle Swarm Optimization (PSO) maintains a population of particles that move
 through the search space using velocity vectors. Each particle's velocity is
-updated at every iteration as a weighted sum of three components: its current
+updated at every iteration as a weighted sum of four components: its current
 momentum (inertia), the direction toward its own personal best position
 (cognitive term), and the direction toward the global best position found by any
-particle (social term). The resulting trajectory balances individual memory with
-collective information sharing, producing coordinated movement across the search
-space.
+particle (social term), plus a small temperature-like random vibration. The
+resulting trajectory balances individual memory with collective information
+sharing, producing coordinated movement across the search space.
 
 
 .. grid:: 2
@@ -61,6 +61,7 @@ At each iteration, velocity is updated:
     velocity = inertia * velocity
              + cognitive_weight * random * (personal_best - position)
              + social_weight * random * (global_best - position)
+             + temp_weight * random_vibration
 
 Then position is updated:
 
@@ -70,18 +71,18 @@ Then position is updated:
 
 .. note::
 
-    The three velocity components create a balance: **inertia**
-    preserves the current trajectory (momentum), **cognitive weight** pulls toward
-    each particle's own discovery (independence), and **social weight** pulls
-    toward the swarm's best (cooperation). The ratio between cognitive and social
-    weights determines whether the swarm behaves more like independent explorers
-    or a coordinated team.
+    The directed velocity components create a balance: **inertia**
+    preserves the current trajectory (momentum), **cognitive weight** pulls
+    toward each particle's own discovery (independence), and **social weight**
+    pulls toward the swarm's best (cooperation). ``temp_weight`` adds bounded
+    undirected vibration, which keeps trajectories from becoming completely
+    rigid.
 
 .. figure:: /_static/diagrams/particle_swarm_flowchart.svg
     :alt: Particle Swarm algorithm flowchart
     :align: center
 
-    The PSO loop: update velocity from three components, move particle,
+    The PSO loop: update velocity from its weighted components, move particle,
     evaluate, and update personal and global bests.
 
 
@@ -115,7 +116,7 @@ Parameters
     * - ``temp_weight``
       - float
       - 0.2
-      - Random exploration weight
+      - Bounded random vibration added to velocity
 
 
 Tuning the Weights
@@ -126,6 +127,7 @@ The balance between weights controls swarm behavior:
 - **High inertia**: Particles maintain momentum, slower to change direction
 - **High cognitive**: Particles prefer their own discoveries
 - **High social**: Particles quickly converge to global best
+- **High temperature**: Particles receive stronger random vibration
 
 .. code-block:: python
 
@@ -252,9 +254,9 @@ Trade-offs
   convergence but risk of premature convergence.
 - **Computational overhead**: Low per particle. Total cost scales linearly
   with population size.
-- **Parameter sensitivity**: The three weights (inertia, cognitive, social)
-  interact with each other. The default balanced values (0.5, 0.5, 0.5) work
-  well for most problems.
+- **Parameter sensitivity**: The weights (inertia, cognitive, social,
+  temperature) interact with each other. The default values work well for most
+  problems.
 
 
 Related Algorithms

@@ -240,6 +240,13 @@ class TestSpiralOptimizationAPI:
         opt = SpiralOptimization(SEARCH_SPACE, rotation_degrees=45.0)
         opt.search(objective, n_iter=1, verbosity=False)
 
+    def test_default_parameters_match_documented_values(self):
+        """Test public wrapper defaults match core optimizer and docs."""
+        opt = SpiralOptimization(SEARCH_SPACE)
+
+        assert opt.spiral_radius == 1.0
+        assert opt.rotation_degrees == 90.0
+
     def test_all_parameters_explicit(self):
         """Test all parameters can be set explicitly."""
         opt = SpiralOptimization(

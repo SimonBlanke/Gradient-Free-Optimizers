@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import random
 
-from gradient_free_optimizers._array_backend import array
+from gradient_free_optimizers._array_backend import array, zeros
 
 from ..local_opt import HillClimbingOptimizer
 
@@ -31,6 +31,7 @@ class Particle(HillClimbingOptimizer):
         v = inertia * v
           + cognitive * r1 * (personal_best - position)
           + social * r2 * (global_best - position)
+          + temp_weight * r3
 
     Parameters
     ----------
@@ -43,7 +44,7 @@ class Particle(HillClimbingOptimizer):
     social_weight : float, default=0.5
         Weight for attraction toward global best.
     temp_weight : float, default=0.2
-        Temperature weight for exploration randomness.
+        Weight for small random velocity perturbations.
     rand_rest_p : float, default=0.03
         Probability of random restart.
     """
@@ -119,13 +120,15 @@ class Particle(HillClimbingOptimizer):
         """Compute velocity update and move particle.
 
         The velocity update follows the standard PSO equation:
-            v = w*v + c1*r1*(pbest - pos) + c2*r2*(gbest - pos)
+            v = w*v + c1*r1*(pbest - pos) + c2*r2*(gbest - pos) + c3*r3
 
         Where:
             w = inertia (momentum term)
             c1 = cognitive_weight (attraction to personal best)
             c2 = social_weight (attraction to global best)
+            c3 = temp_weight (random vibration)
             r1, r2 = random values in [0, 1]
+            r3 = random vector in [-1, 1]
 
         Returns
         -------
@@ -164,8 +167,11 @@ class Particle(HillClimbingOptimizer):
         # Social term: attract toward global best
         C = self.social_weight * r2 * (global_pos_best - pos_current)
 
+        # Temperature term: add a bounded random vibration in position space
+        D = self._compute_temperature_vibration(len(pos_current))
+
         # Update velocity
-        self.velo = A + B + C
+        self.velo = A + B + C + D
 
         # Apply velocity to get new position
         pos_new = self._move_part(pos_current, self.velo)
@@ -174,6 +180,15 @@ class Particle(HillClimbingOptimizer):
         self._pos_new = pos_new
 
         return pos_new
+
+    def _compute_temperature_vibration(self, n_dims):
+        """Compute the stochastic velocity perturbation controlled by temp_weight."""
+        if self.temp_weight == 0:
+            return zeros(n_dims)
+
+        return self.temp_weight * array(
+            [random.uniform(-1.0, 1.0) for _ in range(n_dims)]
+        )
 
     def move_climb_typed(self, pos_new):
         """Fallback movement using hill climbing when constraints violated."""

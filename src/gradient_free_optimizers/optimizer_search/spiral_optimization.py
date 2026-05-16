@@ -244,8 +244,8 @@ class SpiralOptimization(_SpiralOptimization, Search):
         boundary: str = "clip",
         population: int = 10,
         decay_rate: float = 0.99,
-        spiral_radius: float = 0.8,
-        rotation_degrees: float = 45.0,
+        spiral_radius: float = 1.0,
+        rotation_degrees: float = 90.0,
     ):
         if initialize is None:
             initialize = get_default_initialize()

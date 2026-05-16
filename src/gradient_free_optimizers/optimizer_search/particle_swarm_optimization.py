@@ -20,11 +20,12 @@ class ParticleSwarmOptimizer(_ParticleSwarmOptimizer, Search):
     the search space influenced by its own best-known position (cognitive
     component) and the swarm's best-known position (social component).
 
-    The velocity update equation balances three components: inertia (tendency
+    The velocity update equation balances four components: inertia (tendency
     to continue in the current direction), cognitive attraction (pull toward
-    personal best), and social attraction (pull toward global best). This
-    creates emergent optimization behavior where particles explore promising
-    regions while sharing information about good solutions.
+    personal best), social attraction (pull toward global best), and a bounded
+    temperature-like random vibration. This creates emergent optimization
+    behavior where particles explore promising regions while sharing
+    information about good solutions.
 
     The algorithm is well-suited for:
 
@@ -33,10 +34,11 @@ class ParticleSwarmOptimizer(_ParticleSwarmOptimizer, Search):
     - Problems where gradient information is unavailable
     - Real-time optimization where quick convergence is needed
 
-    The balance between `cognitive_weight` and `social_weight` controls
-    exploration vs exploitation. Higher cognitive weight promotes individual
-    exploration, while higher social weight accelerates convergence toward
-    the best-known solution.
+    The balance between `cognitive_weight` and `social_weight` controls the
+    directed part of exploration vs exploitation. Higher cognitive weight
+    promotes individual exploration, while higher social weight accelerates
+    convergence toward the best-known solution. `temp_weight` adds small
+    undirected vibration to avoid completely rigid trajectories.
 
     Parameters
     ----------
@@ -196,9 +198,9 @@ class ParticleSwarmOptimizer(_ParticleSwarmOptimizer, Search):
         faster but potentially premature convergence.
 
     temp_weight : float, default=0.2
-        Temperature-like randomness weight added to the velocity update.
-        Introduces stochastic perturbation to help particles escape local
-        optima.
+        Temperature-like random vibration added to the velocity update.
+        The perturbation is sampled per dimension from ``[-temp_weight,
+        temp_weight]`` in internal position coordinates.
 
         - ``0.0``: No random perturbation (deterministic velocity update).
         - ``0.1-0.3``: Mild randomness, small perturbations (default

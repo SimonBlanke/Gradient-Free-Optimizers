@@ -57,6 +57,37 @@ def test_pso_sorts_particles_by_personal_best_score():
     assert opt.pop_sorted[0] is first
 
 
+def test_pso_temp_weight_adds_velocity_vibration():
+    search_space = {"x": (-10.0, 10.0)}
+
+    def prepared_optimizer(temp_weight):
+        opt = ParticleSwarmOptimizer(
+            search_space,
+            initialize={"warm_start": [{"x": 0.0}]},
+            population=1,
+            random_state=3,
+            inertia=0.0,
+            cognitive_weight=0.0,
+            social_weight=0.0,
+            temp_weight=temp_weight,
+        )
+        particle = opt.particles[0]
+        position = np.array([0.0])
+        particle._pos_current = position.copy()
+        particle._pos_best = position.copy()
+        particle.global_pos_best = position.copy()
+        particle.velo = position.copy()
+        opt.p_current = particle
+        return opt
+
+    no_vibration = prepared_optimizer(temp_weight=0.0)._compute_pso_position()
+    vibration = prepared_optimizer(temp_weight=1.0)._compute_pso_position()
+
+    assert list(no_vibration) == [0.0]
+    assert vibration[0] != pytest.approx(0.0)
+    assert -1.0 <= vibration[0] <= 1.0
+
+
 def test_spiral_1d_rotation_flips_vector_sign():
     assert list(rotation(1, np.array([5.0]))) == [-5.0]
 
@@ -104,3 +135,22 @@ def test_spiral_movement_uses_normalized_coordinates():
 
     assert list(unit_opt._compute_spiral_position()) == [0.0, 1.0]
     assert list(wide_opt._compute_spiral_position()) == [0.0, 100.0]
+
+
+def test_spiral_updates_center_after_evaluating_new_best():
+    search_space = {"x": np.arange(-10, 11)}
+    opt = SpiralOptimization(
+        search_space,
+        initialize={"warm_start": [{"x": 10}, {"x": 5}]},
+        population=2,
+        random_state=0,
+        decay_rate=1.0,
+        spiral_radius=1.0,
+    )
+
+    opt.search(objective_function, n_iter=3, memory=False, verbosity=False)
+
+    assert opt.best_para == {"x": 0}
+    assert opt.best_score == 0.0
+    assert list(opt.conv.position2value(opt.center_pos)) == [0]
+    assert opt.center_score == 0.0

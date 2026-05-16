@@ -31,7 +31,7 @@ class ParticleSwarmOptimizer(_ParticleSwarmOptimizer, AskTell):
     social_weight : float, default=0.5
         Attraction strength toward the swarm's global best.
     temp_weight : float, default=0.2
-        Temperature-like randomness weight added to velocity update.
+        Bounded random vibration added to the velocity update.
     """
 
     def __init__(

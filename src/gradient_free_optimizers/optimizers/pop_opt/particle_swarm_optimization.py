@@ -35,6 +35,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         v = inertia * v
           + cognitive_weight * r1 * (personal_best - position)
           + social_weight * r2 * (global_best - position)
+          + temp_weight * r3
 
     Template Method Pattern:
         This optimizer follows the Template Method Pattern by implementing
@@ -65,7 +66,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
     social_weight : float, default=0.5
         Weight for attraction toward global best position.
     temp_weight : float, default=0.2
-        Temperature weight for exploration randomness.
+        Weight for small random velocity perturbations.
     """
 
     name = "Particle Swarm Optimization"
@@ -212,6 +213,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
             v = inertia * v
               + cognitive_weight * r1 * (personal_best - position)
               + social_weight * r2 * (global_best - position)
+              + temp_weight * r3
 
         Returns
         -------
@@ -245,11 +247,23 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         # Social term: attract toward global best
         C = self.social_weight * r2 * (global_pos_best - pos_current)
 
+        # Temperature term: add a bounded random vibration in position space
+        D = self._compute_temperature_vibration(len(pos_current))
+
         # Update velocity
-        self.p_current.velo = A + B + C
+        self.p_current.velo = A + B + C + D
 
         # Compute new position (will be clipped by CoreOptimizer)
         return pos_current + self.p_current.velo
+
+    def _compute_temperature_vibration(self, n_dims: int) -> ndarray:
+        """Compute the stochastic velocity perturbation controlled by temp_weight."""
+        if self.temp_weight == 0:
+            return zeros(n_dims)
+
+        return self.temp_weight * array(
+            [random.uniform(-1.0, 1.0) for _ in range(n_dims)]
+        )
 
     def _iterate_continuous_batch(self) -> ndarray:
         """Generate continuous values using PSO velocity update.
