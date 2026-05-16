@@ -1,6 +1,7 @@
 """Regression tests for PSO and Spiral optimizer state updates."""
 
 import numpy as np
+import pytest
 
 from gradient_free_optimizers import ParticleSwarmOptimizer, SpiralOptimization
 from gradient_free_optimizers.optimizers.pop_opt._spiral import rotation
@@ -58,6 +59,20 @@ def test_pso_sorts_particles_by_personal_best_score():
 
 def test_spiral_1d_rotation_flips_vector_sign():
     assert list(rotation(1, np.array([5.0]))) == [-5.0]
+
+
+def test_spiral_2d_rotation_degrees_controls_angle():
+    rotated = rotation(2, np.array([1.0, 0.0]), rotation_degrees=45.0)
+
+    assert list(rotated) == pytest.approx([np.sqrt(0.5), np.sqrt(0.5)])
+
+
+def test_spiral_high_dimensional_rotation_preserves_norm_and_angle():
+    vector = np.array([1.0, 1.0, 1.0])
+    rotated = np.array(rotation(3, vector, rotation_degrees=90.0))
+
+    assert np.linalg.norm(rotated) == pytest.approx(np.linalg.norm(vector))
+    assert np.dot(vector, rotated) == pytest.approx(0.0)
 
 
 def test_spiral_movement_uses_normalized_coordinates():

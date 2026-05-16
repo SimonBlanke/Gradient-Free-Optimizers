@@ -235,6 +235,11 @@ class TestSpiralOptimizationAPI:
         opt = SpiralOptimization(SEARCH_SPACE, spiral_radius=0.8)
         opt.search(objective, n_iter=1, verbosity=False)
 
+    def test_rotation_degrees_parameter(self):
+        """Test rotation_degrees parameter exists and accepts float."""
+        opt = SpiralOptimization(SEARCH_SPACE, rotation_degrees=45.0)
+        opt.search(objective, n_iter=1, verbosity=False)
+
     def test_all_parameters_explicit(self):
         """Test all parameters can be set explicitly."""
         opt = SpiralOptimization(
@@ -247,6 +252,7 @@ class TestSpiralOptimizationAPI:
             population=10,
             decay_rate=0.99,
             spiral_radius=1.0,
+            rotation_degrees=90.0,
         )
         opt.search(objective, n_iter=1, verbosity=False)
 

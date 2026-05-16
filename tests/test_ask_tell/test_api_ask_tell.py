@@ -249,6 +249,7 @@ OPTIMIZER_CONFIGS = [
             "population": 5,
             "decay_rate": 0.95,
             "spiral_radius": 0.8,
+            "rotation_degrees": 45.0,
         },
     ),
     (

@@ -41,7 +41,7 @@ class SpiralOptimization(BasePopulationOptimizer):
         - center is the global best position
         - radius is a dimensionless normalized search radius
         - decay contracts over time (decay_rate^iteration)
-        - rotation creates the spiral trajectory
+        - rotation_degrees controls the angular stride of the spiral trajectory
 
     Template Method Pattern:
         This optimizer follows the Template Method Pattern by implementing
@@ -70,6 +70,8 @@ class SpiralOptimization(BasePopulationOptimizer):
         Values closer to 1 cause slower contraction (more exploration).
     spiral_radius : float, default=1.0
         Initial radius multiplier in normalized search-space coordinates.
+    rotation_degrees : float, default=90.0
+        Rotation angle applied to the normalized offset at each step.
     """
 
     name = "Spiral Optimization"
@@ -91,6 +93,7 @@ class SpiralOptimization(BasePopulationOptimizer):
         population: int = 10,
         decay_rate: float = 0.99,
         spiral_radius: float = 1.0,
+        rotation_degrees: float = 90.0,
     ) -> None:
         super().__init__(
             search_space=search_space,
@@ -105,6 +108,7 @@ class SpiralOptimization(BasePopulationOptimizer):
 
         self.decay_rate = decay_rate
         self.spiral_radius = spiral_radius
+        self.rotation_degrees = rotation_degrees
 
         # Create population of spiral particles
         self.particles = self._create_population(Spiral)
@@ -114,6 +118,7 @@ class SpiralOptimization(BasePopulationOptimizer):
         for p in self.particles:
             p.decay_rate = self.decay_rate
             p.spiral_radius = self.spiral_radius
+            p.rotation_degrees = self.rotation_degrees
             p.decay_factor = self.spiral_radius
 
         # Center position (best found so far)
@@ -138,6 +143,7 @@ class SpiralOptimization(BasePopulationOptimizer):
         self.p_current = self.particles[nth_pop]
         self.p_current.decay_rate = self.decay_rate
         self.p_current.spiral_radius = self.spiral_radius
+        self.p_current.rotation_degrees = self.rotation_degrees
 
         # Track position on current particle
         self.p_current._pos_new = position.copy()
@@ -226,7 +232,11 @@ class SpiralOptimization(BasePopulationOptimizer):
         center_norm = self._normalize_position(center)
         current_norm = self._normalize_position(current)
 
-        rot = rotation(len(center_norm), current_norm - center_norm)
+        rot = rotation(
+            len(center_norm),
+            current_norm - center_norm,
+            rotation_degrees=self.rotation_degrees,
+        )
         new_norm = center_norm + self._decay_factor * rot
 
         return self._denormalize_position(new_norm)

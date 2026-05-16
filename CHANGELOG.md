@@ -11,6 +11,7 @@ For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke
 
 ### Changed
 - Spiral Optimization now computes movement in normalized search-space coordinates via the explicit `spiral_radius` parameter instead of using search-space scale divided by a fixed constant
+- Spiral Optimization now exposes `rotation_degrees` to control the angular stride of each spiral step
 
 ### Fixed
 - Particle Swarm Optimization now updates each particle's current position and personal best after every evaluated move instead of inheriting hill-climbing acceptance behavior

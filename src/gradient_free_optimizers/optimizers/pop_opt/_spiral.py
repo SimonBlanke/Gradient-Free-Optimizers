@@ -11,21 +11,23 @@ combining rotation and contraction to balance exploration and exploitation.
 
 from __future__ import annotations
 
+import math
+
 from gradient_free_optimizers._array_backend import array, zeros
 from gradient_free_optimizers._dimension_types import DimensionType
 
 from ..local_opt import HillClimbingOptimizer
 
 
-def rotation(n_dim, vector):
-    """Build rotation matrix and apply to vector.
+def rotation(n_dim, vector, rotation_degrees=90.0):
+    """Rotate a vector by a configurable angle.
 
-    Creates a rotation matrix R of shape (n_dim, n_dim) where:
-    - Identity shifted down by one row (bottom-left block)
-    - -1 in top-right corner
+    In two dimensions this is the usual planar rotation. In higher dimensions,
+    the vector is rotated in a deterministic plane spanned by itself and a
+    perpendicular direction derived from the least-aligned coordinate axis.
 
-    This creates a cyclic permutation with sign flip, causing
-    spiral-like behavior when applied repeatedly.
+    A one-dimensional vector has no rotation plane, so it keeps the historical
+    sign-flip behavior.
 
     Parameters
     ----------
@@ -33,27 +35,55 @@ def rotation(n_dim, vector):
         Number of dimensions.
     vector : np.ndarray
         Vector to rotate.
+    rotation_degrees : float, default=90.0
+        Rotation angle in degrees.
 
     Returns
     -------
     np.ndarray
         Rotated vector.
     """
+    vector = array(vector)
+
     if n_dim == 1:
-        return -array(vector)
+        return -vector
 
-    # Build rotation matrix
-    # R has shape (n_dim, n_dim)
-    # It's the identity matrix (n_dim-1 x n_dim-1) padded with zeros:
-    # - 1 row of zeros on top
-    # - 1 column of zeros on right
-    # - then R[0, n_dim-1] = -1
-    R = zeros((n_dim, n_dim))
-    for i in range(n_dim - 1):
-        R[i + 1, i] = 1.0
-    R[0, n_dim - 1] = -1.0
+    angle = math.radians(rotation_degrees)
+    cos_angle = math.cos(angle)
+    sin_angle = math.sin(angle)
 
-    return R @ array(vector)
+    if n_dim == 2:
+        x, y = float(vector[0]), float(vector[1])
+        return array(
+            [
+                cos_angle * x - sin_angle * y,
+                sin_angle * x + cos_angle * y,
+            ]
+        )
+
+    norm_sq = sum(float(vector[i]) ** 2 for i in range(n_dim))
+    if norm_sq == 0:
+        return zeros(n_dim)
+
+    norm = math.sqrt(norm_sq)
+    unit = [float(vector[i]) / norm for i in range(n_dim)]
+    anchor_idx = min(range(n_dim), key=lambda idx: abs(unit[idx]))
+
+    projection = unit[anchor_idx]
+    perpendicular = [
+        (1.0 if i == anchor_idx else 0.0) - projection * unit[i] for i in range(n_dim)
+    ]
+    perpendicular_norm = math.sqrt(sum(value**2 for value in perpendicular))
+    if perpendicular_norm == 0:
+        return array([cos_angle * float(vector[i]) for i in range(n_dim)])
+
+    perpendicular_unit = [value / perpendicular_norm for value in perpendicular]
+    return array(
+        [
+            norm * (cos_angle * unit[i] + sin_angle * perpendicular_unit[i])
+            for i in range(n_dim)
+        ]
+    )
 
 
 class Spiral(HillClimbingOptimizer):
@@ -74,6 +104,8 @@ class Spiral(HillClimbingOptimizer):
         Search space definition.
     decay_rate : float, default=0.99
         Rate at which spiral radius contracts per iteration.
+    rotation_degrees : float, default=90.0
+        Rotation angle applied to the normalized offset at each step.
     """
 
     def __init__(self, *args, **kwargs):
@@ -82,6 +114,7 @@ class Spiral(HillClimbingOptimizer):
 
         self.decay_rate = None
         self.spiral_radius = 1.0
+        self.rotation_degrees = 90.0
         self.decay_factor = self.spiral_radius
 
     def _move_part(self, pos, velo):
@@ -115,10 +148,12 @@ class Spiral(HillClimbingOptimizer):
         """Move particle in spiral pattern toward center.
 
         The spiral equation is:
-            new_pos = center + decay * rotation(current - center)
+            new_pos = denormalize(
+                center_norm + radius * decay * rotation(current_norm - center_norm)
+            )
 
         The decay factor contracts the spiral over time, while
-        the rotation creates the spiral trajectory.
+        the configured rotation angle creates the spiral trajectory.
 
         Parameters
         ----------
@@ -145,7 +180,11 @@ class Spiral(HillClimbingOptimizer):
         center_norm = self._normalize_position(center)
         current_norm = self._normalize_position(current)
 
-        rot = rotation(len(center_norm), current_norm - center_norm)
+        rot = rotation(
+            len(center_norm),
+            current_norm - center_norm,
+            rotation_degrees=self.rotation_degrees,
+        )
         new_norm = center_norm + self.decay_factor * rot
         new_pos = self._denormalize_position(new_norm)
 

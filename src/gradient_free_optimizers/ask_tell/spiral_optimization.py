@@ -28,6 +28,8 @@ class SpiralOptimization(_SpiralOptimization, AskTell):
         Controls how quickly the spiral radius contracts.
     spiral_radius : float, default=1.0
         Initial radius multiplier in normalized search-space coordinates.
+    rotation_degrees : float, default=90.0
+        Rotation angle in degrees applied to each normalized spiral step.
     """
 
     def __init__(
@@ -41,6 +43,7 @@ class SpiralOptimization(_SpiralOptimization, AskTell):
         population: int = 10,
         decay_rate: float = 0.99,
         spiral_radius: float = 1.0,
+        rotation_degrees: float = 90.0,
     ):
         if constraints is None:
             constraints = []
@@ -55,6 +58,7 @@ class SpiralOptimization(_SpiralOptimization, AskTell):
             population=population,
             decay_rate=decay_rate,
             spiral_radius=spiral_radius,
+            rotation_degrees=rotation_degrees,
         )
 
         self._process_initial_evaluations(initial_evaluations)

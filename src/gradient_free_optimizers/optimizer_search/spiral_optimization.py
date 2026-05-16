@@ -35,8 +35,9 @@ class SpiralOptimization(_SpiralOptimization, Search):
 
     The `spiral_radius` parameter controls the initial normalized movement
     radius, while `decay_rate` controls how quickly that radius contracts.
-    Values below 1 for `decay_rate` cause contraction, while values above 1
-    cause expansion.
+    The `rotation_degrees` parameter controls the angular stride of each
+    spiral step. Values below 1 for `decay_rate` cause contraction, while
+    values above 1 cause expansion.
 
     Parameters
     ----------
@@ -178,6 +179,12 @@ class SpiralOptimization(_SpiralOptimization, Search):
         The spiral step is computed after mapping every dimension to
         ``[0, 1]``, so this parameter is independent of the original
         units and bounds of each dimension.
+    rotation_degrees : float, default=90.0
+        Rotation angle in degrees applied to each normalized spiral step.
+        In two dimensions, 90 degrees reproduces the historical square-like
+        path. Smaller angles produce smoother spiral paths. In higher
+        dimensions, the optimizer rotates in a deterministic plane derived
+        from the particle's current offset from the center.
 
     Notes
     -----
@@ -188,7 +195,7 @@ class SpiralOptimization(_SpiralOptimization, Search):
 
         u_{t+1} = R(\\theta) \\cdot r \\cdot (u_t - u_{\\text{best}}) + u_{\\text{best}}
 
-    where :math:`R(\\theta)` is a rotation matrix, :math:`r` is the
+    where :math:`R(\\theta)` is the configured rotation, :math:`r` is the
     contracted normalized spiral radius, :math:`u_t` is the normalized
     current position, and :math:`u_{\\text{best}}` is the normalized global
     best position.
@@ -237,7 +244,8 @@ class SpiralOptimization(_SpiralOptimization, Search):
         boundary: str = "clip",
         population: int = 10,
         decay_rate: float = 0.99,
-        spiral_radius: float = 1.0,
+        spiral_radius: float = 0.8,
+        rotation_degrees: float = 45.0,
     ):
         if initialize is None:
             initialize = get_default_initialize()
@@ -255,4 +263,5 @@ class SpiralOptimization(_SpiralOptimization, Search):
             population=population,
             decay_rate=decay_rate,
             spiral_radius=spiral_radius,
+            rotation_degrees=rotation_degrees,
         )

@@ -43,9 +43,10 @@ structure is effective when the global optimum lies within a broad basin of
 attraction, because the spiral systematically covers the surrounding region. On
 multi-modal landscapes with many isolated basins, PSO or Differential Evolution
 will typically perform better due to their stochastic exploration. Spiral
-Optimization has two movement parameters: ``spiral_radius`` controls the initial
-normalized search radius, while ``decay_rate`` controls how quickly that radius
-contracts.
+Optimization has three movement parameters: ``spiral_radius`` controls the
+initial normalized search radius, ``decay_rate`` controls how quickly that
+radius contracts, and ``rotation_degrees`` controls the angular stride of the
+spiral path.
 
 
 Algorithm
@@ -62,7 +63,9 @@ Each particle follows a spiral path toward the global best:
 
 .. code-block:: text
 
-    new_norm = center_norm + radius_t * rotation_matrix * (current_norm - center_norm)
+    offset_norm = current_norm - center_norm
+    rotated_offset = rotate(offset_norm, rotation_degrees)
+    new_norm = center_norm + radius_t * rotated_offset
     new_pos = denormalize(new_norm)
 
 .. note::
@@ -100,6 +103,28 @@ Parameters
       - float
       - 1.0
       - Initial radius multiplier in normalized search-space coordinates
+    * - ``rotation_degrees``
+      - float
+      - 90.0
+      - Angle applied to the normalized offset at each spiral step
+
+
+Rotation Angle
+--------------
+
+The default ``rotation_degrees=90.0`` preserves the historical behavior in two
+dimensions. With slow or no contraction, this produces a square-like path around
+the center because four 90 degree rotations return to the original direction.
+Lower values such as 45 or 30 degrees produce smoother spiral paths because the
+particle takes more angular steps before completing a full turn.
+
+In more than two dimensions there is no single natural "90 degree turn" around a
+point. Spiral Optimization therefore derives a deterministic rotation plane from
+the current offset vector: it keeps the offset as one axis of the plane and
+constructs a perpendicular direction from the coordinate axis least aligned with
+that offset. The particle is then rotated inside that plane. This keeps the
+rotation reproducible and norm-preserving without introducing random orientation
+choices.
 
 
 Example
@@ -123,6 +148,7 @@ Example
         population=15,
         decay_rate=0.98,
         spiral_radius=1.0,
+        rotation_degrees=45.0,
     )
 
     opt.search(objective, n_iter=200)
@@ -169,6 +195,7 @@ best, while PSO balances personal and global best attractions.
         population=25,
         decay_rate=0.995,
         spiral_radius=1.0,
+        rotation_degrees=60.0,
     )
 
     opt.search(schwefel_3d, n_iter=500)
@@ -182,12 +209,14 @@ Trade-offs
 - **Exploration vs. exploitation**: Controlled by ``spiral_radius`` and
   ``decay_rate``. Larger initial radii explore more broadly; values close to
   1.0 for ``decay_rate`` give slow contraction, while lower values contract
-  quickly.
+  quickly. ``rotation_degrees`` controls whether the path is coarse and
+  polygonal or smoother.
 - **Computational overhead**: Low. Each particle update is a simple matrix
   multiplication.
 - **Parameter sensitivity**: ``spiral_radius`` controls the initial movement
   scale in normalized coordinates. ``decay_rate`` controls how quickly that
-  movement shrinks. Population size affects coverage of the spiral region.
+  movement shrinks. ``rotation_degrees`` controls the angular resolution of the
+  spiral path. Population size affects coverage of the spiral region.
 
 
 Related Algorithms
