@@ -17,7 +17,9 @@ For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke
 - Particle Swarm Optimization now updates each particle's current position and personal best after every evaluated move instead of inheriting hill-climbing acceptance behavior
 - Particle Swarm Optimization now selects the swarm best from particle personal-best scores instead of current scores
 - Particle Swarm Optimization now applies `temp_weight` as a bounded random velocity vibration instead of accepting it as a no-op parameter
+- Particle Swarm Optimization now rolls back non-evaluated velocity updates during constraint retries so rejected candidates do not corrupt particle momentum
 - Spiral Optimization now updates its center after the evaluated particle state is current and derives the center from particle personal-best scores
+- Spiral Optimization now regenerates constraint-retry candidates instead of repeatedly checking the same cached position, while rolling back retry-only decay when random fallback is used
 - The public Spiral Optimization wrapper now uses the documented defaults `spiral_radius=1.0` and `rotation_degrees=90.0`
 - One-dimensional Spiral Optimization rotation now flips the input vector sign instead of returning a constant offset
 - Differential Evolution now applies target-wise greedy replacement, preserving the current target vector when a trial vector scores worse
@@ -27,6 +29,7 @@ For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke
 - Added regression tests for PSO particle state updates, PSO personal-best ordering, and one-dimensional spiral rotation
 - Added regression coverage for scale-invariant Spiral Optimization movement
 - Added regression coverage for PSO temperature vibration and Spiral Optimization center updates after newly found best positions
+- Added regression coverage for transactional PSO and Spiral Optimization constraint retries
 - Added regression coverage for Differential Evolution and Genetic Algorithm population replacement semantics
 
 ## [1.13.0] - 2026-05-15

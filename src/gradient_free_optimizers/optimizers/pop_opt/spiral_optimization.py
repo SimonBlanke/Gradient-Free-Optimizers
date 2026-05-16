@@ -129,6 +129,8 @@ class SpiralOptimization(BasePopulationOptimizer):
         self._iteration_setup_done = False
         self._spiral_new_pos = None
         self._decay_factor = self.spiral_radius
+        self._spiral_decay_before_candidate = None
+        self._spiral_decay_before_constraint_retries = None
 
     def _on_init_pos(self, position) -> None:
         """Initialize current particle with the given position.
@@ -224,6 +226,7 @@ class SpiralOptimization(BasePopulationOptimizer):
         self.p_current.global_pos_best = self.center_pos
 
         # Compute full spiral position
+        self._spiral_decay_before_candidate = self._decay_factor
         self._spiral_new_pos = self._compute_spiral_position()
 
         self._iteration_setup_done = True
@@ -319,6 +322,28 @@ class SpiralOptimization(BasePopulationOptimizer):
 
         return array(position)
 
+    def _clear_spiral_candidate_cache(self) -> None:
+        self._iteration_setup_done = False
+        self._spiral_new_pos = None
+
+    def _on_constraint_retry(self, rejected_position) -> None:
+        if self._spiral_decay_before_constraint_retries is None:
+            self._spiral_decay_before_constraint_retries = (
+                self._spiral_decay_before_candidate
+            )
+
+        self._clear_spiral_candidate_cache()
+
+    def _on_constraint_retry_fallback(self) -> None:
+        if self._spiral_decay_before_constraint_retries is not None:
+            self._decay_factor = self._spiral_decay_before_constraint_retries
+
+        self._clear_spiral_candidate_cache()
+
+    def _on_constraint_retry_success(self, accepted_position) -> None:
+        self._spiral_decay_before_constraint_retries = None
+        self._spiral_decay_before_candidate = None
+
     def _iterate_continuous_batch(self) -> ndarray:
         """Generate continuous values using spiral movement.
 
@@ -408,6 +433,8 @@ class SpiralOptimization(BasePopulationOptimizer):
         # Reset iteration setup for next iteration
         self._iteration_setup_done = False
         self._spiral_new_pos = None
+        self._spiral_decay_before_candidate = None
+        self._spiral_decay_before_constraint_retries = None
 
     def _iterate_batch(self, n):
         """Generate n positions by cycling through spiral particles.

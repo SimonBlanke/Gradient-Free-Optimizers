@@ -88,6 +88,44 @@ def test_pso_temp_weight_adds_velocity_vibration():
     assert -1.0 <= vibration[0] <= 1.0
 
 
+def test_pso_constraint_retry_regenerates_candidate_and_rolls_back_velocity():
+    opt = ParticleSwarmOptimizer(
+        {"x": (-10.0, 10.0)},
+        initialize={"warm_start": [{"x": 0.0}]},
+        population=1,
+        random_state=3,
+        inertia=1.0,
+        cognitive_weight=0.0,
+        social_weight=0.0,
+        temp_weight=1.0,
+    )
+    particle = opt.particles[0]
+    position = np.array([0.0])
+    particle._pos_current = position.copy()
+    particle._pos_best = position.copy()
+    particle._score_current = 0.0
+    particle._score_best = 0.0
+    particle.global_pos_best = position.copy()
+    particle.velo = position.copy()
+
+    vibrations = [np.array([-1.0]), np.array([1.0])]
+    opt._compute_temperature_vibration = lambda n_dims: vibrations.pop(0)
+
+    checked_values = []
+
+    def not_in_constraint(candidate):
+        value = float(opt.conv.position2value(candidate)[0])
+        checked_values.append(value)
+        return value > 0.5
+
+    opt.conv.not_in_constraint = not_in_constraint
+    candidate = opt._iterate()
+
+    assert checked_values == [-1.0, 1.0]
+    assert list(candidate) == [1.0]
+    assert list(particle.velo) == [1.0]
+
+
 def test_spiral_1d_rotation_flips_vector_sign():
     assert list(rotation(1, np.array([5.0]))) == [-5.0]
 
@@ -154,3 +192,66 @@ def test_spiral_updates_center_after_evaluating_new_best():
     assert opt.best_score == 0.0
     assert list(opt.conv.position2value(opt.center_pos)) == [0]
     assert opt.center_score == 0.0
+
+
+def test_spiral_constraint_retry_regenerates_with_contracted_decay():
+    opt = SpiralOptimization(
+        {"x": (-10.0, 10.0)},
+        initialize={"warm_start": [{"x": 10.0}]},
+        population=1,
+        random_state=0,
+        decay_rate=0.5,
+        spiral_radius=1.0,
+    )
+    particle = opt.particles[0]
+    particle._pos_current = np.array([10.0])
+    particle._pos_best = np.array([0.0])
+    particle._score_current = 0.0
+    particle._score_best = 0.0
+    opt.center_pos = np.array([0.0])
+    opt.center_score = 0.0
+    opt._decay_factor = 1.0
+
+    checked_values = []
+
+    def not_in_constraint(candidate):
+        value = float(opt.conv.position2value(candidate)[0])
+        checked_values.append(value)
+        return value > -3.0
+
+    opt.conv.not_in_constraint = not_in_constraint
+    candidate = opt._iterate()
+
+    assert checked_values == [-5.0, -2.5]
+    assert list(candidate) == [-2.5]
+    assert opt._decay_factor == 0.25
+
+
+def test_spiral_constraint_random_fallback_does_not_commit_retry_decay():
+    opt = SpiralOptimization(
+        {"x": (-10.0, 10.0)},
+        initialize={"warm_start": [{"x": 10.0}]},
+        population=1,
+        random_state=0,
+        decay_rate=0.5,
+        spiral_radius=1.0,
+    )
+    particle = opt.particles[0]
+    particle._pos_current = np.array([10.0])
+    particle._pos_best = np.array([0.0])
+    particle._score_current = 0.0
+    particle._score_best = 0.0
+    opt.center_pos = np.array([0.0])
+    opt.center_score = 0.0
+    opt._decay_factor = 1.0
+    opt.init.move_random_typed = lambda: np.array([7.0])
+
+    def not_in_constraint(candidate):
+        value = float(opt.conv.position2value(candidate)[0])
+        return value == 7.0
+
+    opt.conv.not_in_constraint = not_in_constraint
+    candidate = opt._iterate()
+
+    assert list(candidate) == [7.0]
+    assert opt._decay_factor == 1.0

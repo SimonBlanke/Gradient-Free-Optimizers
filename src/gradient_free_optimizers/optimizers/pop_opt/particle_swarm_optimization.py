@@ -124,6 +124,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         # Iteration state for template method coordination
         self._iteration_setup_done = False
         self._pso_new_pos = None
+        self._pso_velocity_before_candidate = None
 
     def _on_init_pos(self, position) -> None:
         """Initialize current particle with the given position.
@@ -202,6 +203,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         self.p_current.global_pos_best = self.pop_sorted[0]._pos_best
 
         # Compute full PSO position using velocity update
+        self._pso_velocity_before_candidate = array(self.p_current.velo).copy()
         self._pso_new_pos = self._compute_pso_position()
 
         self._iteration_setup_done = True
@@ -264,6 +266,23 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         return self.temp_weight * array(
             [random.uniform(-1.0, 1.0) for _ in range(n_dims)]
         )
+
+    def _reset_rejected_constraint_candidate(self) -> None:
+        """Roll back non-evaluated PSO candidate state and clear the cache."""
+        if self._pso_velocity_before_candidate is not None:
+            self.p_current.velo = self._pso_velocity_before_candidate.copy()
+
+        self._iteration_setup_done = False
+        self._pso_new_pos = None
+
+    def _on_constraint_retry(self, rejected_position) -> None:
+        self._reset_rejected_constraint_candidate()
+
+    def _on_constraint_retry_fallback(self) -> None:
+        self._reset_rejected_constraint_candidate()
+
+    def _on_constraint_retry_success(self, accepted_position) -> None:
+        self._pso_velocity_before_candidate = None
 
     def _iterate_continuous_batch(self) -> ndarray:
         """Generate continuous values using PSO velocity update.
@@ -351,6 +370,7 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         # Reset iteration setup for next iteration
         self._iteration_setup_done = False
         self._pso_new_pos = None
+        self._pso_velocity_before_candidate = None
 
     def _iterate_batch(self, n):
         """Generate n positions by cycling through particles."""

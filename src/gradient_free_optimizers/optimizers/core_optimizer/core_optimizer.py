@@ -478,19 +478,35 @@ class CoreOptimizer(ABC):
 
         if not self.conv.not_in_constraint(clipped_pos):
             for _ in range(max_retries):
+                self._on_constraint_retry(clipped_pos)
                 clipped_pos = self._generate_position()
                 if self.conv.not_in_constraint(clipped_pos):
+                    self._on_constraint_retry_success(clipped_pos)
                     break
             else:
+                self._on_constraint_retry_fallback()
                 for _ in range(max_retries):
                     clipped_pos = self._clip_position(self.init.move_random_typed())
                     if self.conv.not_in_constraint(clipped_pos):
                         break
+                self._on_constraint_retry_success(clipped_pos)
 
         # Track as new position (property setter auto-appends)
         self._pos_new = clipped_pos
 
         return clipped_pos
+
+    def _on_constraint_retry(self, rejected_position):
+        """Hook called before regenerating after a constraint violation."""
+        pass
+
+    def _on_constraint_retry_fallback(self):
+        """Hook called before switching from optimizer retries to random fallback."""
+        pass
+
+    def _on_constraint_retry_success(self, accepted_position):
+        """Hook called after a constraint retry or fallback candidate is selected."""
+        pass
 
     def _generate_position(self):
         """Generate a single candidate position (internal helper).
