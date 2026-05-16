@@ -24,6 +24,8 @@ For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke
 - One-dimensional Spiral Optimization rotation now flips the input vector sign instead of returning a constant offset
 - Differential Evolution now applies target-wise greedy replacement, preserving the current target vector when a trial vector scores worse
 - Genetic Algorithm now preserves an individual's current state when a mutation or crossover trial scores worse, maintaining selection pressure for parent ranking
+- Evolution Strategy now uses `offspring` as the evaluated generation size and applies `replace_parents` as documented for `(mu, lambda)` versus `(mu + lambda)` selection
+- Genetic Algorithm now selects active individuals with rank-weighted pressure toward fitter population members instead of choosing uniformly after sorting
 
 ### Tests
 - Added regression tests for PSO particle state updates, PSO personal-best ordering, and one-dimensional spiral rotation
@@ -31,6 +33,7 @@ For detailed release notes, see [GitHub Releases](https://github.com/SimonBlanke
 - Added regression coverage for PSO temperature vibration and Spiral Optimization center updates after newly found best positions
 - Added regression coverage for transactional PSO and Spiral Optimization constraint retries
 - Added regression coverage for Differential Evolution and Genetic Algorithm population replacement semantics
+- Added regression coverage for Evolution Strategy generation selection and Genetic Algorithm rank-weighted selection
 
 ## [1.13.0] - 2026-05-15
 

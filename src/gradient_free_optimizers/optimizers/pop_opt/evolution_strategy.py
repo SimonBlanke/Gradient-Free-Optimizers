@@ -118,6 +118,13 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
         # Iteration state for template method coordination
         self._iteration_setup_done = False
         self._current_new_pos = None
+        self._current_candidate_sigma = None
+        self._offspring_records = []
+
+        if self.offspring < 1:
+            raise ValueError("offspring must be at least 1")
+        if self.replace_parents and self.offspring < len(self.individuals):
+            raise ValueError("replace_parents=True requires offspring >= population")
 
     def _discrete_recombination(self, parent_pos_l, crossover_rates=None):
         """Combine parent positions using discrete recombination.
@@ -152,53 +159,182 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
 
         return array(result)
 
-    def _cross(self):
-        """Perform recombination (crossover) operation.
+    def _restore_candidate_state(self, individual) -> None:
+        """Reset per-candidate mutation state after generating an offspring."""
+        if getattr(individual, "_original_epsilon", None) is not None:
+            individual.epsilon = individual._original_epsilon
+            individual._original_epsilon = None
 
-        Selects a second parent different from the current one,
-        performs discrete recombination, and assigns the result
-        to the worst individual in the population.
+        if hasattr(individual, "_iteration_setup_done"):
+            individual._iteration_setup_done = False
+        if hasattr(individual, "_use_random_restart"):
+            individual._use_random_restart = False
+
+    def _individual_sigma(self, individual):
+        """Return an individual's strategy step size when available."""
+        if hasattr(individual, "sigma"):
+            return individual.sigma
+        return getattr(individual, "epsilon", None)
+
+    def _candidate_sigma(self, individual):
+        """Return the candidate strategy step size when available."""
+        if hasattr(individual, "sigma_new"):
+            return individual.sigma_new
+        return self._individual_sigma(individual)
+
+    def _set_individual_sigma(self, individual, sigma) -> None:
+        """Set strategy step size on individuals that expose it."""
+        if sigma is None:
+            return
+
+        if hasattr(individual, "sigma"):
+            individual.sigma = sigma
+        if hasattr(individual, "sigma_new"):
+            individual.sigma_new = sigma
+
+    def _mutation_offspring(self):
+        """Generate one offspring by mutating the current parent."""
+        pos_new = self.p_current._iterate()
+        sigma_new = self._candidate_sigma(self.p_current)
+        self._restore_candidate_state(self.p_current)
+        return pos_new, sigma_new
+
+    def _cross(self):
+        """Generate one offspring by recombining the current parent.
+
+        Selects a second parent different from the current one and performs
+        discrete recombination. Population replacement is deferred until the
+        generation has collected ``offspring`` evaluated candidates.
 
         Returns
         -------
-        ndarray
-            New position from recombination.
+        tuple[ndarray, float]
+            New position from recombination and the inherited sigma.
         """
         # Select a second parent different from current
-        if self.n_ind > 2:
-            available = [i for i in range(self.n_ind - 1) if i != self.rnd_int]
-        else:
-            available = [i for i in range(self.n_ind) if i != self.rnd_int]
+        available = [
+            i
+            for i, individual in enumerate(self.pop_sorted)
+            if i != self.rnd_int and individual._pos_current is not None
+        ]
 
         if not available:
-            # Fallback to mutation via individual's iterate
-            return self.p_current._iterate()
+            # Fallback to mutation if recombination cannot be formed.
+            return self._mutation_offspring()
 
         rnd_int2 = random.choice(available)
 
         p_sec = self.pop_sorted[rnd_int2]
-        p_worst = self.pop_sorted[-1]
 
         # Guard against None positions
         if self.p_current._pos_current is None or p_sec._pos_current is None:
-            return self.p_current._iterate()
+            return self._mutation_offspring()
 
         # Recombine the two parents
         two_best_pos = [self.p_current._pos_current, p_sec._pos_current]
         pos_new = self._discrete_recombination(two_best_pos)
 
-        # Assign to worst individual
-        self.p_current = p_worst
-        p_worst._pos_new = pos_new  # Property setter auto-appends
-
         # Handle constraints
         if not self.conv.not_in_constraint(pos_new):
             pos_new = self.p_current.move_climb_typed(pos_new)
-            self.p_current._pos_new = pos_new
-            if self.p_current._pos_new_list:
-                self.p_current._pos_new_list[-1] = pos_new
 
-        return pos_new
+        pos_new = self._clip_position(
+            pos_new,
+            reference_position=self.p_current._pos_current,
+        )
+        self.p_current._pos_new = pos_new
+        return pos_new, self._individual_sigma(self.p_current)
+
+    def _select_generation(self) -> None:
+        """Apply (mu, lambda) or (mu + lambda) selection after a generation."""
+        generation = self._offspring_records[: self.offspring]
+        remaining = self._offspring_records[self.offspring :]
+
+        parent_records = []
+        for individual in self.individuals:
+            if individual._pos_current is None:
+                continue
+            parent_records.append(
+                {
+                    "individual": individual,
+                    "position": individual._pos_current.copy(),
+                    "score": individual._score_current,
+                    "sigma": self._individual_sigma(individual),
+                    "is_parent": True,
+                }
+            )
+
+        selection_pool = (
+            generation if self.replace_parents else parent_records + generation
+        )
+        selection_pool.sort(
+            key=lambda record: (
+                record["score"] if record["score"] is not None else float("-inf")
+            ),
+            reverse=True,
+        )
+
+        selected = selection_pool[: len(self.individuals)]
+        selected_parent_ids = {
+            id(record["individual"])
+            for record in selected
+            if record.get("is_parent", False)
+        }
+
+        assigned_slot_ids = set()
+        self._sort_pop_best_score()
+        replacement_slots = list(reversed(self.pop_sorted))
+
+        for record in selected:
+            if record.get("is_parent", False):
+                continue
+
+            slot = self._replacement_slot(
+                record,
+                selected_parent_ids,
+                assigned_slot_ids,
+                replacement_slots,
+            )
+            self._apply_generation_record(slot, record)
+            assigned_slot_ids.add(id(slot))
+
+        self._offspring_records = remaining
+
+    def _replacement_slot(
+        self,
+        record,
+        selected_parent_ids,
+        assigned_slot_ids,
+        replacement_slots,
+    ):
+        """Choose which individual receives a selected offspring."""
+        target = record["individual"]
+        target_id = id(target)
+        if target_id not in selected_parent_ids and target_id not in assigned_slot_ids:
+            return target
+
+        for individual in replacement_slots:
+            individual_id = id(individual)
+            if (
+                individual_id not in selected_parent_ids
+                and individual_id not in assigned_slot_ids
+            ):
+                return individual
+
+        return target
+
+    def _apply_generation_record(self, individual, record) -> None:
+        """Copy a selected offspring into a population slot."""
+        score = record["score"]
+        position = record["position"].copy()
+
+        individual._pos_current = position
+        individual._score_current = score
+        self._set_individual_sigma(individual, record["sigma"])
+
+        if individual._pos_best is None or score > individual._score_best:
+            individual._pos_best = position.copy()
+            individual._score_best = score
 
     def _on_init_pos(self, position) -> None:
         """Initialize current individual with the given position.
@@ -248,28 +384,27 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
         # Single individual: just mutate
         if self.n_ind == 1:
             self.p_current = self.individuals[0]
-            self._current_new_pos = self.p_current._iterate()
+            pos_new, sigma_new = self._mutation_offspring()
+            self._current_new_pos = pos_new
+            self._current_candidate_sigma = sigma_new
             self._iteration_setup_done = True
             return
 
-        # Sort and select random individual
+        # Sort and select random parent
         self._sort_pop_best_score()
         self.rnd_int = random.randint(0, len(self.pop_sorted) - 1)
         self.p_current = self.pop_sorted[self.rnd_int]
 
         # Decide: mutation or recombination
         total_rate = self.mutation_rate + self.crossover_rate
-        rand = self._rng.uniform(0, total_rate)
-
         pos_count_before = len(self.p_current._pos_new_list)
 
-        if rand <= self.mutation_rate:
-            # Mutation: use individual's iterate (hill climbing with adaptive sigma)
-            pos_new = self.p_current._iterate()
+        if total_rate <= 0:
+            pos_new, sigma_new = self._mutation_offspring()
+        elif self._rng.uniform(0, total_rate) <= self.mutation_rate:
+            pos_new, sigma_new = self._mutation_offspring()
 
-            # Check constraints
             if not self.conv.not_in_constraint(pos_new):
-                # Restore and try random
                 while len(self.p_current._pos_new_list) > pos_count_before:
                     self.p_current._pos_new_list.pop()
 
@@ -279,12 +414,13 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
                     if self.conv.not_in_constraint(pos_new):
                         break
 
-                self.p_current._pos_new = pos_new  # Property setter auto-appends
+                self.p_current._pos_new = pos_new
+                sigma_new = self._individual_sigma(self.p_current)
         else:
-            # Recombination
-            pos_new = self._cross()
+            pos_new, sigma_new = self._cross()
 
         self._current_new_pos = pos_new
+        self._current_candidate_sigma = sigma_new
         self._iteration_setup_done = True
 
     def _iterate_continuous_batch(self) -> ndarray:
@@ -339,8 +475,25 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
         score_new : float
             Score of the most recently evaluated position.
         """
-        # Delegate to current individual
-        self.p_current._evaluate(score_new)
+        # The candidate position was appended when it was generated. Set the
+        # backing field directly so score tracking aligns with this evaluation
+        # without adding a duplicate position entry.
+        self.p_current.__dict__["_CoreOptimizer__pos_new"] = self._pos_new
+        self.p_current._track_score(score_new)
+        self.p_current._update_best(self._pos_new, score_new)
+
+        self._offspring_records.append(
+            {
+                "individual": self.p_current,
+                "position": self._pos_new.copy(),
+                "score": score_new,
+                "sigma": self._current_candidate_sigma,
+                "is_parent": False,
+            }
+        )
+
+        if len(self._offspring_records) >= self.offspring:
+            self._select_generation()
 
         # Update global tracking
         self._update_best(self._pos_new, score_new)
@@ -349,23 +502,29 @@ class EvolutionStrategyOptimizer(BasePopulationOptimizer):
         # Reset iteration setup for next iteration
         self._iteration_setup_done = False
         self._current_new_pos = None
+        self._current_candidate_sigma = None
 
     def _iterate_batch(self, n):
         """Generate n positions via independent mutation/recombination."""
         positions = []
         self._batch_individual_refs = []
+        self._batch_candidate_sigmas = []
         for _ in range(n):
             self._iteration_setup_done = False
             self._setup_iteration()
             positions.append(self._clip_position(self._current_new_pos))
             self._batch_individual_refs.append(self.p_current)
+            self._batch_candidate_sigmas.append(self._current_candidate_sigma)
             self._iteration_setup_done = False
             self._current_new_pos = None
+            self._current_candidate_sigma = None
         return positions
 
     def _evaluate_batch(self, positions, scores):
         """Process batch results, restoring the correct individual for each."""
         for i, (pos, score) in enumerate(zip(positions, scores)):
             self.p_current = self._batch_individual_refs[i]
+            self._current_candidate_sigma = self._batch_candidate_sigmas[i]
             self._pos_new = pos
             self._evaluate(score)
+        self._batch_candidate_sigmas = []

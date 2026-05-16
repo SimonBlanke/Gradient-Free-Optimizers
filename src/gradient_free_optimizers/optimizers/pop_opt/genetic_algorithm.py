@@ -190,6 +190,20 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
 
         return best_l
 
+    @staticmethod
+    def _rank_selection_probabilities(n_individuals: int) -> list[float]:
+        """Return rank-based probabilities for a best-to-worst sorted population."""
+        total_weight = n_individuals * (n_individuals + 1) / 2
+        return [(n_individuals - rank) / total_weight for rank in range(n_individuals)]
+
+    def _select_rank_weighted_individual(self) -> int:
+        """Select the active individual with rank pressure toward fitter members."""
+        self._sort_pop_best_score()
+        probabilities = self._rank_selection_probabilities(len(self.pop_sorted))
+        rnd_int = int(self._rng.choice(len(self.pop_sorted), p=probabilities))
+        self.p_current = self.pop_sorted[rnd_int]
+        return rnd_int
+
     def _crossover(self) -> None:
         """Generate offspring via crossover.
 
@@ -290,10 +304,8 @@ class GeneticAlgorithmOptimizer(BasePopulationOptimizer):
             self._iteration_setup_done = True
             return
 
-        # Select a random individual (weighted toward fitter ones)
-        self._sort_pop_best_score()
-        rnd_int = random.randint(0, len(self.pop_sorted) - 1)
-        self.p_current = self.pop_sorted[rnd_int]
+        # Select an individual with rank pressure toward fitter members.
+        self._select_rank_weighted_individual()
 
         # Decide: mutation or crossover
         total_rate = self.mutation_rate + self.crossover_rate
