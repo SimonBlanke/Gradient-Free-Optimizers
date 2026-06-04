@@ -215,6 +215,10 @@ class BayesianOptimizer(_BayesianOptimizer, Search):
         - ``"thompson_sampling"`` or ``"thompson"``: Draw one posterior
           sample per candidate and select by sampled score. ``xi`` is not
           used by this acquisition function.
+    strategy : object, optional
+        Optional candidate strategy. ``TuRBO`` (importable via
+        ``from gradient_free_optimizers.strategies import TuRBO``) can be passed
+        here to restrict Bayesian optimization to an adaptive trust region.
 
     Notes
     -----
@@ -290,6 +294,7 @@ class BayesianOptimizer(_BayesianOptimizer, Search):
         gpr: object | None = None,
         xi: float = 0.03,
         acquisition_function: str = "expected_improvement",
+        strategy: object | None = None,
     ):
         if initialize is None:
             initialize = get_default_initialize()
@@ -313,4 +318,5 @@ class BayesianOptimizer(_BayesianOptimizer, Search):
             gpr=gpr,
             xi=xi,
             acquisition_function=acquisition_function,
+            strategy=strategy,
         )

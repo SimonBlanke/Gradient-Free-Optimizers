@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import logging
 from collections.abc import Callable
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -25,6 +26,8 @@ from .surrogate_models import GPR
 
 if TYPE_CHECKING:
     import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 
 def normalize(arr):
@@ -85,6 +88,10 @@ class BayesianOptimizer(SMBO):
         "expected_improvement", "probability_of_improvement", and
         "thompson_sampling". Short aliases "ei", "pi", and "thompson" are
         also accepted.
+    strategy : object, optional
+        Candidate strategy with ``filter_candidates`` and ``on_evaluation``
+        methods. For example, ``TuRBO`` restricts candidate scoring to a
+        trust region around the current best position.
     """
 
     name = "Bayesian Optimization"
@@ -110,6 +117,7 @@ class BayesianOptimizer(SMBO):
         gpr=None,
         xi: float = 0.03,
         acquisition_function: str = "expected_improvement",
+        strategy: Any | None = None,
     ) -> None:
         super().__init__(
             search_space=search_space,
@@ -140,6 +148,9 @@ class BayesianOptimizer(SMBO):
         self.acquisition_function = normalize_acquisition_function_name(
             acquisition_function
         )
+        self.strategy = strategy
+        self._validate_strategy(strategy)
+        self._strategy_empty_filter_warned = False
 
         max_pos = self.conv.max_positions
         n_dims = len(max_pos)
@@ -160,6 +171,25 @@ class BayesianOptimizer(SMBO):
         self._x_norm_offset = array(offsets)
         self._x_norm_denom = array(denoms)
 
+    @staticmethod
+    def _validate_strategy(strategy) -> None:
+        """Validate the optional Bayesian optimizer strategy object."""
+        if strategy is None:
+            return
+
+        required_methods = ("filter_candidates", "on_evaluation")
+        missing_methods = [
+            method
+            for method in required_methods
+            if not callable(getattr(strategy, method, None))
+        ]
+        if missing_methods:
+            missing = ", ".join(missing_methods)
+            raise ValueError(
+                "strategy must provide callable methods: "
+                f"{', '.join(required_methods)}. Missing: {missing}."
+            )
+
     def _normalize_X(self, X):
         """Normalize positions to [0, 1] per dimension."""
         return (array(X, dtype=float) - self._x_norm_offset) / self._x_norm_denom
@@ -169,6 +199,10 @@ class BayesianOptimizer(SMBO):
         self.pos_comb = self._sampling(self.all_pos_comb)
 
         pos_comb_norm = self._normalize_X(self.pos_comb)
+        self.pos_comb, pos_comb_norm = self._apply_strategy_candidate_filter(
+            self.pos_comb, pos_comb_norm
+        )
+
         acqu_func = create_acquisition_function(
             self.acquisition_function,
             self.regr,
@@ -177,6 +211,44 @@ class BayesianOptimizer(SMBO):
             rng=self._rng_acquisition,
         )
         return acqu_func.calculate(self.X_sample, self.Y_sample)
+
+    def _apply_strategy_candidate_filter(self, pos_comb, pos_comb_norm):
+        """Restrict candidate positions through the configured strategy."""
+        if self.strategy is None:
+            return pos_comb, pos_comb_norm
+
+        center = self._pos_best if self._pos_best is not None else self._pos_current
+        if center is None:
+            return pos_comb, pos_comb_norm
+
+        center_norm = self._normalize_X([center])[0]
+        if (
+            hasattr(self.strategy, "initialize")
+            and hasattr(self.strategy, "initialized")
+            and not self.strategy.initialized
+        ):
+            self.strategy.initialize(center_norm)
+
+        bounds_low = array([0.0] * len(center_norm))
+        bounds_high = array([1.0] * len(center_norm))
+        mask = self.strategy.filter_candidates(
+            pos_comb_norm,
+            center_norm,
+            bounds_low,
+            bounds_high,
+        )
+
+        filtered_pos_comb = pos_comb[mask]
+        if len(filtered_pos_comb) == 0:
+            if not self._strategy_empty_filter_warned:
+                logger.warning(
+                    "Bayesian optimizer strategy filtered out all candidates. "
+                    "Using the unfiltered candidate set for this iteration."
+                )
+                self._strategy_empty_filter_warned = True
+            return pos_comb, pos_comb_norm
+
+        return filtered_pos_comb, pos_comb_norm[mask]
 
     def _training(self) -> None:
         """Fit the Gaussian Process on normalized training data."""
@@ -203,3 +275,13 @@ class BayesianOptimizer(SMBO):
         for pos, score in zip(positions, scores):
             self._pos_new = pos
             self._evaluate(score)
+
+    def _on_evaluate(self, score_new: float) -> None:
+        """Update SMBO state and notify the configured strategy."""
+        score_best_before = self._score_best
+        improved = score_new > score_best_before
+
+        super()._on_evaluate(score_new)
+
+        if self.strategy is not None:
+            self.strategy.on_evaluation(score_new, improved)

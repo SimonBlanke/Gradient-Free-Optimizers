@@ -43,6 +43,10 @@ class BayesianOptimizer(_BayesianOptimizer, AskTell):
         "expected_improvement", "probability_of_improvement", and
         "thompson_sampling"; aliases "ei", "pi", and "thompson" are also
         accepted.
+    strategy : object, optional
+        Optional candidate strategy. ``TuRBO`` (importable via
+        ``from gradient_free_optimizers.strategies import TuRBO``) can be passed
+        here to restrict Bayesian optimization to an adaptive trust region.
     """
 
     def __init__(
@@ -60,6 +64,7 @@ class BayesianOptimizer(_BayesianOptimizer, AskTell):
         gpr: object | None = None,
         xi: float = 0.03,
         acquisition_function: str = "expected_improvement",
+        strategy: object | None = None,
     ):
         if constraints is None:
             constraints = []
@@ -80,6 +85,7 @@ class BayesianOptimizer(_BayesianOptimizer, AskTell):
             gpr=gpr,
             xi=xi,
             acquisition_function=acquisition_function,
+            strategy=strategy,
         )
 
         self._process_initial_evaluations(initial_evaluations)
