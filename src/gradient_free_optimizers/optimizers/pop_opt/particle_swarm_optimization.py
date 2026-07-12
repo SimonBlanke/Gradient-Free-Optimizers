@@ -219,19 +219,25 @@ class ParticleSwarmOptimizer(BasePopulationOptimizer):
         ):
             return self.p_current.init.move_random_typed()
 
-        r1, r2 = random.random(), random.random()
-
         pos_current = array(self.p_current._pos_current)
         pos_best = array(self.p_current._pos_best)
         global_pos_best = array(self.p_current.global_pos_best)
 
+        # Per-dimension random coefficients (Kennedy & Eberhart, 1995).
+        # Using scalar r1/r2 couples all dimensions to the same random factor,
+        # creating correlated diagonal movement and preventing independent
+        # per-dimension exploration. Vectors ensure stochastic independence.
+        n_dims = len(pos_current)
+        r1 = array([random.random() for _ in range(n_dims)])
+        r2 = array([random.random() for _ in range(n_dims)])
+
         # Inertia term: maintain current direction
         A = self.inertia * array(self.p_current.velo)
 
-        # Cognitive term: attract toward personal best
+        # Cognitive term: attract toward personal best (per-dimension)
         B = self.cognitive_weight * r1 * (pos_best - pos_current)
 
-        # Social term: attract toward global best
+        # Social term: attract toward global best (per-dimension)
         C = self.social_weight * r2 * (global_pos_best - pos_current)
 
         # Update velocity
